@@ -142,6 +142,13 @@ pauses between mutations and performs no automatic retry.
 The local fixes and workarounds have not been reviewed.
 Passing tests or formatter output is not review.
 
+The repository-wide `initPromise` search also updates existing issue
+[#254](https://github.com/Aquaticat/Monochromatic/issues/254),
+rather than creating a duplicate.
+The active Done application's `src/lib/db-migrations.ts`
+and paused consumers still import the removed default-logger readiness export.
+Those consumers are not changed or qualified by this merge check.
+
 ## Final selected-package verification
 
 `main-merge-package-checks-63k9ap` passes fresh builds for fs-path,
@@ -163,6 +170,16 @@ Peak memory is `746094592` bytes with zero OOM/PID events.
 The measured package source/configuration inventories remain unchanged.
 The actual runtime ledger records Node `26.8.2`.
 
+`main-merge-package-checks-LDVNaW` repeats the complete selected matrix
+with committed `mise.lock` bytes mounted read-only over the owner-modified file.
+This separates committed-tree verification from preservation of local tool versions
+without changing the host file.
+The committed lock SHA-256 is
+`f0e844684cc0ba3176b47c85e47d50ca505b134be352b3e7e47b472e88b350ba`.
+All phases pass again;
+root configuration hashes and the owner lock hash remain unchanged.
+This run peaks at `680280064` bytes with zero OOM/PID events.
+
 Dependency directories are read-only overlays from main's installed tree.
 This is source compatibility evidence against that overlay,
 not proof of a fresh installation from the merged lockfile
@@ -183,10 +200,22 @@ A separate private package acquires abbreviated registry metadata with scripts d
 without mounting the repository or real home.
 The no-network verifier mounts that cache read-only
 and exposes the existing filtered-full mirror at its full-metadata lookup path.
-The release source explicitly accepts filtered-full metadata for the trust projection;
-the wrapper preserves the original bytes rather than manufacturing cache records.
+The release source explicitly accepts filtered-full data in its shared in-memory trust lookup.
+That supports the data projection,
+not an assertion that PNPM documents the on-disk directory alias.
+The wrapper mapping is instead demonstrated by the actual successful offline command;
+it preserves the original bytes rather than manufacturing cache records.
 No trust or age policy is disabled,
 and the final check does not inherit a cached lockfile-verification verdict.
+
+`main-merge-metadata-proof-oVKGP8` subsequently retains 1492 metadata files
+with `215155142` bytes.
+The `main-merge-lock-generation-IWD4cP` rerun uses that owned snapshot,
+passes all 773 entries,
+and verifies metadata and executable hashes before and after the invocation.
+This is cached-metadata compatibility,
+not current-registry verification or installation.
+See [the source-traced PNPM record](../troubleshooting/pnpm-offline-verifier-metadata-mirrors.md).
 
 `main-merge-package-checks-A7pdf5` also exercises the actual built Markdown CLI:
 help,
@@ -199,6 +228,26 @@ and the CLI bytes are unchanged after invocation.
 A native Mise dry-run against the reconciled private lockfile also succeeds.
 Its bytes and the unstaged owner file both retain SHA-256
 `6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
+
+## Declaration audit boundary
+
+`main-merge-export-audit-kDOYn8` parses the 28 TypeScript files
+among the 38 paths changed by both parents.
+It inventories top-level exports and literal test descriptor names,
+with positive controls.
+It is not function-body equivalence or a completed code review.
+
+The declared-name differences are explained:
+main's `b333197d5` deliberately removes the default singleton `initPromise` export,
+and two test descriptors are renamed.
+`main-merge-renamed-tests-g0Q6lv` verifies the renamed callback bodies
+have unchanged ASTs after removing locations and comments.
+The scanner's source and generated mirror retain main's indexed ASCII validation
+plus the repair branch's diagnostic text.
+The Git CLI retains both main's authoring entry and the repair `resolveGit` export/subpath.
+The remaining jointly changed documents,
+configuration and moved TOML fuzz helper are classified separately,
+not inferred from the AST-name result.
 
 ## Paused repair work
 

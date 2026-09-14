@@ -37,6 +37,7 @@ Package management and dependency resolution problems:
 
 - pnpm workspace configuration issues
 - Dependency resolution conflicts
+- [PNPM offline verifier metadata mirrors](pnpm-offline-verifier-metadata-mirrors.md)
 - [Pi update allowScripts warnings](pi-update-allow-scripts.md)
 
 ### [Performance Optimization](performance.md)
