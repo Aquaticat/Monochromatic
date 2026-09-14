@@ -213,6 +213,26 @@ Scope widened by the owner on 2026-09-14:
    pnpr OIDC workload credential from the GitHub Actions publish workflow,
    no stored token
    (owner chose it over a stored CI user token).
+- Config delivery:
+   file-enforcer generates the pnpr config,
+    including the exact package-name list,
+   into the repo,
+   and Coolify deploys the compose and config from the public GitHub repo on push
+   (owner chose it over a runbook with Coolify UI edits and over an SSH push from the workflow).
+   Accepted consequence:
+   a new package's first publish can fail until the redeploy lands,
+   and a later qualifying run retries it.
+- `./ts` subpaths:
+   stripped from every tarball published to pnpr,
+   the same rule as `doc/decision/npm-publishing.md`
+   (owner chose it over keeping them).
+- Entry-less packages:
+   a package publishes only if its manifest has `exports`,
+    `main`,
+    `module`,
+    or `bin`,
+   which removes 15 packages and leaves 128
+   (owner chose it over a name-suffix exclusion and over publishing them).
 
 ## Adopted without asking (veto welcome)
 
@@ -227,6 +247,24 @@ Scope widened by the owner on 2026-09-14:
    (https://pnpm.io/pnpr/oidc).
 - Scoped publish through Caddy is verified at implementation time,
    since the encoded slash in `PUT /@scope%2fname` must reach pnpr intact.
+- The publish workflow is its own file,
+   because the OIDC `workflow_ref` claim pins one workflow path,
+   and its `push` filter matches `**/package.json`,
+    the generated pnpr config,
+    and the workflow itself,
+   because under manual bumps only a manifest change can create a missing version;
+   `workflow_dispatch` stays for manual retries.
+- The pnpr hosted registry is named `monochromatic-dev`,
+   so consumers route `@monochromatic-dev:registry=https://npm.c.aquati.cat/~monochromatic-dev/`.
+- Packing reuses the `npm-release.yml` install override `--config.dedupe-direct-deps=false`
+   (`doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`).
+- The dependent-bump policy reads the staged `version` of every publishable manifest,
+   and treats a `devDependency` as bundled when non-test source files import it.
+- The pnpr deployment lives in a workspace directory under `package/config/`,
+   beside `package/config/tofu`,
+   with a `README.md` documenting consumer setup;
+   it has no entry points,
+   so it never publishes itself.
 - Packaging fixes land regardless of registry:
    bundled workspace packages move to `devDependencies`
    (the rule in `doc/decision/npm-publishing.md`),
@@ -421,8 +459,23 @@ Script `build-shape.ts` in the session scratchpad,
    `webapp-productivity-done`,
    `webapp-productivity-done-postcss`.
 
+### Server-side facts (measured 2026-09-14)
+
+- `garage.c.aquati.cat` resolves to `135.181.104.96`;
+   `npm.c.aquati.cat` and a random `*.c.aquati.cat` name do not resolve,
+   so there is no wildcard record and a new A record is needed (`getent ahostsv4`).
+- `aquati.cat` nameservers are Njalla (`dig +short NS aquati.cat`).
+- No SSH alias for the Coolify host exists in `~/.ssh/config`
+   (aliases:
+    `m1`,
+    `x13-win`).
+
 ## Open questions
 
-- How pnpr config (exact package-name list) reaches the server when packages are added.
-- Whether private tarballs keep the `./ts` export subpaths.
-- Whether entry-less packages still publish.
+- Who performs the server-side steps
+   (Njalla A record,
+    Coolify resource,
+    Caddy site block)
+   and with what access.
+- What happens when a package cannot build on GitHub-hosted runners.
+- Verification scope for the throwaway consumer.
