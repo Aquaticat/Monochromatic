@@ -1,6 +1,5 @@
 import {
   delimiter,
-  isAbsolute,
   resolve,
 } from 'node:path';
 import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
@@ -9,7 +8,6 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import {
-  CORPUS_COMMIT_SHA,
   CorpusReadError,
   type CorpusPin,
 } from './corpus-source.ts';
@@ -18,6 +16,12 @@ import { preparationRootEntryReadings, } from './preparation-root-entry-readings
 import { PreparationRootError, } from './preparation-root-error.ts';
 import { matchPreparationRootPopulation, } from './preparation-root-match-population.ts';
 import { preparationRootParentReadings, } from './preparation-root-parent-readings.ts';
+import {
+  assertPreparationRootOutputIdentity,
+  ownPreparationRootOutputIdentity,
+  type PreparationRootOutputIdentity,
+} from './preparation-root-output-identity.ts';
+import { preparationRootPin, } from './preparation-root-pin.ts';
 import {
   readPreparationRootPopulation,
   type PreparationRootPopulation,
@@ -33,58 +37,6 @@ import type { FrozenPreparationSelection, } from './preparation-selection-model.
 import { readPreparationSelectionEvidence, } from './read-preparation-selection-evidence.ts';
 
 //region Owning semantic preparation input construction
-
-/**
- * Snapshots independent corpus authority and pins path resolution before asynchronous work or logger callbacks.
- *
- * @param input - public arguments viewed only through their independent corpus configuration
- *
- * @param origin - process location captured before any public argument getter
- *
- * @returns Owned corpus configuration with stable absolute paths
- *
- * @throws PreparationRootError when the pin is unsupported or cannot be snapshotted
- *
- * @example
- * ```ts
- * const fixed = preparationRootPin({ input, origin });
- * ```
- */
-function preparationRootPin({
-  input,
-  origin,
-}: {
-  readonly input: { readonly pin: CorpusPin };
-  readonly origin: string;
-},): CorpusPin {
-  try {
-    /**
-     * Corpus paths are configuration data, not instructions read from the frozen selection document.
-     */
-    const fixed = structuredClone(input.pin,);
-    if ((fixed.commitSha !== CORPUS_COMMIT_SHA) || ((typeof fixed.cloneDir) !== 'string')
-      || (fixed.cloneDir
-        .trim()
-        .length
-        === 0)
-      || ((fixed.gitPath !== undefined) && (((typeof fixed.gitPath) !== 'string') || (!isAbsolute(fixed.gitPath,)))))
-      throw new PreparationRootError({ kind: 'corpus-identity', },);
-    return {
-      cloneDir: resolve(
-        origin,
-        fixed.cloneDir,
-      ),
-      commitSha: fixed.commitSha,
-      ...fixed.gitPath === undefined ? {} : { gitPath: fixed.gitPath, },
-    };
-  }
-  catch (error) {
-    if (error instanceof PreparationRootError)
-      throw error;
-    // Native clone/getter details are not required to explain a rejected independent pin.
-    throw new PreparationRootError({ kind: 'corpus-identity', },);
-  }
-}
 
 /**
  * Converts native listing failures to the root's names-only diagnostic without classifying them as exclusions.
@@ -147,12 +99,14 @@ async function currentRootPopulation({
  * Selection text and complete caller-loaded supporting bytes are bound to an independently recorded task40 digest.
  * The independent pin supplies corpus location; selection paths are never executed.
  * Process context and pin ownership are fixed before reading other argument properties or calling the logger.
+ * Optional expectedOutput requires compact UTF-8 output parity with an independently identified input artifact.
+ * The expectation is snapshotted before other evidence getters; successful parity remains unqualified.
  *
- * @param input - original selection, independent digest and pin, bounded supporting bytes and caller logger
+ * @param input - original bounded evidence and pin, logger, and optional independent reconstruction identity
  *
  * @returns Current raw/effective identities, complete reading provenance and finite initial parent scope
  *
- * @throws PreparationRootError when frozen evidence, current policy population or source obligations differ
+ * @throws PreparationRootError when frozen evidence, current population, obligations or expected output differ
  *
  * @example
  * ```ts
@@ -165,6 +119,7 @@ export async function buildPreparationRootInputs(input: {
   readonly artifacts: readonly PreparationArtifactInput[];
   readonly pin: CorpusPin;
   readonly l: Logger;
+  readonly expectedOutput?: PreparationRootOutputIdentity;
 },): Promise<PreparationRootInputs> {
   /**
    * Pin location cannot drift when subsequent callbacks or awaits change process context.
@@ -194,6 +149,10 @@ export async function buildPreparationRootInputs(input: {
     input,
     origin,
   },);
+  /**
+   * Independent output authority cannot be changed by later evidence getters or logger callbacks.
+   */
+  const expectedOutput = ownPreparationRootOutputIdentity(input);
   /**
    * Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
    */
@@ -272,10 +231,10 @@ export async function buildPreparationRootInputs(input: {
       .obligations,
     kind: 'reading-provenance',
   },);
-  pl.info(`built unqualified root inputs for ${String(current.parents
-    .length,)} frozen parents and ${String(current.registry
-      .length,)} initial scope records; no acquisition or writer authority`,);
-  return {
+  /**
+   * Current native evidence is constructed without reading any supplied parsed artifact or node table.
+   */
+  const inputs: PreparationRootInputs = {
     scope: 'unqualified-preparation-root-inputs',
     selection: evidence.selection,
     references: reader.references(),
@@ -291,6 +250,12 @@ export async function buildPreparationRootInputs(input: {
     questionAliases: preparationRootQuestionAliases(current.registry,),
     sectionPairing: 'not-registered',
   };
+  pl.debug(`checking independent reconstruction identity: ${expectedOutput === undefined ? 'not requested' : 'required'}`);
+  assertPreparationRootOutputIdentity({ inputs, expected: expectedOutput });
+  pl.info(`built unqualified root inputs for ${String(current.parents
+    .length,)} frozen parents and ${String(current.registry
+      .length,)} initial scope records; no acquisition or writer authority`,);
+  return inputs;
 }
 
 //endregion Owning semantic preparation input construction
