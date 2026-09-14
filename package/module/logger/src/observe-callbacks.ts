@@ -75,11 +75,11 @@ export function observeLoggerCallbacks(l: Logger): LoggerCallbackObservation {
   /**
    * Logging primitives deliberately preserve existing tags rather than add a wrapper-specific prefix.
    *
-   * @param callback - fixed synchronous Logger method
+   * @param method - fixed synchronous Logger method
    *
    * @returns Receiver-preserving message forwarding with observable exception containment
    */
-  function forward(callback: Exclude<LoggerCallbackName, 'flush'>): (message: string) => void {
+  function forward(method: Exclude<LoggerCallbackName, 'flush'>): (message: string) => void {
     /**
      * Both method lookup and invocation remain inside the same exception boundary.
      *
@@ -87,11 +87,11 @@ export function observeLoggerCallbacks(l: Logger): LoggerCallbackObservation {
      */
     return function forwardMessage(message: string): void {
       try {
-        l[callback](message);
+        l[method](message);
       }
       catch {
         // Retain the fixed abnormal-completion event, not the potentially sensitive thrown value.
-        failures.add(callback);
+        failures.add(method);
       }
     };
   }

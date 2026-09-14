@@ -50,7 +50,9 @@ await describe({ name: observeLoggerCallbacks.name, children: [
       message: { get: trapped },
       cause: { get: trapped },
     });
-    f.spies[level].onFirstCall().throws(function foreignFailure() { return fault; });
+    f.spies[level].onFirstCall().throws(function foreignFailure() {
+      return fault;
+    });
     const observed = observeLoggerCallbacks(f.logger);
     expect(() => observed.logger[level]('first')).not.toThrow();
     observed.logger[level]('distinct later message');
@@ -58,13 +60,15 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     expect(f.spies[level].secondCall.args).toEqual(['distinct later message']);
     expect(trapped.callCount).toBe(0);
     expect(observed.snapshot()).toEqual([level]);
-    expect(JSON.stringify(observed.snapshot())).not.toContain('q7z9k2');
+    expect(
+      JSON.stringify(observed.snapshot()),
+    ).not.toContain('q7z9k2');
   } })),
   ...(['string', 'symbol', 'undefined', 'null', 'false', 'revoked-error'] as const).map(kind => it({ name: `contains a foreign ${kind} throw without requiring an Error brand`, fn: async ctx => {
     const f = fixture(ctx);
     const revoked = Proxy.revocable(new Error('private q7z9k2'), {});
     revoked.revoke();
-    const fault: unknown = kind === 'string' ? 'private q7z9k2' : kind === 'symbol' ? Symbol('private q7z9k2')
+    const fault: unknown = kind === 'string' ? 'private q7z9k2' : kind === 'symbol' ? Symbol('private callback fault q7z9k2')
       : kind === 'undefined' ? undefined : kind === 'null' ? null : kind === 'false' ? false : revoked.proxy;
     expect(caught(function nativeFaultControl() {
       return faultCarrier().throw(fault);
@@ -116,18 +120,31 @@ await describe({ name: observeLoggerCallbacks.name, children: [
   } }),
   ...(['getter', 'invocation', 'rejection', 'then-getter', 'then-rejection'] as const).map(kind => it({ name: `contains explicit flush ${kind} failure and resolves normally`, fn: async ctx => {
     const f = fixture(ctx);
-    const fault = Symbol('private flush q7z9k2');
-    const thrower = ctx.sinon.stub().throws(function foreignFailure() { return fault; });
+    const fault = Symbol('private flush callback fault q7z9k2');
+    const thrower = ctx.sinon.stub().throws(function foreignFailure() {
+      return fault;
+    });
     if (kind === 'getter') Object.defineProperty(f.logger, 'flush', { get: thrower });
     else if (kind === 'invocation') f.spies.flush.callsFake(thrower);
     else if (kind === 'rejection') f.spies.flush.rejects(fault);
-    else if (kind === 'then-getter') f.spies.flush.returns(Object.defineProperty({}, 'then', { get: thrower }));
-    else f.spies.flush.returns({ then: ctx.sinon.stub().callsArgWith(1, fault) });
+    else {
+      const rejectedThen = ctx.sinon.stub().callsArgWith(1, fault);
+      // Fault an existing Promise's protocol lookup instead of defining a thenable application record.
+      const foreign = new Proxy(Promise.resolve(), {
+        get: function lookup(target, key, receiver): unknown {
+          if (key === 'then') return kind === 'then-getter' ? thrower() : rejectedThen;
+          return Reflect.get(target, key, receiver);
+        },
+      });
+      f.spies.flush.returns(foreign);
+    }
     const observed = observeLoggerCallbacks(f.logger);
     expect(observed.snapshot()).toEqual([]);
     await observed.logger.flush();
     expect(observed.snapshot()).toEqual(['flush']);
-    expect(JSON.stringify(observed.snapshot())).not.toContain('q7z9k2');
+    expect(
+      JSON.stringify(observed.snapshot()),
+    ).not.toContain('q7z9k2');
     if (kind === 'getter') expect(thrower.callCount).toBe(1);
     else expect(f.spies.flush.callCount).toBe(1);
   } })),
@@ -140,7 +157,7 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     observed.logger.warn('first');
     observed.logger.warn('second distinct request');
     const one = observed.snapshot();
-    for (const level of [...levels].reverse()) observed.logger[level]('distinct level');
+    for (const level of levels.toReversed()) observed.logger[level]('distinct level');
     await observed.logger.flush();
     const all = observed.snapshot();
     expect(empty).toEqual([]);
