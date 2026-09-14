@@ -237,10 +237,12 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(reference.sha256).toBe('0'.repeat(64));
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
   } }),
-  it({ name: 'refuses a revoked proxy thrown by a caller getter without leaking it or creating output', fn: async () => {
+  it({ name: 'refuses a revoked error proxy thrown by a caller getter without leaking it or creating output', fn: async () => {
     await using f = await fixture();
-    const revoked = Proxy.revocable({}, {});
+    const revoked = Proxy.revocable(new Error('private proxied q7z9k2'), {});
     revoked.revoke();
+    expect(Error.isError(revoked.proxy)).toBe(false);
+    expect(() => Reflect.getPrototypeOf(revoked.proxy)).toThrow(TypeError);
     const request = f.request();
     Object.defineProperty(request, 'reference', { get() { throw revoked.proxy; } });
     const error = await rejected(request);
