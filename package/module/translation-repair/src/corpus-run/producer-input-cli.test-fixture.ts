@@ -106,12 +106,25 @@ export async function inputCliFixture(): Promise<InputCliFixture> {
     directory,
     'producer-prepare.mjs',
   );
-  await writeFile(executable, bytes, { mode: 0o400, flag: 'wx' });
+  await writeFile(
+    executable,
+    bytes,
+    {
+      mode: 0o400,
+      flag: 'wx',
+    },
+  );
   return {
     directory,
     executable,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(directory, { recursive: true, force: true });
+      await rm(
+        directory,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
     },
   };
 }
@@ -143,16 +156,23 @@ export async function inputCli({
    * Nano-spawn merges environments; Node omits explicitly undefined entries.
    * Enumerate parent names without copying their values before adding the exact fixture environment.
    */
-  const cleared = Object.fromEntries(Object.keys(process.env).map(function unset(name) {
-    return [name, undefined] as const;
-  }));
+  const cleared = Object.fromEntries(Object.keys(process.env)
+    .map(function unset(name) {
+      return [
+        name,
+        undefined,
+      ] as const;
+    }));
   try {
     /**
      * The existing asynchronous process utility owns native completion and captured streams.
      */
     const result = await spawn(
       process.execPath,
-      [fixture.executable, ...arguments_],
+      [
+        fixture.executable,
+        ...arguments_,
+      ],
       {
         cwd: fixture.directory,
         env: {
@@ -165,7 +185,11 @@ export async function inputCli({
         signal: AbortSignal.timeout(CLI_TEST_TIMEOUT),
       },
     );
-    return { status: 0, stdout: result.stdout, stderr: result.stderr };
+    return {
+      status: 0,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
   }
   catch (error) {
     if (!Error.isError(error))
@@ -175,11 +199,21 @@ export async function inputCli({
     /**
      * Only an ordinary exit may become assertion data; cancellation and native failures remain errors.
      */
-    const { exitCode, signalName, isCanceled, } = error;
-    if ((exitCode === undefined) || !Number.isSafeInteger(exitCode) || (exitCode <= 0)
-      || (signalName !== undefined) || isCanceled)
+    const {
+      exitCode,
+      signalName,
+      isCanceled,
+    } = error;
+    if ((exitCode === undefined) || (!Number.isSafeInteger(exitCode))
+      || (exitCode <= 0)
+      || (signalName !== undefined)
+      || isCanceled)
       throw error;
-    return { status: exitCode, stdout: error.stdout, stderr: error.stderr };
+    return {
+      status: exitCode,
+      stdout: error.stdout,
+      stderr: error.stderr,
+    };
   }
 }
 
@@ -197,14 +231,36 @@ export async function inputCli({
  * const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode('{}') });
  * ```
  */
-export async function inputLaunchArguments({ fixture, bytes, }: {
+export async function inputLaunchArguments({
+  fixture,
+  bytes,
+}: {
   readonly fixture: InputCliFixture;
   readonly bytes: Uint8Array;
 }): Promise<readonly string[]> {
   /**
    * This file has no corpus or user configuration authority.
    */
-  const path = join(fixture.directory, 'launch.json');
-  await writeFile(path, bytes, { mode: 0o600, flag: 'wx' });
-  return ['--launch', path, '--launch-sha256', createHash('sha256').update(bytes).digest('hex'), '--launch-bytes', String(bytes.length)];
+  const path = join(
+    fixture.directory,
+    'launch.json',
+  );
+  await writeFile(
+    path,
+    bytes,
+    {
+      mode: 0o600,
+      flag: 'wx',
+    },
+  );
+  return [
+    '--launch',
+    path,
+    '--launch-sha256',
+    createHash('sha256')
+      .update(bytes)
+      .digest('hex'),
+    '--launch-bytes',
+    String(bytes.length),
+  ];
 }
