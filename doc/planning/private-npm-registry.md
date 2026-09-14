@@ -89,6 +89,17 @@ The Hetzner server managed by Coolify is available but not a constraint.
 - Budget:
    no new spend;
    the already-paid Hetzner server and free tiers qualify.
+- Scope routing:
+   consumers route the whole `@monochromatic-dev` scope to the private registry,
+   which proxies npmjs for scope members it does not hold
+   (owner chose it over pnpm `prefix` specifiers and over a proxy-less scope route).
+   Consequence:
+   the registry product must support an npmjs uplink for the scope.
+- Consumer scope:
+   publish side only;
+   verification installs from a throwaway consumer,
+   and `labwc-config` stays untouched
+   (owner chose it over full and minimal consumer wiring).
 
 ## Adopted without asking (veto welcome)
 
@@ -102,10 +113,6 @@ The Hetzner server managed by Coolify is available but not a constraint.
 
 ## Open questions
 
-- Scope routing:
-   owner asked for more detail;
-   the pnpm `prefix` probe offers per-dependency routing that needs no npmjs proxy.
-- Whether bootstrapping Node tooling in `labwc-config` is part of this effort.
 - Registry product and host (registry options research running).
 - How the consumer picks up new snapshots.
 - Snapshot version format and retention.
