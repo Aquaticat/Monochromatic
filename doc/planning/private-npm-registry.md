@@ -167,9 +167,55 @@ Scope widened by the owner on 2026-09-14:
     chosen over a CI stale-pin check,
     changesets for every package,
     and hand bumps with no check).
+- Registry product:
+   pnpr on the Coolify host
+   (owner chose it over Verdaccio 6,
+    GitLab.com,
+    and Nexus CE).
+- Ripple edges:
+   a dependent bumps when it reaches the bumped package through `dependencies`,
+    `peerDependencies`,
+    or `optionalDependencies`,
+   or imports it from source as a `devDependency` that the build bundles
+   (owner chose it over all workspace edges and over runtime edges only).
+- Backstop:
+   none;
+   commits that bypass cli-git can publish stale pins
+   (owner chose it over a failing CI check and over CI bump commits).
+- Front proxy:
+   the Coolify host runs the owner's self-managed Caddy
+   (Coolify's own proxy management is disabled,
+    per `doc/handover/garage-file-sync.md`),
+   so the Traefik `%2F` caveat does not apply.
+- Durability:
+   losing historical package versions is acceptable,
+   so registry storage needs no backup;
+   recovery republishes current versions.
+- pnpr distribution:
+   the npm package `@pnpm/pnpr` at dist-tag `next`
+   (owner instruction,
+    superseding an adopted exact image pin).
+   Measured 2026-09-14:
+    `next` is `0.1.0-alpha.11` and `latest` is the older `0.0.0-26070301` (`npm view`);
+    `ghcr.io/pnpm/pnpr` lists version tags only,
+    with no `next` tag (`podman search --list-tags`).
+   Consequence:
+    the deployment installs `@pnpm/pnpr@next` itself,
+    and each rebuild picks up whatever `next` points to.
 
 ## Adopted without asking (veto welcome)
 
+- Hostname `npm.c.aquati.cat`,
+   following the host's `<service>.c.aquati.cat` convention (`garage.c.aquati.cat`);
+   product-neutral so consumer config survives a product swap.
+- pnpr storage is a Coolify volume on local disk,
+   not the Garage S3 store on the same host,
+   which would add a dependency without adding durability.
+- The publish job's version-missing check reads anonymously,
+   because a pnpr workload credential "cannot read packages"
+   (https://pnpm.io/pnpr/oidc).
+- Scoped publish through Caddy is verified at implementation time,
+   since the encoded slash in `PUT /@scope%2fname` must reach pnpr intact.
 - Packaging fixes land regardless of registry:
    bundled workspace packages move to `devDependencies`
    (the rule in `doc/decision/npm-publishing.md`),
@@ -294,12 +340,30 @@ Settled gates:
    which is not a workspace package,
    so the scope proxy still matters after all workspace packages publish privately.
 
+### pnpr facts that shape the remaining choices
+
+- OIDC trust is configured per named hosted registry and per exact package name,
+   and validates `repository_id`,
+    `repository_owner_id`,
+    `workflow_ref`,
+    and the `subject` claim.
+   The workload credential permits only `PUT` publications of the configured packages
+   (https://pnpm.io/pnpr/oidc).
+- A router resolves a package to "the first listed source whose `packages:` keys claim its name,
+   authoritatively";
+   package patterns include `@scope/*` and exact names
+   (https://pnpm.io/pnpr/configuration).
+- Storage is authoritative and needs a durable volume;
+   the upstream cache is disposable.
+- Nothing in the npmjs `@monochromatic-dev` org depends on the upstream except
+   `mcp-nvim` (`0.1.0`,
+    source directory `packages-deprecated/mcp/nvim`,
+    not a workspace package)
+   and npmjs-only historical versions of `module-logger` and `module-fs-path`.
+
 ## Open questions
 
-- Registry product and host.
-- Which dependency kinds make a dependent bump.
-- Backstop for commits that bypass the cli-git hook
-   (GitHub web edits,
-    machines without cli-git,
-    bypass flags).
-- CI publish authentication (follows from the registry product).
+- Whether pnpr still needs the npmjs upstream now that every workspace package publishes privately and history loss is acceptable.
+- CI publish authentication:
+   OIDC workload credential or stored token.
+- How pnpr config reaches the server when package names change.
