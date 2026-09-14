@@ -33,7 +33,9 @@ On 2026-09-14 the workspace held 154 packages under `package/`,
 - Served at `https://pnpr.c.aquati.cat/`,
    behind the owner's self-managed Caddy.
 - One hosted npm registry named `monochromatic-dev` claims `@monochromatic-dev/*`.
-   There is no npmjs upstream.
+   There is no npmjs upstream,
+   and the install-accelerator surface is disabled (`--disable-resolver`),
+   because it fetches upstream indexes on clients' behalf.
 - Reads are anonymous;
    publishes need authentication.
 - Storage is a Coolify volume with no backup;
@@ -56,11 +58,16 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
 
 - Every workspace package except those under `package/test-fixture/`,
    private ones included.
-- A package publishes only if its manifest declares `exports`,
+   Selection lives in `generatePnprConfig` in `file-enforcer.config.ts`;
+   the publish workflow reads the generated name list instead of re-deriving it.
+- A package publishes only if its manifest still declares `exports`,
    `main`,
    `module`,
-   or `bin`;
-   128 packages qualified on 2026-09-14.
+   or `bin` after `./ts` export subpaths are stripped;
+   126 of 155 workspace packages qualified on 2026-09-14
+   (`package/config/pnpr/config.yaml`),
+   which drops `config-tofu` (only `./ts/*` exports)
+   and `config-pnpr` (no entry points).
 - `module-logger` and `module-fs-path` also publish here,
    packed separately from the npmjs release,
    so the same version's tarball bytes can differ between registries.
@@ -111,8 +118,14 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
 
 - file-enforcer generates the pnpr config,
    including the package-name list and the exclusion list.
-- The deployment lives in a workspace directory under `package/config/`
-   and Coolify redeploys it from the public GitHub repository on push.
+- The deployment lives in `package/config/pnpr/`
+   and Coolify redeploys it from the public GitHub repository on push,
+   limited by Watch Paths to `package/config/pnpr/**`.
+   Without Watch Paths every push would redeploy:
+    Coolify deploys when `isWatchPathsTriggered($changed_files) || blank($application->watch_paths)`
+    (`app/Http/Controllers/Webhook/Github.php` lines 136 to 137 in coollabsio/coolify),
+    and `main` received 1492 commits in the 30 days before 2026-09-14,
+    of which 7 added or removed a package manifest.
    A new package's first publish can fail until the redeploy lands;
    a later qualifying run retries it.
 - The owner performs the Njalla A record,
