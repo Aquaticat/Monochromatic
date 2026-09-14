@@ -412,7 +412,7 @@ await describe({
           'Plain prose,\n with a comma.\n',
         ]) {
           /**
-           * That already-settled passage, offered to the fixer again.
+           That already-settled passage, offered to the fixer again.
            */
           const again = fix(settled,);
           expect(again.source,).toBe(settled,);

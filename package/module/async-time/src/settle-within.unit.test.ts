@@ -1,18 +1,18 @@
 /**
- * Tests for `settleWithin`.
- *
- * The sharp cases are about a LEAKED TIMER, which is the entire reason this
- * exists beside `withTimeout` and `wait`, and they are measured in a CHILD
- * PROCESS rather than in this one.
- *
- * Counting `process.getActiveResourcesInfo()` in-process was tried first and
- * abandoned: it does detect the leak, but this suite shares a process with
- * cases that deliberately leak timers of their own, so the baseline moves
- * underneath the assertion and the result depends on scheduling. The child
- * process measures the property that actually matters and that a reader would
- * recognise: whether a program stops when its work is done.
- *
- * @module
+ Tests for `settleWithin`.
+ 
+ The sharp cases are about a LEAKED TIMER, which is the entire reason this
+ exists beside `withTimeout` and `wait`, and they are measured in a CHILD
+ PROCESS rather than in this one.
+ 
+ Counting `process.getActiveResourcesInfo()` in-process was tried first and
+ abandoned: it does detect the leak, but this suite shares a process with
+ cases that deliberately leak timers of their own, so the baseline moves
+ underneath the assertion and the result depends on scheduling. The child
+ process measures the property that actually matters and that a reader would
+ recognise: whether a program stops when its work is done.
+ 
+ @module
  */
 
 import spawn from 'nano-spawn';
@@ -29,24 +29,24 @@ import {
 } from '../dist/final/neutral/index.mjs';
 
 /**
- * Long enough that a leaked timer holds a process well past any plausible
- * startup cost, so a prompt exit cannot happen by accident.
+ Long enough that a leaked timer holds a process well past any plausible
+ startup cost, so a prompt exit cannot happen by accident.
  */
 const LONG_MS = 30_000;
 
 /**
- * Short enough to keep the suite quick.
+ Short enough to keep the suite quick.
  */
 const SHORT_MS = 10;
 
 /**
- * Longest a correct child is allowed to take, generously over Node startup.
+ Longest a correct child is allowed to take, generously over Node startup.
  */
 const EXIT_BUDGET_MS = 8_000;
 
 /**
- * Built module the child imports, resolved from this file rather than from the
- * child's own cwd, which the runner does not promise.
+ Built module the child imports, resolved from this file rather than from the
+ child's own cwd, which the runner does not promise.
  */
 const BUILT = new URL(
   '../dist/final/neutral/index.mjs',
@@ -54,16 +54,16 @@ const BUILT = new URL(
 ).href;
 
 /**
- * Runs a program in a child process and reports how long it took to exit.
- *
- * @param source - module source for the child
- *
- * @returns Milliseconds from spawn to exit, and whether it exited at all
- *
- * @example
- * ```ts
- * const { exited, } = await timeChild({ source: 'console.log(1,);', },);
- * ```
+ Runs a program in a child process and reports how long it took to exit.
+ 
+ @param source - module source for the child
+ 
+ @returns Milliseconds from spawn to exit, and whether it exited at all
+ 
+ @example
+ ```ts
+ const { exited, } = await timeChild({ source: 'console.log(1,);', },);
+ ```
  */
 async function timeChild(
   { source, }: { readonly source: string; },
@@ -72,7 +72,7 @@ async function timeChild(
   readonly elapsedMs: number;
 }> {
   /**
-   * When the child was started.
+   When the child was started.
    */
   const startedAt = performance.now();
 
@@ -146,7 +146,7 @@ await describe({
         + 'thing that distinguishes them is whether the program stops',
       fn: async () => {
         /**
-         * A child that finishes 10ms of work under a 30 second deadline.
+         A child that finishes 10ms of work under a 30 second deadline.
          */
         const child = await timeChild({
           source: `
@@ -166,7 +166,7 @@ await describe({
         + 'that only checked the answer would pass on the broken version',
       fn: async () => {
         /**
-         * The same program written the old way, which must hang.
+         The same program written the old way, which must hang.
          */
         const child = await timeChild({
           source: `

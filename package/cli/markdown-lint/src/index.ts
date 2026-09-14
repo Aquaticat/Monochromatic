@@ -27,9 +27,9 @@ export {
 } from './rule/index.ts';
 
 /**
- * Each rule on its own, so a rule's test exercises the shipped bundle.
- *
- * @internal
+ Each rule on its own, so a rule's test exercises the shipped bundle.
+ 
+ @internal
  */
 export {
   commandsShowOutput,
@@ -47,18 +47,18 @@ export {
 } from './rule/index.ts';
 
 /**
- * Table rendering the pipe-table rule offers as its fix, exported so that
- * rule's test can compare against the same renderer the bundle carries.
- *
- * @internal
+ Table rendering the pipe-table rule offers as its fix, exported so that
+ rule's test can compare against the same renderer the bundle carries.
+ 
+ @internal
  */
 export { toHtmlTable, } from './to-html-table.ts';
 
 /**
- * Tree walk the rules share, exported so a test can find the nodes it means to
- * assert about without reimplementing the traversal.
- *
- * @internal
+ Tree walk the rules share, exported so a test can find the nodes it means to
+ assert about without reimplementing the traversal.
+ 
+ @internal
  */
 export { walk, } from './walk.ts';
 export type {

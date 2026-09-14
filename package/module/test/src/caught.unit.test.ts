@@ -1,8 +1,8 @@
 /**
- * Tests for `caught`, which holds what a call threw so more than one thing can
- * be asserted about it.
- *
- * @module
+ Tests for `caught`, which holds what a call threw so more than one thing can
+ be asserted about it.
+ 
+ @module
  */
 
 import {
@@ -13,11 +13,11 @@ import {
 } from '@monochromatic-dev/module-test';
 
 /**
- * Refusal class standing in for the custom errors real callers assert about.
+ Refusal class standing in for the custom errors real callers assert about.
  */
 class WhiskerError extends Error {
   /**
-   * Names the class in stack traces the way a real custom error does.
+   Names the class in stack traces the way a real custom error does.
    */
   public override readonly name = 'WhiskerError';
 }
