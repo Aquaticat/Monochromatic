@@ -151,6 +151,34 @@ The next consumer still needs strict artifact reading,
 fixed persistence,
 retention tests and complete native integration verification.
 
+## Native persisted-comparison probe
+
+The frozen probe `node_modules/.frozen-preparation-input-comparison-2JDKo6/run.mjs`
+under the translation-repair package has SHA-256
+`7c454c004db3b82c3bc6af49830cfcf604d8d1a0376ce698e57cceed159bce15`.
+It invokes the actual Task47 `WWrgVV` bootstrap and `fOagX0` runtime,
+not `runProducerInputHost` from a differently authenticated entry.
+Both runs use the unchanged pinned corpus and frozen selection in fresh exclusive namespaces.
+The probe is syntax-compatible TypeScript copied to `.mjs` before execution;
+no frozen file is edited.
+
+`preparation-input-comparison-probe-mxsJW2/verification.json`
+under private agent scratch records successful matching and differing-reference cases.
+The matching case reaches a synthetic continuation witness.
+The deliberately wrong reference digest causes a names-only refusal only after the fresh artifact,
+completion and independent comparison record exist.
+It does not reach that witness.
+Both fresh artifacts retain 2821409 bytes and SHA-256
+`12c4f304dad2a7039c5452ae7f3de5a84160f759e27968e05e47494c0f3eb75a`.
+Both completion files remain readable after comparison.
+
+This establishes the tested persistence ordering through the real fixed CLI.
+It does not establish a production Task41 reader,
+root-plan creation guard,
+exhaustive file-race defense or independent parser correctness.
+The synthetic continuation is not a root plan or acquisition attempt.
+No model invocation is made by this probe.
+
 ## Current verification record
 
 The retained corpus-pin extraction passes types,
