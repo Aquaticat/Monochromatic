@@ -391,6 +391,68 @@ The red verifier's zero exit means the defect was reproduced,
 not that the package tests pass or the defect is fixed.
 No remediation or guard-removal proof is established at this checkpoint.
 
+## Observable logger callback utility
+
+Task55 implements `observeLoggerCallbacks` in `package/module/logger`,
+not a comparison-only public test entry.
+It retains lazy per-request lookup,
+original receivers,
+message order and every requested attempt.
+Synchronous callback/getter throws and explicitly awaited flush rejection are contained
+without inspecting or retaining the thrown value.
+The facade introduces no sink,
+retry,
+timer or implicit flush.
+Void callbacks returning unobserved rejected promises remain outside its contract.
+
+The result provides a frozen logger facade
+and fresh frozen callback-name snapshots,
+deduplicated in canonical order.
+The snapshot describes callback failure,
+not message delivery or operation cancellation.
+README usage wraps the caller logger before composing tags
+and takes the terminal snapshot after the final requested callback.
+
+`logger-callback-checks-r1L1OU` passes the complete logger build,
+types,
+unit task,
+read-only lint and README Markdown checks.
+A consuming-package smoke imports the built root from translation-repair,
+checks actual `tagged` composition,
+original receivers,
+contained warning/flush failures and the final names-only snapshot.
+
+The new fixture checks require original spy handles to be saved before replacing properties:
+`fixture.logger` and `fixture.spies` intentionally reference the same object.
+Native rejection controls use `Promise.allSettled` envelopes.
+A separate built-package probe finds that module-test's async `getRejection`
+adopts arbitrary rejected objects before matching;
+revoked and Promise-valued rejections therefore fail identity assertions.
+[Issue 519](https://github.com/Aquaticat/Monochromatic/issues/519) records that adjacent defect
+and the explicitly unreviewed fixture workaround.
+The module-test implementation is not changed here.
+
+`logger-callback-guards-ZpNMxI` records successful builds and designated ordinary assertion failures
+for synchronous and flush containment,
+each name-recording branch,
+level and flush receivers,
+callback-free construction,
+canonical ordering and frozen snapshots.
+Baseline and restored built-artifact tests pass,
+and the real source remains unchanged.
+These are the listed controls,
+not an exhaustive runtime-equivalence claim.
+Final recheck `logger-callback-checks-4mXXKz` passes the complete build,
+types,
+unit,
+read-only lint,
+README Markdown and consuming-package smoke after the construction control.
+Lint reports zero warnings and errors across 56 files and 485 rules.
+Peak cgroup memory is `627605504` bytes with zero OOM/PID events.
+These results complete task55's utility acceptance,
+not comparison integration.
+The utility remains explicitly unreviewed in issue #509.
+
 ## Earlier verified checkpoint: task50
 
 The retained corpus-pin extraction passes types,
@@ -417,7 +479,7 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Finish task54's persistent-logger retention remediation and its measured regressions first.
+Integrate the accepted shared observation facade in task54's persistent-logger retention remediation.
 Then resume task51's current comparison verification:
 zero full-scope lint,
 complete default unit-entry evidence,
