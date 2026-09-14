@@ -10,8 +10,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetValue, } from './toml-get-value.ts';
+import {
+  parseTomlEdit,
+  tomlGetValue,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'resolveByPath via tomlGetValue',

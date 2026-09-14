@@ -13,7 +13,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { encodeKey, } from './keys.ts';
+import {
+  _encodeKey as encodeKey,
+} from '../dist/final/node/index.mjs';
 
 /** Length of the repeated-character keys exercising the long-input path. */
 const longRunLength = 100_000;

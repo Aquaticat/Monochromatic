@@ -121,4 +121,24 @@ export { emitStringValue as _emitStringValue, } from './emit-value-string.ts';
  */
 export { emitDocument as _emitDocument, } from './emit-document.ts';
 
+/**
+ Attachment predicate exposed only so package tests exercise the shipped implementation.
+
+ @internal
+ */
+export { isAttachedGap as _isAttachedGap, } from './build-comments.ts';
+
+/**
+ Tagged coercion helpers exposed through the existing unstable test seam.
+
+ @internal
+ */
+export {
+  tomlFloat as _tomlFloat,
+  tomlInteger as _tomlInteger,
+  tomlLocalDate as _tomlLocalDate,
+  tomlLocalDateTime as _tomlLocalDateTime,
+  tomlLocalTime as _tomlLocalTime,
+} from './wrappers.ts';
+
 //endregion Unstable fuzzing seams

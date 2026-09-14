@@ -11,10 +11,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { isAttachedGap, } from './build-comments.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetCommentAfter, } from './toml-get-comment-after.ts';
-import { tomlGetCommentsBefore, } from './toml-get-comments-before.ts';
+import {
+  _isAttachedGap as isAttachedGap,
+  parseTomlEdit,
+  tomlGetCommentAfter,
+  tomlGetCommentsBefore,
+} from '../dist/final/node/index.mjs';
 
 /** Length of the repeated-whitespace gaps exercising the long-input path. */
 const longRunLength = 100_000;

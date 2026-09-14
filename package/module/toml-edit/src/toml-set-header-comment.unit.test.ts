@@ -10,10 +10,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
-import { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
-import { tomlSet, } from './toml-set.ts';
-import { tomlStringify, } from './toml-stringify.ts';
+import {
+  emptyTomlEdit,
+  tomlSet,
+  tomlSetHeaderComment,
+  tomlStringify,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: tomlSetHeaderComment.name,

@@ -10,10 +10,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { TomlPathNotFoundError, } from './errors.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlInsertCommentBefore, } from './toml-insert-comment-before.ts';
-import { tomlStringify, } from './toml-stringify.ts';
+import {
+  TomlPathNotFoundError,
+  parseTomlEdit,
+  tomlInsertCommentBefore,
+  tomlStringify,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: tomlInsertCommentBefore.name,

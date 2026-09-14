@@ -10,8 +10,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlKeys, } from './toml-keys.ts';
+import {
+  parseTomlEdit,
+  tomlKeys,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: tomlKeys.name,

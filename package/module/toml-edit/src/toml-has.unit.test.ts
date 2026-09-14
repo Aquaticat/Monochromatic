@@ -10,10 +10,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlDelete, } from './toml-delete.ts';
-import { tomlHas, } from './toml-has.ts';
-import { tomlSet, } from './toml-set.ts';
+import {
+  parseTomlEdit,
+  tomlDelete,
+  tomlHas,
+  tomlSet,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: tomlHas.name,
