@@ -759,6 +759,92 @@ No dependency installation,
 lockfile edit,
 upstream patch or filing is part of this change.
 
+### Frozen verification drivers use JavaScript extensions
+
+The first frozen native-verification driver used a `.mts` filename under package `node_modules`.
+Node `v26.8.2` refused it before any case executed:
+
+```text
+ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+```
+
+At `lib/internal/modules/typescript.js:152-155`,
+the inspected Node source rejects that placement:
+
+```js
+// lib/internal/modules/typescript.js
+function stripTypeScriptModuleTypes(source, filename, sourceURL) {
+  assert(typeof source === 'string');
+  if (isUnderNodeModules(filename)) {
+    throw new ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING(filename);
+  }
+```
+
+The drivers contain JavaScript syntax,
+so newly frozen `.mjs` copies run without a type-stripping step.
+The failed frozen directory is not rewritten.
+`.frozen-input-native-checks-EjQapl` completes all current child,
+host,
+retention and hook cases.
+This is a fixture packaging correction,
+not a production bootstrap or Node patch.
+
+### Pre-start phase fixtures distinguish image inspection
+
+The first added pre-start fixture treats every `inspect` argument before terminal inspection as created-container inspection.
+Podman's image-inspection command also contains that token.
+The fixture therefore tries to read `inspect-created.stdout` before it exists and receives `ENOENT`.
+This is a fixture-stage selection failure,
+not evidence that the bootstrap bypasses a startup gate.
+
+The corrected fixture also requires the exact `inspect-created.command.json` record.
+`input-final-startup-signals-wUUrF1` then passes positive startup,
+created-metadata mismatch,
+pre-start bootstrap drift and interruption during create,
+remove and absence verification.
+A positive application marker is observed only after permitted startup.
+Failed pre-start cases have no start command or application marker.
+The fixture's modified bootstrap is its own copy,
+not the frozen production artifact or a host installation.
+
+### Final current-artifact verification
+
+The final frozen bootstrap is 69196 bytes with SHA-256
+`b83a852e6a1dc203a5df1185a257a34db9c20a4ac661dc649359bb876afd46f7`.
+Its current application manifest remains
+`b0495c956322e7b32c424f78f5d641c7377ba5acc535741f40aa10a669c0bcdb`.
+Separately read launch `e65934692b540d8c0e6b7f5f3af17774af5520d1a1494b44acd1ce15f0c9070f`
+produces the unchanged pinned-corpus unqualified input serialization,
+with a one-byte comparator control and independent output/absence verification.
+Current native qualification reruns the child,
+host,
+retention,
+hook,
+file-race,
+collision and signal-phase controls against those bytes.
+The committed CLI suite also exercises unexpected-fault exit `5` without a private error excerpt.
+
+The complete default unit suite records 631 expected and observed test-entry processes on Node `v26.8.2`.
+After scoped terminal-newline reconciliation,
+fresh builds,
+types,
+unit tests and lint still pass,
+and generated bootstrap/application-manifest bytes match the same frozen identities.
+This is not independent parser correctness,
+hostile-host immunity or exhaustive portable native CI coverage.
+Ownership and qualification limits are explicit in
+`package/module/translation-repair/producer-input-verification.md`.
+
+Final private proof `input-runner-proof-kIIDf7` contains 9429 hash-verified copied files.
+Only 75 independently identified stopped task containers are removed afterward;
+every ID is checked absent.
+The unrelated container,
+all worktrees,
+proof roots,
+frozen artifacts,
+corpus data and owner lockfile are preserved.
+No installed dependency patch or external filing is made.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.

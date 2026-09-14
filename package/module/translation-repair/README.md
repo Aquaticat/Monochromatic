@@ -1454,12 +1454,19 @@ The host owns private output creation,
 native creation inspection,
 bounded start/cleanup and output verification;
 the child checks context and runtime bytes before importing `producer-prepare-app.mjs`.
-A real pinned-corpus CLI run reconstructs the unchanged 40-parent input artifact and verifies container removal.
+The tested frozen CLI reconstructs the unchanged 40-parent input artifact on the pinned corpus,
+with byte equality to the prior native serialization and independent container-absence verification.
 This is unqualified input reconstruction,
 not a reviewed root,
 phase,
 writer plan or publication result.
-Negative gate/lifecycle coverage and final package verification remain open.
+Current-artifact native qualification exercises pre-import and pre-start refusals,
+output retention,
+file replacement,
+exclusive collision and interruption/cleanup boundaries.
+The committed CLI tests and private native qualification suites have distinct owners and scopes;
+see [`producer-input-verification.md`](producer-input-verification.md).
+Native qualification is not presented as exhaustive package-path or portable CI regression coverage.
 Package `test:unit` depends on the separate bootstrap build.
 For explicitly prebuilt artifacts,
 `--skip-deps` skips task dependencies;
