@@ -1,0 +1,422 @@
+diff --git a/pnpm/crates/package-manager/src/add.rs b/pnpm/crates/package-manager/src/add.rs
+index 4130dbb..2943e6f 100644
+--- a/pnpm/crates/package-manager/src/add.rs
++++ b/pnpm/crates/package-manager/src/add.rs
+@@ -8,6 +8,8 @@ use specifier::{normalized_save_specifier, resolve_added_dependency, workspace_p
+ 
+ mod registry;
+ 
++mod named_registry;
++
+ mod aliasless;
+ 
+ mod manifest;
+@@ -38,7 +40,8 @@ use pnpm_reporter::Reporter;
+ use pnpm_resolving_jsr_specifier_parser::ParseJsrSpecifierError;
+ use pnpm_resolving_local_resolver::ResolveLocalError;
+ use pnpm_resolving_npm_resolver::{
+-    InMemoryPackageMetaCache, PackumentFetchLocker, PickPackageError, shared_packument_fetch_locker,
++    InMemoryPackageMetaCache, MergeNamedRegistriesError, PackumentFetchLocker,
++    ParseNamedRegistrySpecifierError, PickPackageError, shared_packument_fetch_locker,
+ };
+ use pnpm_resolving_resolver_base::{GitResolveError, WorkspacePackages};
+ use pnpm_tarball::MemCache;
+@@ -172,6 +175,17 @@ pub enum AddError {
+     #[diagnostic(transparent)]
+     ParseJsrSpecifier(#[error(source)] ParseJsrSpecifierError),
+ 
++    /// A named-registry add selector (`<prefix>:<name>`) whose package name
++    /// npm would reject. Kept as the diagnostic the parser raised, so the
++    /// add reports the same code an install of the same specifier does.
++    #[diagnostic(transparent)]
++    ParseNamedRegistrySpecifier(#[error(source)] ParseNamedRegistrySpecifierError),
++
++    /// A `registries` entry maps its prefix to an unusable URL or a
++    /// reserved name, read while matching an add selector's prefix.
++    #[diagnostic(transparent)]
++    InvalidNamedRegistry(#[error(source)] MergeNamedRegistriesError),
++
+     /// `minimumReleaseAgeExclude` contained an invalid rule.
+     #[display("Invalid value in minimumReleaseAgeExclude: {_0}")]
+     #[diagnostic(code(ERR_PNPM_INVALID_MINIMUM_RELEASE_AGE_EXCLUDE))]
+diff --git a/pnpm/crates/package-manager/src/add/named_registry.rs b/pnpm/crates/package-manager/src/add/named_registry.rs
+new file mode 100644
+index 0000000..c119672
+--- /dev/null
++++ b/pnpm/crates/package-manager/src/add/named_registry.rs
+@@ -0,0 +1,82 @@
++use super::{
++    AddError, AddOptions, AddResolution,
++    registry::{RegistryPickTarget, pick_saved_registry_range},
++};
++use pnpm_config::Config;
++use pnpm_package_manifest::PackageManifest;
++use pnpm_resolving_npm_resolver::{
++    NamedRegistryPackageSpec, merge_named_registries,
++    parse_named_registry_specifier_to_registry_package_spec,
++};
++use std::collections::{HashMap, HashSet};
++
++/// A `pacquet add <prefix>:[@<scope>/]<name>[@<selector>]` argument whose
++/// `<prefix>` names a registry: the `prefix` of a `registries` entry in
++/// `pnpm-workspace.yaml`, or a built-in one (`gh`, `npmjs`).
++///
++/// The package name sits inside the prefix, so the manifest entry is keyed
++/// by it rather than by the text before the first `@`, and the saved
++/// specifier is rendered back under the prefix with the picked version
++/// pinned: `pacquet add work:@corp/lib@^2.0.0` records
++/// `"@corp/lib": "work:^2.1.3"`, as the TypeScript CLI does.
++pub(super) struct NamedRegistrySelector {
++    spec: NamedRegistryPackageSpec,
++    registry: String,
++}
++impl NamedRegistrySelector {
++    /// `Ok(None)` for an argument whose prefix names no known registry, so
++    /// the caller falls through to the other selector shapes.
++    pub(super) fn parse(selector: &str, config: &Config) -> Result<Option<Self>, AddError> {
++        let registries = named_registries(config)?;
++        let known: HashSet<String> = registries.keys().cloned().collect();
++        let Some(spec) =
++            parse_named_registry_specifier_to_registry_package_spec(selector, &known, None, "latest")
++                .map_err(AddError::ParseNamedRegistrySpecifier)?
++        else {
++            return Ok(None);
++        };
++        let Some(registry) = registries.get(&spec.registry_name).cloned() else {
++            return Ok(None);
++        };
++        Ok(Some(Self { spec, registry }))
++    }
++
++    pub(super) fn package_name(&self) -> &str {
++        &self.spec.spec.name
++    }
++
++    /// The `<prefix>:<range>` specifier to save, or `None` when the named
++    /// registry has no version matching the selector.
++    pub(super) async fn save_specifier(
++        &self,
++        prev_specifier: Option<&str>,
++        add: AddOptions<'_>,
++        manifest: &PackageManifest,
++        resolution: &AddResolution<'_>,
++    ) -> Result<Option<String>, AddError> {
++        let range = pick_saved_registry_range(
++            RegistryPickTarget {
++                package_name: self.package_name(),
++                spec: &self.spec.spec,
++                registry: &self.registry,
++                typed_spec: &self.spec.spec.fetch_spec,
++                prev_specifier,
++            },
++            add,
++            manifest,
++            resolution,
++        )
++        .await?;
++        Ok(range.map(|range| format!("{}:{range}", self.spec.registry_name)))
++    }
++}
++/// The built-in named registries with the configured ones layered on top,
++/// validated the way the install validates them.
++fn named_registries(config: &Config) -> Result<HashMap<String, String>, AddError> {
++    let user_defined: HashMap<String, String> = config
++        .registries_by_prefix
++        .iter()
++        .map(|(name, url)| (name.clone(), url.clone()))
++        .collect();
++    merge_named_registries(&user_defined).map_err(AddError::InvalidNamedRegistry)
++}
+diff --git a/pnpm/crates/package-manager/src/add/registry.rs b/pnpm/crates/package-manager/src/add/registry.rs
+index bb41573..c1ebe78 100644
+--- a/pnpm/crates/package-manager/src/add/registry.rs
++++ b/pnpm/crates/package-manager/src/add/registry.rs
+@@ -8,8 +8,8 @@ use pnpm_lockfile_preferred_versions::get_preferred_versions_from_lockfile_and_m
+ use pnpm_package_manifest::PackageManifest;
+ use pnpm_registry::RangeSpecStyle;
+ use pnpm_resolving_npm_resolver::{
+-    PickPackageOptions, calc_version_range, infer_range_spec_style, parse_bare_specifier,
+-    pick_package, pick_registry_for_package,
++    PickPackageOptions, RegistryPackageSpec, calc_version_range, infer_range_spec_style,
++    parse_bare_specifier, pick_package, pick_registry_for_package,
+ };
+ 
+ /// The range a brand-new dependency is saved with: its `latest` version
+@@ -69,7 +69,39 @@ pub(super) async fn resolve_explicit_registry_spec(
+     let Some(spec_parsed) = parse_explicit_registry_spec(package_name, spec, &registry) else {
+         return Ok(None);
+     };
+-
++    pick_saved_registry_range(
++        RegistryPickTarget {
++            package_name,
++            spec: &spec_parsed,
++            registry: &registry,
++            typed_spec: spec,
++            prev_specifier,
++        },
++        add,
++        manifest,
++        resolution,
++    )
++    .await
++}
++/// What a registry pick resolves, and against which registry.
++pub(super) struct RegistryPickTarget<'s> {
++    pub(super) package_name: &'s str,
++    pub(super) spec: &'s RegistryPackageSpec,
++    pub(super) registry: &'s str,
++    /// The selector as typed, whose range operator the saved range keeps.
++    pub(super) typed_spec: &'s str,
++    pub(super) prev_specifier: Option<&'s str>,
++}
++/// Pick `target.spec` from `target.registry` and render the manifest range
++/// the picked version is saved with, or `None` when no version matches.
++pub(super) async fn pick_saved_registry_range(
++    target: RegistryPickTarget<'_>,
++    add: AddOptions<'_>,
++    manifest: &PackageManifest,
++    resolution: &AddResolution<'_>,
++) -> Result<Option<String>, AddError> {
++    let RegistryPickTarget { package_name, spec: spec_parsed, registry, typed_spec, prev_specifier } =
++        target;
+     let policy = PickPolicy::from_config(add.config).map_err(AddError::MinimumReleaseAgeExclude)?;
+     // Bias the pick toward versions already present in the workspace, so a
+     // dedup pick matches what the install locks (e.g. a sibling already on
+@@ -90,12 +122,12 @@ pub(super) async fn resolve_explicit_registry_spec(
+     );
+     let opts = explicit_registry_pick_options(
+         add.config,
+-        &registry,
++        registry,
+         &policy,
+         preferred_versions.get(package_name),
+     );
+ 
+-    let pick = pick_package(&ctx, &spec_parsed, &opts).await
++    let pick = pick_package(&ctx, spec_parsed, &opts).await
+         .map_err(|error| AddError::ResolveSpec(Box::new(error)))?;
+     let Some(picked) = pick.picked_package else {
+         return Ok(None);
+@@ -104,9 +136,9 @@ pub(super) async fn resolve_explicit_registry_spec(
+     Ok(Some(saved_registry_range(
+         &picked.version,
+         package_name,
+-        &registry,
++        registry,
+         prev_specifier,
+-        spec,
++        typed_spec,
+         add.range_spec_style,
+     )))
+ }
+diff --git a/pnpm/crates/package-manager/src/add/specifier.rs b/pnpm/crates/package-manager/src/add/specifier.rs
+index 3f4cc3e..93f306d 100644
+--- a/pnpm/crates/package-manager/src/add/specifier.rs
++++ b/pnpm/crates/package-manager/src/add/specifier.rs
+@@ -2,6 +2,7 @@ use super::{
+     AddError, AddOptions, AddResolution, AddResolveInputs,
+     aliasless::{AliaslessDependency, resolve_aliasless_specifier},
+     manifest::apply_catalog_decision,
++    named_registry::NamedRegistrySelector,
+     registry::{pick_latest_range, resolve_explicit_registry_spec},
+ };
+ use crate::{CatalogModeDep, decide_catalog_outcome};
+@@ -70,10 +71,11 @@ pub(super) async fn resolve_added_dependency(
+         warning: outcome.warning,
+     })
+ }
+-/// A selector as parsed: its protocol, and the package an aliasless
+-/// specifier names once resolved.
++/// A selector as parsed: its protocol, the named registry its prefix
++/// routes to, and the package an aliasless specifier names once resolved.
+ pub(super) struct AddSelector {
+     protocol: Option<ProtocolSelector>,
++    named_registry: Option<NamedRegistrySelector>,
+     aliasless: Option<AliaslessDependency>,
+ }
+ impl AddSelector {
+@@ -85,28 +87,36 @@ impl AddSelector {
+         let parsed =
+             pnpm_resolving_parse_wanted_dependency::parse_wanted_dependency(package_selector);
+         let protocol = ProtocolSelector::parse(package_selector)?;
++        // Only an alias-less argument can carry a registry prefix: in
++        // `foo@work:@corp/lib` the text before the first `@` is the alias.
++        let named_registry = match (parsed.alias.as_deref(), protocol.as_ref()) {
++            (None, None) => NamedRegistrySelector::parse(package_selector, inputs.add.config)?,
++            _ => None,
++        };
+         let aliasless = match (parsed.alias.as_deref(), parsed.bare_specifier.as_deref()) {
+-            (None, Some(specifier)) if protocol.is_none() => {
++            (None, Some(specifier)) if protocol.is_none() && named_registry.is_none() => {
+                 resolve_aliasless_specifier(specifier, inputs, manifest).await?
+             }
+             _ => None,
+         };
+-        Ok(Self { protocol, aliasless })
++        Ok(Self { protocol, named_registry, aliasless })
+     }
+ 
+     fn package_name<'s>(&'s self, package_selector: &'s str) -> &'s str {
+-        match (self.aliasless.as_ref(), self.protocol.as_ref()) {
+-            (Some(dep), _) => dep.package_name.as_str(),
+-            (None, Some(protocol)) => protocol.package_name(),
+-            (None, None) => split_name_spec(package_selector).0,
++        match (self.aliasless.as_ref(), self.protocol.as_ref(), self.named_registry.as_ref()) {
++            (Some(dep), _, _) => dep.package_name.as_str(),
++            (None, Some(protocol), _) => protocol.package_name(),
++            (None, None, Some(named)) => named.package_name(),
++            (None, None, None) => split_name_spec(package_selector).0,
+         }
+     }
+ 
+     fn explicit_spec<'s>(&'s self, package_selector: &'s str) -> Option<&'s str> {
+-        match (self.aliasless.as_ref(), self.protocol.as_ref()) {
+-            (Some(dep), _) => Some(dep.manifest_specifier.as_str()),
+-            (None, Some(protocol)) => protocol.explicit_spec(package_selector),
+-            (None, None) => split_name_spec(package_selector).1,
++        match (self.aliasless.as_ref(), self.protocol.as_ref(), self.named_registry.as_ref()) {
++            (Some(dep), _, _) => Some(dep.manifest_specifier.as_str()),
++            (None, Some(protocol), _) => protocol.explicit_spec(package_selector),
++            (None, None, Some(_)) => Some(package_selector),
++            (None, None, None) => split_name_spec(package_selector).1,
+         }
+     }
+ }
+@@ -173,6 +183,12 @@ pub(super) async fn bare_save_specifier(
+             .await?
+             .unwrap_or_else(|| package_selector.to_string()));
+     }
++    if let Some(named) = selector.named_registry.as_ref() {
++        return Ok(named
++            .save_specifier(prev_specifier, inputs.add, manifest, inputs.resolution)
++            .await?
++            .unwrap_or_else(|| package_selector.to_string()));
++    }
+     match (explicit_spec, prev_specifier) {
+         (Some(spec), prev) => Ok(resolve_explicit_registry_spec(
+             package_name,
+diff --git a/pnpm/crates/package-manager/src/add/tests.rs b/pnpm/crates/package-manager/src/add/tests.rs
+index 2192c57..463161c 100644
+--- a/pnpm/crates/package-manager/src/add/tests.rs
++++ b/pnpm/crates/package-manager/src/add/tests.rs
+@@ -200,6 +200,85 @@ async fn add_jsr_selector(selector: &str) -> Option<String> {
+     saved_dependency_specifier(&manifest, "@pnpm-e2e/foo")
+ }
+ 
++/// Run `pacquet add <selector>` with `package_name` served only by a
++/// registry declared under the `work` prefix, and report the specifier the
++/// manifest saves for `package_name`. The default registry is mocked too,
++/// expecting no request: the prefix must route every lookup.
++async fn add_named_registry_selector(selector: &str, package_name: &str) -> Option<String> {
++    let dir = tempdir().unwrap();
++    let project_root = dir.path().join("project");
++    let modules_dir = project_root.join("node_modules");
++    let virtual_store_dir = modules_dir.join(".pacquet");
++    std::fs::create_dir_all(&project_root).unwrap();
++
++    let mut manifest = PackageManifest::create_if_needed(project_root.join("package.json"))
++        .expect("create manifest");
++
++    let mut default_registry = mockito::Server::new_async().await;
++    let default_requests = default_registry
++        .mock("GET", mockito::Matcher::Any)
++        .expect(0)
++        .create_async()
++        .await;
++
++    let encoded_name = package_name.replace('/', "%2F");
++    let mut work_registry = mockito::Server::new_async().await;
++    let work_registry_url = format!("{}/", work_registry.url());
++    let _work_latest = work_registry
++        .mock("GET", format!("/{encoded_name}/latest").as_str())
++        .with_status(200)
++        .with_header("content-type", "application/json")
++        .with_body(version_body(package_name, &work_registry_url))
++        .create_async()
++        .await;
++    let _work_packument = work_registry
++        .mock("GET", format!("/{encoded_name}").as_str())
++        .with_status(200)
++        .with_header("content-type", "application/json")
++        .with_body(package_body(package_name, &work_registry_url))
++        .create_async()
++        .await;
++
++    let mut config = Config::new();
++    config.store_dir = dir.path().join("pacquet-store").into();
++    config.modules_dir = modules_dir;
++    config.virtual_store_dir = virtual_store_dir;
++    config.registry = format!("{}/", default_registry.url());
++    config.registries_by_prefix.insert("work".to_string(), work_registry_url);
++    config.minimum_release_age = None;
++    let config = config.leak();
++
++    let http_client = ThrottledClient::default();
++    let resolved_packages = ResolvedPackages::default();
++    let package_names = [selector.to_string()];
++    Add {
++        manifest: &mut manifest,
++        options: crate::AddOptions {
++            resolved_packages: &resolved_packages,
++            http_client: &http_client,
++            config,
++            lockfile: None,
++            lockfile_path: None,
++            package_names: &package_names,
++            range_spec_style: RangeSpecStyle::Major,
++            lockfile_only: true,
++        },
++        resources: crate::AddResources {
++            tarball_mem_cache: Arc::default(),
++            http_client_arc: Arc::new(ThrottledClient::default()),
++            dependency_groups: Some([DependencyGroup::Prod]),
++            save_catalog_name: None,
++            supported_architectures: None,
++        },
++    }
++    .run::<SilentReporter>()
++    .await
++    .unwrap_or_else(|error| panic!("add {selector} should succeed: {error}"));
++
++    default_requests.assert_async().await;
++    saved_dependency_specifier(&manifest, package_name)
++}
++
+ fn scoped_version_body(registry_url: &str) -> String {
+     version_body("@private/foo", registry_url)
+ }
+diff --git a/pnpm/crates/package-manager/src/add/tests/installation.rs b/pnpm/crates/package-manager/src/add/tests/installation.rs
+index 4ffeb95..f7965a0 100644
+--- a/pnpm/crates/package-manager/src/add/tests/installation.rs
++++ b/pnpm/crates/package-manager/src/add/tests/installation.rs
+@@ -1,6 +1,6 @@
+ use super::{
+     super::{Add, AddError},
+-    add_jsr_selector, add_npm_selector, package_body,
++    add_jsr_selector, add_named_registry_selector, add_npm_selector, package_body,
+ };
+ use crate::{ResolvedPackages, add::specifier::ProtocolSelector};
+ use pnpm_config::Config;
+@@ -81,6 +81,21 @@ async fn add_saves_an_npm_selector_without_a_version_at_the_default_pin() {
+     assert_eq!(add_npm_selector("npm:foo").await, Some("^1.0.0".to_string()));
+ }
+ #[tokio::test]
++async fn add_keys_a_named_registry_selector_by_the_package_inside_the_prefix() {
++    for (selector, package_name) in [
++        ("work:@corp/lib", "@corp/lib"),
++        ("work:@corp/lib@^1.0.0", "@corp/lib"),
++        ("work:lib", "lib"),
++        ("work:lib@^1.0.0", "lib"),
++    ] {
++        assert_eq!(
++            add_named_registry_selector(selector, package_name).await,
++            Some("work:^1.0.0".to_string()),
++            "{selector}",
++        );
++    }
++}
++#[tokio::test]
+ async fn add_reuses_shared_packument_state_for_every_selector_path() {
+     #[derive(Default)]
+     struct PackumentRequestState {
