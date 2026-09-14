@@ -15,6 +15,10 @@ Publish `@monochromatic-dev/oxlint-plugin-tsdoc`,
 The owner judges them below public-release quality.
 The Hetzner server managed by Coolify is available but not a constraint.
 
+Scope widened by the owner on 2026-09-14:
+ the registry immediately reflects every change of every workspace package,
+ not only those three.
+
 ## Measured facts (2026-09-14)
 
 - `Aquaticat/Monochromatic` is public on GitHub (`gh repo view`),
@@ -60,6 +64,29 @@ The Hetzner server managed by Coolify is available but not a constraint.
     pointing the same prefix at `https://registry.invalid/` failed metadata fetch for that package only.
    Lockfile keys become registry-qualified (`@monochromatic-dev/module-logger@mirror:0.4.0`).
    Docs: https://pnpm.io/settings/dependency-resolution (`registries`, `prefix` since 11.23.0).
+- Workspace size (`pnpm list --recursive --depth -1 --json`):
+   154 packages under `package/` plus the root;
+   120 are `"private": true`.
+   Categories include `test-fixture` (11 packages),
+    `webapp-productivity` (6),
+    and `desktop-app` (3).
+- Publish volume for one week of `main` (2026-09-07 to 2026-09-13,
+   script `publish-volume.ts` in the session scratchpad,
+   commits from `git log --name-only`):
+   - 328 commits,
+      of which 75 touched a workspace package directory.
+   - Republishing only directly touched packages:
+      111 publishes.
+   - Adding every dependent through `dependencies`,
+       `peerDependencies`,
+       and `optionalDependencies`:
+      449 publishes.
+   - Adding dependents through `devDependencies` as well:
+      3216 publishes,
+      up to 131 packages in one commit;
+      `config-typescript` has 140 transitive dependents that way
+       and `module-logger` has 130.
+- Daily commit counts on `main` that week peaked at 172 (2026-09-09).
 - `pnpm add 'mirror:@monochromatic-dev/module-logger@^0.4.0'` fails on `12.3.4` with `ERR_PNPM_INVALID_DEPENDENCY_NAME`
    (`dependency with an invalid name: "mirror:"`),
    although the docs show `pnpm add work:@corp/lib@^2.0.0`;
@@ -113,7 +140,13 @@ The Hetzner server managed by Coolify is available but not a constraint.
 
 ## Open questions
 
-- Registry product and host (registry options research running).
+- Which packages count as "every package".
+- Publish trigger and latency ("immediately").
+- Which git refs publish.
+- What counts as a change that republishes a package.
+- How snapshots coexist with npmjs releases of the same package names.
+- Registry product and host (registry options research running,
+   briefed before the scope widened).
 - How the consumer picks up new snapshots.
 - Snapshot version format and retention.
 - CI publish authentication.
