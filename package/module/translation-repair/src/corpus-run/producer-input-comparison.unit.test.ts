@@ -1,5 +1,5 @@
 import { createHash, } from 'node:crypto';
-import { existsSync, promises as fsPromises, watch, } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, promises as fsPromises, watch, } from 'node:fs';
 import childProcess from 'node:child_process';
 import { syncBuiltinESMExports, } from 'node:module';
 import timers from 'node:timers';
@@ -36,7 +36,7 @@ function textList(value: unknown): readonly string[] {
   return entries.map(text);
 }
 
-type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision' | 'ignore-term-after-output' | 'stdout-mode' | 'stderr-mode' | 'stdout-replacement' | 'stderr-replacement';
+type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision' | 'ignore-term-after-output' | 'stdout-mode' | 'stderr-mode' | 'stdout-replacement' | 'stderr-replacement' | 'wrong-created-group' | 'input-directory-mode' | 'output-directory-mode' | 'home-directory-mode' | 'output-directory-symlink' | 'artifact-symlink';
 
 async function fixture(mode: Mode = 'normal') {
   const directory = await mkdtemp(join(tmpdir(), "input-comparison-'quoted'-"));
@@ -51,7 +51,7 @@ async function fixture(mode: Mode = 'normal') {
   // Every fixture path crosses into generated JavaScript through JSON encoding, not shell interpolation.
   const script = `import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
-import {chmod,mkdir,readFile,rename,writeFile} from 'node:fs/promises';
+import {chmod,mkdir,readFile,rename,symlink,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {setTimeout as wait} from 'node:timers/promises';
 const args=process.argv.slice(2);
@@ -84,11 +84,16 @@ else {
  await writeFile(join(output,'complete.json'),JSON.stringify(completion),{mode:0o600});
  await writeFile(join(directory,'verified-completion.json'),JSON.stringify(mode==='wrong-verified-completion'?{...completion,parentCount:39}:completion),{mode:0o600});
  await writeFile(join(directory,'launch.json'),raw,{mode:0o600});
- await writeFile(join(directory,'created.json'),JSON.stringify({version:1,kind:'producer-preparation-input-created',runId,launchSha256:mode==='wrong-created-launch'?'0'.repeat(64):sha(raw),launchBytes:raw.length,uid:mode==='wrong-created-owner'?process.getuid()+1:process.getuid(),gid:process.getgid()}),{mode:0o600});
+ await writeFile(join(directory,'created.json'),JSON.stringify({version:1,kind:'producer-preparation-input-created',runId,launchSha256:mode==='wrong-created-launch'?'0'.repeat(64):sha(raw),launchBytes:raw.length,uid:mode==='wrong-created-owner'?process.getuid()+1:process.getuid(),gid:mode==='wrong-created-group'?process.getgid()+1:process.getgid()}),{mode:0o600});
  await writeFile(join(directory,'cleanup-complete.json'),JSON.stringify({version:1,kind:'producer-preparation-input-cleanup-complete',runId,containerId:'a'.repeat(64),removed:true,absenceChecked:true,interrupted:mode==='cleanup-interrupted'}),{mode:0o600});
  if(mode==='extra-child')await mkdir(join(launch.outputParent,'producer-input-'+randomUUID()),{mode:0o700});
  if(mode==='extra-output')await writeFile(join(output,'unexpected.json'),'{}',{mode:0o600});
  if(mode==='home-content')await writeFile(join(output,'home','unexpected'),'fixture',{mode:0o600});
+ if(mode==='input-directory-mode')await chmod(directory,0o755);
+ if(mode==='output-directory-mode')await chmod(output,0o755);
+ if(mode==='home-directory-mode')await chmod(join(output,'home'),0o755);
+ if(mode==='output-directory-symlink'){await rename(output,output+'.detached');await symlink(output+'.detached',output);}
+ if(mode==='artifact-symlink'){const target=join(directory,'artifact.detached');await rename(artifactPath,target);await symlink(target,artifactPath);}
  if(mode==='stderr-on-success')console.error('fixture diagnostic');
  if(mode==='wait-after-output'||mode==='ignore-term-after-output'){if(mode==='ignore-term-after-output')process.on('SIGTERM',()=>{});await writeFile(join(directory,'ready.txt'),'ready',{mode:0o600});await wait(5000);}
  if(mode==='exit-after-output'||mode==='failure-collision')process.exitCode=6;
@@ -207,7 +212,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     }
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
   } })),
-  ...(['malformed-stdout', 'wrong-stdout-directory', 'extra-stdout-key', 'extra-child', 'no-child', 'child-file', 'bad-run-id', 'extra-output', 'home-content', 'artifact-mode', 'artifact-hash', 'wrong-completion-run', 'wrong-completion-launch', 'extra-completion-key', 'wrong-created-launch', 'wrong-created-owner', 'wrong-verified-completion', 'cleanup-interrupted', 'stderr-on-success', 'stdout-mode', 'stderr-mode', 'stdout-replacement', 'stderr-replacement'] as const).map(mode => it({ name: `refuses retained output boundary ${mode}`, fn: async () => {
+  ...(['malformed-stdout', 'wrong-stdout-directory', 'extra-stdout-key', 'extra-child', 'no-child', 'child-file', 'bad-run-id', 'extra-output', 'home-content', 'artifact-mode', 'artifact-hash', 'wrong-completion-run', 'wrong-completion-launch', 'extra-completion-key', 'wrong-created-launch', 'wrong-created-owner', 'wrong-verified-completion', 'cleanup-interrupted', 'stderr-on-success', 'stdout-mode', 'stderr-mode', 'stdout-replacement', 'stderr-replacement', 'wrong-created-group', 'input-directory-mode', 'output-directory-mode', 'home-directory-mode', 'output-directory-symlink', 'artifact-symlink'] as const).map(mode => it({ name: `refuses retained output boundary ${mode}`, fn: async () => {
     await using f = await fixture(mode);
     const error = await rejected(f.request());
     expect(error.kind).toBe('output');
@@ -222,7 +227,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       expect(observation.completeEnumeration).toBe(false);
     }
   } })),
-  ...(['relative-base', 'wrong-bootstrap-name', 'zero-extent', 'unsafe-extent', 'uppercase-digest', 'null-reference', 'invalid-signal', 'public-output-parent'] as const).map(change => it({ name: `refuses comparison contract ${change} before namespace creation`, fn: async () => {
+  ...(['relative-base', 'wrong-bootstrap-name', 'zero-extent', 'unsafe-extent', 'uppercase-digest', 'null-reference', 'invalid-signal', 'public-output-parent', 'non-string-path', 'nul-path', 'unnormalized-path', 'non-string-digest', 'short-digest', 'fractional-extent', 'non-number-extent'] as const).map(change => it({ name: `refuses comparison contract ${change} before namespace creation`, fn: async () => {
     await using f = await fixture();
     const request = f.request();
     if (change === 'relative-base') Reflect.set(request, 'baseLaunchPath', 'base-launch.json');
@@ -232,11 +237,29 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     else if (change === 'uppercase-digest') Reflect.set(request, 'reference', { ...artifactIdentity, sha256: 'A'.repeat(64) });
     else if (change === 'null-reference') Reflect.set(request, 'reference', null);
     else if (change === 'invalid-signal') Reflect.set(request, 'signal', {});
+    else if (change === 'non-string-path') Reflect.set(request, 'baseLaunchPath', 1);
+    else if (change === 'nul-path') Reflect.set(request, 'baseLaunchPath', `${f.baseLaunchPath}\0`);
+    else if (change === 'unnormalized-path') Reflect.set(request, 'baseLaunchPath', `${f.directory}/./base-launch.json`);
+    else if (change === 'non-string-digest') Reflect.set(request, 'reference', { ...artifactIdentity, sha256: 1 });
+    else if (change === 'short-digest') Reflect.set(request, 'reference', { ...artifactIdentity, sha256: '0' });
+    else if (change === 'fractional-extent') Reflect.set(request, 'reference', { ...artifactIdentity, bytes: 1 / 2 });
+    else if (change === 'non-number-extent') Reflect.set(request, 'reference', { ...artifactIdentity, bytes: '1' });
     else await chmod(f.output, 0o755);
     const error = await rejected(request);
     expect(error.kind).toBe('contract');
     expect(await readdir(f.output)).toEqual([]);
   } })),
+  it({ name: 'refuses equal-extent base-launch byte drift before creating a namespace', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const changed = Buffer.from(f.baseBytes);
+    changed[0] = CORRUPT_OPENING_BYTE;
+    await writeFile(f.baseLaunchPath, changed);
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(error.directory).toBeUndefined();
+    expect(await readdir(f.output)).toEqual([]);
+  } }),
   it({ name: 'refuses an already aborted request without creating a comparison namespace', fn: async () => {
     await using f = await fixture();
     const controller = new AbortController();
@@ -273,6 +296,43 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     } });
     expect(reference.sha256).toBe('0'.repeat(64));
     expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
+  } }),
+  it({ name: 'owns launch locators and identity before callback mutation of the request', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    const expected = { ...request.baseLaunchIdentity };
+    Reflect.set(request, 'l', { ...l, debug(message: string) {
+      Reflect.set(request.baseLaunchIdentity, 'bytes', 0);
+      Reflect.set(request.baseLaunchIdentity, 'sha256', '0'.repeat(64));
+      Reflect.set(request, 'baseLaunchPath', '/unowned-q7z9k2/base.json');
+      Reflect.set(request, 'bootstrapPath', '/unowned-q7z9k2/producer-prepare.mjs');
+      l.debug(message);
+    } });
+    const result = await accepted(request);
+    expect(result.baseLaunchIdentity).toEqual(expected);
+    expect(request.baseLaunchIdentity.bytes).toBe(0);
+    expect(request.baseLaunchPath).toBe('/unowned-q7z9k2/base.json');
+    expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
+  } }),
+  it({ name: 'rechecks the dedicated parent after a single-child association is recorded', fn: async ctx => {
+    await using f = await fixture();
+    const changed = ctx.sinon.spy(function addLateChild() {});
+    const logger = { ...l, info(message: string) {
+      if (message.includes('retained native child observation single')) {
+        const entries = readdirSync(f.output);
+        const [name] = entries;
+        if (entries.length !== 1 || name === undefined) throw new Error('Expected one owned comparison directory');
+        mkdirSync(join(f.output, name, 'producer-runs', 'unexpected-late-child'), { mode: 0o700 });
+        changed();
+      }
+      l.info(message);
+    } };
+    const error = await rejected({ ...f.request(), l: logger });
+    expect(changed.callCount).toBe(1);
+    expect(error.kind).toBe('output');
+    if (error.directory === undefined) throw new Error('Expected retained late-child refusal');
+    expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('single');
+    expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
   } }),
   it({ name: 'refuses a revoked error proxy thrown by a caller getter without leaking it or creating output', fn: async () => {
     await using f = await fixture();
