@@ -1471,6 +1471,31 @@ Package `test:unit` depends on the separate bootstrap build.
 For explicitly prebuilt artifacts,
 `--skip-deps` skips task dependencies;
 `--no-deps` only skips automatic dependency preparation.
+
+The separate inert `producer-input-comparison.mjs` entry exports `runProducerInputComparison`.
+It owns request primitives,
+authenticates the fixed bootstrap launch,
+derives only a private `outputParent`,
+then verifies and compares the actual persisted input file.
+A mismatch retains the output and `comparison.json` before rejecting.
+Successful results and `ProducerInputComparisonError` expose `loggerCallbackFailures`:
+a detached frozen list of callback names observed to throw,
+in canonical logger order.
+Logger exceptions do not cancel the comparison or replace its primary failure;
+explicit `AbortSignal` cancellation remains independent.
+The snapshot follows terminal logging and failure-record activity.
+It is not written retroactively into `comparison.json` or `failure.json`.
+Only an actual failure-record I/O refusal may supersede the primary failure as `storage`.
+During initial request capture,
+getter failures become fresh contract refusals;
+a caught comparison-shaped Error does not supply operation kind,
+directory or callback observations.
+The observer neither proves message delivery nor contains blocking callbacks,
+process exit,
+filesystem mutation or unobserved promises returned from void level callbacks.
+The [comparison work record](../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md)
+separates implemented behavior from current qualification and remaining work.
+
 `readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
 while allowing structural planning without inventing model evidence.
 

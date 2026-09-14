@@ -28,6 +28,16 @@ signal and environment-isolation behavior.
 `src/message-names-only.unit.test.ts` owns the diagnostic-vocabulary inventory.
 These tests are not described as exhaustive native lifecycle or package-path coverage.
 
+`src/corpus-run/producer-input-comparison.unit.test.ts` imports the dedicated built comparison entry.
+Its fixture bootstrap exercises persistence,
+output verification,
+error precedence,
+caller ownership,
+interruption and callback observation without a provider call.
+Callback failures belong to frozen terminal result/error snapshots,
+not previously synchronized comparison or failure records.
+A fixture bootstrap is not qualification through the actual input CLI.
+
 ## Native qualification owner
 
 The reviewer of a frozen launch contract owns native qualification for that exact artifact and host profile.
@@ -79,6 +89,13 @@ It identifies frozen artifacts,
 private qualification source hashes,
 full-suite results,
 retention manifests and cleanup evidence.
+The [comparison work record](../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md)
+separately identifies the current comparison runtime and its native telemetry cases.
+That verification reuses the unchanged qualified Task47 bootstrap/application profile,
+not its old parent-comparison implementation.
+It covers matched/mismatched bytes,
+throwing callbacks and cancellation after successful child completion;
+it does not replace the broader lifecycle qualification inventory.
 The native platform and tooling investigations are in
 [`translation-repair-native-runtime-bundling.md`](../../../doc/troubleshooting/translation-repair-native-runtime-bundling.md).
 

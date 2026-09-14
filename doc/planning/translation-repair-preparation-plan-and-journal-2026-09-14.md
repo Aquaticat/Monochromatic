@@ -506,9 +506,31 @@ valid-request logger-getter refusal,
 combined multi-phase observations,
 post-log cancellation plus a callback throw,
 and unchanged persisted record schemas.
-Those additions are not yet verified.
-Current native qualification and integration guard controls remain required;
-no new root/phase or paid acquisition authority is established.
+Those additions pass fresh R4 normal/bootstrap builds,
+types,
+focused artifact tests and full-scope lint.
+
+The current parent runtime `.frozen-observed-comparison-runtime-U8mJbo`
+contains 164 manifest-listed files.
+Its manifest is 28415 bytes with SHA-256
+`ac956a8102929d1a81e22dd29587af8172b18f531134b28e896644292e391d60`.
+The frozen native driver `.frozen-observed-comparison-native-mcSCd6/run.mjs`
+is 8382 bytes with SHA-256
+`7ce7fdf8a81516c778b58d552709b667aa7d370d5753c35b183547f17d1784e2`.
+`observed-input-comparison-native-t17RdK` verifies actual CLI runs for ordinary match/mismatch,
+matching bytes with persistent debug/info throws,
+mismatch with a throwing warn getter,
+and cancellation plus an info throw after child completion.
+Every output retains the independently bound 2821409-byte input artifact and completion.
+The callback snapshots are respectively `[]`,
+`[]`,
+`['debug', 'info']`,
+`['warn']` and `['info']`.
+The post-completion cancellation retains matching comparison bytes but returns `interruption`.
+The unchanged Task47 bootstrap/runtime remains `WWrgVV`/`fOagX0`;
+these runs do not requalify a different child profile or the complete lifecycle matrix.
+Integration guard controls and the final verification/retention record remain pending.
+No new root/phase or paid acquisition authority is established.
 
 ## Earlier verified checkpoint: task50
 
@@ -536,7 +558,9 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Integrate the accepted shared observation facade in task54's persistent-logger retention remediation.
+Finish task54's integrated callback-observation proof,
+including the new ingress/terminal cases and current native comparison.
+Do not replace the shared facade with another logging executor.
 Then resume task51's current comparison verification:
 zero full-scope lint,
 complete default unit-entry evidence,
