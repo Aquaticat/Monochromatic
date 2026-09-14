@@ -91,9 +91,16 @@ The session configuration lives in <https://github.com/Aquaticat/labwc-config>.
   `vm.swappiness` raised to 150 once zram is active)
   and measure before changing them.
 - **Helper language**:
-  TypeScript CLI packages,
+  TypeScript,
   per `SCR`.
-  The waybar-era `panel-menu` and `wlr-pager` are not ported.
+  The runtime is not fixed to Node:
+  the user asked for Bun,
+  QuickJS,
+  and other runtimes to be evaluated for each workload.
+  Correction:
+  `wlr-pager` and `panel-menu` were first called waybar-era and unported.
+  The live `sfwbar.config` runs `wlr-pager watch` for the 3×3 pager and `panel-menu` for the empty-bar menu,
+  so both are ported with the other helpers.
 - **Configuration home**:
   labwc-config,
   retargeted from the Bazzite rehearsal to CachyOS.
@@ -108,8 +115,10 @@ The session configuration lives in <https://github.com/Aquaticat/labwc-config>.
   system drop-ins,
   default configuration,
   and dependencies.
-- **Node runtime for session helpers**:
-  the pacman `nodejs` package.
+- **Runtime packaging for session helpers**:
+  from a pacman package so it rolls back with the root snapshot.
+  The user's original answer named `nodejs`,
+  then reopened the runtime choice itself.
 
 ## Settled without asking
 
