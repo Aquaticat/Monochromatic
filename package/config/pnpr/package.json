@@ -1,0 +1,7 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/config-pnpr",
+  "private": true,
+  "description": "Coolify deployment of the private pnpr npm registry serving @monochromatic-dev workspace packages.",
+  "type": "module"
+}

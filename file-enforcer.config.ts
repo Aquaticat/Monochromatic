@@ -1777,6 +1777,276 @@ async function generateCargoManifests(): Promise<void> {
   },);
 }
 
+//region pnpr registry config (doc/decision/private-npm-registry.md)
+
+/**
+ Generated pnpr server config consumed by the Coolify deployment and the publish workflow.
+
+ @example
+ ```ts
+ console.log(PNPR_CONFIG_PATH);
+ ```
+ */
+const PNPR_CONFIG_PATH = './package/config/pnpr/config.yaml';
+
+/**
+ Public HTTPS origin of the registry; pnpr also uses it as the OIDC audience.
+
+ @example
+ ```ts
+ console.log(PNPR_PUBLIC_ORIGIN);
+ ```
+ */
+const PNPR_PUBLIC_ORIGIN = 'https://pnpr.c.aquati.cat';
+
+/**
+ Hosted registry name; publishes target `/~<name>/` because workload credentials only accept that path.
+
+ @example
+ ```ts
+ console.log(PNPR_HOSTED_REGISTRY);
+ ```
+ */
+const PNPR_HOSTED_REGISTRY = 'monochromatic-dev';
+
+/**
+ pnpr username the GitHub Actions workload identity maps to.
+
+ @example
+ ```ts
+ console.log(PNPR_PUBLISH_USERNAME);
+ ```
+ */
+const PNPR_PUBLISH_USERNAME = 'pnpr-publish-ci';
+
+/**
+ Scope prefix every published package name must carry, since the hosted registry claims only this scope.
+
+ @example
+ ```ts
+ console.log(PNPR_PACKAGE_SCOPE);
+ ```
+ */
+const PNPR_PACKAGE_SCOPE = '@monochromatic-dev/';
+
+/**
+ Workspace directory prefix whose packages exist only to feed tests and never publish.
+
+ @example
+ ```ts
+ console.log(PNPR_TEST_FIXTURE_DIRECTORY_PREFIX);
+ ```
+ */
+const PNPR_TEST_FIXTURE_DIRECTORY_PREFIX = 'package/test-fixture/';
+
+/**
+ Characters npm allows after the scope; checked by index scan so names can be single-quoted in YAML safely.
+
+ @example
+ ```ts
+ PNPR_PACKAGE_NAME_CHARACTERS.has('-');
+ ```
+ */
+const PNPR_PACKAGE_NAME_CHARACTERS: ReadonlySet<string> = new Set('abcdefghijklmnopqrstuvwxyz0123456789-._~',);
+
+/**
+ Immutable GitHub identity pnpr trusts for keyless publishing; IDs keep trust from following a reused name.
+
+ @example
+ ```ts
+ console.log(PNPR_GITHUB_IDENTITY.repositoryId);
+ ```
+ */
+const PNPR_GITHUB_IDENTITY = {
+  repository: 'Aquaticat/Monochromatic',
+  repositoryId: '710240121',
+  repositoryOwnerId: '66041952',
+  workflowPath: '.github/workflows/pnpr-publish.yml',
+  ref: 'refs/heads/main',
+} as const;
+
+/**
+ Reviewed exclusions for packages that cannot build or publish on GitHub-hosted runners, keyed by package name.
+ Each value is the accepted reason, rendered as a comment in the generated config.
+
+ @example
+ ```ts
+ Object.keys(PNPR_EXCLUDED_PACKAGES);
+ ```
+ */
+const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {};
+
+/**
+ Reports whether a manifest still declares an entry point once `./ts` export subpaths are stripped for publishing.
+
+ @param manifest - Parsed workspace package.json.
+
+ @returns Whether consumers of the published tarball could import or execute anything.
+
+ @example
+ ```ts
+ pnprManifestHasEntryPoint({ manifest: { exports: { './ts': './src/index.ts' } } });
+ // => false
+ ```
+ */
+function pnprManifestHasEntryPoint(
+  { manifest, }: { readonly manifest: Readonly<Record<string, unknown>>; },
+): boolean {
+  const { exports: exportsField, main, module, bin, } = manifest;
+
+  if (typeof exportsField === 'string' && exportsField !== '')
+    return true;
+
+  if (typeof exportsField === 'object' && exportsField !== null) {
+    const exportKeys = Object.keys(exportsField,);
+    const isSubpathMap = exportKeys.some(function isSubpath(key,) {
+      return key.startsWith('.',);
+    },);
+    const publishedKeys = isSubpathMap
+      ? exportKeys.filter(function isNotTsSubpath(key,) {
+        return key !== './ts' && !key.startsWith('./ts/',);
+      },)
+      : exportKeys;
+    if (publishedKeys.length > 0)
+      return true;
+  }
+
+  if ((typeof main === 'string' && main !== '') || (typeof module === 'string' && module !== ''))
+    return true;
+
+  if (typeof bin === 'string')
+    return bin !== '';
+
+  return typeof bin === 'object' && bin !== null && Object.keys(bin,).length > 0;
+}
+
+/**
+ Throws unless a package name is inside the hosted scope and uses only npm name characters.
+
+ @param name - Package name about to be interpolated into single-quoted YAML.
+
+ @throws {Error} When the name is outside the scope or contains other characters.
+
+ @example
+ ```ts
+ assertPnprPackageName({ name: '@monochromatic-dev/module-or-throw' });
+ ```
+ */
+function assertPnprPackageName({ name, }: { readonly name: string; },): void {
+  const unscopedName = name.slice(PNPR_PACKAGE_SCOPE.length,);
+  const hasOnlyNameCharacters = [...unscopedName,].every(function isNameCharacter(character,) {
+    return PNPR_PACKAGE_NAME_CHARACTERS.has(character,);
+  },);
+  if (!name.startsWith(PNPR_PACKAGE_SCOPE,) || unscopedName === '' || !hasOnlyNameCharacters)
+    throw new Error(`pnpr config: package name ${JSON.stringify(name,)} is not a ${PNPR_PACKAGE_SCOPE} name`,);
+}
+
+/**
+ Selects publishable workspace packages and writes the pnpr config listing them for OIDC trust.
+ Excludes test fixtures, entry-less manifests, and reviewed exclusions.
+
+ @throws {Error} When a manifest lacks a name, a name is invalid, or an exclusion names no workspace package.
+
+ @example
+ ```ts
+ await generatePnprConfig();
+ ```
+ */
+async function generatePnprConfig(): Promise<void> {
+  const logger = tagged({ tag: generatePnprConfig.name, l, },);
+  const manifestPaths = (await Array.fromAsync(glob('package/*/*/package.json',),)).toSorted();
+  const workspacePackages = await Promise.all(manifestPaths.map(async function readWorkspacePackage(manifestPath,) {
+    const manifest = JSON.parse(await cat([manifestPath,],),) as Readonly<Record<string, unknown>>;
+    if (typeof manifest.name !== 'string')
+      throw new Error(`pnpr config: ${manifestPath} has no string name`,);
+    return { name: manifest.name, directory: packageDirFromManifest({ manifestPath, },), manifest, };
+  },),);
+
+  const workspaceNames = new Set(workspacePackages.map(function toName(workspacePackage,) {
+    return workspacePackage.name;
+  },),);
+  const staleExclusions = Object.keys(PNPR_EXCLUDED_PACKAGES,).filter(function isStale(name,) {
+    return !workspaceNames.has(name,);
+  },);
+  if (staleExclusions.length > 0)
+    throw new Error(`pnpr config: exclusions name no workspace package: ${staleExclusions.join(', ',)}`,);
+
+  const publishedNames = workspacePackages
+    .filter(function isPublishable(workspacePackage,) {
+      return !workspacePackage.directory.startsWith(PNPR_TEST_FIXTURE_DIRECTORY_PREFIX,)
+        && pnprManifestHasEntryPoint({ manifest: workspacePackage.manifest, },)
+        && !Object.hasOwn(PNPR_EXCLUDED_PACKAGES, workspacePackage.name,);
+    },)
+    .map(function toName(workspacePackage,) {
+      return workspacePackage.name;
+    },)
+    .toSorted();
+  for (const name of [...publishedNames, ...Object.keys(PNPR_EXCLUDED_PACKAGES,),])
+    assertPnprPackageName({ name, },);
+  const exclusionComments = Object.entries(PNPR_EXCLUDED_PACKAGES,).map(function toComment([name, reason,],) {
+    if (reason.includes('\n',) || reason.includes('\r',))
+      throw new Error(`pnpr config: exclusion reason for ${name} must be one line`,);
+    return `#   ${name}: ${reason}`;
+  },);
+  logger.info(`publishing ${publishedNames.length} of ${workspacePackages.length} workspace packages`,);
+
+  await overwrite({
+    dest: PNPR_CONFIG_PATH,
+    content: `# Generated by file-enforcer (generatePnprConfig in file-enforcer.config.ts); edit that source.
+# Decision: doc/decision/private-npm-registry.md
+# Published package count: ${publishedNames.length}
+# Reviewed exclusions:${exclusionComments.length === 0 ? ' none' : `\n${exclusionComments.join('\n',)}`}
+
+storage: /pnpr/storage
+secret: \${PNPR_SECRET}
+
+auth:
+  htpasswd:
+    file: /pnpr/storage/htpasswd
+    max_users: -1
+  oidc:
+    - name: github
+      issuer: https://token.actions.githubusercontent.com
+      audience: ${PNPR_PUBLIC_ORIGIN}
+      workloads:
+        - identity:
+            subject: 'repo:${PNPR_GITHUB_IDENTITY.repository}:ref:${PNPR_GITHUB_IDENTITY.ref}'
+            username: ${PNPR_PUBLISH_USERNAME}
+            claims:
+              repository_id: '${PNPR_GITHUB_IDENTITY.repositoryId}'
+              repository_owner_id: '${PNPR_GITHUB_IDENTITY.repositoryOwnerId}'
+              workflow_ref: '${PNPR_GITHUB_IDENTITY.repository}/${PNPR_GITHUB_IDENTITY.workflowPath}@${PNPR_GITHUB_IDENTITY.ref}'
+          registry: ${PNPR_HOSTED_REGISTRY}
+          packages:
+${publishedNames.map(function toYamlItem(name,) {
+      return `            - '${name}'`;
+    },).join('\n',)}
+
+web:
+  enable: false
+
+registries:
+  ${PNPR_HOSTED_REGISTRY}:
+    type: hosted
+    access: $all
+    packages:
+      '${PNPR_PACKAGE_SCOPE}*':
+        access: $all
+        publish: ${PNPR_PUBLISH_USERNAME}
+        unpublish: ${PNPR_PUBLISH_USERNAME}
+
+defaultRegistry: ${PNPR_HOSTED_REGISTRY}
+
+log:
+  type: stdout
+  format: json
+  level: info
+`,
+  },);
+}
+
+//endregion pnpr registry config
+
 await assertForbiddenRootContextAbsent();
 
 await Promise.all([
@@ -1879,6 +2149,8 @@ ${await cat(['./AGENTS.md',],)}`,
   generatePackageLicenseTexts(),
 
   generateCargoManifests(),
+
+  generatePnprConfig(),
 
   generateResolvedBrowserslistTargets(),
 
