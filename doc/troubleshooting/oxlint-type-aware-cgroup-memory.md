@@ -430,8 +430,63 @@ this failure does not turn those past successes into failed measurements.
 Task50 runs an unchanged-source repetition series before changing controls.
 Its private driver is `repeat-current-plan-lint-20260914.mts`,
 with the same native full-package task and independently created containers.
-Read `preparation-lint-unchanged-series-20260914.json` and each native `report.json`
-before drawing a repeatability conclusion.
+`preparation-lint-unchanged-series-20260914.json` records both completed repetitions:
+`devlint224go1-o1erDi` and `devlint224go1-pw11fL` each report zero findings on 1545 files with 484 rules.
+Their peaks are `2141143040` and `2142064640` bytes,
+with no OOM/PID events or observed swap use.
+The failed invocation therefore does not establish that this source always fails under the profile.
+No control change caused these successful repetitions.
+
+The disposable positive overlay `devlint224go1control-DcuSKU` then fails differently:
+Oxlint is terminated with `SIGABRT` before the designated lint findings are delivered.
+The private Node report records `Allocation failed - JavaScript heap out of memory`,
+trigger `OOMError`,
+Oxlint container PID `36`,
+heap limit `285212672`,
+used heap `226673976` and RSS `654368768` bytes.
+Its executable entry matches both the heap ledger and process sample after canonical path resolution.
+Environment and network sections are absent.
+Container peak is `1475969024` bytes with no cgroup OOM event.
+This is a separate V8 heap failure,
+not a successful positive control or the earlier `tsgolint` memcg kill.
+The restored phase has not run in that failed control sequence.
+
+A further positive control changes only Node old space from `224MiB` to `256MiB`,
+retaining the Go settings,
+full source/rule scope and hard container limits.
+`devlint256go1control-RYeKA9` reaches the hard container limit and records `oom_kill 1`.
+Kernel `CONSTRAINT_MEMCG` names `tsgolint` host PID `3459459`
+inside container `7b07374e750e4f89711918e25eec8eac6584a2bb820e893a517d2b9e553fd9e6`.
+No designated positive findings are delivered.
+The Node-only increase is not a verified workaround.
+
+The next control retains Node old space `256MiB`
+and adds only `--max-semi-space-size=1`.
+The actual Node `26.8.2` executable lists this independent V8 setting in
+`node2682-v8-options-20260914.txt:1034-1035`:
+
+```text
+--max-semi-space-size (max size of a semi-space (in MBytes), the new space consists of two semi-spaces)
+```
+
+The [Node CLI documentation](https://raw.githubusercontent.com/nodejs/node/f2f2c2f246c36bd74f082cb43ecfe830657d81c9/doc/api/cli.md)
+describes its memory/throughput tradeoff.
+Its linked V8 `10.3.129` source is historical reference material,
+not proof of Node `26.8.2` allocator geometry.
+The current control's heap ledger and full lint result must establish what the setting actually does here.
+`devlint256go1control-IS1FdA` delivers exactly `tsdoc(require-param)` and `typescript(no-floating-promises)`
+on 1545 files with 484 rules.
+Native lint exits `1` for those findings;
+the control verifier independently accepts them.
+The actual Oxlint Node PID `36` records heap limit `271581184` bytes.
+Container peak reaches `2147483648` bytes without an OOM/PID event,
+so this does not establish spare memory capacity.
+Hard container limits and the complete rule/source scope remain unchanged.
+
+`verify-preparation-lint-generation-controls-20260914.mts` now runs unchanged-source checks,
+a default-young-space reversal and another designated positive control.
+The reversal is observed without requiring it to fail.
+Read its results before attributing recovery to the semi-space setting or declaring restored verification.
 No new workaround,
 allocation-site diagnosis or upstream filing is established at this checkpoint.
 
