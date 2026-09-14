@@ -121,10 +121,9 @@ pnpm 11 and later delay fresh versions by `minimumReleaseAge`,
 
 ### Packaging fix
 
-`oxlint-plugin-tsdoc` moves its bundled workspace packages to `devDependencies`
- and declares `oxlint`,
- which its declarations import,
- as a peer dependency.
+`oxlint-plugin-tsdoc` moves its bundled workspace packages,
+ `oxlint-plugin-shared` and `ownership-marker-foreign-borrowed`,
+ to `devDependencies`.
 
 ### Verification
 

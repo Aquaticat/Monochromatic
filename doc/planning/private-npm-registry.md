@@ -36,8 +36,11 @@ Scope widened by the owner on 2026-09-14:
       `oxlint-plugin-shared` and `ownership-marker-foreign-borrowed` are bundled.
    - `dependencies` still lists both bundled workspace packages,
       which `pnpm pack` would rewrite to `0.0.1` versions no registry serves.
-   - `dist/final/node/index.d.mts` imports `defineConfig` from `oxlint`,
-      which the manifest does not declare.
+   - Retracted 2026-09-14:
+      an earlier reading said `dist/final/node/index.d.mts` imports `defineConfig` from `oxlint`.
+      That line sits inside the TSDoc `@example` block copied from `src/index.ts` line 50;
+      the search `rg 'import|from'` matched comment text.
+      The only declaration import is `Plugin` from `@oxlint/plugins`.
 - `module-or-throw` has no runtime or declaration imports.
 - `config-typescript` is JSON only,
    extends only its own files,
@@ -304,8 +307,8 @@ Scope widened by the owner on 2026-09-14:
    are untracked (`.gitignore` lines 15 and 16) and never reach CI.
 - Packaging fixes land regardless of registry:
    bundled workspace packages move to `devDependencies`
-   (the rule in `doc/decision/npm-publishing.md`),
-   and `oxlint` becomes a peer dependency of `oxlint-plugin-tsdoc`.
+   (the rule in `doc/decision/npm-publishing.md`).
+   The earlier `oxlint` peer dependency item is withdrawn with the retracted declaration-import fact.
 - `config-typescript` keeps `"private": true`;
    the publish step removes `"private": true` from every packed manifest,
    because `npm publish` refuses private packages.
