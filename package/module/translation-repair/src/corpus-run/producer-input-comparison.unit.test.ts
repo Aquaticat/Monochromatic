@@ -285,7 +285,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.kind).toBe('contract');
     expect(await readdir(f.output)).toEqual([]);
   } }),
-  ...[false, true].map(throwAfterClose => it({ name: `retains cancelled complete output with awaiting-owner logger failure=${throwAfterClose}`, timeout: 30_000, fn: async ctx => {
+  ...([false, true, 'always'] as const).map(throwAfterClose => it({ name: `retains cancelled complete output with awaiting-owner logger failure=${throwAfterClose}`, timeout: 30_000, fn: async ctx => {
     await using f = await fixture('wait-after-output');
     const controller = new AbortController();
     const ready = ctx.sinon.spy(function readyForCancellation() {
@@ -307,13 +307,14 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       },
     };
     const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) {
-      if (throwAfterClose && message.includes('bootstrap interruption observed after native close') && (logged.size === 0)) {
+      if ((throwAfterClose === 'always') || (throwAfterClose && message.includes('bootstrap interruption observed after native close') && (logged.size === 0))) {
         logged.add(message);
         throw new Error('awaiting logging q7z9k2');
       }
       l.warn(message);
     } } });
-    expect(logged.size).toBe(throwAfterClose ? 1 : 0);
+    if (throwAfterClose === 'always') expect(logged.size).toBeGreaterThan(0);
+    else expect(logged.size).toBe(throwAfterClose ? 1 : 0);
     expect(ready.callCount).toBeGreaterThan(0);
     expect(escaped.callCount).toBe(0);
     expect(error.kind).toBe('interruption');
@@ -541,6 +542,88 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(textList(invoked.environmentKeys).toSorted()).toEqual(expectedKeys.toSorted());
     expect(invoked.environmentKeys).not.toContain('PREPARATION_COMPARISON_CANARY');
   } }),
+  //region Persistent caller logging failures cannot replace storage or operation evidence
+  ...(['normal', 'exit-after-output', 'extra-output'] as const).flatMap(mode => [false, true].map(revoked => it({ name: `retains primary ${mode} failure and its record when every warning throws revoked=${revoked}`, fn: async ctx => {
+    await using f = await fixture(mode);
+    const proxy = Proxy.revocable(new Error('private logger q7z9k2'), {});
+    proxy.revoke();
+    const fault = revoked ? proxy.proxy : new Error('private logger q7z9k2');
+    const warning = ctx.sinon.spy(function persistentWarningFailure(_message: string): void {
+      throw fault;
+    });
+    const expectedKind = mode === 'normal' ? 'mismatch' : mode === 'exit-after-output' ? 'bootstrap' : 'output';
+    const [result] = await Promise.allSettled([runProducerInputComparison({
+      ...f.request(),
+      reference: { ...artifactIdentity, sha256: '0'.repeat(64) },
+      l: { ...l, warn: warning },
+    })]);
+    expect(result?.status).toBe('rejected');
+    const [comparisonName] = await readdir(f.output);
+    if (comparisonName === undefined) throw new Error('Expected retained comparison namespace');
+    const directory = join(f.output, comparisonName);
+    const [child] = await readdir(join(directory, 'producer-runs'));
+    if (child === undefined) throw new Error('Expected retained useful output');
+    const artifact = await readFile(join(directory, 'producer-runs', child, 'output/unqualified-inputs.json'));
+    expect(identity(artifact)).toEqual(artifactIdentity);
+    expect(existsSync(join(directory, 'failure.json'))).toBe(true);
+    expect((await readRecord(join(directory, 'failure.json'))).failure).toBe(expectedKind);
+    expect(warning.callCount).toBeGreaterThan(0);
+    if (result?.status !== 'rejected') throw new Error('Expected failed comparison');
+    expect(Error.isError(result.reason)).toBe(true);
+    expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
+    if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only primary failure');
+    expect(result.reason.kind).toBe(expectedKind);
+    expect(result.reason.message).not.toContain('q7z9k2');
+    if (mode === 'normal') expect((await readRecord(join(directory, 'comparison.json'))).matches).toBe(false);
+  } }))),
+  it({ name: 'keeps preflight refusal names-only when its warning callback always throws', fn: async ctx => {
+    await using f = await fixture();
+    const warning = ctx.sinon.spy(function refusedWarning(_message: string): void {
+      throw new Error('private preflight logger q7z9k2');
+    });
+    const error = await rejected({ ...f.request(), baseLaunchIdentity: { ...identity(f.baseBytes), sha256: '0'.repeat(64) }, l: { ...l, warn: warning } });
+    expect(error.kind).toBe('contract');
+    expect(error.message).not.toContain('q7z9k2');
+    expect(await readdir(f.output)).toEqual([]);
+    expect(warning.callCount).toBeGreaterThan(0);
+  } }),
+  it({ name: 'owns the created namespace before success logging can fail', fn: async ctx => {
+    await using f = await fixture();
+    const failed = ctx.sinon.spy(function failedCreationLog() {});
+    const [result] = await Promise.allSettled([runProducerInputComparison({ ...f.request(), l: { ...l, info(message) {
+      if (message.includes('created retained input comparison')) {
+        failed();
+        throw new Error('private creation logger q7z9k2');
+      }
+      l.info(message);
+    } } })]);
+    expect(result?.status).toBe('rejected');
+    expect(failed.callCount).toBe(1);
+    const [comparisonName] = await readdir(f.output);
+    if (comparisonName === undefined) throw new Error('Expected acquired namespace');
+    const directory = join(f.output, comparisonName);
+    expect(existsSync(join(directory, 'created.json'))).toBe(true);
+    expect(existsSync(join(directory, 'failure.json'))).toBe(true);
+    expect(existsSync(join(directory, 'invoked.json'))).toBe(false);
+    if (result?.status !== 'rejected') throw new Error('Expected logging refusal');
+    expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
+    if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only logging refusal');
+    expect(result.reason.directory).toBe(directory);
+    expect(result.reason.message).not.toContain('q7z9k2');
+  } }),
+  it({ name: 'preserves a failure-record collision despite persistent warning failure', fn: async ctx => {
+    await using f = await fixture('failure-collision');
+    const warning = ctx.sinon.spy(function collisionWarning(_message: string): void {
+      throw new Error('private collision logger q7z9k2');
+    });
+    const error = await rejected({ ...f.request(), l: { ...l, warn: warning } });
+    expect(error.kind).toBe('storage');
+    if (error.directory === undefined) throw new Error('Expected retained collision directory');
+    expect(await readFile(join(error.directory, 'failure.json'), 'utf8')).toBe('existing failure q7z9k2');
+    expect(error.message).not.toContain('q7z9k2');
+    expect(warning.callCount).toBeGreaterThan(0);
+  } }),
+  //endregion Persistent caller logging failures cannot replace storage or operation evidence
   it({ name: 'refuses bootstrap byte drift before executing it and records the absent child', fn: async () => {
     await using f = await fixture();
     const marker = join(f.directory, 'unauthorized-executed');
