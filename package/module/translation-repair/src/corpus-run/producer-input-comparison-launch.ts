@@ -173,7 +173,7 @@ export async function deriveProducerInputComparisonLaunch({
     };
   }
   catch (error) {
-    if (error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
       throw error;
     pl.warn(`input launch derivation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}`);
     throw new ProducerInputComparisonError({ kind: 'contract', directory: run.directory });

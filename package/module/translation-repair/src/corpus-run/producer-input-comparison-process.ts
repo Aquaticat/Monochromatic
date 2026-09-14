@@ -2,7 +2,10 @@ import {
   type ChildProcess,
   spawn,
 } from 'node:child_process';
-import { open, } from 'node:fs/promises';
+import {
+  open,
+  realpath,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { homedir, } from 'node:os';
 import {
@@ -160,6 +163,8 @@ export async function invokeProducerInputBootstrap({
   try {
     /** The base-to-derived owner cannot change executable bindings through an output-parent derivation. */
     const manifest = await readProducerRuntimeManifest({ dir: invocation.runtime.dir, expected: invocation.runtime.manifest });
+    if ((await realpath(nodePath) !== nodePath) || (await realpath(invocation.bootstrapPath) !== invocation.bootstrapPath))
+      throw new ProducerInputComparisonError({ kind: 'contract', directory: run.directory });
     await verifyProducerNodeRuntime(manifest);
     await verifyProducerInputFile({ path: nodePath, expected: manifest.node.executable, operation: 'verify-runtime' });
     await verifyProducerInputFile({ path: invocation.bootstrapPath, expected: invocation.bootstrapIdentity, operation: 'verify-runtime' });
@@ -202,7 +207,7 @@ export async function invokeProducerInputBootstrap({
     return { stdoutPath, stderrPath };
   }
   catch (error) {
-    if (error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
       throw error;
     pl.warn(`bootstrap invocation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}; native details remain in private records`);
     throw new ProducerInputComparisonError({ kind: 'bootstrap', directory: run.directory });

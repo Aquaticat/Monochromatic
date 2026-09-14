@@ -101,7 +101,7 @@ export async function observeProducerInputComparisonChildren({
     return observation;
   }
   catch (error) {
-    if (error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
       throw error;
     pl.warn(`native child observation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}`);
     throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });

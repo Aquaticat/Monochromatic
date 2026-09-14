@@ -102,7 +102,7 @@ export function ownProducerInputComparisonRequest(input: ProducerInputComparison
     return { baseLaunchPath, baseLaunchIdentity, bootstrapPath, reference, signal, l, };
   }
   catch (error) {
-    if (error instanceof ProducerInputComparisonError)
+    if (Error.isError(error) && error instanceof ProducerInputComparisonError)
       throw error;
     // Accessor and logger failures do not expose native messages or caller-supplied cause chains.
     throw new ProducerInputComparisonError({ kind: 'contract', });

@@ -25,7 +25,7 @@ const MODE_MASK = 0o7777;
 /** Comparison metadata does not consume the separate corpus/support byte allowance. */
 const MAX_RECORD_BYTES = 1_048_576;
 /** No caller-supplied filename can turn this writer into a general output interface. */
-const RECORD_FILES = ['created.json', 'bootstrap.command.json', 'bootstrap.exit.json', 'derivation.json', 'child-observation.json', 'comparison.json', 'failure.json'] as const;
+const RECORD_FILES = ['created.json', 'bootstrap.command.json', 'bootstrap.exit.json', 'bootstrap-observation.json', 'derivation.json', 'child-observation.json', 'comparison.json', 'failure.json'] as const;
 
 /**
  * Owned directory observation belongs to this invocation, not a caller certificate.

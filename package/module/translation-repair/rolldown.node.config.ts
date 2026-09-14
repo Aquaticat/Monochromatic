@@ -35,6 +35,7 @@ export const nodeEntries: Readonly<Record<string, string>> = {
     "probe-relabel": "./src/corpus-run/probe-relabel.ts",
     "producer-calibrate": "./src/corpus-run/producer-calibrate.ts",
     "producer-prepare-app": "./src/corpus-run/producer-prepare-app.ts",
+    "producer-input-comparison": "./src/corpus-run/producer-input-comparison-entry.ts",
     "probe-sensitivity": "./src/corpus-run/probe-sensitivity.ts",
     "probe-verify": "./src/corpus-run/probe-verify.ts",
     "recall-benchmark": "./src/corpus-run/recall-benchmark.ts",
