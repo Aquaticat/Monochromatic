@@ -1,6 +1,8 @@
 import { createHash, } from 'node:crypto';
-import { promises as fsPromises, watch, } from 'node:fs';
+import { existsSync, promises as fsPromises, watch, } from 'node:fs';
+import childProcess from 'node:child_process';
 import { syncBuiltinESMExports, } from 'node:module';
+import timers from 'node:timers';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -9,6 +11,7 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { ProducerInputComparisonError, runProducerInputComparison, } from '../../dist/final/node/producer-input-comparison.mjs';
 
 const l = tagged({ tag: 'input-comparison-consumer-test' });
+l.info(`comparison test entry runtime ${process.version} at ${process.execPath}`);
 const identity = (bytes: Uint8Array) => ({ bytes: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') });
 const nodeIdentity = identity(await readFile(process.execPath));
 const artifactText = JSON.stringify({ scope: 'unqualified-preparation-root-inputs', fixture: '猫🐾' });
@@ -32,7 +35,7 @@ function textList(value: unknown): readonly string[] {
   return entries.map(text);
 }
 
-type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision';
+type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision' | 'ignore-term-after-output';
 
 async function fixture(mode: Mode = 'normal') {
   const directory = await mkdtemp(join(tmpdir(), "input-comparison-'quoted'-"));
@@ -86,7 +89,7 @@ else {
  if(mode==='extra-output')await writeFile(join(output,'unexpected.json'),'{}',{mode:0o600});
  if(mode==='home-content')await writeFile(join(output,'home','unexpected'),'fixture',{mode:0o600});
  if(mode==='stderr-on-success')console.error('fixture diagnostic');
- if(mode==='wait-after-output'){await writeFile(join(directory,'ready.txt'),'ready',{mode:0o600});await wait(5000);}
+ if(mode==='wait-after-output'||mode==='ignore-term-after-output'){if(mode==='ignore-term-after-output')process.on('SIGTERM',()=>{});await writeFile(join(directory,'ready.txt'),'ready',{mode:0o600});await wait(5000);}
  if(mode==='exit-after-output'||mode==='failure-collision')process.exitCode=6;
  else if(mode==='malformed-stdout')console.log('not JSON q7z9k2');
  else console.log(JSON.stringify({kind:'producer-preparation-input-host-complete',directory:mode==='wrong-stdout-directory'?launch.outputParent:directory,completion,...mode==='extra-stdout-key'?{approved:true}:{}}));
@@ -187,6 +190,21 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       expect(observation.completeEnumeration).toBe(false);
     }
   } })),
+  ...(['relative-base', 'wrong-bootstrap-name', 'zero-extent', 'unsafe-extent', 'uppercase-digest', 'null-reference', 'invalid-signal', 'public-output-parent'] as const).map(change => it({ name: `refuses comparison contract ${change} before namespace creation`, fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    if (change === 'relative-base') Reflect.set(request, 'baseLaunchPath', 'base-launch.json');
+    else if (change === 'wrong-bootstrap-name') Reflect.set(request, 'bootstrapPath', join(f.directory, 'other.mjs'));
+    else if (change === 'zero-extent') Reflect.set(request, 'reference', { ...artifactIdentity, bytes: 0 });
+    else if (change === 'unsafe-extent') Reflect.set(request, 'reference', { ...artifactIdentity, bytes: Number.MAX_SAFE_INTEGER + 1 });
+    else if (change === 'uppercase-digest') Reflect.set(request, 'reference', { ...artifactIdentity, sha256: 'A'.repeat(64) });
+    else if (change === 'null-reference') Reflect.set(request, 'reference', null);
+    else if (change === 'invalid-signal') Reflect.set(request, 'signal', {});
+    else await chmod(f.output, 0o755);
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(await readdir(f.output)).toEqual([]);
+  } })),
   it({ name: 'refuses an already aborted request without creating a comparison namespace', fn: async () => {
     await using f = await fixture();
     const controller = new AbortController();
@@ -265,6 +283,90 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(exit.signal).toBe('SIGTERM');
     expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
   } })),
+  it({ name: 'retains a matching comparison when cancellation arrives after persistence', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const interrupted = ctx.sinon.spy(function cancelAfterComparison() { controller.abort(new Error('late private q7z9k2')); });
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) interrupted();
+      l.info(message);
+    } } });
+    expect(interrupted.callCount).toBe(1);
+    expect(error.kind).toBe('interruption');
+    if (error.directory === undefined) throw new Error('Expected retained late-interruption evidence');
+    expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+    expect((await readRecord(join(error.directory, 'bootstrap.exit.json'))).code).toBe(0);
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
+  } }),
+  it({ name: 'retains native spawn errors but waits for actual close before exit metadata', fn: async ctx => {
+    await using f = await fixture();
+    const nativeSpawn = childProcess.spawn;
+    const beforeClose = ctx.sinon.spy(function observedBeforeClose(_persisted: boolean) {});
+    const forcedSpawn = ctx.sinon.spy(function forcedMissingExecutable() {});
+    ctx.sinon.stub(childProcess, 'spawn').callsFake(function missingBootstrap(executable, args, options) {
+      if ((executable !== process.execPath) || (args[0] !== f.bootstrapPath)) return nativeSpawn(executable, args, options);
+      forcedSpawn();
+      const child = nativeSpawn(join(f.directory, 'missing-node'), args, options);
+      const nativeEmit = child.emit.bind(child);
+      const directory = options?.cwd;
+      if (typeof directory !== 'string') throw new Error('Expected comparison cwd');
+      const exitPath = join(directory, 'bootstrap.exit.json');
+      ctx.sinon.stub(child, 'emit').callsFake(function delayedClose(event, first, second) {
+        if (arguments.length > 3) throw new Error('Unexpected native event interception arity');
+        if (event === 'close') {
+          setTimeout(function closeLater() { beforeClose(existsSync(exitPath)); nativeEmit(event, first, second); }, 50);
+          return true;
+        }
+        return nativeEmit(event, first, second);
+      });
+      return child;
+    });
+    syncBuiltinESMExports();
+    using restore = { [Symbol.dispose]() { ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    const error = await rejected(f.request());
+    expect(forcedSpawn.callCount).toBe(1);
+    expect(beforeClose.callCount).toBe(1);
+    expect(beforeClose.firstCall.args[0]).toBe(false);
+    expect(error.kind).toBe('bootstrap');
+    if (error.directory === undefined) throw new Error('Expected retained native spawn failure');
+    expect(await readdir(error.directory)).toContain('bootstrap.exit.json');
+    const exit = await readRecord(join(error.directory, 'bootstrap.exit.json'));
+    expect(exit.errors).toEqual(['error-object']);
+    expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
+  } }),
+  it({ name: 'observes actual close after deadline escalation without changing production timeout parameters', timeout: 30000, fn: async ctx => {
+    await using f = await fixture('ignore-term-after-output');
+    const deadline = new AbortController();
+    const actualTimeout = AbortSignal.timeout.bind(AbortSignal);
+    const actualTimer = timers.setTimeout;
+    const shortened = ctx.sinon.spy(function shortenedGrace() {});
+    const ready = ctx.sinon.spy(function triggerDeadline() { deadline.abort(new Error('fixture deadline')); });
+    ctx.sinon.stub(AbortSignal, 'timeout').callsFake(function fixtureDeadline(milliseconds) { return milliseconds === 600000 ? deadline.signal : actualTimeout(milliseconds); });
+    ctx.sinon.stub(timers, 'setTimeout').callsFake(function fixtureGrace(callback, milliseconds) {
+      if (arguments.length > 2) throw new Error('Unexpected timer interception arity');
+      if (milliseconds === 180000) { shortened(); return actualTimer(callback, 30); }
+      return actualTimer(callback, milliseconds);
+    });
+    syncBuiltinESMExports();
+    const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if ((typeof filename === 'string') && filename.endsWith('ready.txt')) ready(); });
+    watcher.on('error', function watchFailed(error) { deadline.abort(error); });
+    using restore = { [Symbol.dispose]() { watcher.close(); ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    const error = await rejected(f.request());
+    expect(ready.callCount).toBeGreaterThan(0);
+    expect(shortened.callCount).toBe(1);
+    expect(error.kind).toBe('interruption');
+    if (error.directory === undefined) throw new Error('Expected retained deadline evidence');
+    const exit = await readRecord(join(error.directory, 'bootstrap.exit.json'));
+    expect(exit.signal).toBe('SIGKILL');
+    expect(exit.code).toBeNull();
+    expect(exit.deadlineReached).toBe(true);
+    expect(exit.callerAborted).toBe(false);
+    expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('single');
+    expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
+    const [child] = await readdir(join(error.directory, 'producer-runs'));
+    if (child === undefined) throw new Error('Expected retained completed fixture output');
+    expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+  } }),
   ...(['comparison-collision', 'failure-collision'] as const).map(mode => it({ name: `preserves existing metadata on ${mode}`, fn: async () => {
     await using f = await fixture(mode);
     const error = await rejected(f.request());
