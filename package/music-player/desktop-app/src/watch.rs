@@ -148,7 +148,7 @@ impl SourceWatcher {
         // ```ts
         // return { debouncer, watched: null };
         // ```
-        Some(SourceWatcher {
+        return Some(SourceWatcher {
             debouncer,
             watched: None,
         })

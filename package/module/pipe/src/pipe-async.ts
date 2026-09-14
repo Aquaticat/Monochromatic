@@ -121,40 +121,40 @@ export function pipeAsync<
   } & NoStepsAfter9,
 ): (value: TInput | Promise<TInput>,) => Promise<Awaited<TStep9>>;
 /**
- * Creates a reusable asynchronous left-to-right pipeline function, delegating
- * each call to {@link runPipeAsync}.
- *
- * @param args - contiguous step functions and optional logger
- *
- * @returns function that applies captured steps to each possibly promised input value
- *
- * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
- * runtime step keys are invalid
- *
- * @throws whatever pipeline step throws or rejects with; the failure propagates unchanged
- *
- * @example
- * ```ts
- * import { pipeAsync } from '\@monochromatic-dev/module-pipe';
- *
- * const render = pipeAsync({
- *   fn1: (input: number) => input + 1,
- *   fn2: async (input) => String(input),
- * });
- * await render(Promise.resolve(1));
- * ```
+ Creates a reusable asynchronous left-to-right pipeline function, delegating
+ each call to {@link runPipeAsync}.
+ 
+ @param args - contiguous step functions and optional logger
+ 
+ @returns function that applies captured steps to each possibly promised input value
+ 
+ @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ runtime step keys are invalid
+ 
+ @throws whatever pipeline step throws or rejects with; the failure propagates unchanged
+ 
+ @example
+ ```ts
+ import { pipeAsync } from '\@monochromatic-dev/module-pipe';
+ 
+ const render = pipeAsync({
+   fn1: (input: number) => input + 1,
+   fn2: async (input) => String(input),
+ });
+ await render(Promise.resolve(1));
+ ```
  */
 export function pipeAsync(args: DeferredArgs,): (value: unknown,) => Promise<unknown> {
   /**
-   * Applies captured asynchronous steps to a provided value.
-   *
-   * @param value - input value supplied to the reusable pipeline
-   *
-   * @returns promise resolving to final pipeline output
+   Applies captured asynchronous steps to a provided value.
+   
+   @param value - input value supplied to the reusable pipeline
+   
+   @returns promise resolving to final pipeline output
    */
   function pipelineAsync(value: unknown,): Promise<unknown> {
     /**
-     * Logger tagged at the deferred async public API invocation boundary.
+     Logger tagged at the deferred async public API invocation boundary.
      */
     const l = tagged(args.l
       === undefined

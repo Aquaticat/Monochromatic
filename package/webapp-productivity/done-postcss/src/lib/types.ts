@@ -1,5 +1,5 @@
 /**
- * All recognized priority levels, ordered ascending.
+ All recognized priority levels, ordered ascending.
  */
 export const TASK_PRIORITIES: readonly [
   'low',
@@ -12,12 +12,12 @@ export const TASK_PRIORITIES: readonly [
 ];
 
 /**
- * Discriminated union of valid priority values.
+ Discriminated union of valid priority values.
  */
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 /**
- * All recognized complexity levels, ordered ascending.
+ All recognized complexity levels, ordered ascending.
  */
 export const TASK_COMPLEXITIES: readonly [
   'low',
@@ -30,12 +30,12 @@ export const TASK_COMPLEXITIES: readonly [
 ];
 
 /**
- * Discriminated union of valid complexity values.
+ Discriminated union of valid complexity values.
  */
 export type TaskComplexity = (typeof TASK_COMPLEXITIES)[number];
 
 /**
- * All recognized task statuses.
+ All recognized task statuses.
  */
 export const TASK_STATUSES: readonly [
   'inbox',
@@ -48,25 +48,25 @@ export const TASK_STATUSES: readonly [
 ];
 
 /**
- * Discriminated union of valid task lifecycle statuses.
+ Discriminated union of valid task lifecycle statuses.
  */
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 /**
- * External system from which a task was imported, or `"local"` for manually created tasks.
+ External system from which a task was imported, or `"local"` for manually created tasks.
  */
 export type TaskSource = 'local' | 'github' | 'linear' | 'calendar' | 'codebase';
 
 /**
- * Sentinel returned by task lookups when no row matches the requested ID.
- *
- * A unique `Symbol` keeps "not found" out of a `Task | null` union (banned by
- * `no-nullish-union`); callers narrow with `=== TASK_NOT_FOUND`.
+ Sentinel returned by task lookups when no row matches the requested ID.
+ 
+ A unique `Symbol` keeps "not found" out of a `Task | null` union (banned by
+ `no-nullish-union`); callers narrow with `=== TASK_NOT_FOUND`.
  */
 export const TASK_NOT_FOUND: unique symbol = Symbol('task row missing from database lookup',);
 
 /**
- * Canonical task shape shared between server (DB layer) and client (page data JSON).
+ Canonical task shape shared between server (DB layer) and client (page data JSON).
  */
 export type Task = {
   readonly id: string;
@@ -80,11 +80,11 @@ export type Task = {
   readonly reminders: readonly string[];
   readonly blockedBy: readonly string[];
   /**
-   * Accumulated tracked time in seconds (excludes any running timer).
+   Accumulated tracked time in seconds (excludes any running timer).
    */
   readonly trackedTime: number;
   /**
-   * ISO timestamp when the current timer was started; absent when idle.
+   ISO timestamp when the current timer was started; absent when idle.
    */
   readonly timerStartedAt?: string;
   readonly status: TaskStatus;
@@ -96,7 +96,7 @@ export type Task = {
 };
 
 /**
- * Associates a blocked inbox task with the blocker task that gates it.
+ Associates a blocked inbox task with the blocker task that gates it.
  */
 export type BlockedTaskLink = {
   readonly blockerId: string;
@@ -104,25 +104,25 @@ export type BlockedTaskLink = {
 };
 
 /**
- * Blocked inbox tasks grouped by the ID of the blocker task that gates them.
- *
- * Deeply readonly so consumers receive an immutable view. Under
- * `noUncheckedIndexedAccess` an index lookup already yields `... | undefined`
- * for blocker IDs with no blocked tasks, so no `Partial` is needed.
+ Blocked inbox tasks grouped by the ID of the blocker task that gates them.
+ 
+ Deeply readonly so consumers receive an immutable view. Under
+ `noUncheckedIndexedAccess` an index lookup already yields `... | undefined`
+ for blocker IDs with no blocked tasks, so no `Partial` is needed.
  */
 export type BlockedTasksByBlocker = Readonly<
   Record<string, readonly BlockedTaskLink[]>
 >;
 
 /**
- * Search result task with an additional `isBlocked` flag for UI badge display.
+ Search result task with an additional `isBlocked` flag for UI badge display.
  */
 export type SearchTask = Task & {
   readonly isBlocked: boolean;
 };
 
 /**
- * Payload accepted by {@link createTask}: only `title` is required; all others default.
+ Payload accepted by {@link createTask}: only `title` is required; all others default.
  */
 export type TaskCreateInput = {
   readonly title: string;
@@ -137,7 +137,7 @@ export type TaskCreateInput = {
 };
 
 /**
- * Partial update payload accepted by {@link updateTask}: omitted fields stay unchanged.
+ Partial update payload accepted by {@link updateTask}: omitted fields stay unchanged.
  */
 export type TaskUpdateInput = {
   readonly title?: string;

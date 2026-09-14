@@ -1,7 +1,7 @@
 /**
- * Ownership-only direct summary for complete inbound proof.
- *
- * @module
+ Ownership-only direct summary for complete inbound proof.
+ 
+ @module
  */
 
 import {
@@ -38,18 +38,18 @@ import {
 import { addForeignBorrowedCallEdge, } from './foreign-borrowed-call-edge.ts';
 
 /**
- * Creates ownership seed needed by foreign ownership fixed point.
- *
- * @param project - TypeScript project resolving owned calls and argument origins.
- *
- * @param declaration - Callable whose inbound edges are required.
- *
- * @returns direct marker and binding facts with empty effect dimensions.
- *
- * @example
- * ```ts
- * foreignBorrowedOwnershipSeed({ project, declaration });
- * ```
+ Creates ownership seed needed by foreign ownership fixed point.
+ 
+ @param project - TypeScript project resolving owned calls and argument origins.
+ 
+ @param declaration - Callable whose inbound edges are required.
+ 
+ @returns direct marker and binding facts with empty effect dimensions.
+ 
+ @example
+ ```ts
+ foreignBorrowedOwnershipSeed({ project, declaration });
+ ```
  */
 export function foreignBorrowedOwnershipSeed({
   project,
@@ -59,11 +59,11 @@ export function foreignBorrowedOwnershipSeed({
   readonly declaration: EffectCallableDeclaration;
 }): MutableEffectSummary {
   /**
-   * Binding origins seeded by callable parameters.
+   Binding origins seeded by callable parameters.
    */
   const bindingOriginBySymbolId = new Map<number, Set<EffectSlot>>();
   /**
-   * Slots this declaration's parameters own.
+   Slots this declaration's parameters own.
    */
   const table = parameterSlotTable({ declaration, },);
   declaration.parameters
@@ -80,7 +80,7 @@ export function foreignBorrowedOwnershipSeed({
     },);
   },);
   /**
-   * Explicit foreign marker indexes on current declaration.
+   Explicit foreign marker indexes on current declaration.
    */
   const directForeignBorrowed = new Set<ParameterIndex>();
   for (const [parameterIndex, parameter,] of declaration.parameters
@@ -92,7 +92,7 @@ export function foreignBorrowedOwnershipSeed({
       directForeignBorrowed.add(asParameterIndex(parameterIndex,),);
   }
   /**
-   * Ownership-only summary with effect dimensions intentionally empty.
+   Ownership-only summary with effect dimensions intentionally empty.
    */
   const summary: MutableEffectSummary = {
     slots: table,
@@ -113,23 +113,23 @@ export function foreignBorrowedOwnershipSeed({
     calls: [],
   };
   /**
-   * Callable body absent for source-only signatures.
+   Callable body absent for source-only signatures.
    */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined)
     return summary;
   /**
-   * Complete body nodes used for alias-origin discovery.
+   Complete body nodes used for alias-origin discovery.
    */
   const allBodyNodes = collectAstNodes(body,);
   /**
-   * Variable aliases initialized from parameter-reachable state.
+   Variable aliases initialized from parameter-reachable state.
    */
   const variableDeclarations = allBodyNodes.filter(function variableDeclaration(node,): node is VariableDeclaration {
     return isVariableDeclaration(node,);
   },);
   /**
-   * Simple assignments that may establish later aliases.
+   Simple assignments that may establish later aliases.
    */
   const aliasAssignments = allBodyNodes.filter(function aliasAssignment(node,): node is BinaryExpression {
     return isBinaryExpression(node,)
@@ -138,7 +138,7 @@ export function foreignBorrowedOwnershipSeed({
         === SyntaxKind.EqualsToken);
   },);
   /**
-   * Iterations binding elements reached through parameter-owned iterables.
+   Iterations binding elements reached through parameter-owned iterables.
    */
   const forOfStatements = allBodyNodes.filter(function forOfStatement(node,): node is ForOfStatement {
     return isForOfStatement(node,);
@@ -154,20 +154,20 @@ export function foreignBorrowedOwnershipSeed({
 }
 
 /**
- * Creates direct marker and owned-call facts for one callable.
- *
- * @param project - TypeScript project resolving owned calls and argument origins.
- *
- * @param declaration - Callable whose body calls are summarized.
- *
- * @param analysisRoot - Optional external package root admitted as owned.
- *
- * @returns ownership summary with every active direct call edge.
- *
- * @example
- * ```ts
- * foreignBorrowedDirectSummary({ project, declaration });
- * ```
+ Creates direct marker and owned-call facts for one callable.
+ 
+ @param project - TypeScript project resolving owned calls and argument origins.
+ 
+ @param declaration - Callable whose body calls are summarized.
+ 
+ @param analysisRoot - Optional external package root admitted as owned.
+ 
+ @returns ownership summary with every active direct call edge.
+ 
+ @example
+ ```ts
+ foreignBorrowedDirectSummary({ project, declaration });
+ ```
  */
 export function foreignBorrowedDirectSummary({
   project,
@@ -179,14 +179,14 @@ export function foreignBorrowedDirectSummary({
   readonly analysisRoot?: string;
 }): MutableEffectSummary {
   /**
-   * Marker and alias-origin seed for current callable.
+   Marker and alias-origin seed for current callable.
    */
   const summary = foreignBorrowedOwnershipSeed({
     project,
     declaration,
   },);
   /**
-   * Callable body absent for source-only signatures.
+   Callable body absent for source-only signatures.
    */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined)

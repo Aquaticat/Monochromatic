@@ -30,37 +30,37 @@ import {
 } from './linked-worktree-messages.ts';
 
 /**
- * Logger root for cli-git after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for cli-git after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'cli-git', },);
 
 //region Guarded command predicates and policy facts
 
 /**
- * Per-subcommand fact set produced by an optique-based region parser.
+ Per-subcommand fact set produced by an optique-based region parser.
  */
 type GuardedRegion = {
   /**
-   * True when wrapper-only escape hatch appears as a real flag.
+   True when wrapper-only escape hatch appears as a real flag.
    */
   readonly hasEscapeHatch: boolean;
   /**
-   * True when invocation can change worktree filesystem state.
+   True when invocation can change worktree filesystem state.
    */
   readonly changesWorktree: boolean;
   /**
-   * Options that consume the *next* argv token; used to strip flag-position escape hatches without disturbing values.
+   Options that consume the *next* argv token; used to strip flag-position escape hatches without disturbing values.
    */
   readonly separateValueOptions: ReadonlySet<string>;
 };
 
 /**
- * Stash options that consume the next argv token.
+ Stash options that consume the next argv token.
  */
 const STASH_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '-m',
@@ -69,7 +69,7 @@ const STASH_VALUE_OPTIONS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Clean options that consume the next argv token (long form is matched via abbreviation table inside the parser).
+ Clean options that consume the next argv token (long form is matched via abbreviation table inside the parser).
  */
 const CLEAN_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '-e',
@@ -77,24 +77,24 @@ const CLEAN_VALUE_OPTIONS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Reset options that consume the next argv token.
+ Reset options that consume the next argv token.
  */
 const RESET_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '--pathspec-from-file',
 ],);
 
 /**
- * Narrows subcommand string to commands covered by linked-worktree policy.
- *
- * @param subcommand - Subcommand located by global option parser.
- *
- * @returns `true` when subcommand has linked-worktree policy.
- *
- * @example
- * ```ts
- * isGuardedCommand('stash');
- * // => true
- * ```
+ Narrows subcommand string to commands covered by linked-worktree policy.
+ 
+ @param subcommand - Subcommand located by global option parser.
+ 
+ @returns `true` when subcommand has linked-worktree policy.
+ 
+ @example
+ ```ts
+ isGuardedCommand('stash');
+ // => true
+ ```
  */
 function isGuardedCommand(subcommand: string,): subcommand is GuardedCommand {
   return (subcommand === STASH_SUBCOMMAND)
@@ -103,37 +103,37 @@ function isGuardedCommand(subcommand: string,): subcommand is GuardedCommand {
 }
 
 /**
- * Options for computing per-subcommand facts.
+ Options for computing per-subcommand facts.
  */
 type ComputeRegionOptions = {
   /**
-   * Guarded git subcommand.
+   Guarded git subcommand.
    */
   readonly subcommand: GuardedCommand;
   /**
-   * Arguments strictly after subcommand.
+   Arguments strictly after subcommand.
    */
   readonly postSubcommandArgs: readonly string[];
 };
 
 /**
- * Selects the appropriate optique-based parser for the subcommand
- * ({@link parseStashRegion}, {@link parseCleanRegion} with
- * {@link cleanChangesWorktree}, or {@link parseResetRegion} with
- * {@link resetChangesWorktree}) and turns its result into the common
- * {@link GuardedRegion} shape used by the rule.
- *
- * @param subcommand - Guarded git subcommand.
- *
- * @param postSubcommandArgs - Arguments strictly after subcommand.
- *
- * @returns Region facts.
- *
- * @example
- * ```ts
- * computeRegion({ subcommand: 'clean', postSubcommandArgs: ['-ndX'] });
- * // changesWorktree = false (dry-run)
- * ```
+ Selects the appropriate optique-based parser for the subcommand
+ ({@link parseStashRegion}, {@link parseCleanRegion} with
+ {@link cleanChangesWorktree}, or {@link parseResetRegion} with
+ {@link resetChangesWorktree}) and turns its result into the common
+ {@link GuardedRegion} shape used by the rule.
+ 
+ @param subcommand - Guarded git subcommand.
+ 
+ @param postSubcommandArgs - Arguments strictly after subcommand.
+ 
+ @returns Region facts.
+ 
+ @example
+ ```ts
+ computeRegion({ subcommand: 'clean', postSubcommandArgs: ['-ndX'] });
+ // changesWorktree = false (dry-run)
+ ```
  */
 function computeRegion({
   subcommand,
@@ -141,7 +141,7 @@ function computeRegion({
 }: ComputeRegionOptions,): GuardedRegion {
   if (subcommand === STASH_SUBCOMMAND) {
     /**
-     * Stash region facts; stash is always destructive when forwarded.
+     Stash region facts; stash is always destructive when forwarded.
      */
     const stash = parseStashRegion(postSubcommandArgs,);
     return {
@@ -153,7 +153,7 @@ function computeRegion({
 
   if (subcommand === CLEAN_SUBCOMMAND) {
     /**
-     * Clean region facts; destructiveness depends on dry-run / interactive flags.
+     Clean region facts; destructiveness depends on dry-run / interactive flags.
      */
     const clean = parseCleanRegion(postSubcommandArgs,);
     return {
@@ -164,7 +164,7 @@ function computeRegion({
   }
 
   /**
-   * Reset region facts; destructive when --hard/--merge/--keep (or abbreviation) appears.
+   Reset region facts; destructive when --hard/--merge/--keep (or abbreviation) appears.
    */
   const reset = parseResetRegion(postSubcommandArgs,);
   return {
@@ -177,13 +177,13 @@ function computeRegion({
 //endregion Guarded command predicates and policy facts
 
 /**
- * Expected linked-worktree policy violation.
+ Expected linked-worktree policy violation.
  */
 export class LinkedWorktreeViolationError extends Error {
   /**
-   * Creates expected policy violation.
-   *
-   * @param message - safe rejection explanation
+   Creates expected policy violation.
+   
+   @param message - safe rejection explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -194,58 +194,58 @@ export class LinkedWorktreeViolationError extends Error {
 //region Linked worktree enforcement entry
 
 /**
- * Rejects state-changing guarded commands unless effective working directory
- * is a linked git worktree root. This covers all `git stash`, non-dry-run
- * `git clean`, and destructive `git reset` modes (`--hard`, `--merge`,
- * `--keep`). Per-subcommand optique parsers model long-option abbreviations
- * and option arity, so neither the destructiveness decision nor the
- * wrapper-only escape hatch can be bypassed by abbreviations or by hiding
- * the escape hatch in a value position.
- *
- * Worktree classification is delegated to {@link classifyEffectiveTarget},
- * which replays the caller's pre-subcommand region and inherited environment
- * against real git's `rev-parse` so `--git-dir`, `--work-tree`, `GIT_DIR`,
- * and `GIT_WORK_TREE` cannot make the wrapper validate one worktree while the
- * destructive command operates on another.
- *
- * Subcommand location comes from {@link parseGlobalOptions} and per-command
- * facts from {@link computeRegion}; the escape hatch is stripped by
- * {@link stripEscapeHatch}, and rejections are rendered by
- * {@link outsideWorktreeMessage} and {@link mainWorktreeMessage}.
- *
- * @param args - Git argv to inspect after wrapper invocation.
- *
- * @returns Original argv when command is unguarded, linked-worktree-safe, or
- *   targets a baked-in allowlisted tool-cache directory; argv with
- *   flag-position `--no-enforce-worktree` stripped when escape hatch is in use.
- *
- * @throws When guarded state-changing invocation is requested outside a
- *   linked git worktree.
- *
- * @example
- * ```ts
- * await checkLinkedWorktree(['-C', '/repo-linked', 'stash']);
- * // passes when real git reports /repo-linked is a linked worktree
- *
- * await checkLinkedWorktree(['-C', '/repo-main', 'clean', '-fd']);
- * // throws when /repo-main is the main worktree
- *
- * await checkLinkedWorktree(['-C', '/repo-main', 'clean', '-ndX']);
- * // passes because dry-run clean does not delete files
- * ```
+ Rejects state-changing guarded commands unless effective working directory
+ is a linked git worktree root. This covers all `git stash`, non-dry-run
+ `git clean`, and destructive `git reset` modes (`--hard`, `--merge`,
+ `--keep`). Per-subcommand optique parsers model long-option abbreviations
+ and option arity, so neither the destructiveness decision nor the
+ wrapper-only escape hatch can be bypassed by abbreviations or by hiding
+ the escape hatch in a value position.
+ 
+ Worktree classification is delegated to {@link classifyEffectiveTarget},
+ which replays the caller's pre-subcommand region and inherited environment
+ against real git's `rev-parse` so `--git-dir`, `--work-tree`, `GIT_DIR`,
+ and `GIT_WORK_TREE` cannot make the wrapper validate one worktree while the
+ destructive command operates on another.
+ 
+ Subcommand location comes from {@link parseGlobalOptions} and per-command
+ facts from {@link computeRegion}; the escape hatch is stripped by
+ {@link stripEscapeHatch}, and rejections are rendered by
+ {@link outsideWorktreeMessage} and {@link mainWorktreeMessage}.
+ 
+ @param args - Git argv to inspect after wrapper invocation.
+ 
+ @returns Original argv when command is unguarded, linked-worktree-safe, or
+   targets a baked-in allowlisted tool-cache directory; argv with
+   flag-position `--no-enforce-worktree` stripped when escape hatch is in use.
+ 
+ @throws When guarded state-changing invocation is requested outside a
+   linked git worktree.
+ 
+ @example
+ ```ts
+ await checkLinkedWorktree(['-C', '/repo-linked', 'stash']);
+ // passes when real git reports /repo-linked is a linked worktree
+ 
+ await checkLinkedWorktree(['-C', '/repo-main', 'clean', '-fd']);
+ // throws when /repo-main is the main worktree
+ 
+ await checkLinkedWorktree(['-C', '/repo-main', 'clean', '-ndX']);
+ // passes because dry-run clean does not delete files
+ ```
  */
 export async function checkLinkedWorktree(
   args: readonly string[],
 ): Promise<readonly string[]> {
   /**
-   * Effective cwd and subcommand index after walking pre-subcommand `-C` chaining.
+   Effective cwd and subcommand index after walking pre-subcommand `-C` chaining.
    */
   const {
     effectiveCwd,
     subcommandIndex,
   } = parseGlobalOptions(args,);
   /**
-   * Subcommand at the located index; `undefined` when args have no subcommand.
+   Subcommand at the located index; `undefined` when args have no subcommand.
    */
   const subcommand = args[subcommandIndex];
 
@@ -256,7 +256,7 @@ export async function checkLinkedWorktree(
     return args;
 
   /**
-   * Tagged logger for the linked-worktree-only rule.
+   Tagged logger for the linked-worktree-only rule.
    */
   const rl = tagged({
     tag: checkLinkedWorktree.name,
@@ -264,11 +264,11 @@ export async function checkLinkedWorktree(
   },);
 
   /**
-   * Slice of args strictly after guarded subcommand.
+   Slice of args strictly after guarded subcommand.
    */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
   /**
-   * Facts about the post-subcommand region produced by optique.
+   Facts about the post-subcommand region produced by optique.
    */
   const region = computeRegion({
     subcommand,
@@ -293,7 +293,7 @@ export async function checkLinkedWorktree(
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand}`,);
 
   /**
-   * Worktree classification driven by shared identity resolver.
+   Worktree classification driven by shared identity resolver.
    */
   const target: EffectiveTarget = await classifyEffectiveTarget({ args, },);
 

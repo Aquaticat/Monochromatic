@@ -13,11 +13,11 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Run only MD026 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD026 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -34,7 +34,7 @@ await describe({
       name: 'flags a heading ending with a colon and offers a fix',
       fn: async function colon() {
         /**
-         * Diagnostics for a heading ending in a colon.
+         Diagnostics for a heading ending in a colon.
          */
         const diagnostics = lint('# Setup:\n',);
         expect(diagnostics.length,).toBe(1,);
@@ -57,7 +57,7 @@ await describe({
       name: 'fix strips the trailing punctuation and is idempotent',
       fn: async function stripsAndSettles() {
         /**
-         * Heading after applying the fix.
+         Heading after applying the fix.
          */
         const fixed = applyFixes({
           source: '## Configure the linter.\n',
@@ -71,7 +71,7 @@ await describe({
       name: 'strips punctuation inside trailing emphasis',
       fn: async function insideEmphasis() {
         /**
-         * Heading with punctuation inside trailing strong text, after the fix.
+         Heading with punctuation inside trailing strong text, after the fix.
          */
         const fixed = applyFixes({
           source: '# **Done:**\n',

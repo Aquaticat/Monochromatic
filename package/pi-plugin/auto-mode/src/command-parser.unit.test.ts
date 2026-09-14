@@ -1,9 +1,9 @@
 /**
- * Tests for the command parser.
- *
- * Covers unbash parsing, pipeline detection, redirect targets,
- * quoted arguments, `--` separator handling, command substitution
- * detection, and pre-scan variable references.
+ Tests for the command parser.
+ 
+ Covers unbash parsing, pipeline detection, redirect targets,
+ quoted arguments, `--` separator handling, command substitution
+ detection, and pre-scan variable references.
  */
 
 import {

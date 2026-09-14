@@ -32,11 +32,11 @@ await describe({
           name: 'splices exactly at UTF-16 offsets past astral characters',
           fn: async () => {
             /**
-             * Source with a surrogate-pair character before the operator.
+             Source with a surrogate-pair character before the operator.
              */
             const source = 'const s = "\u{10348}"; const n = 1 + 2;';
             /**
-             * Offset of the plus token, computed in UTF-16 units.
+             Offset of the plus token, computed in UTF-16 units.
              */
             const plusAt = source.indexOf('+',);
             expect(spliceReplacement({
@@ -81,7 +81,7 @@ await describe({
           name: 'maps offsets to one-based lines and zero-based columns',
           fn: async () => {
             /**
-             * Line-start table for two-line source.
+             Line-start table for two-line source.
              */
             const table = lineStarts('ab\ncd',);
             expect(positionAt({
@@ -104,7 +104,7 @@ await describe({
           name: 'keeps offsets aligned after astral characters',
           fn: async () => {
             /**
-             * Two-line source whose first line holds an astral character.
+             Two-line source whose first line holds an astral character.
              */
             const source = '"\u{10348}"\nconst x = 1;';
             expect(positionAt({
@@ -125,7 +125,7 @@ await describe({
           name: 'is deterministic and coordinate-sensitive',
           fn: async () => {
             /**
-             * Baseline coordinates for identity comparison.
+             Baseline coordinates for identity comparison.
              */
             const base = {
               file: 'src/a.ts',

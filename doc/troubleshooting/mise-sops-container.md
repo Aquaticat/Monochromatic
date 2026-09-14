@@ -127,6 +127,14 @@ invocations where the age identity is available.
 
 ## Verified workarounds
 
+- When a GUI fixture needs a disposable `XDG_CONFIG_HOME`,
+  do not set it on the parent mise invocation.
+  Mise resolves its age identity while loading repository configuration,
+  before the task starts.
+  A different XDG config root can hide the host identity and produce the same decryption failure.
+  Pass `env XDG_CONFIG_HOME=<fixture> ...` as the hosted child command instead,
+  so mise keeps its normal identity location and only the app receives disposable configuration.
+  This was verified with `//package/cli/nested-wayland-session:run`.
 - Exclude `.env.local.json` (and `mise.local.toml`) from the container
   build context:
    `package/cli/mutation-test/runtime/containerignore`,

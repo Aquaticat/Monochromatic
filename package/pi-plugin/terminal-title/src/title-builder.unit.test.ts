@@ -1,5 +1,5 @@
 /**
- * Tests for pi title builder.
+ Tests for pi title builder.
  */
 
 import {
@@ -107,7 +107,7 @@ await describe({
       name: 'does not display-cap long prompts',
       fn: async () => {
         /**
-         * Prompt body longer than historical 60-character display cap.
+         Prompt body longer than historical 60-character display cap.
          */
         const prompt = 'a'.repeat(200,);
         expect(

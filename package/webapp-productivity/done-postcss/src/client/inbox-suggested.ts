@@ -1,8 +1,8 @@
 /**
- * Suggested section builder for the Inbox page.
- *
- * Builds the collapsible "Suggested" section with location autodetect
- * toggle, focus preset dropdown, and the suggested task list.
+ Suggested section builder for the Inbox page.
+ 
+ Builds the collapsible "Suggested" section with location autodetect
+ toggle, focus preset dropdown, and the suggested task list.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
@@ -11,21 +11,21 @@ import type {
 } from '../lib/types.ts';
 
 /**
- * Builds the suggested section with controls and task list.
- *
- * @param suggestedTasks - Tasks to display in the suggested section
- *
- * @param blockedTasksByBlocker - Map of blocker ID to blocked task links
- *
- * @param buildTaskList - Function to build a task list element
- *
- * @returns Suggested section element ready for DOM insertion
- *
- * @example
- * ```ts
- * const section = buildSuggestedSection({ suggestedTasks, blockedTasksByBlocker, buildTaskList });
- * app.append(section);
- * ```
+ Builds the suggested section with controls and task list.
+ 
+ @param suggestedTasks - Tasks to display in the suggested section
+ 
+ @param blockedTasksByBlocker - Map of blocker ID to blocked task links
+ 
+ @param buildTaskList - Function to build a task list element
+ 
+ @returns Suggested section element ready for DOM insertion
+ 
+ @example
+ ```ts
+ const section = buildSuggestedSection({ suggestedTasks, blockedTasksByBlocker, buildTaskList });
+ app.append(section);
+ ```
  */
 export function buildSuggestedSection(
   {
@@ -44,7 +44,7 @@ export function buildSuggestedSection(
   },
 ): HTMLElement {
   /**
-   * Collapsible section heading for suggested tasks.
+   Collapsible section heading for suggested tasks.
    */
   const suggestedSection = h({
     tag: 'section-heading',
@@ -55,7 +55,7 @@ export function buildSuggestedSection(
   },);
 
   /**
-   * Content container for the suggested tasks section.
+   Content container for the suggested tasks section.
    */
   const suggestedContent = h({
     tag: 'div',

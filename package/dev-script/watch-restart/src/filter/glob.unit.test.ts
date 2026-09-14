@@ -13,25 +13,25 @@ import type {
 import { globFilter, } from './glob.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Builds a minimal {@link WatchCtx}; globFilter ignores everything but
- * `event.relativePath`.
- *
- * @returns context object suitable for handing to globFilter
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; globFilter ignores everything but
+ `event.relativePath`.
+ 
+ @returns context object suitable for handing to globFilter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -42,17 +42,17 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults give a `change`
- * to `file.ts`.
- *
- * @param overrides - partial event fields to merge over the default
- *
- * @returns fully-populated event
- *
- * @example
- * ```ts
- * const event = makeEvent({ relativePath: 'src/foo.ts', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults give a `change`
+ to `file.ts`.
+ 
+ @param overrides - partial event fields to merge over the default
+ 
+ @returns fully-populated event
+ 
+ @example
+ ```ts
+ const event = makeEvent({ relativePath: 'src/foo.ts', },);
+ ```
  */
 function makeEvent(
   overrides: {

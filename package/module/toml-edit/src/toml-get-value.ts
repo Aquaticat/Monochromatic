@@ -1,7 +1,7 @@
 /**
- * {@link tomlGetValue}: read the effective JS value at a path.
- *
- * @module
+ {@link tomlGetValue}: read the effective JS value at a path.
+ 
+ @module
  */
 
 import {
@@ -15,19 +15,19 @@ import type {
 } from './types.ts';
 
 /**
- * The JS value at `path`, or `undefined` when the path does not exist.
- *
- * Walks the current document tree and materializes the addressed node, so the
- * result always agrees with {@link tomlStringify}; tables and inline tables
- * return nested objects, arrays and array-of-tables return arrays, primitives
- * return the JS primitive.
- *
- * @returns Computed result (`unknown`).
- *
- * @example
- * ```ts
- * tomlGetValue({ edit, path: ['fruits', 0, 'name',], },);  // 'apple'
- * ```
+ The JS value at `path`, or `undefined` when the path does not exist.
+ 
+ Walks the current document tree and materializes the addressed node, so the
+ result always agrees with {@link tomlStringify}; tables and inline tables
+ return nested objects, arrays and array-of-tables return arrays, primitives
+ return the JS primitive.
+ 
+ @returns Computed result (`unknown`).
+ 
+ @example
+ ```ts
+ tomlGetValue({ edit, path: ['fruits', 0, 'name',], },);  // 'apple'
+ ```
  */
 export function tomlGetValue(
   {
@@ -39,7 +39,7 @@ export function tomlGetValue(
   },
 ): unknown {
   /**
-   * Materialized value at the path; the missing sentinel maps to `undefined`.
+   Materialized value at the path; the missing sentinel maps to `undefined`.
    */
   const result = navigate({
     root: materializeDocument({ edit, },),

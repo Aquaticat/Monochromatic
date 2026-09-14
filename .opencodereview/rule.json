@@ -1,0 +1,42 @@
+{
+  "exclude": [
+    "**/*.{txt,html}",
+     "**/*.{db,db-wal}",
+     "**/*.{svg,jpg,png,avif,icns,ico}",
+     "**/*.{opus,ogg,m4a,alac,aac,wav,flac}",
+     "**/*.woff2",
+     ".out-of-scope/**/*.*",
+     "SECURITY.md",
+     ".opencodereview/**/*.*"
+   ],
+  "rules": [
+    {
+      "path": "**/tsconfig.json",
+      "rule": "1. ignore trailing comma"
+    },
+    {
+      "path": "**/package.json",
+      "rule": "1. tasks are managed by Mise"
+    },
+    {
+      "path": "**/mise.toml",
+      "rule": "1. everyone knows this is a mise monorepo and extends extends task templates defined in root mise.toml"
+    },
+    {
+      "path": "**/*.*",
+      "rule": "1. fail fast. If something should error when an obvious or documented prerequisite isn't met, do not add error handling. 2. Assume tests are always there. The harness doesn't show you test files."
+    },
+    {
+      "path": "**/*.{css,ts}",
+      "rule": "1. CSS custom property usages should not have plain value fallbacks unless justified. This is to make a wrong CSS custom property value obvious."
+    },
+    {
+      "path": "**/*.ts",
+      "rule": "1. Numbers are either plain consts, or built up from allowlisted numbers 0 1 2, and so on."
+    },
+    {
+      "path": "**/build.ts",
+      "rule": "1. If something isn't meant to be imported, do not flag potential issues if someone nonetheless imports it."
+    }
+  ]
+}

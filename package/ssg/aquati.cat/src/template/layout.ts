@@ -1,9 +1,9 @@
 /**
- * Full page layout template.
- *
- * Composes `<head>`, `<site-header>`, `<page-content>`, and `<site-footer>`
- * into a complete HTML document. All markup generated via h-html and
- * colocated component render functions; no raw HTML strings or template files.
+ Full page layout template.
+ 
+ Composes `<head>`, `<site-header>`, `<page-content>`, and `<site-footer>`
+ into a complete HTML document. All markup generated via h-html and
+ colocated component render functions; no raw HTML strings or template files.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -18,41 +18,41 @@ import {
 } from './head.ts';
 
 /**
- * Renders a complete HTML document with the standard site shell.
- *
- * @param title - page title (prepended to site name in `<title>`)
- *
- * @param lang - language code for `<html lang>` and localized elements
- *
- * @param content - inner HTML to place between header and footer
- *
- * @param description - page-specific meta description
- *
- * @param canonicalUrl - full canonical URL for this page
- *
- * @param searchable - whether pagefind should index this page's content
- *
- * @param currentName - current post slug; forwarded to the header so the
- * language switcher can link items to the same post in each locale
- *
- * @param availableInLangs - locales in which the current post exists;
- * forwarded to the header so locales without a translation fall back
- * to the locale landing
- *
- * @param articleDates - optional git-derived post dates emitted as Open Graph metadata
- *
- * @returns complete HTML document string including `<!DOCTYPE html>`
- *
- * @example
- * ```ts
- * const html = pageLayout({
- *   title: 'Home',
- *   lang: 'en',
- *   content: '<p>Hello</p>',
- *   description: 'Welcome',
- *   canonicalUrl: 'https://aquati.cat/en/',
- * });
- * ```
+ Renders a complete HTML document with the standard site shell.
+ 
+ @param title - page title (prepended to site name in `<title>`)
+ 
+ @param lang - language code for `<html lang>` and localized elements
+ 
+ @param content - inner HTML to place between header and footer
+ 
+ @param description - page-specific meta description
+ 
+ @param canonicalUrl - full canonical URL for this page
+ 
+ @param searchable - whether pagefind should index this page's content
+ 
+ @param currentName - current post slug; forwarded to the header so the
+ language switcher can link items to the same post in each locale
+ 
+ @param availableInLangs - locales in which the current post exists;
+ forwarded to the header so locales without a translation fall back
+ to the locale landing
+ 
+ @param articleDates - optional git-derived post dates emitted as Open Graph metadata
+ 
+ @returns complete HTML document string including `<!DOCTYPE html>`
+ 
+ @example
+ ```ts
+ const html = pageLayout({
+   title: 'Home',
+   lang: 'en',
+   content: '<p>Hello</p>',
+   description: 'Welcome',
+   canonicalUrl: 'https://aquati.cat/en/',
+ });
+ ```
  */
 export function pageLayout(
   {

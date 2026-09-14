@@ -20,7 +20,7 @@
 // ```ts
 // import { parseArgs } from "some-cli-parser";
 // ```
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 /// Custom clap help layout with the historical uppercase usage heading.
 // What:     `const HELP_TEMPLATE: &str = "..."` declares a borrowed static string.
@@ -60,6 +60,14 @@ const AFTER_HELP: &str = "\
 ENV:\n\
     FORBIDDEN_STRINGS_RULES    Default rules path; --rules wins if both are set.\n\
                                If unset, falls back to ./forbidden-strings.local.txt\n\
+    FORBIDDEN_STRINGS_CACHE_DIR\n\
+                               Absolute per-user cache-root override.\n\
+\n\
+RUNTIME CACHE:\n\
+    Runtime rules use read-write caching by default. Cache identity is exact\n\
+    rules content plus scanner version and platform. Missing or rejected cache\n\
+    data emits redacted JSON, compiles authoritative text, and attempts atomic\n\
+    repair. A failed repair never invalidates the in-memory scan.\n\
 \n\
 BUILT-IN BASELINE:\n\
     --builtin-rules appends the embedded betterleaks-ported baseline after\n\
@@ -79,6 +87,9 @@ EXAMPLES:\n\
 \n\
     # Scan the whole working tree\n\
     FORBIDDEN_STRINGS_RULES=./rules.txt forbidden-strings --all\n\
+\n\
+    # Eagerly compile runtime rules without scanning\n\
+    forbidden-strings compile-rules --rules ./rules.txt\n\
 \n\
 RULE FORMAT (autodetected per file, never mixed):\n\
     Tail format            -> '==> name <==' headers open one-rule sections;\n\
@@ -110,6 +121,32 @@ OUTPUT:\n\
 See README.md for the full dialect, set-algebra examples, and CI integration.\n\
 ";
 
+/// Distinct non-scan operations selected by first command word.
+#[derive(Subcommand, Debug, PartialEq)]
+pub enum CliCommand {
+    /// Compiles one authoritative runtime rules file into derived user cache.
+    #[command(name = "compile-rules")]
+    CompileRules {
+        /// Explicit authoritative rules path; environment fallback is deliberately absent.
+        #[arg(
+            long = "rules",
+            value_name = "PATH",
+            allow_hyphen_values = true,
+            help = "Path to authoritative runtime rules file"
+        )]
+        rules_path: String,
+    },
+}
+
+/// Returns explicit compile-rules source path when selected.
+impl CliCommand {
+    /// Borrows rules path carried by compile operation.
+    pub fn rules_path(&self) -> &str {
+        let Self::CompileRules { rules_path } = self;
+        return rules_path
+    }
+}
+
 /// Parsed command-line options for `forbidden-strings`.
 // What:     `#[derive(Parser, Debug, PartialEq)]` asks Rust to generate three
 //           implementations for `Cli`: clap's parser, debug formatting, and
@@ -135,6 +172,10 @@ See README.md for the full dialect, set-algebra examples, and CI integration.\n\
     args_override_self = true,
 )]
 pub struct Cli {
+    /// Optional non-scan operation selected before scan flags.
+    #[command(subcommand)]
+    pub command: Option<CliCommand>,
+
     /// Optional path to the rule file passed with `--rules`.
     // What:     `#[arg(...)] pub rules_path: Option<String>` declares an optional
     //           long option named `--rules` whose value is parsed as an owned

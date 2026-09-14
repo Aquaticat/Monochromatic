@@ -9,6 +9,90 @@ Numbers below are not aspirational targets;
  they are reproducible measurements
 against the binary built from this package's `src/`.
 
+## Runtime rule precompilation
+
+Issue #456 measured repeated startup compilation against the same 10,206-rule runtime file and two targets:
+
+```text
+run 1   139.81s
+run 2   139.26s
+```
+
+Those values are issue-author evidence,
+not a measurement reproduced by the current implementation session.
+The runtime cache stores a scanner-version and platform-specific compiled artifact under a per-user content-addressed
+cache slot.
+A cache miss compiles authoritative text and attempts atomic publication;
+a valid hit decodes and validates the artifact without compiling rule patterns.
+
+Acceptance requires separate release-binary measurements for:
+
+- Unchanged-build run-to-run timing variation.
+- First compilation and publication.
+- Repeated validated artifact load.
+- A source-content change that selects a new cache slot.
+- A planted match proving the timed artifact enforces the intended rule.
+
+### Rejected all-rules `RegexSet` artifact
+
+A bounded reproduction used the issue author's actual fixture:
+
+- 10,206 rules.
+- 1,109,429 source bytes.
+- One planted positive-control target and one clean control.
+- Release `0.4.0` pre-hybrid implementation.
+- Debian bookworm-slim image
+  `cae69e86e0b024efa293e7ae0c5760d765422473437056e03d7d941fdf24dd8e`.
+- 2 GiB memory,
+  2 CPUs,
+  256-process limit,
+  and no network.
+
+```text
+first compile + publish   146,320 ms
+artifact size             162,668,054 bytes
+warm minimum                1,385 ms
+warm median                 1,428.5 ms
+warm p95                    1,459 ms
+warm maximum                1,467 ms
+samples                        30
+```
+
+The planted rule matched and the clean control exited 0.
+The artifact had mode `0600`.
+The run proves that precompiling every bare literal as an independent `RegexSet` engine moves the cost but does not meet
+the sub-100 ms commit budget.
+The implementation therefore pivots to a hybrid runtime matcher:
+one direct Aho-Corasick set for exact literals and a precompiled `RegexSet` only for explicit regex rules.
+
+### Accepted hybrid artifact
+
+The same actual fixture,
+container image,
+resource bounds,
+and positive and clean controls produced:
+
+```text
+first compile + publish      108 ms
+artifact size          1,232,050 bytes
+warm minimum                  85 ms
+warm median                   88.0 ms
+warm p95                      92 ms
+warm maximum                  93 ms
+samples                       30
+```
+
+The hybrid reduced artifact size by 99.24%,
+made first compilation 1,354.8 times faster,
+and made the warm median 16.2 times faster than the rejected all-engine artifact.
+The complete observed unchanged-build band of 85 to 93 ms meets the sub-100 ms objective.
+The planted rule still matched,
+the clean control still exited 0,
+and the artifact retained mode `0600`.
+
+This is the accepted issue #456 result.
+It moves exact literals out of per-rule regex engines while retaining explicit regex rules in the precompiled engine path.
+
 ## Headline numbers
 
 Cutover re-measure for the `forbidden-regex` engine,

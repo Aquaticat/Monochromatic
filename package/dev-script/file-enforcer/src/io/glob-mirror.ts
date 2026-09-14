@@ -1,39 +1,39 @@
 /**
- * Captured wildcard segment and position of following fixed text.
+ Captured wildcard segment and position of following fixed text.
  */
 type CapturedSegment = Readonly<{
   /**
-   * Captured wildcard text.
+   Captured wildcard text.
    */
   readonly capture: string;
 
   /**
-   * Position where next fixed segment begins.
+   Position where next fixed segment begins.
    */
   readonly nextFixedPos: number;
 }>;
 
 /**
- * Captures one wildcard segment from current remainder.
- *
- * @param sourcePattern - Glob pattern used to match source.
- *
- * @param sourcePath - Concrete path being mirrored.
- *
- * @param sourceParts - Source pattern split by `*`.
- *
- * @param partIndex - Current fixed-part index.
- *
- * @param remainder - Remaining unmatched source path.
- *
- * @returns Captured text and position where next fixed segment begins.
- *
- * @throws When next fixed segment cannot be found.
- *
- * @example
- * ```ts
- * const captured = captureOneSegment({ sourcePattern, sourcePath, sourceParts, partIndex, remainder });
- * ```
+ Captures one wildcard segment from current remainder.
+ 
+ @param sourcePattern - Glob pattern used to match source.
+ 
+ @param sourcePath - Concrete path being mirrored.
+ 
+ @param sourceParts - Source pattern split by `*`.
+ 
+ @param partIndex - Current fixed-part index.
+ 
+ @param remainder - Remaining unmatched source path.
+ 
+ @returns Captured text and position where next fixed segment begins.
+ 
+ @throws When next fixed segment cannot be found.
+ 
+ @example
+ ```ts
+ const captured = captureOneSegment({ sourcePattern, sourcePath, sourceParts, partIndex, remainder });
+ ```
  */
 function captureOneSegment(
   {
@@ -51,11 +51,11 @@ function captureOneSegment(
   },
 ): CapturedSegment {
   /**
-   * Fixed segment following current wildcard.
+   Fixed segment following current wildcard.
    */
   const nextFixed = sourceParts[partIndex + 1] ?? '';
   /**
-   * Position where next fixed segment begins.
+   Position where next fixed segment begins.
    */
   const nextFixedPos = (nextFixed === '')
     ? remainder.length
@@ -75,25 +75,25 @@ function captureOneSegment(
 }
 
 /**
- * Captures wildcard segment values from source path, delegating each
- * wildcard to {@link captureOneSegment}.
- *
- * @param sourcePattern - Glob pattern used to match source.
- *
- * @param sourcePath - Concrete path being mirrored.
- *
- * @param sourceParts - Source pattern split by `*`.
- *
- * @param sourceWildcardCount - Number of wildcard captures expected.
- *
- * @returns Captured wildcard strings.
- *
- * @throws When source path does not match source pattern.
- *
- * @example
- * ```ts
- * const captures = captureSegments({ sourcePattern, sourcePath, sourceParts, sourceWildcardCount });
- * ```
+ Captures wildcard segment values from source path, delegating each
+ wildcard to {@link captureOneSegment}.
+ 
+ @param sourcePattern - Glob pattern used to match source.
+ 
+ @param sourcePath - Concrete path being mirrored.
+ 
+ @param sourceParts - Source pattern split by `*`.
+ 
+ @param sourceWildcardCount - Number of wildcard captures expected.
+ 
+ @returns Captured wildcard strings.
+ 
+ @throws When source path does not match source pattern.
+ 
+ @example
+ ```ts
+ const captures = captureSegments({ sourcePattern, sourcePath, sourceParts, sourceWildcardCount });
+ ```
  */
 function captureSegments(
   {
@@ -110,16 +110,16 @@ function captureSegments(
 ): readonly string[] {
   {
     /**
-     * Wildcard captures appended in source-pattern order.
+     Wildcard captures appended in source-pattern order.
      */
     const acc: string[] = [];
     /**
-     * Unconsumed tail of source path.
+     Unconsumed tail of source path.
      */
     let remainder = sourcePath;
     for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
       /**
-       * Fixed text before or after current wildcard.
+       Fixed text before or after current wildcard.
        */
       const fixedPart = sourceParts[partIndex];
       if (fixedPart === undefined)
@@ -133,7 +133,7 @@ function captureSegments(
 
       if (partIndex < sourceWildcardCount) {
         /**
-         * Captured segment and next fixed-text position.
+         Captured segment and next fixed-text position.
          */
         const captured = captureOneSegment({
           sourcePattern,
@@ -151,30 +151,30 @@ function captureSegments(
 }
 
 /**
- * Extracts wildcard segments from a source path using {@link captureSegments},
- * then substitutes them into the destination glob pattern.
- *
- * Each `*` in the source pattern captures one path segment value; those captured
- * values are inserted positionally into the `*` slots of the dest pattern.
- *
- * @param sourcePattern - Glob pattern used to match source.
- *
- * @param destPattern - Glob pattern for destination.
- *
- * @param sourcePath - Concrete path that matched sourcePattern.
- *
- * @returns Concrete destination path with wildcards filled in.
- *
- * @throws When wildcard counts don't match between source and dest patterns.
- *
- * @example
- * ```ts
- * mirrorGlobPath({
- *   sourcePattern: 'package/*​/src/*.ts',
- *   destPattern: 'temp/*​/src/*.ts',
- *   sourcePath: 'package/foo/src/index.ts',
- * });
- * ```
+ Extracts wildcard segments from a source path using {@link captureSegments},
+ then substitutes them into the destination glob pattern.
+ 
+ Each `*` in the source pattern captures one path segment value; those captured
+ values are inserted positionally into the `*` slots of the dest pattern.
+ 
+ @param sourcePattern - Glob pattern used to match source.
+ 
+ @param destPattern - Glob pattern for destination.
+ 
+ @param sourcePath - Concrete path that matched sourcePattern.
+ 
+ @returns Concrete destination path with wildcards filled in.
+ 
+ @throws When wildcard counts don't match between source and dest patterns.
+ 
+ @example
+ ```ts
+ mirrorGlobPath({
+   sourcePattern: 'package/*​/src/*.ts',
+   destPattern: 'temp/*​/src/*.ts',
+   sourcePath: 'package/foo/src/index.ts',
+ });
+ ```
  */
 export function mirrorGlobPath(
   {
@@ -188,20 +188,20 @@ export function mirrorGlobPath(
   },
 ): string {
   /**
-   * Segments of source pattern split by `*`.
+   Segments of source pattern split by `*`.
    */
   const sourceParts = sourcePattern.split('*',);
   /**
-   * Segments of destination pattern split by `*`.
+   Segments of destination pattern split by `*`.
    */
   const destParts = destPattern.split('*',);
 
   /**
-   * Number of wildcards in source pattern.
+   Number of wildcards in source pattern.
    */
   const sourceWildcardCount = sourceParts.length - 1;
   /**
-   * Number of wildcards in destination pattern.
+   Number of wildcards in destination pattern.
    */
   const destWildcardCount = destParts.length - 1;
   if (sourceWildcardCount !== destWildcardCount) {
@@ -214,7 +214,7 @@ export function mirrorGlobPath(
   }
 
   /**
-   * Wildcard captures extracted from source path.
+   Wildcard captures extracted from source path.
    */
   const captured = captureSegments({
     sourcePattern,
@@ -224,14 +224,14 @@ export function mirrorGlobPath(
   },);
 
   /**
-   * Reconstructed destination path with wildcards replaced by captured values.
+   Reconstructed destination path with wildcards replaced by captured values.
    */
   const result = destParts.flatMap(function appendDestSegment(
     part,
     destIndex,
   ): readonly string[] {
     /**
-     * Raw fixed text for this position.
+     Raw fixed text for this position.
      */
     const fixed = part ?? '';
     if (destIndex < destWildcardCount) {

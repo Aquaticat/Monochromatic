@@ -1,7 +1,7 @@
 /**
- * Core final-newline policy.
- *
- * @module
+ Core final-newline policy.
+ 
+ @module
  */
 import type {
   CandidateFile,
@@ -15,18 +15,18 @@ import { createFinalNewlinePatch, } from './final-newline-patch.ts';
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
- * Evaluates one content-bearing ordinary candidate.
- *
- * @param candidate - exact lifecycle candidate
- *
- * @param canApplyPatches - whether current lifecycle accepts policy patches
- *
- * @returns absent or one final-newline finding
- *
- * @example
- * ```ts
- * await checkFinalNewlineCandidate({ candidate, canApplyPatches: false });
- * ```
+ Evaluates one content-bearing ordinary candidate.
+ 
+ @param candidate - exact lifecycle candidate
+ 
+ @param canApplyPatches - whether current lifecycle accepts policy patches
+ 
+ @returns absent or one final-newline finding
+ 
+ @example
+ ```ts
+ await checkFinalNewlineCandidate({ candidate, canApplyPatches: false });
+ ```
  */
 async function checkFinalNewlineCandidate({
   candidate,
@@ -40,17 +40,17 @@ async function checkFinalNewlineCandidate({
     || isFinalNewlineExcluded(candidate.path,))
     return [];
   /**
-   * Exact candidate bytes from lifecycle-owned Git state.
+   Exact candidate bytes from lifecycle-owned Git state.
    */
   const original = await candidate.bytes();
   /**
-   * Exact-byte normalization decision.
+   Exact-byte normalization decision.
    */
   const normalization = normalizeFinalNewline(original,);
   if (normalization.kind === 'unchanged')
     return [];
   /**
-   * Stable report shared by read-only and fixable lifecycle points.
+   Stable report shared by read-only and fixable lifecycle points.
    */
   const finding: PolicyFinding = {
     code: 'noncanonical-final-newline',
@@ -75,13 +75,13 @@ async function checkFinalNewlineCandidate({
 }
 
 /**
- * Enabled-by-default core final-newline policy.
- *
- * @example
- * ```ts
- * finalNewlinePolicy.name;
- * // => 'final-newline'
- * ```
+ Enabled-by-default core final-newline policy.
+ 
+ @example
+ ```ts
+ finalNewlinePolicy.name;
+ // => 'final-newline'
+ ```
  */
 export const finalNewlinePolicy: RuntimePolicyDefinition = {
   name: 'final-newline',
@@ -96,13 +96,13 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
   ],
   async check({ context, }): Promise<readonly PolicyFinding[]> {
     /**
-     * Exact lifecycle-selected candidates; every lifecycle now supplies only
-     * the operation's own delta, so no post-commit narrowing happens here.
+     Exact lifecycle-selected candidates; every lifecycle now supplies only
+     the operation's own delta, so no post-commit narrowing happens here.
      */
     const candidates = await context.git
       .candidates();
     /**
-     * Findings accumulated without unbounded candidate-byte fan-out.
+     Findings accumulated without unbounded candidate-byte fan-out.
      */
     const findings: PolicyFinding[] = [];
     /* oxlint-disable no-await-in-loop -- Sequential candidate reads avoid recreating repository-scale subprocess fan-out for lifecycle facts that are not batch-backed. */

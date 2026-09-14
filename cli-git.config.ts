@@ -6,6 +6,7 @@
 import {
   defineConfig,
   forbiddenStringsPlugin,
+  markdownLintPlugin,
   repositoryPolicyPlugin,
 } from '@monochromatic-dev/git-policy-cli/ts';
 import type { CliGitConfig, } from '@monochromatic-dev/git-policy-cli/ts';
@@ -19,10 +20,27 @@ import type { CliGitConfig, } from '@monochromatic-dev/git-policy-cli/ts';
  */
 const config: CliGitConfig = defineConfig({
   plugins: {
+    markdown: markdownLintPlugin,
     mono: repositoryPolicyPlugin,
     security: forbiddenStringsPlugin,
   },
   policies: {
+    // Rewrites Markdown image links that point at LFS-tracked files to the
+    // LFS server's immutable object URLs inside the commit transaction, so
+    // GitHub renders the image instead of the pointer (issue #476). Only the
+    // lfs-image-url rule runs; package/ssg/ is excluded because those MDX
+    // pages resolve images through the site build, not GitHub.
+    'markdown/autofix': [
+      'warn',
+      {
+        command: [
+          'node',
+          'package/cli/markdown-lint/src/cli.ts',
+        ],
+        rules: ['lfs-image-url',],
+        exclude: ['package/ssg/',],
+      },
+    ],
     'mono/forbidden-root-context': 'error',
     'security/forbidden-strings': [
       'error',

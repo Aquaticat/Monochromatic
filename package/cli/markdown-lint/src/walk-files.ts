@@ -13,9 +13,9 @@ import {
 import ignore, { type Ignore, } from 'ignore';
 
 /**
- * Lintable extensions mapped to whether the file is parsed as MDX. The walk
- * only ever reads these, so a binary or non-text file is never opened (the
- * misuse that OOMed `markdownlint-cli2` cannot recur).
+ Lintable extensions mapped to whether the file is parsed as MDX. The walk
+ only ever reads these, so a binary or non-text file is never opened (the
+ misuse that OOMed `markdownlint-cli2` cannot recur).
  */
 const LINTABLE_EXTENSIONS: ReadonlyMap<string, boolean> = new Map([
   [
@@ -29,10 +29,10 @@ const LINTABLE_EXTENSIONS: ReadonlyMap<string, boolean> = new Map([
 ],);
 
 /**
- * Directories ignored in addition to whatever `.gitignore` files declare.
- * `.git` and `node_modules` are skipped for speed; the paused, deprecated, and
- * out-of-scope trees carry Markdown that is intentionally not linted (the
- * explicit `ignores` the old `.markdownlint-cli2.jsonc` carried).
+ Directories ignored in addition to whatever `.gitignore` files declare.
+ `.git` and `node_modules` are skipped for speed; the paused, deprecated, and
+ out-of-scope trees carry Markdown that is intentionally not linted (the
+ explicit `ignores` the old `.markdownlint-cli2.jsonc` carried).
  */
 const DEFAULT_IGNORES: readonly string[] = [
   '.git',
@@ -43,47 +43,47 @@ const DEFAULT_IGNORES: readonly string[] = [
 ];
 
 /**
- * Node filesystem error code for absent paths.
+ Node filesystem error code for absent paths.
  */
 const FILE_NOT_FOUND_ERROR_CODE = 'ENOENT';
 
 /**
- * One `.gitignore` scope: a base directory and the matcher built from the
- * patterns declared there. A path is tested relative to the base.
+ One `.gitignore` scope: a base directory and the matcher built from the
+ patterns declared there. A path is tested relative to the base.
  */
 type IgnoreLayer = {
   /**
-   * Absolute directory the patterns are anchored to.
+   Absolute directory the patterns are anchored to.
    */
   readonly base: string;
   /**
-   * Compiled ignore matcher for this scope.
+   Compiled ignore matcher for this scope.
    */
   readonly ig: Ignore;
 };
 
 /**
- * A file discovered by the walk, with its parse mode resolved from extension.
+ A file discovered by the walk, with its parse mode resolved from extension.
  */
 export type DiscoveredFile = {
   /**
-   * Absolute path to the file.
+   Absolute path to the file.
    */
   readonly path: string;
   /**
-   * Whether to parse the file as MDX.
+   Whether to parse the file as MDX.
    */
   readonly mdx: boolean;
 };
 
 /**
- * Read a directory's `.gitignore`, returning its contents or an empty string
- * when absent. Absence is the common case, but other read failures surface
- * instead of being silently swallowed.
- *
- * @param dir - directory to read `.gitignore` from
- *
- * @returns `.gitignore` contents, or empty string when there is none
+ Read a directory's `.gitignore`, returning its contents or an empty string
+ when absent. Absence is the common case, but other read failures surface
+ instead of being silently swallowed.
+ 
+ @param dir - directory to read `.gitignore` from
+ 
+ @returns `.gitignore` contents, or empty string when there is none
  */
 async function readGitignore(dir: string,): Promise<string> {
   try {
@@ -102,7 +102,7 @@ async function readGitignore(dir: string,): Promise<string> {
       throw error;
     }
     /**
-     * Node filesystem error code attached to the failed `.gitignore` read.
+     Node filesystem error code attached to the failed `.gitignore` read.
      */
     const { code, } = error as { readonly code: unknown; };
     if (code !== FILE_NOT_FOUND_ERROR_CODE) {
@@ -113,35 +113,35 @@ async function readGitignore(dir: string,): Promise<string> {
 }
 
 /**
- * Parameters for {@link isIgnored}.
+ Parameters for {@link isIgnored}.
  */
 type IsIgnoredParams = {
   /**
-   * Active ignore layers, ancestors first.
+   Active ignore layers, ancestors first.
    */
   readonly layers: readonly IgnoreLayer[];
   /**
-   * Absolute path being tested.
+   Absolute path being tested.
    */
   readonly absPath: string;
   /**
-   * Whether the path is a directory (matched against directory patterns).
+   Whether the path is a directory (matched against directory patterns).
    */
   readonly isDir: boolean;
 };
 
 /**
- * Whether any active layer ignores a path. Each layer tests the path relative
- * to its own base, skipping layers the path is not under, which is git's
- * nested-`.gitignore` model.
- *
- * @param layers - active ignore layers, ancestors first
- *
- * @param absPath - absolute path being tested
- *
- * @param isDir - whether the path is a directory
- *
- * @returns whether the path is ignored
+ Whether any active layer ignores a path. Each layer tests the path relative
+ to its own base, skipping layers the path is not under, which is git's
+ nested-`.gitignore` model.
+ 
+ @param layers - active ignore layers, ancestors first
+ 
+ @param absPath - absolute path being tested
+ 
+ @param isDir - whether the path is a directory
+ 
+ @returns whether the path is ignored
  */
 function isIgnored({
   layers,
@@ -150,7 +150,7 @@ function isIgnored({
 }: IsIgnoredParams,): boolean {
   return layers.some(function layerIgnores(layer: IgnoreLayer,): boolean {
     /**
-     * Path relative to this layer's base, in POSIX form for the matcher.
+     Path relative to this layer's base, in POSIX form for the matcher.
      */
     const rel = relative(
       layer.base,
@@ -167,27 +167,27 @@ function isIgnored({
 }
 
 /**
- * Discover every lintable file under one root, honouring `.gitignore` files at
- * each level plus the default ignores. Traversal is an explicit work-stack, not
- * recursion, so a deep tree cannot overflow the call stack.
- *
- * @param root - directory to walk
- *
- * @returns lintable files found under the root, with parse mode resolved
+ Discover every lintable file under one root, honouring `.gitignore` files at
+ each level plus the default ignores. Traversal is an explicit work-stack, not
+ recursion, so a deep tree cannot overflow the call stack.
+ 
+ @param root - directory to walk
+ 
+ @returns lintable files found under the root, with parse mode resolved
  */
 async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> {
   /**
-   * Absolute root the walk starts from.
+   Absolute root the walk starts from.
    */
   const absRoot = resolve(root,);
   /**
-   * Files accumulated across the walk.
+   Files accumulated across the walk.
    */
   const results: DiscoveredFile[] = [];
   /**
-   * Directories still to visit, each carrying the ignore layers inherited from
-   * its ancestors. The seed layer holds the default ignores, anchored at the
-   * root so they apply everywhere.
+   Directories still to visit, each carrying the ignore layers inherited from
+   its ancestors. The seed layer holds the default ignores, anchored at the
+   root so they apply everywhere.
    */
   const stack: {
     readonly dir: string;
@@ -202,14 +202,14 @@ async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> 
   },];
   while (stack.length > 0) {
     /**
-     * Directory frame popped from the work-stack.
+     Directory frame popped from the work-stack.
      */
     const frame = stack.pop();
     if (frame === undefined) {
       continue;
     }
     /**
-     * This directory's `.gitignore` contents and its entries, read together.
+     This directory's `.gitignore` contents and its entries, read together.
      */
     // oxlint-disable-next-line eslint/no-await-in-loop -- the work-stack walk cannot know a directory's children until it is read, so each frame is an inherently sequential await; the per-directory Promise.all is the bounded unit of concurrency.
     const [gitignore, entries,] = await Promise.all([
@@ -220,7 +220,7 @@ async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> 
       ),
     ],);
     /**
-     * Ignore layers in effect for this directory's entries.
+     Ignore layers in effect for this directory's entries.
      */
     const layers: readonly IgnoreLayer[] = gitignore === ''
       ? frame.layers
@@ -234,7 +234,7 @@ async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> 
       ];
     for (const entry of entries) {
       /**
-       * Absolute path of this entry.
+       Absolute path of this entry.
        */
       const absPath = join(
         frame.dir,
@@ -257,7 +257,7 @@ async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> 
         continue;
       }
       /**
-       * Parse mode for this extension, or undefined when not lintable.
+       Parse mode for this extension, or undefined when not lintable.
        */
       const mdx = LINTABLE_EXTENSIONS.get(extname(entry.name,),);
       if (mdx === undefined) {
@@ -280,25 +280,25 @@ async function discoverUnder(root: string,): Promise<readonly DiscoveredFile[]> 
 }
 
 /**
- * Resolve a single explicit file argument: a one-element list when its
- * extension is lintable, empty otherwise. Returning a list (rather than a
- * nullable) lets callers `flat()` the result and keeps the type free of a
- * banned nullish union. Explicit files bypass the gitignore walk: naming a file
- * is an explicit request to lint it.
- *
- * @param path - file path the user named explicitly
- *
- * @returns one discovered file, or empty for a non-lintable extension
- *
- * @example
- * ```ts
- * explicitFile('readme.md'); // [{ path: '/abs/readme.md', mdx: false }]
- * explicitFile('logo.png');  // []
- * ```
+ Resolve a single explicit file argument: a one-element list when its
+ extension is lintable, empty otherwise. Returning a list (rather than a
+ nullable) lets callers `flat()` the result and keeps the type free of a
+ banned nullish union. Explicit files bypass the gitignore walk: naming a file
+ is an explicit request to lint it.
+ 
+ @param path - file path the user named explicitly
+ 
+ @returns one discovered file, or empty for a non-lintable extension
+ 
+ @example
+ ```ts
+ explicitFile('readme.md'); // [{ path: '/abs/readme.md', mdx: false }]
+ explicitFile('logo.png');  // []
+ ```
  */
 export function explicitFile(path: string,): readonly DiscoveredFile[] {
   /**
-   * Parse mode for the file's extension, or undefined when not lintable.
+   Parse mode for the file's extension, or undefined when not lintable.
    */
   const mdx = LINTABLE_EXTENSIONS.get(extname(path,),);
   return mdx === undefined
@@ -310,27 +310,27 @@ export function explicitFile(path: string,): readonly DiscoveredFile[] {
 }
 
 /**
- * Discover lintable files under one or more directory roots, deduplicated by
- * absolute path.
- *
- * @param roots - directories to walk
- *
- * @returns unique lintable files across all roots
- *
- * @example
- * ```ts
- * await discoverFiles(['.']); // every .md/.mdx not gitignored
- * ```
+ Discover lintable files under one or more directory roots, deduplicated by
+ absolute path.
+ 
+ @param roots - directories to walk
+ 
+ @returns unique lintable files across all roots
+ 
+ @example
+ ```ts
+ await discoverFiles(['.']); // every .md/.mdx not gitignored
+ ```
  */
 export async function discoverFiles(roots: readonly string[],): Promise<readonly DiscoveredFile[]> {
   /**
-   * Discovered files per root, before deduplication.
+   Discovered files per root, before deduplication.
    */
   const perRoot = await Promise.all(roots.map(function under(root: string,): Promise<readonly DiscoveredFile[]> {
     return discoverUnder(root,);
   },),);
   /**
-   * Files keyed by absolute path, collapsing roots that overlap.
+   Files keyed by absolute path, collapsing roots that overlap.
    */
   const byPath = new Map<string, DiscoveredFile>();
   for (const file of perRoot.flat()) {

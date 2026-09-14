@@ -1,14 +1,14 @@
 /**
- * Electron main process for the no-Vite ESM TypeScript counter app.
- *
- * Linux startup deliberately forces Chromium's Ozone Wayland backend before
- * Electron's `ready` event. The package's boundary test also unsets `DISPLAY`,
- * so XWayland cannot hide a regression.
- *
- * @example
- * ```ts
- * // Electron loads this file from dist/app/main.mjs.
- * ```
+ Electron main process for the no-Vite ESM TypeScript counter app.
+ 
+ Linux startup deliberately forces Chromium's Ozone Wayland backend before
+ Electron's `ready` event. The package's boundary test also unsets `DISPLAY`,
+ so XWayland cannot hide a regression.
+ 
+ @example
+ ```ts
+ // Electron loads this file from dist/app/main.mjs.
+ ```
  */
 
 import {
@@ -31,52 +31,52 @@ import {
 } from './counter.js';
 
 /**
- * Width of the demo window in density-independent pixels.
- *
- * @example
- * ```ts
- * console.log(mainWindowWidth);
- * ```
+ Width of the demo window in density-independent pixels.
+ 
+ @example
+ ```ts
+ console.log(mainWindowWidth);
+ ```
  */
 const mainWindowWidth = 800;
 
 /**
- * Height of the demo window in density-independent pixels.
- *
- * @example
- * ```ts
- * console.log(mainWindowHeight);
- * ```
+ Height of the demo window in density-independent pixels.
+ 
+ @example
+ ```ts
+ console.log(mainWindowHeight);
+ ```
  */
 const mainWindowHeight = 600;
 
 /**
- * Environment variable pointing at a JSON file where tests observe renderer state.
- *
- * @example
- * ```ts
- * console.log(statePathEnvironmentVariable);
- * ```
+ Environment variable pointing at a JSON file where tests observe renderer state.
+ 
+ @example
+ ```ts
+ console.log(statePathEnvironmentVariable);
+ ```
  */
 const statePathEnvironmentVariable = 'MONOCHROMATIC_ELECTRON_COUNTER_STATE_PATH';
 
 /**
- * Main-process logger tagged at module boundary.
- *
- * @example
- * ```ts
- * mainLogger.info('starting');
- * ```
+ Main-process logger tagged at module boundary.
+ 
+ @example
+ ```ts
+ mainLogger.info('starting');
+ ```
  */
 const mainLogger = tagged({ tag: 'electron-counter-main', },);
 
 /**
- * Absolute path to the renderer HTML file in the staged app directory.
- *
- * @example
- * ```ts
- * console.log(rendererHtmlPath);
- * ```
+ Absolute path to the renderer HTML file in the staged app directory.
+ 
+ @example
+ ```ts
+ console.log(rendererHtmlPath);
+ ```
  */
 const rendererHtmlPath = join(
   import.meta.dirname,
@@ -84,12 +84,12 @@ const rendererHtmlPath = join(
 );
 
 /**
- * Adds Chromium switches required for pure Wayland operation on Linux.
- *
- * @example
- * ```ts
- * configureLinuxWayland();
- * ```
+ Adds Chromium switches required for pure Wayland operation on Linux.
+ 
+ @example
+ ```ts
+ configureLinuxWayland();
+ ```
  */
 function configureLinuxWayland(): void {
   if (process.platform !== 'linux') {
@@ -113,18 +113,18 @@ function configureLinuxWayland(): void {
 }
 
 /**
- * Writes test-observable renderer state when the boundary-test state path is set.
- *
- * @param count - Counter value observed from renderer title.
- *
- * @example
- * ```ts
- * await writeObservedCounterState({ count: 1 });
- * ```
+ Writes test-observable renderer state when the boundary-test state path is set.
+ 
+ @param count - Counter value observed from renderer title.
+ 
+ @example
+ ```ts
+ await writeObservedCounterState({ count: 1 });
+ ```
  */
 async function writeObservedCounterState({ count, }: { readonly count: number; },): Promise<void> {
   /**
-   * Optional state path used only by automated boundary tests.
+   Optional state path used only by automated boundary tests.
    */
   const statePath = process.env[statePathEnvironmentVariable];
 
@@ -132,7 +132,7 @@ async function writeObservedCounterState({ count, }: { readonly count: number; }
     return;
 
   /**
-   * Unique temp path used so state readers never observe a truncated JSON file.
+   Unique temp path used so state readers never observe a truncated JSON file.
    */
   const tempStatePath = `${statePath}.${process.pid}.${Date.now()}.tmp`;
 
@@ -152,18 +152,18 @@ async function writeObservedCounterState({ count, }: { readonly count: number; }
 }
 
 /**
- * Observes a renderer title update and mirrors the count to the optional test state file.
- *
- * @param title - Title reported by Electron's `page-title-updated` event.
- *
- * @example
- * ```ts
- * await observeCounterTitle({ title: 'Monochromatic ESM TS Counter :: count=1' });
- * ```
+ Observes a renderer title update and mirrors the count to the optional test state file.
+ 
+ @param title - Title reported by Electron's `page-title-updated` event.
+ 
+ @example
+ ```ts
+ await observeCounterTitle({ title: 'Monochromatic ESM TS Counter :: count=1' });
+ ```
  */
 async function observeCounterTitle({ title, }: { readonly title: string; },): Promise<void> {
   /**
-   * Parsed count from this app's title convention.
+   Parsed count from this app's title convention.
    */
   const count = parseDocumentTitle({ title, },);
 
@@ -175,15 +175,15 @@ async function observeCounterTitle({ title, }: { readonly title: string; },): Pr
 }
 
 /**
- * Runs an async title observation and logs any failure, because Electron event
- * emitters do not await async listeners.
- *
- * @param title - Title reported by the renderer.
- *
- * @example
- * ```ts
- * observeCounterTitleFromEvent({ title: 'Monochromatic ESM TS Counter :: count=0' });
- * ```
+ Runs an async title observation and logs any failure, because Electron event
+ emitters do not await async listeners.
+ 
+ @param title - Title reported by the renderer.
+ 
+ @example
+ ```ts
+ observeCounterTitleFromEvent({ title: 'Monochromatic ESM TS Counter :: count=0' });
+ ```
  */
 function observeCounterTitleFromEvent({ title, }: { readonly title: string; },): void {
   void (async function observeCounterTitleTask(): Promise<void> {
@@ -199,19 +199,19 @@ function observeCounterTitleFromEvent({ title, }: { readonly title: string; },):
 }
 
 /**
- * Creates the main BrowserWindow and loads the renderer HTML entry.
- *
- * @returns Created BrowserWindow.
- *
- * @example
- * ```ts
- * await createMainWindow();
- * ```
+ Creates the main BrowserWindow and loads the renderer HTML entry.
+ 
+ @returns Created BrowserWindow.
+ 
+ @example
+ ```ts
+ await createMainWindow();
+ ```
  */
 async function createMainWindow(): Promise<BrowserWindow> {
   mainLogger.info('Creating main window.',);
   /**
-   * BrowserWindow hosting the sandboxed renderer.
+   BrowserWindow hosting the sandboxed renderer.
    */
   const mainWindow = new BrowserWindow({
     height: mainWindowHeight,
@@ -252,14 +252,14 @@ async function createMainWindow(): Promise<BrowserWindow> {
 }
 
 /**
- * Logs a failure from an app activation path that Electron does not await.
- *
- * @param error - Caught activation error.
- *
- * @example
- * ```ts
- * logActivationCreateError({ error: new Error('boom') });
- * ```
+ Logs a failure from an app activation path that Electron does not await.
+ 
+ @param error - Caught activation error.
+ 
+ @example
+ ```ts
+ logActivationCreateError({ error: new Error('boom') });
+ ```
  */
 function logActivationCreateError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(
@@ -268,12 +268,12 @@ function logActivationCreateError({ error, }: { readonly error: unknown; },): vo
 }
 
 /**
- * Creates a replacement main window when the app is activated with none open.
- *
- * @example
- * ```ts
- * createMainWindowForActivation();
- * ```
+ Creates a replacement main window when the app is activated with none open.
+ 
+ @example
+ ```ts
+ createMainWindowForActivation();
+ ```
  */
 function createMainWindowForActivation(): void {
   void (async function createActivatedMainWindow(): Promise<void> {
@@ -287,12 +287,12 @@ function createMainWindowForActivation(): void {
 }
 
 /**
- * Installs lifecycle hooks that are independent of a specific window instance.
- *
- * @example
- * ```ts
- * installAppLifecycleHandlers();
- * ```
+ Installs lifecycle hooks that are independent of a specific window instance.
+ 
+ @example
+ ```ts
+ installAppLifecycleHandlers();
+ ```
  */
 function installAppLifecycleHandlers(): void {
   app.on(
@@ -317,14 +317,14 @@ function installAppLifecycleHandlers(): void {
 }
 
 /**
- * Logs a failure from initial app startup.
- *
- * @param error - Caught startup error.
- *
- * @example
- * ```ts
- * logStartupError({ error: new Error('boom') });
- * ```
+ Logs a failure from initial app startup.
+ 
+ @param error - Caught startup error.
+ 
+ @example
+ ```ts
+ logStartupError({ error: new Error('boom') });
+ ```
  */
 function logStartupError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(
@@ -333,16 +333,16 @@ function logStartupError({ error, }: { readonly error: unknown; },): void {
 }
 
 /**
- * Starts Electron asynchronously without blocking ESM module evaluation.
- *
- * Electron emits `ready` after the main module finishes evaluating, so a
- * top-level `await app.whenReady()` deadlocks startup under Electron's ESM
- * loader.
- *
- * @example
- * ```ts
- * startElectronCounterApp();
- * ```
+ Starts Electron asynchronously without blocking ESM module evaluation.
+ 
+ Electron emits `ready` after the main module finishes evaluating, so a
+ top-level `await app.whenReady()` deadlocks startup under Electron's ESM
+ loader.
+ 
+ @example
+ ```ts
+ startElectronCounterApp();
+ ```
  */
 function startElectronCounterApp(): void {
   void (async function startElectronCounterAppTask(): Promise<void> {

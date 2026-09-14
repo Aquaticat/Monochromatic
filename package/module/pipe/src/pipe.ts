@@ -121,40 +121,40 @@ export function pipe<
   } & NoStepsAfter9,
 ): (value: TInput,) => TStep9;
 /**
- * Creates a reusable synchronous left-to-right pipeline function, delegating
- * each call to {@link runPipe}.
- *
- * @param args - contiguous step functions and optional logger
- *
- * @returns function that applies captured steps to each input value
- *
- * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
- * runtime step keys are invalid
- *
- * @throws whatever pipeline step throws; the throw propagates unchanged
- *
- * @example
- * ```ts
- * import { pipe } from '\@monochromatic-dev/module-pipe';
- *
- * const render = pipe({
- *   fn1: (input: number) => input + 1,
- *   fn2: (input) => String(input),
- * });
- * render(1);
- * ```
+ Creates a reusable synchronous left-to-right pipeline function, delegating
+ each call to {@link runPipe}.
+ 
+ @param args - contiguous step functions and optional logger
+ 
+ @returns function that applies captured steps to each input value
+ 
+ @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ runtime step keys are invalid
+ 
+ @throws whatever pipeline step throws; the throw propagates unchanged
+ 
+ @example
+ ```ts
+ import { pipe } from '\@monochromatic-dev/module-pipe';
+ 
+ const render = pipe({
+   fn1: (input: number) => input + 1,
+   fn2: (input) => String(input),
+ });
+ render(1);
+ ```
  */
 export function pipe(args: DeferredArgs,): (value: unknown,) => unknown {
   /**
-   * Applies captured synchronous steps to a provided value.
-   *
-   * @param value - input value supplied to the reusable pipeline
-   *
-   * @returns final pipeline output
+   Applies captured synchronous steps to a provided value.
+   
+   @param value - input value supplied to the reusable pipeline
+   
+   @returns final pipeline output
    */
   function pipeline(value: unknown,): unknown {
     /**
-     * Logger tagged at the deferred public API invocation boundary.
+     Logger tagged at the deferred public API invocation boundary.
      */
     const l = tagged(args.l
       === undefined

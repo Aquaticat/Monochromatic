@@ -1,4 +1,5 @@
 export { caught, } from './caught.ts';
+export type { AssertionSite, } from './assertion-source.ts';
 
 export { describe, } from './describe.ts';
 export type {

@@ -1,7 +1,7 @@
 /**
- * Element-flow derivation for default-library read-only view calls.
- *
- * @module
+ Element-flow derivation for default-library read-only view calls.
+ 
+ @module
  */
 
 import type {
@@ -41,14 +41,14 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Sentinel when a read-only view call leaves reachable user code unproven.
+ Sentinel when a read-only view call leaves reachable user code unproven.
  */
 export const READONLY_VIEW_UNDISCHARGED: unique symbol = Symbol(
   'read-only view call has unanalyzable reachable user code',
 );
 
 /**
- * One call argument whose semantic type resolved, kept at its own position.
+ One call argument whose semantic type resolved, kept at its own position.
  */
 type TypedArgument = {
   readonly argument: Expression;
@@ -57,51 +57,51 @@ type TypedArgument = {
 };
 
 /**
- * One observer argument backed by an owned implementation.
+ One observer argument backed by an owned implementation.
  */
 type OwnedObserver = TypedArgument & {
   readonly declaration: EffectCallableDeclaration;
 };
 
 /**
- * Sentinel when the member does not describe what an argument position receives.
+ Sentinel when the member does not describe what an argument position receives.
  */
 const OBSERVED_POSITIONS_UNAVAILABLE: unique symbol = Symbol(
   'member signature does not describe observer parameter positions',
 );
 
 /**
- * Collects callback parameter positions carrying receiver-reachable state.
- *
- * Read from the member's own instantiated signature, never from how the observer
- * annotates itself. TypeScript instantiates the member with the receiver's type
- * arguments, so inside that signature the types exposing receiver state are the
- * identical `Type` instances rather than merely equivalent ones. Both those
- * arguments and the receiver type count: `forEach` hands the whole array to a
- * third parameter, reaching the same state without any element parameter.
- *
- * The observer's own annotations cannot be used for this. A pre-declared
- * function passed by reference, `states.map(operations.render)`, annotates its
- * parameter independently, producing a structurally identical but distinct type
- * that matches nothing. Matching against it silently found no position, and
- * discharging on that emptiness dropped a real mutation.
- *
- * @param checker - TypeScript checker resolving parameter types.
- *
- * @param call - Read-only view call whose member signature is authoritative.
- *
- * @param argumentIndex - Position of observer among call arguments.
- *
- * @param elementTypes - Types the receiver view is instantiated over.
- *
- * @param receiverType - Receiver collection type.
- *
- * @returns positions exposing receiver state, or sentinel when undescribed.
- *
- * @example
- * ```ts
- * observedParameterIndexes({ checker, call, argumentIndex, elementTypes, receiverType });
- * ```
+ Collects callback parameter positions carrying receiver-reachable state.
+ 
+ Read from the member's own instantiated signature, never from how the observer
+ annotates itself. TypeScript instantiates the member with the receiver's type
+ arguments, so inside that signature the types exposing receiver state are the
+ identical `Type` instances rather than merely equivalent ones. Both those
+ arguments and the receiver type count: `forEach` hands the whole array to a
+ third parameter, reaching the same state without any element parameter.
+ 
+ The observer's own annotations cannot be used for this. A pre-declared
+ function passed by reference, `states.map(operations.render)`, annotates its
+ parameter independently, producing a structurally identical but distinct type
+ that matches nothing. Matching against it silently found no position, and
+ discharging on that emptiness dropped a real mutation.
+ 
+ @param checker - TypeScript checker resolving parameter types.
+ 
+ @param call - Read-only view call whose member signature is authoritative.
+ 
+ @param argumentIndex - Position of observer among call arguments.
+ 
+ @param elementTypes - Types the receiver view is instantiated over.
+ 
+ @param receiverType - Receiver collection type.
+ 
+ @returns positions exposing receiver state, or sentinel when undescribed.
+ 
+ @example
+ ```ts
+ observedParameterIndexes({ checker, call, argumentIndex, elementTypes, receiverType });
+ ```
  */
 function observedParameterIndexes({
   checker,
@@ -117,14 +117,14 @@ function observedParameterIndexes({
   readonly receiverType: Type;
 },): readonly ParameterIndex[] | typeof OBSERVED_POSITIONS_UNAVAILABLE {
   /**
-   * Member parameter symbol receiving observer at this position.
+   Member parameter symbol receiving observer at this position.
    */
   const memberParameter = checker.getResolvedSignature(call,)
     ?.getParameters()[argumentIndex];
   if (memberParameter === undefined)
     return OBSERVED_POSITIONS_UNAVAILABLE;
   /**
-   * Callback type the member declares for this position.
+   Callback type the member declares for this position.
    */
   const declaredObserverType = checker.getTypeOfSymbolAtLocation(
     memberParameter,
@@ -136,7 +136,7 @@ function observedParameterIndexes({
   // `undefined`, which exposes no call signature at all. Strip it first, or every
   // optional-observer member would look undescribed and stay opaque.
   /**
-   * Declared callback type with any optionality removed.
+   Declared callback type with any optionality removed.
    */
   const presentObserverType = checker.getNonNullableType(
     declaredObserverType,
@@ -144,7 +144,7 @@ function observedParameterIndexes({
   if (presentObserverType === undefined)
     return OBSERVED_POSITIONS_UNAVAILABLE;
   /**
-   * Call signature the member declares for this position.
+   Call signature the member declares for this position.
    */
   const [declaredSignature,] = checker.getSignaturesOfType(
     presentObserverType,
@@ -159,7 +159,7 @@ function observedParameterIndexes({
       observerParameterIndex,
     ): readonly ParameterIndex[] {
       /**
-       * Instantiated member callback parameter type at this call.
+       Instantiated member callback parameter type at this call.
        */
       const parameterType = checker.getTypeOfSymbolAtLocation(
         parameterSymbol,
@@ -168,7 +168,7 @@ function observedParameterIndexes({
       // An unresolved parameter type counts as reachable: failing to prove a
       // position safe must widen what propagates, never narrow it.
       /**
-       * Whether this position exposes state reachable from the receiver.
+       Whether this position exposes state reachable from the receiver.
        */
       const reachable = (parameterType === undefined)
         || (parameterType === receiverType)
@@ -180,35 +180,35 @@ function observedParameterIndexes({
 }
 
 /**
- * Derives element-flow relations for one default-library read-only view call.
- *
- * Answers only the reachable-user-code question; the caller has already proven
- * that the member cannot restructure the receiver. Every path that cannot be
- * derived returns the undischarged sentinel so the receiver stays opaque:
- * a member observing elements with no caller-supplied observer, such as `join`
- * or a bare `toSorted()`, supplies nothing to analyze, and an observer whose
- * implementation is not owned source cannot be analyzed at all.
- *
- * @param project - TypeScript project resolving observer declarations.
- *
- * @param checker - TypeScript checker resolving receiver and parameter types.
- *
- * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
- *
- * @param call - Read-only view call expression.
- *
- * @param receiver - Receiver expression rooted at a caller parameter.
- *
- * @param receiverSlot - Caller slot owning receiver.
- *
- * @param analysisRoot - Optional external implementation root.
- *
- * @returns derived relations, or sentinel when reachable code stays unproven.
- *
- * @example
- * ```ts
- * readonlyViewElementApplications({ project, checker, call, receiver, receiverSlot });
- * ```
+ Derives element-flow relations for one default-library read-only view call.
+ 
+ Answers only the reachable-user-code question; the caller has already proven
+ that the member cannot restructure the receiver. Every path that cannot be
+ derived returns the undischarged sentinel so the receiver stays opaque:
+ a member observing elements with no caller-supplied observer, such as `join`
+ or a bare `toSorted()`, supplies nothing to analyze, and an observer whose
+ implementation is not owned source cannot be analyzed at all.
+ 
+ @param project - TypeScript project resolving observer declarations.
+ 
+ @param checker - TypeScript checker resolving receiver and parameter types.
+ 
+ @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ 
+ @param call - Read-only view call expression.
+ 
+ @param receiver - Receiver expression rooted at a caller parameter.
+ 
+ @param receiverSlot - Caller slot owning receiver.
+ 
+ @param analysisRoot - Optional external implementation root.
+ 
+ @returns derived relations, or sentinel when reachable code stays unproven.
+ 
+ @example
+ ```ts
+ readonlyViewElementApplications({ project, checker, call, receiver, receiverSlot });
+ ```
  */
 export function readonlyViewElementApplications({
   project,
@@ -230,7 +230,7 @@ export function readonlyViewElementApplications({
   readonly body?: Node;
 },): readonly ElementApplication[] | typeof READONLY_VIEW_UNDISCHARGED {
   /**
-   * Receiver collection type carrying the element type argument.
+   Receiver collection type carrying the element type argument.
    */
   const receiverType = checker.getTypeAtLocation(receiver,);
   if ((receiverType === undefined) || (!receiverType.isTypeReference()))
@@ -239,7 +239,7 @@ export function readonlyViewElementApplications({
   // element at 0, but `ReadonlyMap<K, V>` puts the key there and the value that
   // callbacks receive at 1, so reading only position 0 misses map values.
   /**
-   * Types the read-only view is instantiated over.
+   Types the read-only view is instantiated over.
    */
   const elementTypes = checker.getTypeArguments(receiverType,);
   if (elementTypes.length === 0)
@@ -266,7 +266,7 @@ export function readonlyViewElementApplications({
   // members that never construct, `reduce` accumulating into an array, since
   // neither is distinguishable here. Both directions fail closed.
   /**
-   * Instantiated result type of this call.
+   Instantiated result type of this call.
    */
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
@@ -281,7 +281,7 @@ export function readonlyViewElementApplications({
   },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
-   * Every argument paired with its resolved type.
+   Every argument paired with its resolved type.
    */
   const typedArguments = [...call.arguments,]
     .flatMap(function typedArgument(
@@ -289,7 +289,7 @@ export function readonlyViewElementApplications({
       argumentIndex,
     ): readonly TypedArgument[] {
       /**
-       * Argument type, absent when the checker cannot resolve it.
+       Argument type, absent when the checker cannot resolve it.
        */
       const argumentType = checker.getTypeAtLocation(argument,);
       return (argumentType === undefined)
@@ -301,14 +301,14 @@ export function readonlyViewElementApplications({
         },];
     },);
   /**
-   * Argument count at the call site.
+   Argument count at the call site.
    */
   const argumentCount = call.arguments
     .length;
   if (typedArguments.length !== argumentCount)
     return READONLY_VIEW_UNDISCHARGED;
   /**
-   * Arguments that are definitely callable at runtime.
+   Arguments that are definitely callable at runtime.
    */
   const observers = typedArguments
     .filter(function callableArgument({ argumentType, },): boolean {
@@ -339,7 +339,7 @@ export function readonlyViewElementApplications({
       },))
         return false;
       /**
-       * Caller parameters this argument already holds when the call is made.
+       Caller parameters this argument already holds when the call is made.
        */
       const arriving = expressionOrigins({
         project,
@@ -350,7 +350,7 @@ export function readonlyViewElementApplications({
     },))
     return READONLY_VIEW_UNDISCHARGED;
   /**
-   * Owned declarations behind every observer argument.
+   Owned declarations behind every observer argument.
    */
   const ownedObservers = observers
     .flatMap(function ownedObserver({
@@ -359,7 +359,7 @@ export function readonlyViewElementApplications({
       argumentIndex,
     },): readonly OwnedObserver[] {
       /**
-       * Observer implementation, absent when it is not owned source.
+       Observer implementation, absent when it is not owned source.
        */
       const declaration = callableDeclaration({
         project,
@@ -378,7 +378,7 @@ export function readonlyViewElementApplications({
   if (ownedObservers.length !== observers.length)
     return READONLY_VIEW_UNDISCHARGED;
   /**
-   * Positions the member hands receiver state to, per observer.
+   Positions the member hands receiver state to, per observer.
    */
   const observedPositions = ownedObservers
     .map(function positionsFor({ argumentIndex, },) {
@@ -401,7 +401,7 @@ export function readonlyViewElementApplications({
       observerIndex,
     ): ElementApplication {
       /**
-       * Positions for this observer, already proven described above.
+       Positions for this observer, already proven described above.
        */
       const positions = observedPositions[observerIndex];
       return {
@@ -416,30 +416,30 @@ export function readonlyViewElementApplications({
 }
 
 /**
- * Records element-flow relations for a read-only view call on a parameter.
- *
- * @param project - TypeScript project resolving observer declarations.
- *
- * @param checker - TypeScript checker resolving receiver and parameter types.
- *
- * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
- *
- * @param call - Read-only view call expression.
- *
- * @param receiver - Receiver expression whose element origins are required.
- *
- * @param summary - Caller summary receiving derived relations.
- *
- * @param analysisRoot - Optional external implementation root.
- *
- * @returns whether call was fully derived and needs no opaque fallback.
- *
- * @mutates summary - Appends derived element-flow relations.
- *
- * @example
- * ```ts
- * recordReadonlyViewApplications({ project, checker, bindingOriginBySymbolId, call, receiver, summary });
- * ```
+ Records element-flow relations for a read-only view call on a parameter.
+ 
+ @param project - TypeScript project resolving observer declarations.
+ 
+ @param checker - TypeScript checker resolving receiver and parameter types.
+ 
+ @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ 
+ @param call - Read-only view call expression.
+ 
+ @param receiver - Receiver expression whose element origins are required.
+ 
+ @param summary - Caller summary receiving derived relations.
+ 
+ @param analysisRoot - Optional external implementation root.
+ 
+ @returns whether call was fully derived and needs no opaque fallback.
+ 
+ @mutates summary - Appends derived element-flow relations.
+ 
+ @example
+ ```ts
+ recordReadonlyViewApplications({ project, checker, bindingOriginBySymbolId, call, receiver, summary });
+ ```
  */
 export function recordReadonlyViewApplications({
   project,
@@ -474,7 +474,7 @@ export function recordReadonlyViewApplications({
   // finds no declaration initializer to follow and falls back to exactly the value
   // origins, which is why every container fixture reads identically across the change.
   /**
-   * Caller parameters owning receiver elements, when receiver can carry mutable state.
+   Caller parameters owning receiver elements, when receiver can carry mutable state.
    */
   const receiverOrigins = expressionCanCarryMutableState({
       checker,
@@ -489,7 +489,7 @@ export function recordReadonlyViewApplications({
   if (receiverOrigins.size === 0)
     return false;
   /**
-   * Relations derived for every parameter the receiver can hold.
+   Relations derived for every parameter the receiver can hold.
    */
   const derived: ElementApplication[] = [];
   /* One derivation per origin, accumulated before anything is recorded. Discharge
@@ -499,7 +499,7 @@ export function recordReadonlyViewApplications({
    * the origins that happened to derive. */
   for (const receiverSlot of receiverOrigins) {
     /**
-     * Derived relations for one origin, or sentinel when user code stays unproven.
+     Derived relations for one origin, or sentinel when user code stays unproven.
      */
     const applications = readonlyViewElementApplications({
       project,

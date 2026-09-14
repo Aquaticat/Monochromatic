@@ -37,21 +37,21 @@ import {
 } from './rule/yields.ts';
 
 /**
- * Oxlint JS plugin providing TSDoc validation rules.
- *
- * Ports the eslint-plugin-jsdoc recommended-typescript ruleset to the oxlint
- * jsPlugin API, adapting all rules to conform to TSDoc (not JSDoc) specs.
- * Uses an in-house TSDoc comment scanner for parsing, with no external
- * dependency on `\@microsoft/tsdoc`.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-tsdoc'],
- * });
- * ```
+ Oxlint JS plugin providing TSDoc validation rules.
+ 
+ Ports the eslint-plugin-jsdoc recommended-typescript ruleset to the oxlint
+ jsPlugin API, adapting all rules to conform to TSDoc (not JSDoc) specs.
+ Uses an in-house TSDoc comment scanner for parsing, with no external
+ dependency on `\@microsoft/tsdoc`.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-tsdoc'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {

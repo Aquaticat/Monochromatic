@@ -1,8 +1,8 @@
 // Generated from `package/git-policy/forbidden-strings/src/materialize-candidates.ts` by file-enforcer; edit canonical source owner.
 /**
- * Plugin-owned scanner candidate materialization.
- *
- * @module
+ Plugin-owned scanner candidate materialization.
+ 
+ @module
  */
 import {
   mkdtemp,
@@ -15,21 +15,21 @@ import type { CandidateFile, } from '../../api/index.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Maximum simultaneous candidate reads and temporary-file writes.
+ Maximum simultaneous candidate reads and temporary-file writes.
  */
 const MATERIALIZATION_CONCURRENCY = 64;
 
 /**
- * Returns scanner-equivalent candidate identity.
- *
- * @param candidate - exact policy candidate
- *
- * @returns stable content and finding-path identity
+ Returns scanner-equivalent candidate identity.
+ 
+ @param candidate - exact policy candidate
+ 
+ @returns stable content and finding-path identity
  */
 function scannerCandidateKey(candidate: CandidateFile,): string {
   /**
-   * Immutable revision identity when Git owns bytes,
-   * otherwise invocation-local target identity.
+   Immutable revision identity when Git owns bytes,
+   otherwise invocation-local target identity.
    */
   const contentIdentity = (typeof candidate.revision) === 'string'
     ? `revision:${candidate.revision}`
@@ -38,22 +38,22 @@ function scannerCandidateKey(candidate: CandidateFile,): string {
 }
 
 /**
- * Removes repeated historical states that produce identical scanner findings.
- *
- * @param candidates - content-bearing candidates in encounter order
- *
- * @returns first scanner-equivalent candidate for each identity
+ Removes repeated historical states that produce identical scanner findings.
+ 
+ @param candidates - content-bearing candidates in encounter order
+ 
+ @returns first scanner-equivalent candidate for each identity
  */
 function uniqueScannerCandidates(
   candidates: readonly CandidateFile[],
 ): readonly CandidateFile[] {
   /**
-   * Identities already retained for scanner input.
+   Identities already retained for scanner input.
    */
   const seen = new Set<string>();
   return candidates.filter(function firstScannerIdentity(candidate,): boolean {
     /**
-     * Content plus reported-path identity.
+     Content plus reported-path identity.
      */
     const key = scannerCandidateKey(candidate,);
     if (seen.has(key,))
@@ -64,53 +64,53 @@ function uniqueScannerCandidates(
 }
 
 /**
- * Plugin-owned disposable scanner files.
+ Plugin-owned disposable scanner files.
  */
 export type MaterializedCandidates = Readonly<{
   /**
-   * Materialized file paths in scanner argument order.
+   Materialized file paths in scanner argument order.
    */
   paths: readonly string[];
   /**
-   * Exact scanner path to policy candidate lookup.
+   Exact scanner path to policy candidate lookup.
    */
   candidatesByPath: ReadonlyMap<string, CandidateFile>;
   /**
-   * Removes plugin-owned files.
+   Removes plugin-owned files.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
 /**
- * Materializes exact non-deleted candidate bytes under syntax-free names.
- *
- * @param candidates - exact lazy Git candidates
- *
- * @returns disposable scanner inputs
- *
- * @example
- * ```ts
- * await using inputs = await materializeCandidates([]);
- * ```
+ Materializes exact non-deleted candidate bytes under syntax-free names.
+ 
+ @param candidates - exact lazy Git candidates
+ 
+ @returns disposable scanner inputs
+ 
+ @example
+ ```ts
+ await using inputs = await materializeCandidates([]);
+ ```
  */
 export async function materializeCandidates(
   candidates: ForeignBorrowed<readonly CandidateFile[]>,
 ): Promise<MaterializedCandidates> {
   /**
-   * Private plugin-owned temporary directory.
+   Private plugin-owned temporary directory.
    */
   const directory = await mkdtemp(join(
     tmpdir(),
     'cli-git-forbidden-strings-',
   ),);
   /**
-   * Content-bearing candidate states.
+   Content-bearing candidate states.
    */
   const contentCandidates = uniqueScannerCandidates(candidates.filter(function hasContent(candidate,): boolean {
     return candidate.change !== 'deleted';
   },),);
   /**
-   * Stable plugin-owned paths independent of repository path grammar.
+   Stable plugin-owned paths independent of repository path grammar.
    */
   const paths = contentCandidates.map(function scannerPath(
     _candidate,
@@ -122,7 +122,7 @@ export async function materializeCandidates(
     );
   },);
   /**
-   * Primitive indexes partitioned into bounded sequential lanes.
+   Primitive indexes partitioned into bounded sequential lanes.
    */
   const candidateIndexes = contentCandidates.map(function candidateIndex(
     _candidate,
@@ -131,14 +131,14 @@ export async function materializeCandidates(
     return index;
   },);
   /**
-   * Active lane count never exceeds candidate count or fixed process-safe cap.
+   Active lane count never exceeds candidate count or fixed process-safe cap.
    */
   const laneCount = Math.min(
     MATERIALIZATION_CONCURRENCY,
     candidateIndexes.length,
   );
   /**
-   * Deterministic independent lanes avoid an unbounded `Promise.all` fan-out.
+   Deterministic independent lanes avoid an unbounded `Promise.all` fan-out.
    */
   const lanes = Array.from(
     { length: laneCount, },
@@ -154,27 +154,27 @@ export async function materializeCandidates(
     },
   );
   /**
-   * Processes one bounded primitive-index lane while candidate ownership remains at this boundary.
-   *
-   * @param lane - Candidate indexes assigned to one sequential lane.
+   Processes one bounded primitive-index lane while candidate ownership remains at this boundary.
+   
+   @param lane - Candidate indexes assigned to one sequential lane.
    */
   async function writeLane(lane: readonly number[],): Promise<void> {
     /* oxlint-disable no-await-in-loop -- Each bounded lane deliberately sequences process-backed reads and temporary writes to cap process and file-descriptor pressure. */
     for (const candidateIndex of lane) {
       /**
-       * Exact candidate loaded from inherited foreign-owned collection.
+       Exact candidate loaded from inherited foreign-owned collection.
        */
       const candidate = contentCandidates[candidateIndex];
       if (candidate === undefined)
         throw new Error('Candidate lane index was not aligned.',);
       /**
-       * Plugin-owned temporary path aligned with candidate index.
+       Plugin-owned temporary path aligned with candidate index.
        */
       const path = paths[candidateIndex];
       if (path === undefined)
         throw new Error('Candidate path index was not aligned.',);
       /**
-       * Exact candidate bytes loaded only when current bounded lane reaches entry.
+       Exact candidate bytes loaded only when current bounded lane reaches entry.
        */
       const bytes = await candidate.bytes();
       await writeFile(
@@ -185,7 +185,7 @@ export async function materializeCandidates(
     /* oxlint-enable no-await-in-loop */
   }
   /**
-   * Concurrent lane jobs built at the marked candidate ownership boundary.
+   Concurrent lane jobs built at the marked candidate ownership boundary.
    */
   const laneWrites: Promise<void>[] = [];
   for (const lane of lanes)
@@ -201,7 +201,7 @@ export async function materializeCandidates(
       CandidateFile
     ] {
       /**
-       * Candidate aligned with generated path.
+       Candidate aligned with generated path.
        */
       const candidate = contentCandidates[index];
       if (candidate === undefined)

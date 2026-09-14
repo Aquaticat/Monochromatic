@@ -1,11 +1,11 @@
 /**
- * Shared oxlint configuration without `jsPlugins`.
- *
- * Holds every field of the Monochromatic oxlint config except the plugin list:
- * the development entry (`index.ts`) and the built Node entry (`index.node.ts`)
- * each spread this base and attach their own `jsPlugins` (source-resolved vs
- * co-located sidecar URLs). Keeping `jsPlugins` out of the base means the bundled
- * `dist/final/node/index.mjs` carries no `import.meta.resolve` plugin resolution.
+ Shared oxlint configuration without `jsPlugins`.
+ 
+ Holds every field of the Monochromatic oxlint config except the plugin list:
+ the development entry (`index.ts`) and the built Node entry (`index.node.ts`)
+ each spread this base and attach their own `jsPlugins` (source-resolved vs
+ co-located sidecar URLs). Keeping `jsPlugins` out of the base means the bundled
+ `dist/final/node/index.mjs` carries no `import.meta.resolve` plugin resolution.
  */
 
 import type { OxlintConfig, } from 'oxlint';
@@ -17,7 +17,7 @@ import { styleRules, } from './rule/style.ts';
 import { tsdocRules, } from './rule/tsdoc.ts';
 
 /**
- * Shared oxlint configuration shared by every entry, minus `jsPlugins`.
+ Shared oxlint configuration shared by every entry, minus `jsPlugins`.
  */
 export const base: OxlintConfig = {
   categories: {
@@ -50,10 +50,6 @@ export const base: OxlintConfig = {
   },
 
   settings: {},
-
-  // Root-only options like `typeAware` cannot live in any config file because
-  // oxlint treats configs found via upward directory walk as nested (not root).
-  // Pass `--type-aware` via the CLI instead (see mise task template `lint:oxlint`).
 
   ignorePatterns: [
     '**/dist',

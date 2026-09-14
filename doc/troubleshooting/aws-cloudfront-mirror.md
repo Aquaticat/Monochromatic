@@ -1,7 +1,9 @@
-# AWS CloudFront mirror (us-east-1 ACM + Njalla DNS, Nov 2025): seven failure surfaces from Alt-Svc cross-origin SAN through TLS 1.3 origin handshake mismatch
+# AWS CloudFront mirror: hostname correction and Free-plan restrictions
 
-**Date**:
- 2026-05-09
+**Original investigation**:
+ 2026-05-09.
+**Reassessment**:
+ 2026-09-07.
 **Subject**:
  Setting up `aws.aquati.cat` as a public CloudFront mirror of
 self-hosted `aquati.cat` while keeping the apex CAA limited to
@@ -11,19 +13,24 @@ path (certificate issuance,
  DNS,
  distribution creation),
  plus issue 7
-(origin TLS handshake) which currently leaves the mirror non-functional
-pending AWS shipping the November 2025 announced TLS 1.3 origin
-auto-negotiation.
+(CloudFront HTTP 502).
+The reassessment retracts the inference that this proves an unfinished TLS 1.3 rollout.
 
-**Mirror status as of the date above**:
- HTTP 502 from CloudFront.
- All
-AWS-side resources (cert,
- distribution,
- DNS) are correctly configured;
-the CloudFront edge cannot complete a TLS handshake against an origin
-that accepts only TLS 1.3.
- See issue 7 for diagnosis and workarounds.
+**Mirror status on 2026-09-07**:
+Restored and verified at `2026-09-07T21:42Z`.
+The live endpoint serves matching origin content through a native origin Host/SNI override.
+Direct probes of `aquati.cat:443` still negotiate TLS 1.3 and reject TLS 1.2 over IPv4 and IPv6 with `aquati.cat` SNI.
+Authenticated inspection subsequently confirmed that both active CloudFront policies forward the viewer's `Host`.
+The configured origin serves the page with `aquati.cat` SNI/Host,
+but rejects mirror SNI and returns an empty body with mirror Host.
+Removing viewer Host from both policies restored matching content on a disposable distribution.
+The live Free plan rejected its custom cache policy.
+The native origin Host/SNI override passed independent fixture validation and was then deployed to production.
+Only the viewer-request function association changed;
+both original policies and the active Free subscription remain unchanged.
+See issue 7 for evidence,
+omitted alternatives,
+and verification limits.
 
 ## Background
 
@@ -46,10 +53,9 @@ Context for priority:
 mirror,
  so `aws.aquati.cat` is diversification rather than a primary
 alternative path.
- The "wait" disposition in issue 7 is genuinely
-sustainable;
- no critical functionality depends on the AWS mirror
-landing.
+The original disposition was to wait.
+That priority judgment does not establish an AWS rollout defect;
+issue 7 records the reassessment.
 
 The configuration path:
 
@@ -58,11 +64,8 @@ The configuration path:
 3. Place CAA on the subdomain to permit Amazon during issuance.
 4. Remove the subdomain CAA when `aws.aquati.cat` becomes a CNAME to
    CloudFront.
-5. Encounter unresolved origin TLS handshake mismatch (issue 7);
-    the
-   distribution remains deployed but returns HTTP 502 for all viewer
-   requests until an origin TLS workaround is applied or AWS ships
-   the announced auto-negotiation.
+5. Encounter HTTP 502 from CloudFront (issue 7).
+   The authorized hostname correction subsequently restored `/` and the tested routes/resources.
 
 This document records the issues encountered along that path.
 
@@ -537,7 +540,7 @@ dig +short CAA cloudfront.net
 # Expected: empty
 ```
 
-## Issue 7: TLS 1.3 origin announcement out of sync with API and edge behavior
+## Issue 7: CloudFront HTTP 502 does not establish absent TLS 1.3 origin support
 
 ### Symptom
 
@@ -555,9 +558,9 @@ curl -sI https://aws.aquati.cat/
 # x-amz-cf-pop: YTO53-P2
 ```
 
-The CloudFront edge cannot establish a TLS handshake with the origin.
-Direct openssl probes confirm that Caddy at `aquati.cat` accepts TLS 1.3
-only:
+The original investigation attributed this to a TLS version mismatch.
+Direct OpenSSL probes establish how `aquati.cat:443` responds to those inputs,
+not CloudFront's actual handshake or current origin configuration:
 
 ```bash
 openssl s_client -connect aquati.cat:443 -servername aquati.cat \
@@ -571,215 +574,761 @@ openssl s_client -connect aquati.cat:443 -servername aquati.cat \
 # Protocol version: TLSv1.3
 ```
 
-### Minimal repro
+### Root cause: viewer-host forwarding is incompatible with this origin
 
-1. Origin (Caddy or any other TLS server) is configured to accept only
-   TLS 1.3.
-2. CloudFront distribution with
-   `CustomOriginConfig.OriginSslProtocols.Items: ["TLSv1.2"]` (the only
-   value the API enum accepts;
-    see root cause).
-3. Request through the distribution.
-    Result:
-    HTTP 502.
+The 2026-05-09 inference was too strong.
+The [AWS announcement][origin-tls-announcement],
+dated 2025-11-20,
+says:
 
-### Root cause
+> TLS 1.3 support is automatically enabled for all origin types,
+> including custom origins,
+> Amazon S3,
+> and Application Load Balancers,
+> with no configuration changes required on your part.
 
-A two-layer mismatch between the AWS announcement and the deployed
-system.
+AWS describes CloudFront automatically negotiating TLS 1.3 with supporting origins.
+The current [API reference][origin-protocol-api] still lists
+`SSLv3 | TLSv1 | TLSv1.1 | TLSv1.2`.
+That proves the documented configuration vocabulary,
+not the maximum version in CloudFront's ClientHello.
+Neither document resolves what happened on this distribution's connection.
+The linked [origin cipher guide][origin-ciphers] still lacks TLS 1.3 cipher names;
+the documentation is not a substitute for a correlated handshake capture.
 
-**Layer 1:
- the API enum is closed at TLSv1.2.
-**
+The original evidence also mixed incompatible timelines and boundaries:
+
+- The cited 2025-11-04 comment predates the 2025-11-20 announcement.
+- A viewer-certificate policy failure does not establish an origin-protocol failure.
+- A generic HTTP 502 is compatible with multiple causes in
+  [AWS's troubleshooting guide][cloudfront-502],
+  including certificate-name mismatch,
+  incomplete chains,
+  DNS,
+  and origin connectivity.
+
+[Caddy issue #7445][caddy-cloudfront-issue] contains a separate report of CloudFront sending
+an unexpected SNI name and Caddy logging `no certificate available`.
+It is a hypothesis source,
+not proof that this distribution has the same cause.
+No CloudFront implementation source or origin-side trace was available in this reassessment.
+No claim about the deployed Caddy version's internal call chain is made.
+The public-precedent source check separately identifies the diagnostic in current CertMagic source.
+
+### Authenticated follow-up on 2026-09-07
+
+The user restored AWS CLI authentication.
+The following read-only calls succeeded:
 
 ```bash
-aws cloudfront update-distribution \
-  --id <id> --if-match <etag> \
-  --distribution-config '{... OriginSslProtocols Items: ["TLSv1.2", "TLSv1.3"] ...}'
-# An error occurred (MalformedXML) when calling the UpdateDistribution
-# operation: ... Member must satisfy enum value set:
-# [SSLv3, TLSv1, TLSv1.1, TLSv1.2]
+# Distribution details were queried with secret-bearing header values omitted.
+aws cloudfront get-distribution --id EYK5GXXEGWEYZ \
+  --query '{ETag:ETag,Status:Distribution.Status,LastModifiedTime:Distribution.LastModifiedTime}' \
+  --output json --no-cli-pager
+aws cloudfront get-origin-request-policy --id 216adef6-5c7f-47e4-b989-5492eafa07d3 \
+  --output json --no-cli-pager
+aws cloudfront get-cache-policy --id 4cc15a8a-d715-48a4-82b8-cc0b614638fe \
+  --output json --no-cli-pager
+aws cloudfront get-origin-request-policy --id b689b0a8-53d0-40ab-baf2-68738e2966ac \
+  --output json --no-cli-pager
 ```
 
-The field is also required:
+The distribution read returned:
+
+- `Status: Deployed`,
+  `Enabled: true`,
+  ETag `E13V1IB3VIYZZH`,
+  last modified `2026-05-09T05:36:01.600000+00:00`.
+- Origin `aquati.cat`,
+  HTTPS port 443,
+  `https-only`,
+  `OriginSslProtocols: ["TLSv1.2"]`,
+  `IpAddressType: dualstack`.
+- No alternate cache behaviors,
+  edge-function associations,
+  custom origin headers,
+  custom error responses,
+  or enabled Origin Shield.
+- Legacy distribution logging disabled.
+  This field alone does not establish whether separately configured standard logging v2 exists.
+- Viewer certificate policy `TLSv1.3_2025`,
+  independently disproving the historical claim that this distribution could not accept that viewer setting.
+
+Both active policies independently forward the viewer hostname:
+
+- Origin-request policy `Managed-AllViewer`
+  (`216adef6-5c7f-47e4-b989-5492eafa07d3`)
+  has `HeadersConfig.HeaderBehavior: allViewer`.
+- Cache policy `UseOriginCacheControlHeaders-QueryStrings`
+  (`4cc15a8a-d715-48a4-82b8-cc0b614638fe`)
+  includes `host` in its header allowlist,
+  alongside `x-method-override`,
+  `origin`,
+  `x-http-method`,
+  and `x-http-method-override`.
+
+The cache-policy API returns the enclosing field name
+`ParametersInCacheKeyAndForwardedToOrigin`.
+AWS's [policy interaction guide][policy-interaction] explicitly says:
+
+> The cache policy allow list overrides the origin request policy block list.
+
+AWS names the cache policy as the rule that wins:
+a header selected there still reaches the origin even if the origin-request policy excludes it.
+Consequently,
+changing only to `Managed-AllViewerExceptHostHeader` would not remove viewer `Host`
+from this distribution's effective forwarding configuration.
+The retrieved replacement policy has `HeaderBehavior: allExcept` and `Headers.Items: ["host"]`.
+
+The [custom-origin request guide][custom-origin-requests] documents replacing `Host` with the origin domain
+when viewer Host is not selected for forwarding.
+Its encryption section explicitly includes TLS 1.3;
+the TLS 1.3 evidence is therefore not limited to the announcement.
+AWS's [load-balancer troubleshooting note][origin-sni-note] links Host-based caching with origin SNI
+and certificate selection.
+That is corroborating documentation,
+not a captured ClientHello from this distribution.
+
+#### Controlled origin results
+
+Both IPv4 and IPv6 yielded these results with TLS pinned to 1.3 and HTTP pinned to 1.1:
+
+- SNI `aquati.cat`,
+  HTTP Host `aquati.cat`:
+  GET `/` returned HTTP 200 and 3,445 body bytes.
+- SNI `aquati.cat`,
+  HTTP Host `aws.aquati.cat`:
+  GET `/` returned HTTP 200 and zero body bytes.
+- SNI and HTTP Host `aws.aquati.cat`,
+  connection forced directly to the origin address:
+  TLS handshake failed with curl exit 35 and `tlsv1 alert internal error`.
+  The corresponding OpenSSL probe recorded alert 80.
+
+Representative IPv4 invocations:
 
 ```bash
-aws cloudfront update-distribution \
-  --id <id> --if-match <etag> \
-  --distribution-config '{... OriginSslProtocols field omitted ...}'
-# An error occurred (InvalidArgument) when calling the UpdateDistribution
-# operation: The parameter OriginSslProtocols is required.
+# Working origin-name control; output: HTTP 200, body 3445 bytes.
+curl --silent --show-error --ipv4 --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --output /dev/null --write-out 'HTTP %{http_code}, body %{size_download} bytes\n' \
+  --connect-timeout 15 --max-time 30 https://aquati.cat/
+
+# Only HTTP Host changes; output: HTTP 200, body 0 bytes.
+curl --silent --show-error --ipv4 --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --header 'Host: aws.aquati.cat' \
+  --output /dev/null --write-out 'HTTP %{http_code}, body %{size_download} bytes\n' \
+  --connect-timeout 15 --max-time 30 https://aquati.cat/
+
+# Mirror SNI at the origin address fails during TLS.
+curl --silent --show-error --head --http1.1 --tlsv1.3 --tls-max 1.3 \
+  --resolve aws.aquati.cat:443:135.181.104.96 \
+  --connect-timeout 15 --max-time 30 https://aws.aquati.cat/
 ```
 
-So the distribution must declare `OriginSslProtocols`,
- and the only TLS
-1.
-x value the enum accepts is `TLSv1.2`.
+The IPv6 controls used `--ipv6` instead of `--ipv4`,
+and `--resolve 'aws.aquati.cat:443:[2a01:4f9:c012:34ed::1]'` for mirror SNI.
+A fresh CloudFront HEAD still returned HTTP 502 at `LHR61-P6`.
+The evidence establishes incompatible viewer-name delivery at the configured origin;
+it does not establish which handshake CloudFront attempted or that no second defect exists.
 
-**Layer 2:
- the announced auto-negotiation is not observed.
-**
+#### Proposed correction and verification boundary
 
-AWS announced in November 2025:
- "CloudFront will automatically negotiate
-TLS 1.3 when your origin supports it" with "no configuration changes
-required.
-" Empirically,
- with `OriginSslProtocols: ["TLSv1.2"]` and an
-origin that accepts only TLS 1.3,
- the YTO53-P2 (Toronto) edge returns
-HTTP 502 instead of negotiating TLS 1.3.
- Multiple post-November-2025
-sources report the same:
+Exclude viewer `Host` from both policy contributions,
+so CloudFront supplies origin Host `aquati.cat` instead.
+The proposed change is:
 
-- Stack Overflow comment,
-   2025-11-04:
-   "As of Nov 2025,
-   cloudfront still
-  doesn't support TLS 1.3 with connection to origin.
-  "
-  <https://stackoverflow.com/questions/58209174/does-aws-cloudfront-support-tlsv1-3-for-custom-origin>
-- Reddit r/aws thread:
-   "CloudFront doesn't support TLS1.3 between CF and
-  Origin because it's not a valid value for OriginSslProtocols.
-  "
-  <https://www.reddit.com/r/aws/comments/133zunj/>
-- AWS re:
-  Post feature request thread:
-  <https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw/feature-cloudfront-origin-tls-v1-3>
-- Terraform AWS provider issue 43840 (related,
-   viewer-side
-  `TLSv1.3_2025` also rejected):
-  <https://github.com/hashicorp/terraform-provider-aws/issues/43840>
+- Use a cache policy equivalent to the current managed policy except for removing `host`.
+  Preserve its TTLs,
+  remaining header keys,
+  cookies,
+  query strings,
+  and compression settings.
+  Reuse an equivalent custom policy if one exists;
+  otherwise a custom clone will no longer inherit future AWS-managed policy changes.
+- Associate `Managed-AllViewerExceptHostHeader`
+  (`b689b0a8-53d0-40ab-baf2-68738e2966ac`)
+  in the same update.
+- Leave origin domain,
+  TLS settings,
+  Caddy,
+  DNS,
+  and viewer certificate unchanged.
 
-AWS announcement:
-<https://aws.amazon.com/about-aws/whats-new/2025/11/amazon-cloudfront-tls13-origin/>
+This is a proposed configuration correction,
+not a verified workaround.
+After action authorization,
+validation should first reproduce failure on a disposable distribution with the original policies,
+then change only the policy pair.
+Its generated hostname differs from the live alias,
+so it tests the mechanism rather than fully reproducing the production request identity.
+A passing original-policy control would invalidate that reproduction.
+A successful correction must deliver actual pages,
+clean routes,
+assets,
+headers,
+compression,
+and browser behavior,
+not merely HTTP 200.
+The empty-body probe demonstrates why status alone is insufficient.
+Use uncached request identities and retain original policy IDs for rollback.
+No AWS resource was created or changed during this review.
 
-### Verified workarounds
+### Authorized correction and Free-plan restriction
 
-Each preserves a different security property.
- None ship as part of the
-current configuration;
- the chosen path is to leave the mirror
-non-functional until AWS's announced auto-negotiation actually applies.
+After the user authorized the targeted correction,
+a disposable distribution reproduced HTTP 502 with both original policies.
+Replacing them with a custom cache-policy clone minus `host` and
+`Managed-AllViewerExceptHostHeader` restored matching origin content.
+The comparison covered 12 routes/resources,
+including language pages,
+clean URLs,
+CSS,
+JavaScript,
+font,
+favicon,
+manifest,
+and a nonexistent file.
+Status,
+body SHA-256,
+selected origin headers,
+and decoded compressed responses matched.
+The fixture used its generated hostname and default certificate,
+and omitted the live WAF because AWS rejected sharing that pricing-plan resource.
+Production's alias,
+certificate,
+and WAF remained untouched.
 
-**A.
- Enable TLS 1.2 globally on origin.
-** Caddyfile change:
+The subsequent live `UpdateDistribution` changed only those policy IDs using a fresh ETag,
+but AWS rejected it:
 
-```caddyfile
-aquati.cat {
-    tls {
-        protocols tls1.2 tls1.3
-    }
-    # ... handlers
+```text
+Distributions with the Free pricing plan can't have the following features: Custom cache policy
+```
+
+A fresh read confirmed the original live configuration was unchanged.
+No pricing-plan or billing change was made.
+The [plan documentation][flat-rate-plans] lists custom cache policies only for Business and Premium,
+but CloudFront Functions are included in Free.
+
+The replacement implementation uses runtime `cloudfront-js-2.0` with:
+
+```js
+cf.updateRequestOrigin({ hostHeader: 'aquati.cat', sni: 'aquati.cat' });
+```
+
+The [native helper documentation][origin-helper] explicitly defines these origin-only overrides
+and inheritance of omitted origin settings.
+The function returns the original viewer request,
+retaining the original cache key and both policies.
+Its exact uploaded artifact and rollback are recorded in
+[`package/ssg/aquati.cat/cloudfront/README.md`](../../package/ssg/aquati.cat/cloudfront/README.md).
+The API's virtual tests preserved requests across every configured HTTP method,
+but AWS explicitly says those tests do not verify origin modification.
+
+For independent validation,
+the disposable distribution was restored to its original policies.
+A fresh query returned HTTP 502 at `2026-09-07T21:25:20Z`.
+Only the viewer-request function association was then added.
+Real-traffic validation then passed at `2026-09-07T21:29:28Z`.
+The same published artifact was detached from the fixture before live association
+because flat-rate resources cannot share CloudFront Functions.
+The fixture and unused custom policy were deleted;
+list calls confirmed their absence.
+
+#### Verified production resolution
+
+The live function association was accepted at `2026-09-07T21:38:48Z`.
+The deployed distribution ETag is `E1VC38T7YXB528`.
+A full configuration comparison proved that only
+`DefaultCacheBehavior.FunctionAssociations` changed from the pre-task snapshot.
+The comparison includes origin settings,
+TLS policies,
+viewer certificate,
+WAF,
+cache/origin-request policies,
+and other behavior fields.
+The pricing API still returned the original subscription as `FREE`,
+`ACTIVE`,
+with unchanged subscription ETag `2`.
+
+The live content harness passed at `2026-09-07T21:42:12Z`.
+Paths and resource classes:
+
+- `/`,
+  `/en`,
+  `/en/about`,
+  `/en/tag/accessibility`,
+  `/ca`,
+  `/zh`.
+- Fingerprinted CSS,
+  client JavaScript,
+  WOFF2 font,
+  SVG favicon,
+  and `/manifest.webmanifest`.
+- A nonexistent resource,
+  matching the origin's empty HTTP 404 response.
+
+Fresh query keys bypassed previous error objects.
+Statuses,
+body hashes,
+and selected response headers matched the origin.
+The root body contained 3,445 bytes with SHA-256
+`15789f6f382e87508716b0840b9962fde1fe0324ed5ad868ec953629b52e903e`.
+Additional checks covered HEAD,
+compressed content parity,
+and actual gzip/Brotli wire bodies decoded to the original CSS hash.
+Both encodings advertised `Vary: Accept-Encoding`.
+Repeated CSS requests returned Miss/Miss without origin `Cache-Control`;
+no cache-hit guarantee is inferred from that observation.
+
+Live browser verification followed the English language link,
+loaded fonts/CSS/JavaScript/images/manifest,
+toggled the theme through its visible label,
+and followed `About Aquaticat` to its rendered heading and title.
+No page errors were reported.
+The browser was closed after verification.
+Search remains a separately disclosed verification limit,
+not a claim that the whole application was exhaustively tested.
+
+Primary-origin TLS controls still accepted TLS 1.3 and rejected TLS 1.2 with curl exit 35 and
+`alert protocol version` over IPv4 and IPv6.
+The mirror delivered matching root bodies over TLS 1.3 in both address families.
+No Caddy,
+DNS,
+certificate,
+WAF,
+TLS-protocol,
+or pricing-plan modification was needed.
+Successful correction establishes hostname handling as a sufficient remedy for the observed 502;
+it does not substitute for an origin-side packet capture.
+
+Rollback removes only the exact viewer-request function association using a fresh ETag.
+The original full snapshot is a comparison reference,
+not a payload to overwrite future unrelated changes.
+The function source and rollback boundary live in the package's CloudFront README.
+
+Browser search did not produce results in either the primary-site control or the fixture;
+a Pagefind worker request remained pending.
+This does not establish a CloudFront regression or a working search interaction.
+Navigation,
+loaded resources,
+and theme toggling worked during the policy-fixture checks.
+
+#### Deployment wait observation
+
+The native `aws cloudfront wait distribution-deployed` command returned success after 1,813 seconds.
+While it was still reported running,
+a separate `get-distribution` read returned `Deployed`.
+Its eventual success notification followed around the stop request.
+That timing does not prove the waiter stalled or establish when global deployment completed.
+The assertion that the wait was unnecessary was retracted.
+
+Subsequent checks use a managed process with timestamped `GetDistribution` observations,
+bounded call timeouts,
+and a checkpoint after 10 observations separated by 30 seconds.
+A pending checkpoint does not authorize the next mutation.
+This keeps control with the agent without requiring another user prompt.
+The handover records the communication gap and proposed agent-guideline addition.
+
+### Public precedents checked on 2026-09-07
+
+The user asked whether other people had this specific issue.
+Public reports corroborate both the Caddy symptom and the policy interaction.
+They do not establish an exact duplicate of our complete Caddy,
+Free-plan,
+policy,
+and native-function combination,
+or measure how prevalent it is.
+
+#### Caddy and CloudFront with a distribution-name certificate lookup
+
+[Caddy #7445][caddy-cloudfront-issue],
+opened on 2026-01-21,
+reports a Caddy origin that serves `HELLO` directly but returns CloudFront HTTP 502 through a distribution.
+The reporter supplied this debug-log message on 2026-01-22:
+
+```text
+http: TLS handshake error from 1.2.3.4:123456: no certificate available for 'xxxxxxxx.cloudfront.net'
+```
+
+The reporter interpreted this as CloudFront supplying the distribution hostname in ClientHello.
+Their follow-up said enabling Host passthrough changed the name to the Host-header domain,
+but they had not found how to use the origin domain.
+The maintainer closed the report because it did not appear to be a Caddy defect,
+while leaving discussion open.
+
+This is a close Caddy/CloudFront symptom match,
+with origin-side diagnostic evidence that our investigation did not obtain.
+The thread does not provide the exact cache/origin-request policy pair,
+pricing plan,
+or a successful tested correction.
+Its reference to default behavior is the reporter's observation,
+not proof of a universal CloudFront default.
+
+#### Exact managed-cache-policy trap on AWS re:Post
+
+In ["configure the Cloud Front to set the origin request header"][host-policy-report],
+the origin accepts its own hostname,
+but CloudFront forwards the viewer hostname.
+The author supplied CLI output confirming
+`Managed-AllViewerExceptHostHeader`,
+ID `b689b0a8-53d0-40ab-baf2-68738e2966ac`,
+was associated with the behavior.
+
+Commenter `Kal` explicitly names:
+
+> Using a Cache Policy of UseOriginCacheControlHeaders-QueryStrings
+> with an Origin Request policy of AllViewerExceptHostHeader,
+> I am still seeing the Cloudfront Distribution Domain name being sent to my backend server as the Host name.
+
+This matches the one-policy-only correction we identified as insufficient:
+the same managed cache policy still includes `host`,
+so the origin-request exclusion cannot cancel it.
+It does not match our original origin-request policy,
+which was `Managed-AllViewer`.
+The thread records no successful correction,
+Caddy version,
+or plan constraint.
+The generated AI answer recommending only the origin-request policy is not used as evidence of a fix.
+AWS's [policy interaction guide][policy-interaction],
+not the unanswered comments alone,
+establishes why cache-policy inclusion wins.
+
+#### Self-reported successful correction with a different backend
+
+The [Fly.io discussion][fly-host-report] starts with direct-origin success and CloudFront HTTP 502.
+On 2024-05-27,
+the author reports successful delivery using
+`Managed-AllViewerExceptHostHeader` with `Managed-CachingDisabled`,
+while retaining an HTTPS origin.
+They describe the viewer hostname causing a certificate-name mismatch at the backend.
+
+This corroborates the failure family and a reported working policy combination.
+It is not a controlled reproduction of our incident:
+the backend is not Caddy,
+the serving configuration also changed during troubleshooting,
+and disabling caching would not preserve our cache semantics.
+Its TLS 1.2 configuration is not a recommendation for this TLS-1.3-only origin.
+
+#### Host-derived SNI can also be intentional
+
+The accepted answer in ["Cloud Front To ALB SNI"][alb-sni-report] explains how forwarding viewer Host
+makes origin SNI use that viewer hostname when the load balancer has its certificate.
+The asker replies that it worked.
+This is community corroboration of the mechanism in the opposite direction,
+not another matching failure or formal service documentation.
+The answer's linked AWS whitepaper currently redirects to a general security page,
+so that redirected page is not treated as verification of the specific claim.
+
+#### Source check for the certificate diagnostic
+
+Read-only source inspection used [CertMagic][certmagic-source] commit
+`31be911f5425b80393154a94a21403c9c0029910`.
+The clone's origin was verified and no source was changed.
+This is a current-source explanation of the diagnostic,
+not identification of the reporter's or our deployed version.
+
+`handshake.go:292` obtains the name used by the handshake certificate path:
+
+```go
+// certmagic/handshake.go:292
+name, err := cfg.getNameFromClientHello(hello)
+```
+
+For a nonempty TLS server name,
+`handshake.go:904` normalizes and returns `hello.ServerName`:
+
+```go
+// certmagic/handshake.go:904
+name, err := idna.Lookup.ToASCII(strings.TrimSpace(hello.ServerName))
+if err != nil {
+	return "", err
+}
+if name != "" {
+	return name, nil
 }
 ```
 
-Caddy 2's TLS 1.2 cipher set excludes RC4,
- DES,
- export-grade,
- CBC stream
-modes,
- and small-prime DHE.
- The marginal handshake regression is small.
-Trade-off:
- all clients lose the TLS-1.3-only stance,
- not just AWS edges.
+The unsuccessful certificate path in `handshake.go:419` emits:
 
-**B.
- Single site block plus HTTP-layer abort matcher.
-** Reject TLS 1.2
-at the HTTP layer for non-AWS clients:
+```go
+// certmagic/handshake.go:419
+return Certificate{}, fmt.Errorf("no certificate available for '%s'", name)
+```
+
+The empty-SNI branch at `handshake.go:911` can instead use a configured default name or local address:
+
+```go
+// certmagic/handshake.go:911
+if cfg.DefaultServerName != "" {
+	return normalizedName(cfg.DefaultServerName), nil
+}
+return localIPFromConn(hello.Conn), nil
+```
+
+Consequently,
+this diagnostic is relevant to certificate selection during TLS,
+but its text is not universally a verbatim SNI capture.
+The public reporter's SNI interpretation stays attributed to that reporter.
+
+#### Search scope and conclusion
+
+Queries covered Caddy/CloudFront SNI and certificate failures,
+the exact managed cache policy,
+`AllViewerExceptHostHeader`,
+Free-plan/custom-policy restrictions,
+and `updateRequestOrigin` with `hostHeader` and `sni`.
+Comparable searches included Fly.io and ALB rather than treating a narrow Caddy query as exhaustive.
+The Caddy issue was read with all comments;
+the re:Post and Fly.io pages were read including the follow-up discussion.
+
+Conclusion:
+this is a documented policy interaction with public reports of matching failure components,
+not a unique networking anomaly or an established CloudFront implementation bug.
+No public report found in these searches reproduces every constraint and the final native-function remedy together.
+The issue 7 upstream-filing decision remains unchanged:
+no implementation defect is established,
+and no upstream issue or comment was posted.
+
+### Omitted avenues and their tradeoffs
+
+This is an architecture review,
+not a completed vendor selection or authorization to deploy.
+
+#### Diagnose the existing origin path without lowering TLS
+
+- Benefit:
+  a hostname,
+  certificate,
+  or routing correction could preserve the current architecture and TLS policy.
+- Cost:
+  authenticated inspection is complete,
+  but a controlled CloudFront correction and correlated origin evidence are outstanding;
+  an additional CloudFront interoperability defect remains possible.
+- Verification:
+  test the policy-pair correction described in "Authenticated follow-up on 2026-09-07".
+  Correlate a failing request with CloudFront detailed results and the origin's received
+  SNI,
+  supported TLS versions,
+  certificate selection,
+  and network outcome.
+
+AWS [documents][origin-request-policies] an existing mechanism that replaces the viewer's `Host`
+with the origin domain when the viewer `Host` is excluded.
+This establishes a configuration avenue,
+not that attaching `AllViewerExceptHostHeader` alone fixes this site.
+The authenticated cache-policy read proves why that change alone is insufficient.
+Broad forwarding of other viewer data is a separate static-site policy question,
+not part of the proposed hostname correction.
+
+#### Publish a separate static-artifact replica
+
+The issue assumes a mirror must fetch from the live Caddy origin.
+The repository's site is generated into static files:
+see [`package/ssg/aquati.cat/README.md`](../../package/ssg/aquati.cat/README.md).
+Its serving boundary in
+[`package/ssg/aquati.cat/Caddyfile:2`](../../package/ssg/aquati.cat/Caddyfile)
+is:
 
 ```caddyfile
-aquati.cat {
-    tls {
-        protocols tls1.2 tls1.3
-    }
-
-    @reject_old_tls_non_aws {
-        expression `{http.request.tls.version} == "tls1.2"`
-        not remote_ip <CIDRs from CLOUDFRONT_ORIGIN_FACING>
-    }
-    abort @reject_old_tls_non_aws
-    # ... handlers
-}
+# package/ssg/aquati.cat/Caddyfile:2
+root * dist
+try_files {path} {path}.html {path}/index.html
+file_server
 ```
 
-CIDR list refreshed periodically from
-<https://ip-ranges.amazonaws.com/ip-ranges.json>,
- filtered to
-`service == "CLOUDFRONT_ORIGIN_FACING"`.
- As of the date above:
- 45 IPv4
-and 2 IPv6 prefixes.
- Trade-off:
- TLS 1.2 handshake is exposed publicly;
-content delivery is restricted;
- recurring CIDR refresh required when
-AWS publishes a new POP block.
+Publish the same release to a separate origin for CloudFront rather than retrieving it from Caddy.
+A concrete AWS-native candidate is a private S3 bucket origin with origin access control (OAC).
+[AWS documents][s3-oac] a bucket-policy distribution-ARN condition that scopes access,
+and HTTPS origin requests with OAC's `always` signing setting.
+The REST origin does not supply Caddy's `try_files` behavior;
+key layout or edge rewriting would need validation.
+The S3 website endpoint is a different mechanism:
+[it does not support origin HTTPS][origin-https] and does not support OAC.
 
-**C.
- Two site blocks plus separate origin hostname.
-** Add an
-`origin.aquati.cat` site block with TLS 1.2+ and the same IP allowlist;
-switch the CloudFront distribution origin domain from `aquati.cat` to
-`origin.aquati.cat`.
- The public hostname keeps TLS-1.3-only at
-handshake.
- Adds DNS records (`origin` A and AAAA),
- a second LE cert
-auto-provisioned by Caddy,
- and a distribution origin domain update.
-Same recurring CIDR refresh as option B.
+- Benefit:
+  removes the CloudFront-to-Caddy handshake from the serving path;
+  could keep the AWS copy available when the primary host fails.
+  This design need not change the primary site's Caddy configuration or TLS policy.
+- Cost:
+  adds artifact publication,
+  freshness monitoring,
+  rollback,
+  and serving-policy parity work.
+  Shared source,
+  build,
+  DNS,
+  and publication-credential dependencies need separate analysis;
+  their isolation depends on the design.
+- Verification before selection:
+  prove self-contained assets and runtime requests,
+  clean URLs,
+  directory indexes,
+  missing-file status,
+  redirects,
+  MIME types,
+  compression,
+  cache/security headers,
+  complete-release publication,
+  and continued serving without the primary origin.
+  OAC's HTTPS guarantee alone is not evidence that every connection negotiated TLS 1.3.
 
-**D.
- Wait.
-** Leave configuration as is.
- Distribution returns 502.
-Re-test periodically;
- re-enabling the mirror requires only a Caddy
-reload (option A) or no change at all (if AWS ships the auto-negotiation
-cleanly).
+This is the strongest omitted architectural direction for origin independence,
+not a validated recommendation to adopt S3.
+No bucket or distribution was created or modified.
 
-### Verification commands
+#### Dedicated compatibility endpoint
+
+A separate origin hostname or listener could isolate a TLS compatibility policy from the public apex.
+The original document named this option;
+issue #146's compressed choice set omitted it.
+
+- Benefit:
+  can leave the apex's TLS-1.3-only handshake unchanged and retain live content delivery.
+- Cost:
+  a TLS 1.2 leg still exists if that is the required compatibility concession;
+  this fails a requirement forbidding TLS 1.2 everywhere.
+  Another endpoint needs certificate,
+  access-control,
+  and routing verification.
+  An AWS address allowlist alone does not authenticate this particular distribution.
+- Status:
+  not deployed or verified;
+  no reason to build it before establishing the current failure's cause.
+
+#### Chain CloudFront through Fastly
+
+A candidate topology is `CloudFront -> Fastly -> Caddy`.
+Fastly's viewer endpoint returning 200 does not prove CloudFront-origin compatibility.
+
+- Benefit:
+  reuses an existing delivery path without changing the primary origin's TLS policy.
+- Cost:
+  makes the AWS endpoint depend on Fastly,
+  defeating independence from that CDN;
+  adds cache,
+  invalidation,
+  Host/SNI,
+  and incident-attribution interactions.
+- Status:
+  untested candidate,
+  not a diversification recommendation.
+
+#### Priority ranking
+
+Investigate the existing path first,
+then evaluate independent artifact replication.
+Diagnosis precedes redesign because no protocol defect has been established;
+replication follows because it addresses the shared-origin dependency diagnosis alone cannot remove.
+These are complementary steps,
+not exclusive choices.
+
+For further evaluation toward restoring the AWS endpoint:
+artifact replica > dedicated compatibility endpoint > CDN chaining.
+Replication could also remove the live primary dependency;
+a compatibility endpoint preserves it but avoids dependence on Fastly;
+chaining adds that CDN dependency.
+If independence from the primary origin is mandatory,
+only replication among these candidates qualifies.
+Under a strict prohibition on any TLS 1.2 leg,
+a compatibility endpoint requiring that concession is excluded.
+This is an investigation ranking,
+not a validated deployment selection.
+
+### Workaround verification status
+
+The policy-pair correction is verified on the disposable distribution,
+but production rejects its custom cache policy under the Free plan.
+The native function substitution is verified on the fixture and live endpoint without replacing either policy.
+The original heading incorrectly called unshipped configuration sketches verified workarounds.
+The alternatives in "Omitted avenues and their tradeoffs" remain proposals.
+Global TLS relaxation is outside issue #146's scope;
+waiting remains an operational choice,
+not a demonstrated technical remedy.
+
+### Verification on 2026-09-07
+
+Read-only probes ran from `/var/home/user/Monochromatic`.
+CloudFront is an unversioned managed service;
+the deployed Caddy version was not obtained.
+DNS returned `135.181.104.96` and `2a01:4f9:c012:34ed::1`.
+The commands without `-4` selected that IPv6 address.
+
+Working catalog:
 
 ```bash
-# Origin TLS policy:
-openssl s_client -connect aquati.cat:443 -servername aquati.cat \
-  -tls1_2 -brief </dev/null
-# Expected (TLS-1.3-only origin): alert number 70 (protocol_version).
+# Origin TLS 1.3 succeeds with aquati.cat SNI over both address families.
+openssl s_client -connect aquati.cat:443 -servername aquati.cat -tls1_3 -brief </dev/null
+openssl s_client -4 -connect aquati.cat:443 -servername aquati.cat -tls1_3 -brief </dev/null
+# Protocol version: TLSv1.3
+# Ciphersuite: TLS_AES_128_GCM_SHA256
+# Verification: OK
 
-openssl s_client -connect aquati.cat:443 -servername aquati.cat \
-  -tls1_3 -brief </dev/null
-# Expected: CONNECTION ESTABLISHED, Protocol version: TLSv1.3.
-
-# CloudFront mirror:
-curl -sI https://aws.aquati.cat/ | head -5
-# Expected (current state): HTTP/2 502.
-# Expected (after AWS fix or origin TLS 1.2 enable): HTTP/2 200.
-
-# AWS API enum check (probe; does not change state):
-aws cloudfront update-distribution \
-  --id <id> --if-match <etag> \
-  --distribution-config '{... OriginSslProtocols Items: ["TLSv1.3"] ...}'
-# Expected (still): MalformedXML, "Member must satisfy enum value set:
-# [SSLv3, TLSv1, TLSv1.1, TLSv1.2]". When this stops erroring, the API
-# has caught up and option D becomes the right path again.
+curl --silent --show-error --head --connect-timeout 15 --max-time 30 https://fastly.aquati.cat/
+# HTTP/2 200
+# server: Caddy
 ```
+
+Failing catalog,
+separated by signal:
+
+```bash
+# Origin rejects TLS 1.2 over both address families.
+openssl s_client -connect aquati.cat:443 -servername aquati.cat -tls1_2 -brief </dev/null
+openssl s_client -4 -connect aquati.cat:443 -servername aquati.cat -tls1_2 -brief </dev/null
+# tlsv1 alert protocol version; SSL alert number 70; exit 1
+
+# Keeping IPv4 and TLS 1.3 unchanged, changing only SNI fails.
+openssl s_client -4 -connect aquati.cat:443 -servername aws.aquati.cat -tls1_3 -brief </dev/null
+openssl s_client -4 -connect aquati.cat:443 -servername dyfbcoafqtni3.cloudfront.net -tls1_3 -brief </dev/null
+# tlsv1 alert internal error; SSL alert number 80; exit 1
+
+curl --silent --show-error --head --connect-timeout 15 --max-time 30 https://aws.aquati.cat/
+# HTTP/2 502
+# x-cache: Error from cloudfront
+# x-amz-cf-pop: LHR61-P6
+```
+
+The SNI positive control succeeds with `aquati.cat` and fails with the other names.
+This proves name-sensitive behavior at this origin,
+not that CloudFront sent either failing name.
+A separate GET also returned the generic CloudFront 502 page.
+
+Initial evidence acquisition limits,
+with authentication subsequently restored:
+
+- `aws cloudfront get-distribution-config --id EYK5GXXEGWEYZ` with a field-filtered query failed:
+  `aws: [ERROR]: Your session has expired. Please reauthenticate using 'aws login'.`
+  Exit status 255;
+  `aws configure list-profiles` listed only `default`.
+  No active distribution settings were inferred from this failure.
+  The authenticated follow-up resolved this access blocker and records actual settings.
+- A read-only SSH attempt to obtain Caddy journal entries used batch authentication and strict host-key checking.
+  It failed with `Host key verification failed.` because no trusted ED25519 key was known for `aquati.cat`.
+  Host verification was not bypassed;
+  origin logs were not read.
+- No production mutations,
+  packet captures,
+  candidate deployments,
+  or builds were performed.
+
+The original `update-distribution` verification example was removed:
+it is a mutation API,
+not a read-only capability probe.
+Its historical rejection does not make future execution safe.
 
 ## Current configuration state
 
 **Status**:
- AWS-side resources fully configured;
- mirror returns HTTP 502
-because of issue 7.
- All steps below remain valid;
- only the origin TLS
-handshake is unresolved.
+mirror restoration verified on 2026-09-07.
+The deployed function overrides origin HTTP Host and TLS SNI to `aquati.cat`.
+Both original policies remain associated,
+and all other distribution fields match the original snapshot.
+The live Free plan remains active.
+The disposable distribution and unused custom cache policy are deleted.
+The remaining certificate and DNS inventory records the original investigation
+unless explicitly corroborated in the authenticated follow-up.
 
-Concrete identifiers (as of the date above):
+Concrete identifiers recorded on 2026-05-09:
 
 - AWS account:
    `016042452668`.
@@ -857,8 +1406,9 @@ The following alternatives were considered and rejected:
    Use
   `EC_prime256v1` (P-256) or `RSA_2048` instead.
 - **`OriginSslProtocols.Items: ["TLSv1.3"]`** in the distribution config.
-  The CloudFront API enum is closed at `[SSLv3, TLSv1, TLSv1.1, TLSv1.2]`;
-  the call returns `MalformedXML` (issue 7).
+  The original investigation recorded `MalformedXML`;
+  the current API reference still omits this value.
+  This does not prove TLS 1.3 is absent from automatic negotiation (issue 7).
 - **Omitting `OriginSslProtocols`** in the distribution config.
    The API
   returns `InvalidArgument: The parameter OriginSslProtocols is required.`
@@ -869,25 +1419,12 @@ The following alternatives were considered and rejected:
   receive a 308 from the origin and not retry over HTTPS.
    The redirect
   is also visible to viewers if `ViewerProtocolPolicy` allows HTTP.
-- **`MinimumProtocolVersion: "TLSv1.3_2025"`** on the viewer certificate.
-  Terraform AWS provider issue 43840 confirms the API rejects it;
-   even
-  if accepted,
-   this is a viewer-side setting and does not affect the
-  origin handshake mismatch documented in issue 7.
-- **Relying on the November 2025 announced auto-negotiation**.
-   AWS
-  documented that CloudFront would automatically negotiate TLS 1.3
-  against origins that support it,
-   without configuration changes.
-  Empirically,
-   the YTO53-P2 edge does not auto-negotiate TLS 1.3
-  against an origin that accepts only TLS 1.3.
-   Multiple post-November
-  community reports observe the same.
-   Status of the announcement:
-   not
-  reliably shipped as of the date above.
+- **A viewer-certificate TLS policy as an origin fix**.
+  Viewer and origin connections are separate boundaries.
+  A historical provider issue about the viewer policy does not diagnose this origin failure.
+- **Treating HTTP 502 or the API enum as rollout evidence**.
+  Neither reveals the actual CloudFront ClientHello.
+  The reassessment retracts the original conclusion that these observations established an unfinished rollout.
 
 ## Why we do not file these upstream
 
@@ -1064,56 +1601,111 @@ can find the diagnosis here;
 filed.
  Do not file as a bug.
 
-### Issue 7: CloudFront edge HTTP 502 against TLS-1.3-only origin
+### Issue 7: upstream filing decision
 
-Two-layer mismatch:
- API enum still closed at `[SSLv3, TLSv1, TLSv1.1,
-TLSv1.2]`,
- and the November 2025 announced auto-negotiation does not
-apply at the YTO53-P2 edge as of the date above.
+The 2026-09-07 reassessment supersedes the original upstream attribution.
 
-1. **Upstream's fault?
-   ** Yes.
-    AWS announced the feature publicly,
-    the
-   API enum has not been extended,
-    and the edge behavior does not
-   match the announcement.
-2. **Can upstream fix it?
-   ** Yes.
-    The fix is API enum extension to
-   include `TLSv1.3` and edge rollout of the auto-negotiation;
-    AWS is
-   the only party with access.
-3. **Supporting the use case?
-   ** Yes per the November 2025 announcement.
-4. **Will they fix it?
-   ** Likely yes,
-    given the announcement,
-    but the
-   ship date is uncertain.
-    Re:
-   Post feature request thread already
-   open:
-    <https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw>.
-5. **Minimal-fix prototype?
-   ** Not feasible;
-    the API is closed-source.
+1. **Upstream's fault?**
+   No upstream defect established.
+   The active policies forward a hostname that the configured origin does not serve correctly;
+   the policy-pair fixture correction restored matching content without changing TLS.
+   No CloudFront handshake capture was obtained.
+2. **Can upstream fix it?**
+   Not assessed without an established defect;
+   extending the API enum is not a proven requirement for automatic TLS 1.3.
+3. **Supporting the use case?**
+   Yes according to AWS's origin TLS 1.3 announcement.
+4. **Would upstream welcome this contribution?**
+   No contribution is proposed;
+   contribution-policy auditing is deferred until there is additive defect evidence.
+5. **Will upstream fix it?**
+   No forecast:
+   AWS describes support as already available.
+   Search found the existing [AWS feature request][origin-feature-request]
+   and [Caddy #7445][caddy-cloudfront-issue];
+   the latter was read with all comments and describes a separate SNI incident.
+6. **Minimal-fix prototype?**
+   A consumer-side policy correction passed fixture testing.
+   This establishes a configuration remedy,
+   not an upstream defect requiring a source patch.
 
-**Decision:
- no separate filing.
-** The existing Re:
-Post feature request
-covers the use case.
- Wait for AWS to ship;
- workaround D (wait) is the
-chosen path because `fastly.aquati.cat` already provides the mirror
-function.
- If the wait extends past 6 months from announcement
-(2026-05),
- reconsider workaround A or C.
+The `.out-of-scope/` file inventory contained no AWS or Caddy exemption.
+No upstream issue or comment was filed.
+There is no established upstream defect.
+The public-precedent review found that the existing Caddy thread lacks our tested consumer-side correction,
+so an additive-only draft is retained instead of asserting there is nothing new to share.
+The `.out-of-scope/` inventory and AWS/CloudFront/Caddy/CertMagic content search were repeated before drafting;
+no matching exemption was found.
+Waiting for an inferred TLS rollout is not the remedy.
+The user authorized the targeted hostname correction after the review;
+the native-function implementation is deployed and verified on the live endpoint.
+
+#### Additive comment draft for Caddy #7445
+
+Do not file as-is.
+This is configuration corroboration,
+not a validated Caddy defect report;
+contribution-policy review and authorization to post to this external repository remain outstanding.
+It intentionally does not claim to reproduce the other reporter's exact distribution.
+
+~~~md
+We restored delivery for a separate Caddy/CloudFront hostname mismatch without changing Caddy or origin TLS.
+Our distribution forwarded viewer Host through both `Managed-AllViewer` and the cache policy
+`UseOriginCacheControlHeaders-QueryStrings`.
+
+Changing only the origin-request policy to `AllViewerExceptHostHeader` would have left Host included by the cache policy.
+AWS documents that the cache-policy allowlist overrides the origin-request blocklist:
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
+
+An independent test distribution recovered after removing Host from both forwarding contributions.
+Our live Free plan rejected the custom cache policy needed to preserve the other cache settings.
+We therefore tested a viewer-request CloudFront Function using the native origin helper:
+`cf.updateRequestOrigin({ hostHeader: 'aquati.cat', sni: 'aquati.cat' })`,
+returning the unchanged viewer request.
+The hostname here is our configured origin,
+not a value another deployment should copy.
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.html
+
+With both original policies restored,
+the function alone changed fresh 502 responses into matching origin content on the fixture and subsequently production.
+We verified routes,
+assets,
+statuses,
+bodies,
+and compression rather than relying only on a root HTTP 200.
+
+We did not capture our original CloudFront ClientHello or obtain origin logs,
+so this does not prove what SNI CloudFront sent before our correction,
+nor establish that this issue's distribution has the same policy combination.
+
+AI assistance disclosure:
+an AI coding assistant performed the investigation and automated fixture/production checks and drafted this comment.
+These checks are agent-executed evidence,
+not a claim of independent human reproduction or source review.
+~~~
 
 ## References
+
+Sources for the reassessment were accessed on 2026-09-07.
+
+[origin-tls-announcement]: https://aws.amazon.com/about-aws/whats-new/2025/11/amazon-cloudfront-tls13-origin/
+[origin-protocol-api]: https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_OriginSslProtocols.html
+[origin-ciphers]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-ciphers-cloudfront-to-origin.html
+[cloudfront-502]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/http-502-bad-gateway.html
+[caddy-cloudfront-issue]: https://github.com/caddyserver/caddy/issues/7445
+[origin-request-policies]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.md
+[s3-oac]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.md
+[origin-https]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-custom-origin.html
+[origin-feature-request]: https://repost.aws/questions/QUzNusy9axTz2iWIyfK1q-nw/feature-cloudfront-origin-tls-v1-3
+[policy-interaction]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/understanding-how-origin-request-policies-and-cache-policies-work-together.html
+[custom-origin-requests]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.md
+[origin-sni-note]: https://repost.aws/knowledge-center/cloudfront-https-connection-fails
+[origin-helper]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/helper-functions-origin-modification.md
+[flat-rate-plans]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.md
+[host-policy-report]: https://repost.aws/questions/QUyKQbjgzkRYG-DI0bsKE6Mg/configure-the-cloud-front-to-set-the-origin-request-header
+[fly-host-report]: https://community.fly.io/t/fly-io-apps-behind-cloudfront/20028
+[alb-sni-report]: https://repost.aws/questions/QU6ztFUrqgSlOTgVFu2CM9KA/cloud-front-to-alb-sni
+[certmagic-source]: https://github.com/caddyserver/certmagic
 
 - RFC 7838,
    HTTP Alternative Services,

@@ -1,7 +1,7 @@
 /**
- * Tests for color-mode decision and the JSON token highlighter.
- *
- * @module
+ Tests for color-mode decision and the JSON token highlighter.
+ 
+ @module
  */
 
 import {
@@ -15,16 +15,16 @@ import {
 } from './color.ts';
 
 /**
- * ESC byte that begins an ANSI escape sequence.
+ ESC byte that begins an ANSI escape sequence.
  */
 const ESC = String.fromCodePoint(27);
 
 /**
- * Removes ANSI escape sequences from a string via a single linear scan.
- *
- * @param text - possibly-colored text
- *
- * @returns the text with `ESC ... m` sequences removed
+ Removes ANSI escape sequences from a string via a single linear scan.
+ 
+ @param text - possibly-colored text
+ 
+ @returns the text with `ESC ... m` sequences removed
  */
 function stripAnsi(text: string): string {
   const cursor = { i: 0, };

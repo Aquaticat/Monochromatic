@@ -1,7 +1,7 @@
 /**
- * Manual-push content candidate materialization.
- *
- * @module
+ Manual-push content candidate materialization.
+ 
+ @module
  */
 import nanoSpawn from 'nano-spawn';
 import {
@@ -18,26 +18,26 @@ import {
 import { ManualPushProbeError, } from './manual-push-probe.ts';
 
 /**
- * Creates manual-push-domain error for failed or malformed Git output.
- *
- * @param message - safe failure explanation
- *
- * @returns probe failure
+ Creates manual-push-domain error for failed or malformed Git output.
+ 
+ @param message - safe failure explanation
+ 
+ @returns probe failure
  */
 function probeError(message: string,): Error {
   return new ManualPushProbeError(message,);
 }
 
 /**
- * Resolves object type, peeling annotated tags.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param oid - pushed local object ID
- *
- * @returns peeled object ID and type
+ Resolves object type, peeling annotated tags.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param oid - pushed local object ID
+ 
+ @returns peeled object ID and type
  */
 async function resolveContentObject({
   gitPath,
@@ -52,7 +52,7 @@ async function resolveContentObject({
   type: string;
 }>> {
   /**
-   * Peeled object identity when local object is annotated tag.
+   Peeled object identity when local object is annotated tag.
    */
   const peeled = await nanoSpawn(
     gitPath,
@@ -64,11 +64,11 @@ async function resolveContentObject({
     { cwd, },
   );
   /**
-   * Peeled object ID.
+   Peeled object ID.
    */
   const peeledOid = peeled.stdout;
   /**
-   * Git object type.
+   Git object type.
    */
   const objectType = (await nanoSpawn(
     gitPath,
@@ -86,15 +86,15 @@ async function resolveContentObject({
 }
 
 /**
- * Resolves commits newly reachable by one update and always includes final target state.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param update - content-bearing update
- *
- * @returns complete pushed commit identities
+ Resolves commits newly reachable by one update and always includes final target state.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param update - content-bearing update
+ 
+ @returns complete pushed commit identities
  */
 async function pushedCommits({
   gitPath,
@@ -106,13 +106,13 @@ async function pushedCommits({
   update: PushUpdate & { readonly localOid: string };
 }>,): Promise<readonly string[]> {
   /**
-   * Range exclusions from authoritative prior destination.
+   Range exclusions from authoritative prior destination.
    */
   const exclusions = update.remoteOid === ABSENT_GIT_VALUE
     ? []
     : [`^${update.remoteOid}`,];
   /**
-   * Newly reachable commits in oldest-first order.
+   Newly reachable commits in oldest-first order.
    */
   const result = await nanoSpawn(
     gitPath,
@@ -135,20 +135,20 @@ async function pushedCommits({
 }
 
 /**
- * Materializes every content-bearing pushed state.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param updates - authoritative push updates
- *
- * @returns immutable content candidates
- *
- * @example
- * ```ts
- * await createManualPushCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', updates: [] });
- * ```
+ Materializes every content-bearing pushed state.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param updates - authoritative push updates
+ 
+ @returns immutable content candidates
+ 
+ @example
+ ```ts
+ await createManualPushCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', updates: [] });
+ ```
  */
 export async function createManualPushCandidates({
   gitPath,
@@ -160,7 +160,7 @@ export async function createManualPushCandidates({
   updates: readonly PushUpdate[];
 }>,): Promise<readonly CandidateFile[]> {
   /**
-   * Candidate groups for every content-bearing update.
+   Candidate groups for every content-bearing update.
    */
   const candidateGroups = await Promise.all(updates
     .filter(function hasContent(update,): update is PushUpdate & { readonly localOid: string } {
@@ -168,7 +168,7 @@ export async function createManualPushCandidates({
     },)
     .map(async function updateCandidates(update,) {
       /**
-       * Peeled local target.
+       Peeled local target.
        */
       const content = await resolveContentObject({
         gitPath,
@@ -177,7 +177,7 @@ export async function createManualPushCandidates({
       },);
       if (content.type === 'commit') {
         /**
-         * Every newly reachable commit plus final target state.
+         Every newly reachable commit plus final target state.
          */
         const commits = await pushedCommits({
           gitPath,
@@ -221,11 +221,11 @@ export async function createManualPushCandidates({
       throw new ManualPushProbeError(`Unsupported pushed object type: ${content.type}`,);
     },),);
   /**
-   * Ordered descriptors before exact object content is loaded.
+   Ordered descriptors before exact object content is loaded.
    */
   const descriptors = candidateGroups.flat();
   /**
-   * One batched read for every unique blob across every pushed state.
+   One batched read for every unique blob across every pushed state.
    */
   const blobBytes = await loadBlobBatch({
     gitPath,
@@ -240,17 +240,17 @@ export async function createManualPushCandidates({
   },);
   return descriptors.map(
     /**
-     * Materializes one lazy candidate over batch-owned bytes.
-     *
-     * @param descriptor - candidate descriptor
-     *
-     * @returns candidate with lazy byte provider
-     *
-     * @mutates descriptor through Promise.resolve then getter or callback effects while assimilating descriptor content bytes
+     Materializes one lazy candidate over batch-owned bytes.
+     
+     @param descriptor - candidate descriptor
+     
+     @returns candidate with lazy byte provider
+     
+     @mutates descriptor through Promise.resolve then getter or callback effects while assimilating descriptor content bytes
      */
     function materializeDescriptor(descriptor,): CandidateFile {
       /**
-       * Narrowed content source captured by lazy candidate callback.
+       Narrowed content source captured by lazy candidate callback.
        */
       const { content, } = descriptor;
       return {
@@ -263,7 +263,7 @@ export async function createManualPushCandidates({
           if (content.kind === 'inline')
             return Promise.resolve(content.bytes,);
           /**
-           * Exact shared blob view loaded by the single batch subprocess.
+           Exact shared blob view loaded by the single batch subprocess.
            */
           const bytes = blobBytes.get(content.oid,);
           if (bytes === undefined)

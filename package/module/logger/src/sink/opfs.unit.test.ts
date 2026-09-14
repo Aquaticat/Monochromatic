@@ -3,14 +3,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createOpfsSink, } from './opfs.ts';
+import { createOpfsSink, } from '@monochromatic-dev/module-logger/browser';
 
 // Node/Bun has no `navigator.storage`, so this file exercises the
 // unavailable-backend fallback that the browser test (which runs where OPFS
 // exists) never reaches: `getDirectory` throws and is caught, and drained
 // batches hit the unset-stream guard. The available path lives in
 // `opfs.browser.test.ts`; the shared buffering policy is covered in
-// `record-buffer.unit.test.ts`.
+// `record-buffer.unit.test.ts`. The factory is reached through the
+// `./browser` subpath because the root entry no longer exports it.
 await describe({
   name: 'OPFS sink (node fallback)',
   children: [
@@ -32,7 +33,7 @@ await describe({
         // flush trigger fires.
         const sink = createOpfsSink();
         /**
-         * Resolved write result; the sink write contract is `Promise<void>`.
+         Resolved write result; the sink write contract is `Promise<void>`.
          */
         const result = await sink.write({
           level: 'info',
@@ -61,7 +62,7 @@ await describe({
           timestamp: 1,
         },);
         /**
-         * Resolved flush result; must settle even with no stream to write to.
+         Resolved flush result; must settle even with no stream to write to.
          */
         const result = await sink.flush?.();
         expect(result,)

@@ -35,6 +35,10 @@ extends = "format:oxlint"
 [tasks.'test:unit']
 extends = "test:unit"
 
+[tasks.'verify:minimum-runtime']
+description = "Import built public MJS and exercise representative CLI behavior at exact engines.node floor"
+run = "node src/runtime-contract.host-evidence.ts"
+
 [tasks.'pack:npm']
 description = "Build and create the unpublished npm tarball"
 depends = ["build"]

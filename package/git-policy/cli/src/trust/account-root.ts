@@ -1,20 +1,20 @@
 /**
- * Operating-system-account-derived trust registry root.
- *
- * @module
+ Operating-system-account-derived trust registry root.
+ 
+ @module
  */
 import { userInfo, } from 'node:os';
 import { join, } from 'node:path';
 import { realpath, } from 'node:fs/promises';
 
 /**
- * Account registry root resolution failure.
+ Account registry root resolution failure.
  */
 export class AccountRegistryRootError extends Error {
   /**
-   * Creates account-root failure.
-   *
-   * @param message - safe failure explanation
+   Creates account-root failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -23,18 +23,18 @@ export class AccountRegistryRootError extends Error {
 }
 
 /**
- * Resolves production registry root without repository-controlled environment variables.
- *
- * @returns canonical OS-account state path
- *
- * @example
- * ```ts
- * await resolveAccountRegistryRoot();
- * ```
+ Resolves production registry root without repository-controlled environment variables.
+ 
+ @returns canonical OS-account state path
+ 
+ @example
+ ```ts
+ await resolveAccountRegistryRoot();
+ ```
  */
 export async function resolveAccountRegistryRoot(): Promise<string> {
   /**
-   * Canonical home from operating-system account database.
+   Canonical home from operating-system account database.
    */
   const accountHome = await (async function canonicalAccountHome(): Promise<string> {
     try {

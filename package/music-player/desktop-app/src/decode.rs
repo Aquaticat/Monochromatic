@@ -327,7 +327,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
     // const ext = extname(path).replace(/^\./, "");
     // if (ext) hint.withExtension(ext);
     // ```
-    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+    if let Some(ext) = path.extension().and_then(|e| return e.to_str()) {
         // What:     `hint.with_extension(ext);` records the extension on the hint.
         // Why:      Gives the prober a strong signal of the container format.
         //
@@ -397,7 +397,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
             // ```ts
             // if (!track) throw new PlayerError.Unsupported("no audio track");
             // ```
-            .ok_or_else(|| PlayerError::Unsupported("no audio track".to_string()))?;
+            .ok_or_else(|| return PlayerError::Unsupported("no audio track".to_string()))?;
 
         // What:     `track.codec_params.as_ref().and_then(|cp| cp.audio())`. In 0.6
         //           `Track::codec_params` is `Option<CodecParameters>` (an enum over
@@ -415,9 +415,9 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         let audio_params = track
             .codec_params
             .as_ref()
-            .and_then(|cp| cp.audio())
+            .and_then(|cp| return cp.audio())
             .ok_or_else(|| {
-                PlayerError::Unsupported("track has no audio codec parameters".to_string())
+                return PlayerError::Unsupported("track has no audio codec parameters".to_string())
             })?;
 
         // What:     `(track.id, audio_params.codec == CODEC_ID_OPUS, track.clone())`.
@@ -464,7 +464,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         // ```ts
         // return source;
         // ```
-        Ok(Box::new(source))
+        return Ok(Box::new(source))
     } else {
         // What:     `SymphoniaSource::new(format, track, track_id)?`. Builds the
         //           symphonia-decoder source, moving `format`/`track` in.
@@ -483,7 +483,7 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         // ```ts
         // return source;
         // ```
-        Ok(Box::new(source))
+        return Ok(Box::new(source))
     }
 }
 
@@ -539,8 +539,8 @@ pub(crate) fn seek_format(
     let track = format
         .tracks()
         .iter()
-        .find(|t| t.id == track_id)
-        .ok_or_else(|| PlayerError::Unsupported("seek: track not found".to_string()))?;
+        .find(|t| return t.id == track_id)
+        .ok_or_else(|| return PlayerError::Unsupported("seek: track not found".to_string()))?;
 
     // What:     `let start_ts: Timestamp = track.start_ts;`. Copy the track's first-frame
     //           timestamp out of the borrowed track. In 0.6 timing lives directly on `Track`
@@ -572,9 +572,9 @@ pub(crate) fn seek_format(
     let rate = track
         .codec_params
         .as_ref()
-        .and_then(|cp| cp.audio())
-        .and_then(|a| a.sample_rate)
-        .ok_or_else(|| PlayerError::Unsupported("seek: unknown sample rate".to_string()))?;
+        .and_then(|cp| return cp.audio())
+        .and_then(|a| return a.sample_rate)
+        .ok_or_else(|| return PlayerError::Unsupported("seek: unknown sample rate".to_string()))?;
 
     // What:     `let n_frames = track.num_frames;`. Copy the optional total audible frame
     //           count (`Option<u64>`; `Some(n)` if the container knew the length, `None`
@@ -689,7 +689,7 @@ pub(crate) fn seek_format(
     // ```ts
     // return;
     // ```
-    Ok(())
+    return Ok(())
 }
 
 /// What:     `struct SymphoniaSource { ... }`. A record holding the live decode state for a
@@ -802,9 +802,9 @@ impl SymphoniaSource {
         let audio_params = track
             .codec_params
             .as_ref()
-            .and_then(|cp| cp.audio())
+            .and_then(|cp| return cp.audio())
             .ok_or_else(|| {
-                PlayerError::Unsupported("track has no audio codec parameters".to_string())
+                return PlayerError::Unsupported("track has no audio codec parameters".to_string())
             })?;
 
         // What:     `symphonia::default::get_codecs().make_audio_decoder(audio_params, &AudioDecoderOptions::default())?`.
@@ -980,7 +980,7 @@ impl SymphoniaSource {
         // ```ts
         // return source;
         // ```
-        Ok(source)
+        return Ok(source)
     }
 
     /// What:     `fn decode_next_raw(&mut self) -> Result<Vec<f32>, PlayerError>`. A PRIVATE
@@ -1223,7 +1223,7 @@ impl Source for SymphoniaSource {
         // ```ts
         // return this.spec;
         // ```
-        self.spec
+        return self.spec
     }
 
     /// What:     `fn next_chunk(&mut self) -> Result<Vec<f32>, PlayerError>`. Exclusive borrow;
@@ -1266,7 +1266,7 @@ impl Source for SymphoniaSource {
         // ```ts
         // return this.decodeNextRaw();
         // ```
-        self.decode_next_raw()
+        return self.decode_next_raw()
     }
 
     /// What:     `fn seek(&mut self, secs: f64) -> Result<(), PlayerError>`. Jump the demuxer
@@ -1322,7 +1322,7 @@ impl Source for SymphoniaSource {
         // ```ts
         // return;
         // ```
-        Ok(())
+        return Ok(())
     }
 }
 

@@ -20,7 +20,7 @@ import {
 //region Commit escape hatch
 
 /**
- * Wrapper-only flag that suppresses `-o` injection for one commit invocation.
+ Wrapper-only flag that suppresses `-o` injection for one commit invocation.
  */
 export const COMMIT_ESCAPE_HATCH = '--no-enforce-only';
 
@@ -29,14 +29,14 @@ export const COMMIT_ESCAPE_HATCH = '--no-enforce-only';
 //region Commit post-subcommand region parser
 
 /**
- * Declared option surface of the post-`commit` argv region.
- *
- * Declares the flags the commit-only rule reads, plus every value-taking option
- * git accepts here. Most declared values are never read: declaring them is what
- * stops a value such as the `-m` message from being counted as a pathspec.
- * Pathspec presence is still detected separately by {@link hasCommitPathspec}'s
- * arity-aware scanner, because an undeclared option's arity is unknowable and no
- * region parser can decide whether `-q` consumes the following token.
+ Declared option surface of the post-`commit` argv region.
+ 
+ Declares the flags the commit-only rule reads, plus every value-taking option
+ git accepts here. Most declared values are never read: declaring them is what
+ stops a value such as the `-m` message from being counted as a pathspec.
+ Pathspec presence is still detected separately by {@link hasCommitPathspec}'s
+ arity-aware scanner, because an undeclared option's arity is unknowable and no
+ region parser can decide whether `-q` consumes the following token.
  */
 const commitRegionSpec: ArgvSpec = {
   flags: {
@@ -112,116 +112,116 @@ const commitRegionSpec: ArgvSpec = {
 //region Commit region facts
 
 /**
- * Facts about the post-`commit` argv region used by commit-only policy.
+ Facts about the post-`commit` argv region used by commit-only policy.
  */
 export type CommitRegion = {
   /**
-   * Whether argv asks git to stage every tracked modification before committing.
+   Whether argv asks git to stage every tracked modification before committing.
    */
   readonly hasAllFlag: boolean;
   /**
-   * Whether argv explicitly enables or disables only mode.
+   Whether argv explicitly enables or disables only mode.
    */
   readonly hasExplicitOnlyFlag: boolean;
   /**
-   * Whether argv explicitly disables only mode (`--no-only`).
+   Whether argv explicitly disables only mode (`--no-only`).
    */
   readonly hasNoOnlyFlag: boolean;
   /**
-   * Whether argv chooses include mode (`-i`/`--include`), which git forbids
-   * combining with `--only`.
+   Whether argv chooses include mode (`-i`/`--include`), which git forbids
+   combining with `--only`.
    */
   readonly hasIncludeFlag: boolean;
   /**
-   * Whether argv requests interactive selection.
+   Whether argv requests interactive selection.
    */
   readonly hasInteractiveFlag: boolean;
   /**
-   * Whether argv requests patch selection.
+   Whether argv requests patch selection.
    */
   readonly hasPatchFlag: boolean;
   /**
-   * Whether argv is a dry run that records no commit: `--dry-run` or any of
-   * the output-format flags git documents as implying it (`--short`,
-   * `--porcelain`, `--long`, `-z`/`--null`), in any accepted abbreviation.
+   Whether argv is a dry run that records no commit: `--dry-run` or any of
+   the output-format flags git documents as implying it (`--short`,
+   `--porcelain`, `--long`, `-z`/`--null`), in any accepted abbreviation.
    */
   readonly isDryRun: boolean;
   /**
-   * Whether argv includes a mode where git permits no positional pathspec.
+   Whether argv includes a mode where git permits no positional pathspec.
    */
   readonly hasPathlessAllowedFlag: boolean;
   /**
-   * Whether argv amends the previous commit (`--amend`).
+   Whether argv amends the previous commit (`--amend`).
    */
   readonly hasAmendFlag: boolean;
   /**
-   * Whether argv permits a commit recording no change (`--allow-empty`).
+   Whether argv permits a commit recording no change (`--allow-empty`).
    */
   readonly hasAllowEmptyFlag: boolean;
   /**
-   * Whether argv asks git to read pathspecs from file or stdin.
+   Whether argv asks git to read pathspecs from file or stdin.
    */
   readonly hasPathspecFromFile: boolean;
   /**
-   * Exact pathspec source spelling when present.
+   Exact pathspec source spelling when present.
    */
   readonly pathspecFile?: string;
   /**
-   * Whether pathspec file uses NUL delimiters.
+   Whether pathspec file uses NUL delimiters.
    */
   readonly hasPathspecFileNul: boolean;
   /**
-   * Whether argv includes at least one positional pathspec (before or after `--`).
+   Whether argv includes at least one positional pathspec (before or after `--`).
    */
   readonly hasPathspec: boolean;
   /**
-   * Whether wrapper-only escape hatch appears as a real flag.
+   Whether wrapper-only escape hatch appears as a real flag.
    */
   readonly hasEscapeHatch: boolean;
   /**
-   * Parsed positional pathspecs for supported explicit-path transactions.
+   Parsed positional pathspecs for supported explicit-path transactions.
    */
   readonly pathspecs: readonly string[];
 };
 
 /**
- * Parses the post-`commit` argv region into a structured fact set used by
- * the commit-only rule. Inline short-cluster values are normalised by
- * {@link normaliseCommitArgs} before region parsing so `-mhello` and
- * `-mhello file.ts` are interpreted the same way real git would. Pathspec
- * presence is detected by {@link hasCommitPathspec} over the same normalised
- * argv because pass-through unknown options may otherwise consume no-value
- * flag pathspecs.
- *
- * A region this parser refuses to read raises rather than degrading to an
- * empty fact set: every fact here decides whether the commit-only rule injects
- * `-o`, so guessing from a misread region weakens the guard it feeds.
- *
- * @param postSubcommandArgs - Arguments strictly after `commit` subcommand.
- *
- * @returns Fact record consumed by commit-only policy.
- *
- * @throws ArgvParseError when region names a token no reading can settle.
- *
- * @example
- * ```ts
- * parseCommitRegion(['-am', 'hello']).hasAllFlag;
- * // => true
- * ```
+ Parses the post-`commit` argv region into a structured fact set used by
+ the commit-only rule. Inline short-cluster values are normalised by
+ {@link normaliseCommitArgs} before region parsing so `-mhello` and
+ `-mhello file.ts` are interpreted the same way real git would. Pathspec
+ presence is detected by {@link hasCommitPathspec} over the same normalised
+ argv because pass-through unknown options may otherwise consume no-value
+ flag pathspecs.
+ 
+ A region this parser refuses to read raises rather than degrading to an
+ empty fact set: every fact here decides whether the commit-only rule injects
+ `-o`, so guessing from a misread region weakens the guard it feeds.
+ 
+ @param postSubcommandArgs - Arguments strictly after `commit` subcommand.
+ 
+ @returns Fact record consumed by commit-only policy.
+ 
+ @throws ArgvParseError when region names a token no reading can settle.
+ 
+ @example
+ ```ts
+ parseCommitRegion(['-am', 'hello']).hasAllFlag;
+ // => true
+ ```
  */
 export function parseCommitRegion(
   postSubcommandArgs: readonly string[],
 ): CommitRegion {
   /**
-   * Normalised argv where inline short-cluster values are split apart.
+   Normalised argv where inline short-cluster values are split apart.
    */
   const normalised = normaliseCommitArgs(postSubcommandArgs,);
   /**
-   * Position of pathspec separator after normalisation.
+   Position of pathspec separator after normalisation.
    */
   const separatorIndex = normalised.indexOf(PATHSPEC_SEPARATOR,);
   /**
-   * Argv slice handed to region parser; pathspec region is excluded.
+   Argv slice handed to region parser; pathspec region is excluded.
    */
   const region = separatorIndex === (-1)
     ? normalised
@@ -230,12 +230,12 @@ export function parseCommitRegion(
       separatorIndex,
     );
   /**
-   * Whether the normalised argv supplies a positional pathspec.
+   Whether the normalised argv supplies a positional pathspec.
    */
   const hasPathspec = hasCommitPathspec(normalised,);
 
   /**
-   * Parsed facts over the cleaned option region.
+   Parsed facts over the cleaned option region.
    */
   const {
     flagCounts,
@@ -245,22 +245,22 @@ export function parseCommitRegion(
     spec: commitRegionSpec,
   },);
   /**
-   * Exact pathspec source spelling, taking git's last-wins order.
+   Exact pathspec source spelling, taking git's last-wins order.
    */
   const pathspecFile = (optionValues.pathspecFromFile ?? []).at(-1,);
   /**
-   * Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`).
+   Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`).
    */
   const explicitOnlyCount = (flagCounts.explicitOnlyFlags ?? 0)
     + (flagCounts.noOnlyFlags ?? 0);
   /**
-   * Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`).
+   Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`).
    */
   const pathlessAllowedCount = (flagCounts.amendFlags ?? 0)
     + (flagCounts.allowEmptyFlags ?? 0);
   /**
-   * Sum of dry-run flag occurrences, counting the output-format flags git
-   * documents as implying `--dry-run`.
+   Sum of dry-run flag occurrences, counting the output-format flags git
+   documents as implying `--dry-run`.
    */
   const dryRunCount = (flagCounts.dryRunFlags ?? 0)
     + (flagCounts.shortFlags ?? 0)

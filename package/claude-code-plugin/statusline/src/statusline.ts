@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Claude Code statusline command entry point.
- *
- * @module
+ Claude Code statusline command entry point.
+ 
+ @module
  */
 
 import { text as readStreamText, } from 'node:stream/consumers';
@@ -12,16 +12,16 @@ import { renderStatusline as renderStatuslineForMain, } from './render.ts';
 import type { StatuslineInput, } from './types.ts';
 
 /**
- * Parses trusted Claude Code statusline JSON input.
- *
- * @param raw - raw stdin JSON payload
- *
- * @returns parsed statusline input
- *
- * @example
- * ```ts
- * parseStatuslineInput('{"model":{"display_name":"Opus"}}');
- * ```
+ Parses trusted Claude Code statusline JSON input.
+ 
+ @param raw - raw stdin JSON payload
+ 
+ @returns parsed statusline input
+ 
+ @example
+ ```ts
+ parseStatuslineInput('{"model":{"display_name":"Opus"}}');
+ ```
  */
 function parseStatuslineInput(raw: string,): StatuslineInput {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON from Claude Code statusline dispatch.
@@ -29,20 +29,20 @@ function parseStatuslineInput(raw: string,): StatuslineInput {
 }
 
 /**
- * Reads stdin, renders the statusline, and writes one line to stdout.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Reads stdin, renders the statusline, and writes one line to stdout.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Parsed statusline payload from stdin.
+   Parsed statusline payload from stdin.
    */
   const input = parseStatuslineInput(await readStreamText(process.stdin,),);
   /**
-   * Rendered statusline text.
+   Rendered statusline text.
    */
   const line = await renderStatuslineForMain({
     input,
@@ -54,18 +54,18 @@ async function main(): Promise<void> {
 }
 
 /**
- * Checks whether this module is the process entrypoint.
- *
- * @param metaUrl - current module URL
- *
- * @param entrypointPath - process entrypoint path
- *
- * @returns whether the module should execute the CLI
- *
- * @example
- * ```ts
- * isDirectRun({ metaUrl: import.meta.url, entrypointPath: process.argv[1] });
- * ```
+ Checks whether this module is the process entrypoint.
+ 
+ @param metaUrl - current module URL
+ 
+ @param entrypointPath - process entrypoint path
+ 
+ @returns whether the module should execute the CLI
+ 
+ @example
+ ```ts
+ isDirectRun({ metaUrl: import.meta.url, entrypointPath: process.argv[1] });
+ ```
  */
 function isDirectRun({
   metaUrl,
@@ -75,14 +75,14 @@ function isDirectRun({
   entrypointPath: string;
 }>,): boolean {
   /**
-   * Entrypoint file URL.
+   Entrypoint file URL.
    */
   const entrypointUrl = pathToFileURL(entrypointPath,);
   return entrypointUrl.href === metaUrl;
 }
 
 /**
- * Entrypoint path supplied by Node.
+ Entrypoint path supplied by Node.
  */
 const [, entrypointPath,] = process.argv;
 if ((entrypointPath !== undefined) && isDirectRun({

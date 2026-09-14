@@ -14,13 +14,12 @@ import {
   mkdir,
   writeFile,
 } from 'node:fs/promises';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
-import { findUp, } from 'find-up';
+import {
+  findRootCached,
+  packageNamed,
+} from '@monochromatic-dev/module-fs-path/ts';
 
 import { STYLES as CTX_MENU_STYLES, } from '../context-menu/context-menu.styles.ts';
 import { STYLES as TOAST_STYLES, } from '../toast/toast.styles.ts';
@@ -31,14 +30,12 @@ import { STYLES as THEME_STYLES, } from './theme.ts';
 export {};
 
 /**
- * Package root resolved by walking up to the nearest `package.json`.
+ * Package root: the nearest ancestor of this file whose manifest names this package.
  */
-const PACKAGE_ROOT = dirname(
-  nonNullishOrThrow(await findUp(
-    'package.json',
-    { cwd: import.meta.dirname, },
-  ),),
-);
+const PACKAGE_ROOT = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/desktop-daemon-editord',),
+},);
 
 /**
  * Output directory under the package root.

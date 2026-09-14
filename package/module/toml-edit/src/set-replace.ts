@@ -1,13 +1,13 @@
 /**
- * Whole-container replacements for {@link tomlSet}: replace a standard table's
- * body, the top-level body, or an implicit dotted-key parent.
- *
- * Each requires a plain object value (mirroring table-body semantics); anything
- * else throws {@link TomlTypeError}. The implicit-parent case deletes the
- * constituent entries under the path and inserts the object's entries as dotted
- * keys (issue #252 defect: set over an implicit parent).
- *
- * @module
+ Whole-container replacements for {@link tomlSet}: replace a standard table's
+ body, the top-level body, or an implicit dotted-key parent.
+ 
+ Each requires a plain object value (mirroring table-body semantics); anything
+ else throws {@link TomlTypeError}. The implicit-parent case deletes the
+ constituent entries under the path and inserts the object's entries as dotted
+ keys (issue #252 defect: set over an implicit parent).
+ 
+ @module
  */
 
 import type {
@@ -25,13 +25,13 @@ import type {
 import { isPlainObject, } from './value-encoders.ts';
 
 /**
- * Require `value` to be a plain object, else throw a table-replace type error.
- *
- * @returns The value narrowed to a record.
- *
- * @throws {@link TomlTypeError} when `value` is not a plain object.
- *
- * @mutates value - Plain-object validation can invoke caller-owned proxy prototype hooks.
+ Require `value` to be a plain object, else throw a table-replace type error.
+ 
+ @returns The value narrowed to a record.
+ 
+ @throws {@link TomlTypeError} when `value` is not a plain object.
+ 
+ @mutates value - Plain-object validation can invoke caller-owned proxy prototype hooks.
  */
 function requireObject(
   {
@@ -51,11 +51,11 @@ function requireObject(
 }
 
 /**
- * New synthetic key-value blocks for each entry of `value`.
- *
- * @returns Computed blocks.
- *
- * @mutates value - `Object.entries` and recursive value building can invoke caller-owned proxy and accessor hooks.
+ New synthetic key-value blocks for each entry of `value`.
+ 
+ @returns Computed blocks.
+ 
+ @mutates value - `Object.entries` and recursive value building can invoke caller-owned proxy and accessor hooks.
  */
 function entryBlocks(
   {
@@ -82,18 +82,18 @@ function entryBlocks(
 }
 
 /**
- * Replace the body of the standard table at `tableIndex` with `value`'s entries.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlTypeError} when `value` is not a plain object.
- *
- * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
- *
- * @example
- * ```ts
- * doTableReplace({ edit, tableIndex: 0, table, path: ['t'], value: { a: 1, }, },);
- * ```
+ Replace the body of the standard table at `tableIndex` with `value`'s entries.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlTypeError} when `value` is not a plain object.
+ 
+ @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
+ 
+ @example
+ ```ts
+ doTableReplace({ edit, tableIndex: 0, table, path: ['t'], value: { a: 1, }, },);
+ ```
  */
 export function doTableReplace(
   {
@@ -111,7 +111,7 @@ export function doTableReplace(
   },
 ): TomlEditState {
   /**
-   * Object body entries so the table's direct key-values can be rebuilt.
+   Object body entries so the table's direct key-values can be rebuilt.
    */
   const object = requireObject({
     value,
@@ -135,19 +135,19 @@ export function doTableReplace(
 }
 
 /**
- * Replace the top-level body: swap all top-level key-values for `value`'s
- * entries, keeping table sections and fillers.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlTypeError} when `value` is not a plain object.
- *
- * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
- *
- * @example
- * ```ts
- * doTopLevelReplace({ edit, value: { title: 'x', }, },);
- * ```
+ Replace the top-level body: swap all top-level key-values for `value`'s
+ entries, keeping table sections and fillers.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlTypeError} when `value` is not a plain object.
+ 
+ @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
+ 
+ @example
+ ```ts
+ doTopLevelReplace({ edit, value: { title: 'x', }, },);
+ ```
  */
 export function doTopLevelReplace(
   {
@@ -159,14 +159,14 @@ export function doTopLevelReplace(
   },
 ): TomlEditState {
   /**
-   * Object whose entries become the new top-level key-values.
+   Object whose entries become the new top-level key-values.
    */
   const object = requireObject({
     value,
     path: [],
   },);
   /**
-   * Table sections and fillers kept as-is (only bare key-values are replaced).
+   Table sections and fillers kept as-is (only bare key-values are replaced).
    */
   const kept = edit.blocks
     .filter(function keep(b,) {
@@ -187,15 +187,15 @@ export function doTopLevelReplace(
 }
 
 /**
- * True when `block` is a constituent of the implicit parent at `path` (a
- * top-level key-value or table whose absolute key strictly extends `path`).
- *
- * @returns Resulting boolean.
- *
- * @example
- * ```ts
- * isImplicitConstituent({ block, path: ['a'], },);
- * ```
+ True when `block` is a constituent of the implicit parent at `path` (a
+ top-level key-value or table whose absolute key strictly extends `path`).
+ 
+ @returns Resulting boolean.
+ 
+ @example
+ ```ts
+ isImplicitConstituent({ block, path: ['a'], },);
+ ```
  */
 export function isImplicitConstituent(
   {
@@ -207,7 +207,7 @@ export function isImplicitConstituent(
   },
 ): boolean {
   /**
-   * Absolute key segments of the block (key-value key, or table header).
+   Absolute key segments of the block (key-value key, or table header).
    */
   const segs = block.kind
     === 'keyvalue'
@@ -229,19 +229,19 @@ export function isImplicitConstituent(
 }
 
 /**
- * Replace an implicit dotted-key parent: delete its constituent entries and
- * insert `value`'s entries as dotted keys under `path`.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlTypeError} when `value` is not a plain object.
- *
- * @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
- *
- * @example
- * ```ts
- * doImplicitReplace({ edit, path: ['a'], value: { b: 1, }, },);
- * ```
+ Replace an implicit dotted-key parent: delete its constituent entries and
+ insert `value`'s entries as dotted keys under `path`.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlTypeError} when `value` is not a plain object.
+ 
+ @mutates value - Validation and entry building can invoke caller-owned proxy and accessor hooks.
+ 
+ @example
+ ```ts
+ doImplicitReplace({ edit, path: ['a'], value: { b: 1, }, },);
+ ```
  */
 export function doImplicitReplace(
   {
@@ -255,20 +255,20 @@ export function doImplicitReplace(
   },
 ): TomlEditState {
   /**
-   * Object whose entries become dotted keys under the implicit parent path.
+   Object whose entries become dotted keys under the implicit parent path.
    */
   const object = requireObject({
     value,
     path,
   },);
   /**
-   * String-form prefix so the new dotted keys extend the parent path.
+   String-form prefix so the new dotted keys extend the parent path.
    */
   const prefix = path.map(function stringifySegment(segment,) {
     return (typeof segment) === 'number' ? String(segment,) : segment;
   },);
   /**
-   * Blocks with the implicit parent's constituents removed.
+   Blocks with the implicit parent's constituents removed.
    */
   const kept = edit.blocks
     .filter(function keep(b,) {
@@ -278,14 +278,14 @@ export function doImplicitReplace(
     },);
   },);
   /**
-   * First table header in the kept blocks; new keys must precede it.
+   First table header in the kept blocks; new keys must precede it.
    */
   const firstTable = kept.findIndex(function isTable(b,) {
     return b.kind
       === 'table';
   },);
   /**
-   * New dotted key-value blocks for the object entries.
+   New dotted key-value blocks for the object entries.
    */
   const inserts = entryBlocks({
     value: object,

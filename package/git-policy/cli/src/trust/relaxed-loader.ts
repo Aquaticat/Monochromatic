@@ -1,5 +1,5 @@
 /**
- * Explicit per-identity relaxed metadata-triggered refresh. @module
+ Explicit per-identity relaxed metadata-triggered refresh. @module
  */
 import {
   executeStoredConfig,
@@ -19,13 +19,13 @@ import type {
 } from './types.ts';
 
 /**
- * Executes unchanged stored bundle without live-byte comparison.
- *
- * @param recordDirectory - exact record directory
- *
- * @param record - validated record
- *
- * @returns loaded stored config
+ Executes unchanged stored bundle without live-byte comparison.
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param record - validated record
+ 
+ @returns loaded stored config
  */
 async function executeExisting({
   recordDirectory,
@@ -35,7 +35,7 @@ async function executeExisting({
   record: TrustRecord;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Runtime-authoritative stored executable.
+   Runtime-authoritative stored executable.
    */
   const validated = await executeStoredConfig(`${recordDirectory}/${record.executableSnapshotFile}`,);
   return {
@@ -45,21 +45,21 @@ async function executeExisting({
 }
 
 /**
- * Refreshes MJS snapshot only when source metadata changed.
- *
- * @param registryRoot - complete registry root
- *
- * @param recordDirectory - exact record directory
- *
- * @param candidate - exact live candidate
- *
- * @param record - validated existing record
- *
- * @param recordedAt - refresh timestamp
- *
- * @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
- *
- * @returns old or refreshed loaded config
+ Refreshes MJS snapshot only when source metadata changed.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param candidate - exact live candidate
+ 
+ @param record - validated existing record
+ 
+ @param recordedAt - refresh timestamp
+ 
+ @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
+ 
+ @returns old or refreshed loaded config
  */
 async function loadRelaxedMjs({
   registryRoot,
@@ -75,7 +75,7 @@ async function loadRelaxedMjs({
   recordedAt: string;
 }>,): Promise<LoadedTrustedConfig> {
   /**
-   * Sole MJS source metadata.
+   Sole MJS source metadata.
    */
   const [source,] = record.sources;
   if ((source === undefined) || (record.sources
@@ -93,7 +93,7 @@ async function loadRelaxedMjs({
       .configPath,
   },);
   /**
-   * Private replacement validated before atomic commit.
+   Private replacement validated before atomic commit.
    */
   await using prepared = await prepareMjsRecord({
     registryRoot,
@@ -103,7 +103,7 @@ async function loadRelaxedMjs({
     authorizingRoots: record.authorizingRoots,
   },);
   /**
-   * Replacement config validation result.
+   Replacement config validation result.
    */
   const validated = await executeStoredConfig(prepared.executablePath,);
   await prepared.commit();
@@ -114,13 +114,13 @@ async function loadRelaxedMjs({
 }
 
 /**
- * Reports whether tracked TypeScript metadata remains unchanged.
- *
- * @param candidate - exact current entry
- *
- * @param record - existing TypeScript record
- *
- * @returns whether every tracked size and mtime matches
+ Reports whether tracked TypeScript metadata remains unchanged.
+ 
+ @param candidate - exact current entry
+ 
+ @param record - existing TypeScript record
+ 
+ @returns whether every tracked size and mtime matches
  */
 async function typeScriptMetadataUnchanged({
   candidate,
@@ -130,12 +130,12 @@ async function typeScriptMetadataUnchanged({
   record: TrustRecord;
 }>,): Promise<boolean> {
   /**
-   * Every live tracked metadata value.
+   Every live tracked metadata value.
    */
   const comparisons = await Promise.all(record.sources
     .map(async function metadataMatches(source,) {
     /**
-     * Current source metadata.
+     Current source metadata.
      */
     const current = source.canonicalPath
       === candidate.discovered
@@ -150,21 +150,21 @@ async function typeScriptMetadataUnchanged({
 }
 
 /**
- * Refreshes TypeScript bundle only when tracked metadata changed.
- *
- * @param registryRoot - complete registry root
- *
- * @param recordDirectory - exact record directory
- *
- * @param candidate - exact live entry candidate
- *
- * @param record - validated existing record
- *
- * @param recordedAt - refresh timestamp
- *
- * @param warn - package invalidation warning sink
- *
- * @returns old or rebuilt loaded config
+ Refreshes TypeScript bundle only when tracked metadata changed.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param candidate - exact live entry candidate
+ 
+ @param record - validated existing record
+ 
+ @param recordedAt - refresh timestamp
+ 
+ @param warn - package invalidation warning sink
+ 
+ @returns old or rebuilt loaded config
  */
 async function loadRelaxedTypeScript({
   registryRoot,
@@ -190,11 +190,11 @@ async function loadRelaxedTypeScript({
       record,
     },);
   /**
-   * Disposable private tsdown output directory.
+   Disposable private tsdown output directory.
    */
   await using buildDirectory = await createPrivateBuildDirectory();
   /**
-   * Fresh automatic private rebuild.
+   Fresh automatic private rebuild.
    */
   const rebuilt = await buildTypeScriptCandidate({
     discovered: candidate.discovered,
@@ -223,7 +223,7 @@ async function loadRelaxedTypeScript({
     },);
   },);
   /**
-   * Private replacement validated before atomic commit.
+   Private replacement validated before atomic commit.
    */
   await using prepared = await prepareTypeScriptRecord({
     registryRoot,
@@ -233,7 +233,7 @@ async function loadRelaxedTypeScript({
     authorizingRoots: record.authorizingRoots,
   },);
   /**
-   * Replacement config validation result.
+   Replacement config validation result.
    */
   const validated = await executeStoredConfig(prepared.executablePath,);
   await prepared.commit();
@@ -244,30 +244,30 @@ async function loadRelaxedTypeScript({
 }
 
 /**
- * Loads explicitly relaxed exact identity by metadata signal.
- *
- * @param registryRoot - complete registry root
- *
- * @param recordDirectory - exact record directory
- *
- * @param candidate - exact live entry candidate
- *
- * @param record - validated existing record
- *
- * @param recordedAt - refresh timestamp
- *
- * @param warn - prominent warning sink
- *
- * @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
- *
- * @returns old or refreshed loaded config
- *
- * @throws {@link TrustedConfigError} or build error when refresh fails
- *
- * @example
- * ```ts
- * await loadRelaxedConfig({ registryRoot, recordDirectory, candidate, record, recordedAt, warn });
- * ```
+ Loads explicitly relaxed exact identity by metadata signal.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param recordDirectory - exact record directory
+ 
+ @param candidate - exact live entry candidate
+ 
+ @param record - validated existing record
+ 
+ @param recordedAt - refresh timestamp
+ 
+ @param warn - prominent warning sink
+ 
+ @mutates candidate through handle.writeFile configured VFS handler or native-boundary access to candidate.bytes
+ 
+ @returns old or refreshed loaded config
+ 
+ @throws {@link TrustedConfigError} or build error when refresh fails
+ 
+ @example
+ ```ts
+ await loadRelaxedConfig({ registryRoot, recordDirectory, candidate, record, recordedAt, warn });
+ ```
  */
 export async function loadRelaxedConfig({
   registryRoot,

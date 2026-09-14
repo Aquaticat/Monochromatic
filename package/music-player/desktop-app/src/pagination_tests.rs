@@ -34,7 +34,7 @@ fn names(list: &[&str]) -> Vec<String> {
     // ```ts
     // return list.map((s) => s);
     // ```
-    list.iter().map(|s| s.to_string()).collect()
+    return list.iter().map(|s| return s.to_string()).collect()
 }
 
 // What:     `#[test]` marks the next function as a test case.
@@ -101,7 +101,7 @@ fn same_top_folder_collapses_one_level() {
     // ```ts
     // const indices = pages[0].entries.map((e) => e.index);
     // ```
-    let indices: Vec<usize> = pages[0].entries.iter().map(|e| e.index).collect();
+    let indices: Vec<usize> = pages[0].entries.iter().map(|e| return e.index).collect();
     // What:     `assert_eq!(indices, vec![0, 1]);`. Indices preserved.
     // Why:      Clicking a filtered row must map back to the right queue index.
     //
@@ -138,7 +138,7 @@ fn distinct_folders_sorted_by_path() {
     // ```ts
     // const labels = pages.map((p) => p.label);
     // ```
-    let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+    let labels: Vec<String> = pages.iter().map(|p| return p.label.clone()).collect();
     // What:     `assert_eq!(labels, vec!["Jazz", "Pop"]);`. `Jazz` sorts before `Pop`.
     // Why:      Folder pages order by path regardless of input order.
     //
@@ -192,7 +192,7 @@ fn folder_pages_sort_case_insensitively() {
     // ```ts
     // const labels = pages.map((p) => p.label);
     // ```
-    let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+    let labels: Vec<String> = pages.iter().map(|p| return p.label.clone()).collect();
     // What:     `assert_eq!(labels, vec!["daniwellP", "r-906", "Reol", "Zedd"]);`.
     //           Case-folded order: `DANIWELLP` < `R-906` < `REOL` < `ZEDD` (the `-` at
     //           0x2D sorts before `E`, so `r-906` precedes `Reol`). The displayed
@@ -244,7 +244,7 @@ fn case_variant_folders_stay_distinct_pages() {
     // ```ts
     // const labels = pages.map((p) => p.label);
     // ```
-    let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+    let labels: Vec<String> = pages.iter().map(|p| return p.label.clone()).collect();
     // What:     `assert_eq!(labels, vec!["REOL", "Reol"]);`. Both case variants present,
     //           uppercase-led first.
     // Why:      Confirm the tiebreaker keeps them separate and ordered.
@@ -299,7 +299,7 @@ fn root_letters_merge_case_insensitively() {
     // ```ts
     // expect(pages[0].entries.map((e) => e.index)).toEqual([0, 1, 2]);
     // ```
-    let indices: Vec<usize> = pages[0].entries.iter().map(|e| e.index).collect();
+    let indices: Vec<usize> = pages[0].entries.iter().map(|e| return e.index).collect();
     // What:     `assert_eq!(indices, vec![0, 1, 2]);`. All three indices in order.
     // Why:      Nothing dropped or reordered.
     //
@@ -353,7 +353,7 @@ fn non_letter_root_names_go_to_catch_all() {
     // ```ts
     // expect(pages[0].entries.map((e) => e.index)).toEqual([0, 1, 2, 3]);
     // ```
-    let indices: Vec<usize> = pages[0].entries.iter().map(|e| e.index).collect();
+    let indices: Vec<usize> = pages[0].entries.iter().map(|e| return e.index).collect();
     // What:     `assert_eq!(indices, vec![0, 1, 2, 3]);`. All four, in order.
     // Why:      Confirm none of the non-letter names was lost.
     //
@@ -391,7 +391,7 @@ fn folders_precede_letters_precede_catch_all() {
     // ```ts
     // const labels = pages.map((p) => p.label);
     // ```
-    let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+    let labels: Vec<String> = pages.iter().map(|p| return p.label.clone()).collect();
     // What:     `assert_eq!(labels, vec!["Zed", "A", "#"]);`. Folder first (group 0),
     //           then the `A` letter page (group 1), then `#` (group 2), even though
     //           `Zed` > `A` as text.

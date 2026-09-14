@@ -24,7 +24,7 @@ import {
 //region Concurrency fixture helpers
 
 /**
- * Source public entry imported by generated config fixtures.
+ Source public entry imported by generated config fixtures.
  */
 const SOURCE_INDEX_URL = pathToFileURL(join(
   import.meta.dirname,
@@ -32,29 +32,29 @@ const SOURCE_INDEX_URL = pathToFileURL(join(
 ),).href;
 
 /**
- * Poll delay while coordinating child-process regression fixtures.
+ Poll delay while coordinating child-process regression fixtures.
  */
 const WAIT_POLL_MS = 10;
 
 /**
- * Maximum polls before a child-process coordination fixture fails.
+ Maximum polls before a child-process coordination fixture fails.
  */
 const WAIT_ATTEMPTS = 200;
 
 /**
- * Simultaneous writers needed to exercise lock release and successor acquisition.
+ Simultaneous writers needed to exercise lock release and successor acquisition.
  */
 const CONCURRENT_WRITER_COUNT = 8;
 
 /**
- * Creates an isolated temp directory for concurrency regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temp directory for concurrency regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -64,14 +64,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes an isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -84,35 +84,35 @@ async function teardown(tempDir: string,): Promise<void> {
 }
 
 /**
- * Returns JSON text for a generated TypeScript string literal.
- *
- * @param value - Value to quote.
- *
- * @returns JavaScript string literal source.
- *
- * @example
- * ```ts
- * const literal = jsString('/tmp/path');
- * ```
+ Returns JSON text for a generated TypeScript string literal.
+ 
+ @param value - Value to quote.
+ 
+ @returns JavaScript string literal source.
+ 
+ @example
+ ```ts
+ const literal = jsString('/tmp/path');
+ ```
  */
 function jsString(value: string,): string {
   return JSON.stringify(value,);
 }
 
 /**
- * Waits for every path to exist, throwing if child processes never signal ready.
- *
- * @param paths - Paths that must exist before returning.
- *
- * @example
- * ```ts
- * await waitForPaths([readyA, readyB]);
- * ```
+ Waits for every path to exist, throwing if child processes never signal ready.
+ 
+ @param paths - Paths that must exist before returning.
+ 
+ @example
+ ```ts
+ await waitForPaths([readyA, readyB]);
+ ```
  */
 async function waitForPaths(paths: readonly string[],): Promise<void> {
   for (let attempt = 0; attempt < WAIT_ATTEMPTS; attempt += 1) {
     /**
-     * Existence check results for every path in this poll.
+     Existence check results for every path in this poll.
      */
     // oxlint-disable-next-line no-await-in-loop -- polling must wait for each latest existence snapshot.
     const existing = await Promise.all(paths.map(async function pathExists(path,): Promise<boolean> {
@@ -161,7 +161,7 @@ await describe({
           'release',
         );
         /**
-         * One coordinated writer process fixture.
+         One coordinated writer process fixture.
          */
         type ConcurrentWriterFixture = Readonly<{
           readonly configPath: string;
@@ -170,7 +170,7 @@ await describe({
           readonly readyPath: string;
         }>;
         /**
-         * Writer fixtures released together to contend on one manifest lock.
+         Writer fixtures released together to contend on one manifest lock.
          */
         const writers: readonly ConcurrentWriterFixture[] = Array.from(
           { length: CONCURRENT_WRITER_COUNT, },
@@ -186,21 +186,21 @@ await describe({
         );
 
         /**
-         * Creates one child config that records a manifest entry, signals readiness,
-         * then waits so both children flush at the same time.
-         *
-         * @param dest - Destination path managed by child config.
-         *
-         * @param content - Content child config writes.
-         *
-         * @param readyPath - Marker path written after manifest entry is staged.
-         *
-         * @returns TypeScript source for child config.
-         *
-         * @example
-         * ```ts
-         * const source = childConfig({ dest: './a.txt', content: 'a', readyPath });
-         * ```
+         Creates one child config that records a manifest entry, signals readiness,
+         then waits so both children flush at the same time.
+         
+         @param dest - Destination path managed by child config.
+         
+         @param content - Content child config writes.
+         
+         @param readyPath - Marker path written after manifest entry is staged.
+         
+         @returns TypeScript source for child config.
+         
+         @example
+         ```ts
+         const source = childConfig({ dest: './a.txt', content: 'a', readyPath });
+         ```
          */
         function childConfig(
           {

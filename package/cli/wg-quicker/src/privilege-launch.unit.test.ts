@@ -17,7 +17,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 /**
- * Built CLI artifact exercised at process privilege boundary.
+ Built CLI artifact exercised at process privilege boundary.
  */
 const CLI_BUNDLE_PATH = new URL(
   '../dist/final/node/index.mjs',
@@ -31,7 +31,7 @@ await describe({
       name: 'relaunches exact runtime and script through sudo before reading config',
       fn: async () => {
         /**
-         * Disposable directory containing fake sudo command and invocation record.
+         Disposable directory containing fake sudo command and invocation record.
          */
         const directory = await mkdtemp(join(
           tmpdir(),
@@ -39,7 +39,7 @@ await describe({
         ),);
         await using cleanup = {
           /**
-           * Removes disposable fake command and record.
+           Removes disposable fake command and record.
            */
           async [Symbol.asyncDispose](): Promise<void> {
             await rm(
@@ -52,14 +52,14 @@ await describe({
           },
         };
         /**
-         * Path at which fake sudo records exact argument vector.
+         Path at which fake sudo records exact argument vector.
          */
         const recordPath = join(
           directory,
           'invocation.json',
         );
         /**
-         * Executable fake sudo found before system command in child PATH.
+         Executable fake sudo found before system command in child PATH.
          */
         const sudoPath = join(
           directory,
@@ -74,7 +74,7 @@ await describe({
           0o700,
         );
         /**
-         * Non-root CLI process expected to delegate before opening absent config.
+         Non-root CLI process expected to delegate before opening absent config.
          */
         const child = spawn(
           process.execPath,
@@ -92,6 +92,8 @@ await describe({
               WG_ALLOWEDIPS_CACHE_DIRECTORY: '/caller/cache/allowedips',
               WG_QUICKER_EXEMPT_COMMAND: '/caller/bin/wg-quicker-exempt',
               WG_QUICKER_EXEMPT_UID: '2000',
+              WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: '/caller/opensnitch/default-config.json',
+              WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: '/caller/opensnitch/system-fw.json',
               WG_QUICKER_RUNTIME_DIRECTORY: '/caller/run/wg-quicker',
               WG_QUICKER_TEST_SUDO_RECORD: recordPath,
               XDG_CACHE_HOME: '/caller/cache',
@@ -105,7 +107,7 @@ await describe({
         );
         expect(child.exitCode,).toBe(0,);
         /**
-         * Parsed exact sudo invocation recorded by fake command.
+         Parsed exact sudo invocation recorded by fake command.
          */
         const invocation = JSON.parse(await readFile(
           recordPath,
@@ -135,6 +137,8 @@ await describe({
             WG_QUICKER_CALLER_PATH: `${directory}:${process.env.PATH ?? ''}`,
             WG_QUICKER_EXEMPT_COMMAND: '/caller/bin/wg-quicker-exempt',
             WG_QUICKER_EXEMPT_UID: '2000',
+            WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: '/caller/opensnitch/default-config.json',
+            WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: '/caller/opensnitch/system-fw.json',
             WG_QUICKER_RUNTIME_DIRECTORY: '/caller/run/wg-quicker',
             XDG_CACHE_HOME: '/caller/cache',
           },

@@ -28,24 +28,24 @@ import {
 //region Object.prototype.toString call detection
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value)`:
- * confirms each member with {@link isStaticMemberNamed} against
- * {@link CALL_PROPERTY_NAME}, {@link TO_STRING_PROPERTY_NAME}, and
- * {@link PROTOTYPE_PROPERTY_NAME}, confirms the receiver via
- * {@link isGlobalObjectConstructor}, and reads the argument via
- * {@link getSingleArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Call expression to inspect.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
- * expression does not match.
- *
- * @example
- * ```ts
- * getObjectPrototypeToStringArgumentText({ context, call: node });
- * ```
+ Extracts argument text from `Object.prototype.toString.call(value)`:
+ confirms each member with {@link isStaticMemberNamed} against
+ {@link CALL_PROPERTY_NAME}, {@link TO_STRING_PROPERTY_NAME}, and
+ {@link PROTOTYPE_PROPERTY_NAME}, confirms the receiver via
+ {@link isGlobalObjectConstructor}, and reads the argument via
+ {@link getSingleArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Call expression to inspect.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ expression does not match.
+ 
+ @example
+ ```ts
+ getObjectPrototypeToStringArgumentText({ context, call: node });
+ ```
  */
 function getObjectPrototypeToStringArgumentText(
   {
@@ -68,7 +68,7 @@ function getObjectPrototypeToStringArgumentText(
   }))
     return NOT_ERROR_DETECTION;
   /**
-   * Source text of value passed to Object.prototype.toString.call.
+   Source text of value passed to Object.prototype.toString.call.
    */
   const argumentText = getSingleArgumentText({
     context,
@@ -77,7 +77,7 @@ function getObjectPrototypeToStringArgumentText(
   if ((typeof argumentText) === 'symbol')
     return NOT_ERROR_DETECTION;
   /**
-   * Candidate `Object.prototype.toString` member expression.
+   Candidate `Object.prototype.toString` member expression.
    */
   const toStringMember = unwrapParentheses({ expression: call.callee
     .object, },);
@@ -89,7 +89,7 @@ function getObjectPrototypeToStringArgumentText(
   }))
     return NOT_ERROR_DETECTION;
   /**
-   * Candidate `Object.prototype` member expression.
+   Candidate `Object.prototype` member expression.
    */
   const prototypeMember = unwrapParentheses({ expression: toStringMember.object, },);
   if (prototypeMember.type !== 'MemberExpression')
@@ -112,23 +112,23 @@ function getObjectPrototypeToStringArgumentText(
 //region Whole tag comparison detection
 
 /**
- * Extracts Error detector argument from whole Object tag comparison sides:
- * matches the {@link ERROR_OBJECT_TAG} literal on either side and delegates
- * the other side to {@link getObjectPrototypeToStringArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param unwrappedLeft - Left side without redundant parentheses.
- *
- * @param unwrappedRight - Right side without redundant parentheses.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
- * not form a whole-tag check.
- *
- * @example
- * ```ts
- * getWholeObjectTagComparisonArgumentText({ context, unwrappedLeft, unwrappedRight });
- * ```
+ Extracts Error detector argument from whole Object tag comparison sides:
+ matches the {@link ERROR_OBJECT_TAG} literal on either side and delegates
+ the other side to {@link getObjectPrototypeToStringArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param unwrappedLeft - Left side without redundant parentheses.
+ 
+ @param unwrappedRight - Right side without redundant parentheses.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ not form a whole-tag check.
+ 
+ @example
+ ```ts
+ getWholeObjectTagComparisonArgumentText({ context, unwrappedLeft, unwrappedRight });
+ ```
  */
 function getWholeObjectTagComparisonArgumentText(
   {
@@ -165,17 +165,17 @@ function getWholeObjectTagComparisonArgumentText(
 //region Suffix tag call detection
 
 /**
- * Checks whether a call uses Error Object tag suffix argument, after
- * unwrapping it via {@link unwrapParentheses}.
- *
- * @param call - Candidate endsWith call expression.
- *
- * @returns Whether call uses {@link ERROR_OBJECT_TAG_SUFFIX}.
- *
- * @example
- * ```ts
- * hasErrorObjectTagSuffixArgument({ call: node });
- * ```
+ Checks whether a call uses Error Object tag suffix argument, after
+ unwrapping it via {@link unwrapParentheses}.
+ 
+ @param call - Candidate endsWith call expression.
+ 
+ @returns Whether call uses {@link ERROR_OBJECT_TAG_SUFFIX}.
+ 
+ @example
+ ```ts
+ hasErrorObjectTagSuffixArgument({ call: node });
+ ```
  */
 function hasErrorObjectTagSuffixArgument(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
@@ -185,7 +185,7 @@ function hasErrorObjectTagSuffixArgument(
     !== 1)
     return false;
   /**
-   * Suffix supplied to the candidate detector.
+   Suffix supplied to the candidate detector.
    */
   const [suffix,] = call.arguments;
   if (suffix === undefined)
@@ -193,7 +193,7 @@ function hasErrorObjectTagSuffixArgument(
   if (suffix.type === 'SpreadElement')
     return false;
   /**
-   * Suffix expression without redundant parentheses.
+   Suffix expression without redundant parentheses.
    */
   const unwrappedSuffix = unwrapParentheses({ expression: suffix, },);
   return (unwrappedSuffix.type === 'Literal')
@@ -201,23 +201,23 @@ function hasErrorObjectTagSuffixArgument(
 }
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value).endsWith(' Error]')`:
- * confirms the member via {@link isStaticMemberNamed} against
- * {@link ENDS_WITH_PROPERTY_NAME}, the suffix via
- * {@link hasErrorObjectTagSuffixArgument}, and the source call via
- * {@link getObjectPrototypeToStringArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Candidate suffix-check call expression.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
- * expression does not match.
- *
- * @example
- * ```ts
- * getObjectTagEndsWithArgumentText({ context, call: node });
- * ```
+ Extracts argument text from `Object.prototype.toString.call(value).endsWith(' Error]')`:
+ confirms the member via {@link isStaticMemberNamed} against
+ {@link ENDS_WITH_PROPERTY_NAME}, the suffix via
+ {@link hasErrorObjectTagSuffixArgument}, and the source call via
+ {@link getObjectPrototypeToStringArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Candidate suffix-check call expression.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ expression does not match.
+ 
+ @example
+ ```ts
+ getObjectTagEndsWithArgumentText({ context, call: node });
+ ```
  */
 export function getObjectTagEndsWithArgumentText(
   {
@@ -242,7 +242,7 @@ export function getObjectTagEndsWithArgumentText(
   if (!hasErrorObjectTagSuffixArgument({ call, }))
     return NOT_ERROR_DETECTION;
   /**
-   * Candidate Object.prototype.toString.call(value) source call.
+   Candidate Object.prototype.toString.call(value) source call.
    */
   const sourceCall = unwrapParentheses({ expression: call.callee
     .object, },);
@@ -259,24 +259,24 @@ export function getObjectTagEndsWithArgumentText(
 //region Parsed tag comparison detection
 
 /**
- * Extracts a static numeric value from a numeric expression, after
- * unwrapping it via {@link unwrapParentheses}.
- *
- * @param expression - Expression to inspect.
- *
- * @returns Static numeric value, or {@link NOT_ERROR_DETECTION} when not a
- * supported static number.
- *
- * @example
- * ```ts
- * getStaticNumber({ expression: node });
- * ```
+ Extracts a static numeric value from a numeric expression, after
+ unwrapping it via {@link unwrapParentheses}.
+ 
+ @param expression - Expression to inspect.
+ 
+ @returns Static numeric value, or {@link NOT_ERROR_DETECTION} when not a
+ supported static number.
+ 
+ @example
+ ```ts
+ getStaticNumber({ expression: node });
+ ```
  */
 function getStaticNumber(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): number | typeof NOT_ERROR_DETECTION {
   /**
-   * Expression without redundant parentheses.
+   Expression without redundant parentheses.
    */
   const unwrapped = unwrapParentheses({ expression, },);
   if ((unwrapped.type === 'Literal') && ((typeof unwrapped.value) === 'number'))
@@ -297,18 +297,18 @@ function getStaticNumber(
 }
 
 /**
- * Checks whether a call uses slice arguments that extract `[object Type]`'s
- * Type, read via {@link getStaticNumber}.
- *
- * @param call - Candidate slice call expression.
- *
- * @returns Whether call uses `slice` with {@link OBJECT_TAG_TYPE_PREFIX_LENGTH}
- * and {@link OBJECT_TAG_TYPE_END_OFFSET} as arguments.
- *
- * @example
- * ```ts
- * hasObjectTagSliceArguments({ call: node });
- * ```
+ Checks whether a call uses slice arguments that extract `[object Type]`'s
+ Type, read via {@link getStaticNumber}.
+ 
+ @param call - Candidate slice call expression.
+ 
+ @returns Whether call uses `slice` with {@link OBJECT_TAG_TYPE_PREFIX_LENGTH}
+ and {@link OBJECT_TAG_TYPE_END_OFFSET} as arguments.
+ 
+ @example
+ ```ts
+ hasObjectTagSliceArguments({ call: node });
+ ```
  */
 function hasObjectTagSliceArguments(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
@@ -318,7 +318,7 @@ function hasObjectTagSliceArguments(
     !== 2)
     return false;
   /**
-   * First slice argument.
+   First slice argument.
    */
   const [start, end,] = call.arguments;
   if ((start === undefined) || (end === undefined))
@@ -330,23 +330,23 @@ function hasObjectTagSliceArguments(
 }
 
 /**
- * Extracts argument text from `Object.prototype.toString.call(value).slice(8, -1)`:
- * confirms the member via {@link isStaticMemberNamed} against
- * {@link SLICE_PROPERTY_NAME}, the arguments via
- * {@link hasObjectTagSliceArguments}, and the source call via
- * {@link getObjectPrototypeToStringArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param call - Candidate parsed-tag call expression.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
- * expression does not match.
- *
- * @example
- * ```ts
- * getParsedObjectTagArgumentText({ context, call: node });
- * ```
+ Extracts argument text from `Object.prototype.toString.call(value).slice(8, -1)`:
+ confirms the member via {@link isStaticMemberNamed} against
+ {@link SLICE_PROPERTY_NAME}, the arguments via
+ {@link hasObjectTagSliceArguments}, and the source call via
+ {@link getObjectPrototypeToStringArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param call - Candidate parsed-tag call expression.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when call
+ expression does not match.
+ 
+ @example
+ ```ts
+ getParsedObjectTagArgumentText({ context, call: node });
+ ```
  */
 function getParsedObjectTagArgumentText(
   {
@@ -371,7 +371,7 @@ function getParsedObjectTagArgumentText(
   if (!hasObjectTagSliceArguments({ call, }))
     return NOT_ERROR_DETECTION;
   /**
-   * Candidate Object.prototype.toString.call(value) source call.
+   Candidate Object.prototype.toString.call(value) source call.
    */
   const sourceCall = unwrapParentheses({ expression: call.callee
     .object, },);
@@ -384,23 +384,23 @@ function getParsedObjectTagArgumentText(
 }
 
 /**
- * Extracts Error detector argument from parsed Object tag comparison sides:
- * matches the {@link ERROR_OBJECT_TAG_TYPE_NAME} literal on either side and
- * delegates the other side to {@link getParsedObjectTagArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param unwrappedLeft - Left side without redundant parentheses.
- *
- * @param unwrappedRight - Right side without redundant parentheses.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
- * not form a parsed-tag check.
- *
- * @example
- * ```ts
- * getParsedObjectTagComparisonArgumentText({ context, unwrappedLeft, unwrappedRight });
- * ```
+ Extracts Error detector argument from parsed Object tag comparison sides:
+ matches the {@link ERROR_OBJECT_TAG_TYPE_NAME} literal on either side and
+ delegates the other side to {@link getParsedObjectTagArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param unwrappedLeft - Left side without redundant parentheses.
+ 
+ @param unwrappedRight - Right side without redundant parentheses.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ not form a parsed-tag check.
+ 
+ @example
+ ```ts
+ getParsedObjectTagComparisonArgumentText({ context, unwrappedLeft, unwrappedRight });
+ ```
  */
 function getParsedObjectTagComparisonArgumentText(
   {
@@ -439,24 +439,24 @@ function getParsedObjectTagComparisonArgumentText(
 //region Public Object tag comparison detection
 
 /**
- * Extracts Error detector argument text from an Object tag equality check:
- * unwraps both sides via {@link unwrapParentheses}, then tries
- * {@link getWholeObjectTagComparisonArgumentText} before falling back to
- * {@link getParsedObjectTagComparisonArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param left - Left side of equality comparison.
- *
- * @param right - Right side of equality comparison.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
- * not form an Error tag check.
- *
- * @example
- * ```ts
- * getObjectTagComparisonArgumentText({ context, left: node.left, right: node.right });
- * ```
+ Extracts Error detector argument text from an Object tag equality check:
+ unwraps both sides via {@link unwrapParentheses}, then tries
+ {@link getWholeObjectTagComparisonArgumentText} before falling back to
+ {@link getParsedObjectTagComparisonArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param left - Left side of equality comparison.
+ 
+ @param right - Right side of equality comparison.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ not form an Error tag check.
+ 
+ @example
+ ```ts
+ getObjectTagComparisonArgumentText({ context, left: node.left, right: node.right });
+ ```
  */
 export function getObjectTagComparisonArgumentText(
   {
@@ -470,15 +470,15 @@ export function getObjectTagComparisonArgumentText(
   }>,
 ): ErrorDetectionArgumentText {
   /**
-   * Unwrapped left side for literal and call-shape inspection.
+   Unwrapped left side for literal and call-shape inspection.
    */
   const unwrappedLeft = unwrapParentheses({ expression: left, },);
   /**
-   * Unwrapped right side for literal and call-shape inspection.
+   Unwrapped right side for literal and call-shape inspection.
    */
   const unwrappedRight = unwrapParentheses({ expression: right, },);
   /**
-   * Whole `[object Error]` tag comparison, if present.
+   Whole `[object Error]` tag comparison, if present.
    */
   const wholeTagArgumentText = getWholeObjectTagComparisonArgumentText({
     context,

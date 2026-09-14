@@ -1,11 +1,11 @@
 /**
- * Regression tests for issue #252: the delta-accumulation defects that the
- * document-tree redesign resolves by construction.
- *
- * Each case exercises reads and serialization on the same un-reparsed state, so
- * they lock in that one always-current tree keeps the two consistent.
- *
- * @module
+ Regression tests for issue #252: the delta-accumulation defects that the
+ document-tree redesign resolves by construction.
+ 
+ Each case exercises reads and serialization on the same un-reparsed state, so
+ they lock in that one always-current tree keeps the two consistent.
+ 
+ @module
  */
 
 import {
@@ -121,7 +121,7 @@ await describe({
         const e2 = tomlSet({ edit: e1, path: ['foo',], value: { b: 2, }, },);
         expect(tomlGetValue({ edit: e2, path: ['foo',], },),).toEqual({ b: 2, },);
         /**
-         * Neither the original body key nor the intermediate set may survive.
+         Neither the original body key nor the intermediate set may survive.
          */
         const out = tomlStringify({ edit: e2, },);
         expect(out.includes('x = 1',) || out.includes('a = 1',),).toBe(false,);

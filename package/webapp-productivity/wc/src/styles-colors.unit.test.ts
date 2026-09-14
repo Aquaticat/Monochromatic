@@ -1,9 +1,9 @@
 /**
- * Tests for the light/dark color-scheme stylesheet fragments, the
- * strict five-stop grayscale palette, and the AAA small-text contrast
- * discipline (every text role at 7:1 or better in both themes).
- *
- * @module
+ Tests for the light/dark color-scheme stylesheet fragments, the
+ strict five-stop grayscale palette, and the AAA small-text contrast
+ discipline (every text role at 7:1 or better in both themes).
+ 
+ @module
  */
 
 import {
@@ -18,7 +18,7 @@ import {
 } from './styles-colors.ts';
 
 /**
- * Custom-property names both palette fragments must declare.
+ Custom-property names both palette fragments must declare.
  */
 const TOKEN_NAMES = [
   '--color-bg:',
@@ -32,8 +32,8 @@ const TOKEN_NAMES = [
 ];
 
 /**
- * The only lightness values the palette may use; the design decree is
- * strictly `oklch(L 0 0)` for these five stops, no alpha.
+ The only lightness values the palette may use; the design decree is
+ strictly `oklch(L 0 0)` for these five stops, no alpha.
  */
 const ALLOWED_STOPS = [
   'oklch(0 0 0)',
@@ -44,39 +44,39 @@ const ALLOWED_STOPS = [
 ];
 
 /**
- * One half, composed from the exempt literal range.
+ One half, composed from the exempt literal range.
  */
 const HALF = 1 / 2;
 
 /**
- * Five, composed from the exempt literal range.
+ Five, composed from the exempt literal range.
  */
 const FIVE = (2 + 2) + 1;
 
 /**
- * Ambient-flare term WCAG adds to both relative luminances in a
- * contrast ratio (the 0.05 in `(L1 + 0.05) / (L2 + 0.05)`).
+ Ambient-flare term WCAG adds to both relative luminances in a
+ contrast ratio (the 0.05 in `(L1 + 0.05) / (L2 + 0.05)`).
  */
 const WCAG_FLARE = HALF / (FIVE * 2);
 
 /**
- * WCAG AAA contrast floor for small text (the decree: every text role
- * must reach it, regardless of size).
+ WCAG AAA contrast floor for small text (the decree: every text role
+ must reach it, regardless of size).
  */
 const AAA_SMALL_TEXT_MIN = FIVE + 2;
 
 /**
- * Extracts one custom property's `oklch(...)` value from css via a
- * linear index scan (no regex).
- *
- * @param css - stylesheet fragment holding token
- *
- * @param token - custom-property name including trailing colon, e.g.
- * `--color-fg:`
- *
- * @returns declared value, e.g. `oklch(0.1 0 0)`
- *
- * @throws Error when token or its value terminator is absent
+ Extracts one custom property's `oklch(...)` value from css via a
+ linear index scan (no regex).
+ 
+ @param css - stylesheet fragment holding token
+ 
+ @param token - custom-property name including trailing colon, e.g.
+ `--color-fg:`
+ 
+ @returns declared value, e.g. `oklch(0.1 0 0)`
+ 
+ @throws Error when token or its value terminator is absent
  */
 function tokenValue(
   {
@@ -88,12 +88,12 @@ function tokenValue(
   }>,
 ): string {
   /**
-   * `indexOf` sentinel for "not found".
+   `indexOf` sentinel for "not found".
    */
   const NOT_FOUND = -1;
 
   /**
-   * Index where token's declaration starts.
+   Index where token's declaration starts.
    */
   const start = css.indexOf(token,);
 
@@ -102,12 +102,12 @@ function tokenValue(
   }
 
   /**
-   * Index where token's value starts.
+   Index where token's value starts.
    */
   const valueStart = start + token.length;
 
   /**
-   * Index of the declaration-terminating semicolon, when present.
+   Index of the declaration-terminating semicolon, when present.
    */
   const semicolon = css.indexOf(
     ';',
@@ -115,8 +115,8 @@ function tokenValue(
   );
 
   /**
-   * Index of the rule-closing brace, for the final declaration in a
-   * minified rule (which has no trailing semicolon).
+   Index of the rule-closing brace, for the final declaration in a
+   minified rule (which has no trailing semicolon).
    */
   const brace = css.indexOf(
     '}',
@@ -124,7 +124,7 @@ function tokenValue(
   );
 
   /**
-   * Terminator indexes that exist past the value start.
+   Terminator indexes that exist past the value start.
    */
   const terminators = [
     semicolon,
@@ -139,7 +139,7 @@ function tokenValue(
   }
 
   /**
-   * Nearest declaration terminator among semicolon and closing brace.
+   Nearest declaration terminator among semicolon and closing brace.
    */
   const end = Math.min(...terminators,);
 
@@ -150,22 +150,22 @@ function tokenValue(
 }
 
 /**
- * Computes WCAG relative luminance of an achromatic `oklch(L 0 0)`
- * value. For grays, OKLab lightness is the cube root of CIE luminance
- * Y, so Y is recovered as L cubed.
- *
- * @param value - achromatic color, e.g. `oklch(0.9 0 0)`
- *
- * @returns WCAG relative luminance in 0 to 1
+ Computes WCAG relative luminance of an achromatic `oklch(L 0 0)`
+ value. For grays, OKLab lightness is the cube root of CIE luminance
+ Y, so Y is recovered as L cubed.
+ 
+ @param value - achromatic color, e.g. `oklch(0.9 0 0)`
+ 
+ @returns WCAG relative luminance in 0 to 1
  */
 function stopLuminance(value: string,): number {
   /**
-   * Index where the lightness component starts.
+   Index where the lightness component starts.
    */
   const lStart = value.indexOf('(',) + 1;
 
   /**
-   * Index where the lightness component ends.
+   Index where the lightness component ends.
    */
   const lEnd = value.indexOf(
     ' ',
@@ -173,7 +173,7 @@ function stopLuminance(value: string,): number {
   );
 
   /**
-   * OKLab lightness of value.
+   OKLab lightness of value.
    */
   const lightness = Number(value.slice(
     lStart,
@@ -184,17 +184,17 @@ function stopLuminance(value: string,): number {
 }
 
 /**
- * Computes the WCAG contrast ratio between two custom properties
- * declared in css.
- *
- * @param css - stylesheet fragment declaring both tokens
- *
- * @param ink - text-role custom-property name including trailing colon
- *
- * @param paper - background-role custom-property name including
- * trailing colon
- *
- * @returns contrast ratio in 1 to 21
+ Computes the WCAG contrast ratio between two custom properties
+ declared in css.
+ 
+ @param css - stylesheet fragment declaring both tokens
+ 
+ @param ink - text-role custom-property name including trailing colon
+ 
+ @param paper - background-role custom-property name including
+ trailing colon
+ 
+ @returns contrast ratio in 1 to 21
  */
 function contrastRatio(
   {
@@ -208,7 +208,7 @@ function contrastRatio(
   }>,
 ): number {
   /**
-   * Relative luminance of the text color.
+   Relative luminance of the text color.
    */
   const inkY = stopLuminance(tokenValue(
     {
@@ -218,7 +218,7 @@ function contrastRatio(
   ),);
 
   /**
-   * Relative luminance of the background color.
+   Relative luminance of the background color.
    */
   const paperY = stopLuminance(tokenValue(
     {
@@ -228,7 +228,7 @@ function contrastRatio(
   ),);
 
   /**
-   * Lighter of the two luminances.
+   Lighter of the two luminances.
    */
   const lighter = Math.max(
     inkY,
@@ -236,7 +236,7 @@ function contrastRatio(
   );
 
   /**
-   * Darker of the two luminances.
+   Darker of the two luminances.
    */
   const darker = Math.min(
     inkY,
@@ -247,11 +247,11 @@ function contrastRatio(
 }
 
 /**
- * Ink-on-paper pairings the page actually renders, every one of which
- * must reach AAA small-text contrast. The frequency-bar fill is
- * `--color-fg-strong` on the page background (the track is
- * transparent), so its pairing is already covered by the
- * fg-strong-on-bg entry.
+ Ink-on-paper pairings the page actually renders, every one of which
+ must reach AAA small-text contrast. The frequency-bar fill is
+ `--color-fg-strong` on the page background (the track is
+ transparent), so its pairing is already covered by the
+ fg-strong-on-bg entry.
  */
 const CONTRAST_PAIRS = [
   {
@@ -281,32 +281,32 @@ const CONTRAST_PAIRS = [
 ];
 
 /**
- * Collects every `oklch(...)` function occurrence inside css via a
- * linear index scan (no regex).
- *
- * @param css - stylesheet fragment to scan
- *
- * @returns every `oklch(...)` substring, in source order
+ Collects every `oklch(...)` function occurrence inside css via a
+ linear index scan (no regex).
+ 
+ @param css - stylesheet fragment to scan
+ 
+ @returns every `oklch(...)` substring, in source order
  */
 function collectOklchValues(css: string,): readonly string[] {
   /**
-   * `indexOf` sentinel for "no further occurrence".
+   `indexOf` sentinel for "no further occurrence".
    */
   const NOT_FOUND = -1;
 
   /**
-   * Collected `oklch(...)` substrings.
+   Collected `oklch(...)` substrings.
    */
   const values: string[] = [];
 
   /**
-   * Scan cursor advanced past each match.
+   Scan cursor advanced past each match.
    */
   let cursor = css.indexOf('oklch(',);
 
   while (cursor !== NOT_FOUND) {
     /**
-     * Index of the closing parenthesis for the current occurrence.
+     Index of the closing parenthesis for the current occurrence.
      */
     const end = css.indexOf(
       ')',
@@ -340,7 +340,7 @@ await describe({
           name: 'declares color-scheme and every custom property on :root',
           fn: async function declaresRootCustomProperties(): Promise<void> {
             /**
-             * `:root` rule with light-theme custom properties.
+             `:root` rule with light-theme custom properties.
              */
             const css = renderRootColors();
 
@@ -360,8 +360,8 @@ await describe({
           name: 'overrides every custom property inside a prefers-color-scheme: dark query',
           fn: async function overridesInDarkMediaQuery(): Promise<void> {
             /**
-             * `@media (prefers-color-scheme: dark)` rule with overridden
-             * custom properties.
+             `@media (prefers-color-scheme: dark)` rule with overridden
+             custom properties.
              */
             const css = renderDarkColors();
 
@@ -382,12 +382,12 @@ await describe({
           name: 'uses only the five decreed grayscale stops, with no alpha',
           fn: async function usesOnlyAllowedStops(): Promise<void> {
             /**
-             * Both palette fragments concatenated for scanning.
+             Both palette fragments concatenated for scanning.
              */
             const css = `${renderRootColors()}${renderDarkColors()}`;
 
             /**
-             * Every oklch() occurrence in the palette.
+             Every oklch() occurrence in the palette.
              */
             const values = collectOklchValues(css,);
 

@@ -1,26 +1,26 @@
 /**
- * Which call's result each local binding can be holding.
- *
- * A parallel to `bindingOriginBySymbolId` and deliberately not part of it. That map answers
- * which parameter slots a binding can reach, and it is built by `expressionOrigins`, which
- * stops at a `CallExpression` because a callee's summary does not exist while its callers
- * are walked. So `const local = firstRow(config,)` leaves `local` with no origins, and
- * `local.label = 'written'` attributes nothing, which offered `readonly` for a parameter
- * the callable writes through.
- *
- * Filling those origins later cannot fix it. Attribution happens during the syntactic pass,
- * and the callee summary only exists during the fixed point, so by the time the origins
- * could be known the write has already been walked and not recorded. What crosses that gap
- * is the same deferral the rest of this analysis uses: record the call the binding came
- * from, resolve the origins where the callee summary sits.
- *
- * Kept beside the origins rather than folded into them because the two answer different
- * questions and converge for different reasons. Origins accumulate parameter slots and
- * settle when no binding gains one. These accumulate call-site keys, and an entry here is
- * never refined by the fixed point: it names a syntactic fact about where a value came
- * from, which is complete as soon as the declarations have been walked.
- *
- * @module
+ Which call's result each local binding can be holding.
+ 
+ A parallel to `bindingOriginBySymbolId` and deliberately not part of it. That map answers
+ which parameter slots a binding can reach, and it is built by `expressionOrigins`, which
+ stops at a `CallExpression` because a callee's summary does not exist while its callers
+ are walked. So `const local = firstRow(config,)` leaves `local` with no origins, and
+ `local.label = 'written'` attributes nothing, which offered `readonly` for a parameter
+ the callable writes through.
+ 
+ Filling those origins later cannot fix it. Attribution happens during the syntactic pass,
+ and the callee summary only exists during the fixed point, so by the time the origins
+ could be known the write has already been walked and not recorded. What crosses that gap
+ is the same deferral the rest of this analysis uses: record the call the binding came
+ from, resolve the origins where the callee summary sits.
+ 
+ Kept beside the origins rather than folded into them because the two answer different
+ questions and converge for different reasons. Origins accumulate parameter slots and
+ settle when no binding gains one. These accumulate call-site keys, and an entry here is
+ never refined by the fixed point: it names a syntactic fact about where a value came
+ from, which is complete as soon as the declarations have been walked.
+ 
+ @module
  */
 
 import type {
@@ -48,30 +48,30 @@ import { reachableValueSources, } from './effect-result-reach.ts';
 import { expressionRoot, } from './effect-summary-model.ts';
 
 /**
- * Call sites a binding can be holding the result of, empty when it holds none.
+ Call sites a binding can be holding the result of, empty when it holds none.
  */
 const NO_RESULT_SITE: ReadonlySet<string> = new Set<string>();
 
 /**
- * Call sites reachable from one expression, through its access layers and wrappers.
- *
- * `expressionRoot` strips the access layers and `deferrableResultSite` unwraps the
- * identity-keeping ones, which is the same composition the write site uses. An element of a
- * returned container is included on purpose: `rowsOf(config,)[0]` is a piece of what the
- * call handed back, so a binding holding it holds caller state.
- *
- * @param project - TypeScript project resolving the root symbol.
- *
- * @param resultSitesBySymbolId - Call sites already known per binding.
- *
- * @param node - Expression a binding is initialized or assigned from.
- *
- * @returns call sites the expression's value can have come from.
- *
- * @example
- * ```ts
- * expressionResultSites({ project, resultSitesBySymbolId, node: declaration.initializer });
- * ```
+ Call sites reachable from one expression, through its access layers and wrappers.
+ 
+ `expressionRoot` strips the access layers and `deferrableResultSite` unwraps the
+ identity-keeping ones, which is the same composition the write site uses. An element of a
+ returned container is included on purpose: `rowsOf(config,)[0]` is a piece of what the
+ call handed back, so a binding holding it holds caller state.
+ 
+ @param project - TypeScript project resolving the root symbol.
+ 
+ @param resultSitesBySymbolId - Call sites already known per binding.
+ 
+ @param node - Expression a binding is initialized or assigned from.
+ 
+ @returns call sites the expression's value can have come from.
+ 
+ @example
+ ```ts
+ expressionResultSites({ project, resultSitesBySymbolId, node: declaration.initializer });
+ ```
  */
 function expressionResultSites({
   project,
@@ -92,27 +92,27 @@ function expressionResultSites({
    * The two removals also interleave, as in `firstRow(config,).row as Row`, so neither
    * order fixes it on its own. */
   /**
-   * Value this expression is, past every access layer and identity-keeping wrapper.
+   Value this expression is, past every access layer and identity-keeping wrapper.
    */
   const cursor: { current: Node; } = { current: node, };
   /**
-   * Whether the last round removed anything, so the walk knows to look again.
+   Whether the last round removed anything, so the walk knows to look again.
    */
   const walk: { removed: boolean; } = { removed: true, };
   while (walk.removed) {
     /**
-     * Same value with one more round of layers and wrappers taken off.
+     Same value with one more round of layers and wrappers taken off.
      */
     const next = transparentValueRoot(expressionRoot(cursor.current,),);
     walk.removed = next !== cursor.current;
     cursor.current = next;
   }
   /**
-   * Innermost expression this value comes from.
+   Innermost expression this value comes from.
    */
   const root = cursor.current;
   /**
-   * Call this expression is the result of, when one underlies the root.
+   Call this expression is the result of, when one underlies the root.
    */
   const site = deferrableResultSite({ node: root, },);
   if (site !== NOT_A_DEFERRABLE_RESULT)
@@ -125,7 +125,7 @@ function expressionResultSites({
    * widening can only add call sites, so every shape it reaches is a hole closed. The
    * per-source lookup below is the same identifier hop this function has always done. */
   /**
-   * Sites found through anything the value can have come from.
+   Sites found through anything the value can have come from.
    */
   const reached = new Set<string>();
   reachableValueSources({
@@ -155,7 +155,7 @@ function expressionResultSites({
   if (!isIdentifier(root,))
     return NO_RESULT_SITE;
   /**
-   * Symbol the root identifier resolves to.
+   Symbol the root identifier resolves to.
    */
   const symbol = project.checker
     .getSymbolAtLocation(root,);
@@ -165,24 +165,24 @@ function expressionResultSites({
 }
 
 /**
- * Records every call site one binding name can be holding a result of.
- *
- * @param project - TypeScript project resolving the binding symbol.
- *
- * @param name - Binding name receiving the value.
- *
- * @param sites - Call sites the source expression can have come from.
- *
- * @param resultSitesBySymbolId - Map receiving the binding's call sites.
- *
- * @mutates resultSitesBySymbolId - Adds every source call site for the named binding.
- *
- * @returns whether the map gained a call site.
- *
- * @example
- * ```ts
- * registerResultSites({ project, name, sites, resultSitesBySymbolId });
- * ```
+ Records every call site one binding name can be holding a result of.
+ 
+ @param project - TypeScript project resolving the binding symbol.
+ 
+ @param name - Binding name receiving the value.
+ 
+ @param sites - Call sites the source expression can have come from.
+ 
+ @param resultSitesBySymbolId - Map receiving the binding's call sites.
+ 
+ @mutates resultSitesBySymbolId - Adds every source call site for the named binding.
+ 
+ @returns whether the map gained a call site.
+ 
+ @example
+ ```ts
+ registerResultSites({ project, name, sites, resultSitesBySymbolId });
+ ```
  */
 function registerResultSites({
   project,
@@ -217,18 +217,18 @@ function registerResultSites({
       },)
       .includes(true,);
   /**
-   * Symbol the binding name resolves to.
+   Symbol the binding name resolves to.
    */
   const symbol = project.checker
     .getSymbolAtLocation(name,);
   if (symbol === undefined)
     return false;
   /**
-   * Call sites already recorded for this binding, or a new accumulator.
+   Call sites already recorded for this binding, or a new accumulator.
    */
   const known = resultSitesBySymbolId.get(symbol.id,) ?? new Set<string>();
   /**
-   * Site count before this registration, deciding whether the map grew.
+   Site count before this registration, deciding whether the map grew.
    */
   const knownBefore = known.size;
   sites.forEach(function addSite(site,): void {
@@ -242,32 +242,32 @@ function registerResultSites({
 }
 
 /**
- * Resolves which call's result every local binding can be holding.
- *
- * Converges the same way `discoverAliasOrigins` does and for the same reason: an alias of an
- * alias needs a pass per hop, and the sets only ever grow so repetition settles.
- *
- * @param project - TypeScript project resolving binding symbols.
- *
- * @param variableDeclarations - Declarations that may bind a call result, parameters included.
- *
- * A parameter default binds a result exactly as a local declaration does, and only `name` and
- * `initializer` are read here, so the two forms need no separate pass. Parameters were absent,
- * so `row: Row = firstRow(config,)` bound a result the record never learned about and a later
- * write through `row` attributed nothing to `config`. Falsified.
- *
- * @param aliasAssignments - Simple assignments that may rebind one.
- *
- * @param forOfStatements - Iteration statements whose iterable may be a call result.
- *
- * @param resultSitesBySymbolId - Map receiving call sites per binding.
- *
- * @mutates resultSitesBySymbolId - Adds every call site each binding can hold a result of.
- *
- * @example
- * ```ts
- * discoverResultBindings({ project, variableDeclarations, aliasAssignments, forOfStatements, resultSitesBySymbolId });
- * ```
+ Resolves which call's result every local binding can be holding.
+ 
+ Converges the same way `discoverAliasOrigins` does and for the same reason: an alias of an
+ alias needs a pass per hop, and the sets only ever grow so repetition settles.
+ 
+ @param project - TypeScript project resolving binding symbols.
+ 
+ @param variableDeclarations - Declarations that may bind a call result, parameters included.
+ 
+ A parameter default binds a result exactly as a local declaration does, and only `name` and
+ `initializer` are read here, so the two forms need no separate pass. Parameters were absent,
+ so `row: Row = firstRow(config,)` bound a result the record never learned about and a later
+ write through `row` attributed nothing to `config`. Falsified.
+ 
+ @param aliasAssignments - Simple assignments that may rebind one.
+ 
+ @param forOfStatements - Iteration statements whose iterable may be a call result.
+ 
+ @param resultSitesBySymbolId - Map receiving call sites per binding.
+ 
+ @mutates resultSitesBySymbolId - Adds every call site each binding can hold a result of.
+ 
+ @example
+ ```ts
+ discoverResultBindings({ project, variableDeclarations, aliasAssignments, forOfStatements, resultSitesBySymbolId });
+ ```
  */
 export function discoverResultBindings({
   project,
@@ -283,7 +283,7 @@ export function discoverResultBindings({
   readonly resultSitesBySymbolId: Map<number, Set<string>>;
 },): void {
   /**
-   * Convergence state, settling because the recorded sets only grow.
+   Convergence state, settling because the recorded sets only grow.
    */
   const state = {
     changed: true,
@@ -322,7 +322,7 @@ export function discoverResultBindings({
     },);
     forOfStatements.forEach(function discoverIteration(statement,): void {
       /**
-       * Call sites the iterated expression can have come from.
+       Call sites the iterated expression can have come from.
        */
       const sites = expressionResultSites({
         project,
@@ -360,20 +360,20 @@ export function discoverResultBindings({
 }
 
 /**
- * Reads the call sites a write or store target can be holding a result of.
- *
- * @param project - TypeScript project resolving the target root symbol.
- *
- * @param resultSitesBySymbolId - Call sites recorded per binding.
- *
- * @param node - Write target or stored expression.
- *
- * @returns call sites whose returned state the target can carry.
- *
- * @example
- * ```ts
- * targetResultSites({ project, resultSitesBySymbolId, node: assignment.left });
- * ```
+ Reads the call sites a write or store target can be holding a result of.
+ 
+ @param project - TypeScript project resolving the target root symbol.
+ 
+ @param resultSitesBySymbolId - Call sites recorded per binding.
+ 
+ @param node - Write target or stored expression.
+ 
+ @returns call sites whose returned state the target can carry.
+ 
+ @example
+ ```ts
+ targetResultSites({ project, resultSitesBySymbolId, node: assignment.left });
+ ```
  */
 export function targetResultSites({
   project,
@@ -392,16 +392,16 @@ export function targetResultSites({
 }
 
 /**
- * Names every binding a pattern introduces.
- *
- * @param name - Binding name, which may be a pattern.
- *
- * @returns identifier leaves the pattern binds.
- *
- * @example
- * ```ts
- * patternLeaves({ name });
- * ```
+ Names every binding a pattern introduces.
+ 
+ @param name - Binding name, which may be a pattern.
+ 
+ @returns identifier leaves the pattern binds.
+ 
+ @example
+ ```ts
+ patternLeaves({ name });
+ ```
  */
 function patternLeaves({ name, }: { readonly name: Node; },): readonly Node[] {
   if (isIdentifier(name,))
@@ -412,7 +412,7 @@ function patternLeaves({ name, }: { readonly name: Node; },): readonly Node[] {
         if (!isBindingElement(element,))
           return [];
         /**
-         * Name this element binds, absent for an elision in an array pattern.
+         Name this element binds, absent for an elision in an array pattern.
          */
         const bound = element.name;
         return bound === undefined ? [] : patternLeaves({ name: bound, },);

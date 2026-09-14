@@ -525,7 +525,8 @@ A pathspec named `cli-git` does not dispatch management.
 The accepted grammar is:
 
 ```text
-git [<git-global-options>] cli-git trust [--yes]
+git [<git-global-options>] cli-git (--help | -h)
+git [<git-global-options>] cli-git trust [--yes] [(--help | -h)]
 git [<git-global-options>] cli-git untrust
 git [<git-global-options>] cli-git status
 git [<git-global-options>] cli-git check [--policy <id>]... --all
@@ -536,7 +537,15 @@ git [<git-global-options>] cli-git fix [--policy <id>]... -- <pathspec>...
 
 Rules:
 
-- Management parsing uses Optique.
+- Management parsing uses the internal argv region parser.
+- Namespace and trust help write human-readable text to stdout and exit `0`.
+- Help returns before resolving real Git,
+  recovering transactions,
+  discovering repository config,
+  building a trust candidate,
+  or accessing the trust registry.
+- `--help` and `-h` are valid at the namespace and for `trust` only.
+- A trust help flag takes precedence over `--yes` and performs no consent operation.
 - `--yes` is valid only for `trust`.
 - `--policy` is repeatable only for `check` and `fix`.
 - Repeated identical policy IDs are deduplicated while preserving first occurrence order.
@@ -551,8 +560,9 @@ Rules:
   and `status` never execute live repository config during preflight.
 - `fix` changes selected worktree files and verifies every real index blob is unchanged.
 
-Trust management emits one compact LF-terminated JSON object on stdout.
+Non-help trust management emits one compact LF-terminated JSON object on stdout.
 These management objects carry `schemaVersion` but no policy-event `sequence`.
+Successful help emits human-readable stdout rather than a management object.
 Human trust and recursive-authority disclosures remain on stderr.
 
 ```ts
@@ -592,6 +602,8 @@ export type UntrustSummary = {
 `configPath` and `filesystemId` are absent when no supported config is present.
 Deleted-config recovery uses `null` for `UntrustSummary.configPath` because no canonical config path remains.
 Trust management failures emit one schema-version-one `engine-failure` event on stdout and exit `2`.
+A `config-untrusted` event names the affected configuration and gives both recovery commands:
+interactive `git cli-git trust` and explicit noninteractive `git cli-git trust --yes`.
 A classified `TrustedConfigError` retains its stable code;
 an unclassified management or recovery failure uses `trust-failed`.
 This schema supersedes the temporary built-in policy inventory from the first policy-engine slice.
@@ -935,6 +947,7 @@ export type EngineFailureCode =
   | 'fix-cycle'
   | 'fix-pass-limit'
   | 'transaction-failed'
+  | 'trust-consent-unavailable'
   | 'trust-failed';
 
 export type EngineFailureEvent = EventBase & {
@@ -1161,10 +1174,13 @@ Persistent replacement occurs only after both consent stages and config validati
 Root preflight safely reads bytes and metadata but does not execute config.
 It emits a human-readable disclosure to stderr containing every item required by the decision.
 Interactive approval accepts only an explicit affirmative response.
-EOF,
-empty input,
-invalid input,
-or noninteractive input without `--yes` declines and leaves no record.
+Empty or invalid completed input declines without installing a new record.
+When stdin or stderr is not a terminal,
+or input ends before a response,
+cli-git emits `trust-consent-unavailable`
+and recommends `git cli-git trust --yes` after review.
+The failed attempt installs or replaces no record;
+a previous record remains unchanged.
 
 Root approval authorizes execution of the candidate stored artifact in temporary registry state.
 Validation failure deletes temporary state.
@@ -1175,6 +1191,8 @@ If config declares `trust.children: true`,
 a second disclosure names the canonical repository root and states that current and future descendant mounts inherit
 authority.
 Declining the second stage installs ordinary root trust with `recursiveChildren: false`.
+Unavailable consent during the second stage installs or replaces no record;
+a previous record remains unchanged.
 Accepting installs it with `recursiveChildren: true`.
 `--yes` prints and accepts every applicable disclosure.
 
@@ -1638,7 +1656,7 @@ No step uploads to npm.
 ## Contract fixture verification
 
 Issue #341 verifies the declarations and authoring examples in a disposable TypeScript consumer.
-It also parses every management command form with an Optique fixture and rejects the mutually exclusive or missing
+It also parses every management command form with a management parser fixture and rejects the mutually exclusive or missing
 scope forms.
 Runtime slices must replace those contract fixtures with built-package user-boundary tests rather than relying on the
 document-only evidence.

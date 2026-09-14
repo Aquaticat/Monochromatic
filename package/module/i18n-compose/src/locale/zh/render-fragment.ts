@@ -1,7 +1,7 @@
 /**
- * Chinese fragment renderer factory.
- *
- * @module
+ Chinese fragment renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -20,7 +20,7 @@ import {
 } from './types.ts';
 
 /**
- * Dependency bundle for {@link makeChineseFragmentRenderer}.
+ Dependency bundle for {@link makeChineseFragmentRenderer}.
  */
 type FragmentDeps<L extends string, S extends string, V extends string,
   N extends string,> = {
@@ -34,13 +34,13 @@ type FragmentDeps<L extends string, S extends string, V extends string,
   };
 
 /**
- * Capitalizes a fragment surface (Chinese invariant set is empty, so this is a passthrough except for `firstLetter` mode).
- *
- * @param text - rendered surface
- *
- * @param mode - capitalization mode
- *
- * @returns same surface
+ Capitalizes a fragment surface (Chinese invariant set is empty, so this is a passthrough except for `firstLetter` mode).
+ 
+ @param text - rendered surface
+ 
+ @param mode - capitalization mode
+ 
+ @returns same surface
  */
 function capitalize(
   {
@@ -59,16 +59,16 @@ function capitalize(
 }
 
 /**
- * Builds a Chinese fragment renderer.
- *
- * @param deps - dependencies (labels, verbs, sub-renderers)
- *
- * @returns render function for fragments
- *
- * @example
- * ```ts
- * const renderFragment = makeChineseFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
- * ```
+ Builds a Chinese fragment renderer.
+ 
+ @param deps - dependencies (labels, verbs, sub-renderers)
+ 
+ @returns render function for fragments
+ 
+ @example
+ ```ts
+ const renderFragment = makeChineseFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
+ ```
  */
 export function makeChineseFragmentRenderer<
   L extends string,
@@ -79,7 +79,7 @@ export function makeChineseFragmentRenderer<
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
   /**
-   * Destructured locale dependencies captured for use across every sub-renderer below.
+   Destructured locale dependencies captured for use across every sub-renderer below.
    */
   const {
     labels,
@@ -90,23 +90,23 @@ export function makeChineseFragmentRenderer<
   } = deps;
 
   /**
-   * Renders a verb-phrase fragment using the bare verb surface.
-   *
-   * @param fragment - verb-phrase fragment AST
-   *
-   * @returns rendered surface
+   Renders a verb-phrase fragment using the bare verb surface.
+   
+   @param fragment - verb-phrase fragment AST
+   
+   @returns rendered surface
    */
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /**
-     * Chinese non-finite forms reuse the surface; no morphological distinction.
+     Chinese non-finite forms reuse the surface; no morphological distinction.
      */
     const head = verbs[fragment.phrase
       .verb]
       .surface;
     /**
-     * Rendered object surface; empty string when absent.
+     Rendered object surface; empty string when absent.
      */
     const object = fragment.phrase
       .object
@@ -115,7 +115,7 @@ export function makeChineseFragmentRenderer<
       : renderNounPhrase(fragment.phrase
         .object,);
     /**
-     * Rendered complement; empty string when absent.
+     Rendered complement; empty string when absent.
      */
     const complement = fragment.phrase
       .complement
@@ -125,12 +125,12 @@ export function makeChineseFragmentRenderer<
         .complement
         .phrase,);
     /**
-     * Rendered adverbial cluster; empty string when none.
+     Rendered adverbial cluster; empty string when none.
      */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
     /**
-     * Joined surface before capitalization fixup.
+     Joined surface before capitalization fixup.
      */
     const body = joinTokens([
       adverbials,
@@ -146,11 +146,11 @@ export function makeChineseFragmentRenderer<
   }
 
   /**
-   * Renders a single sequence part.
-   *
-   * @param part - part AST
-   *
-   * @returns rendered surface
+   Renders a single sequence part.
+   
+   @param part - part AST
+   
+   @returns rendered surface
    */
   function renderPart(
     part: Extract<Fragment<L, S, V, N>, { kind: 'fragment.sequence'; }>['parts'][number],
@@ -165,11 +165,11 @@ export function makeChineseFragmentRenderer<
   }
 
   /**
-   * Renders a fragment AST by dispatching on `kind`.
-   *
-   * @param fragment - fragment AST
-   *
-   * @returns rendered surface
+   Renders a fragment AST by dispatching on `kind`.
+   
+   @param fragment - fragment AST
+   
+   @returns rendered surface
    */
   function renderFragment(fragment: Fragment<L, S, V, N>,): string {
     if (fragment.kind
@@ -184,7 +184,7 @@ export function makeChineseFragmentRenderer<
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
     /**
-     * Rendered sequence parts concatenated (no space separator in Chinese).
+     Rendered sequence parts concatenated (no space separator in Chinese).
      */
     const joined = fragment
       .parts

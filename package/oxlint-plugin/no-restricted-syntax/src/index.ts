@@ -66,25 +66,25 @@ import { requireDestructuredParams, } from './rule/require-destructured-params.t
 import { requireQueryselectorGeneric, } from './rule/require-queryselector-generic.ts';
 
 /**
- * Oxlint JS plugin implementing `no-restricted-syntax` rules
- * that oxlint does not support natively.
- *
- * Oxlint lacks ESLint's `no-restricted-syntax` rule because it requires
- * a full AST selector engine. This plugin provides individual rules
- * for each banned syntax pattern instead.
- *
- * Also includes `no-disable-*` rules that prevent inline `oxlint-disable`
- * comments from suppressing specific rules. These enforce that certain
- * conventions cannot be sidestepped with disable comments.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-no-restricted-syntax'],
- * });
- * ```
+ Oxlint JS plugin implementing `no-restricted-syntax` rules
+ that oxlint does not support natively.
+ 
+ Oxlint lacks ESLint's `no-restricted-syntax` rule because it requires
+ a full AST selector engine. This plugin provides individual rules
+ for each banned syntax pattern instead.
+ 
+ Also includes `no-disable-*` rules that prevent inline `oxlint-disable`
+ comments from suppressing specific rules. These enforce that certain
+ conventions cannot be sidestepped with disable comments.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-no-restricted-syntax'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {

@@ -1,8 +1,8 @@
 /**
- * Tests for the edit API: reading, setting (including creating keys and
- * appending), deleting, key listing, immutability, and type errors.
- *
- * @module
+ Tests for the edit API: reading, setting (including creating keys and
+ appending), deleting, key listing, immutability, and type errors.
+ 
+ @module
  */
 
 import {
@@ -11,15 +11,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   jsoncDelete,
   jsoncGetValue,
   jsoncHas,
   jsoncKeys,
   jsoncSet,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

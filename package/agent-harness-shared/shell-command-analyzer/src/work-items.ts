@@ -1,7 +1,7 @@
 /**
- * Work-item builders for `unbash` analyzer traversal.
- *
- * @module
+ Work-item builders for `unbash` analyzer traversal.
+ 
+ @module
  */
 
 import type {
@@ -22,18 +22,18 @@ import {
 } from './internal-types.ts';
 
 /**
- * Build one node work item.
- *
- * @param node - node to enqueue
- *
- * @param context - execution context inherited by node
- *
- * @returns node work item with no inherited redirects
- *
- * @example
- * ```ts
- * nodeWorkItem({ node, context });
- * ```
+ Build one node work item.
+ 
+ @param node - node to enqueue
+ 
+ @param context - execution context inherited by node
+ 
+ @returns node work item with no inherited redirects
+ 
+ @example
+ ```ts
+ nodeWorkItem({ node, context });
+ ```
  */
 function nodeWorkItem(
   {
@@ -53,18 +53,18 @@ function nodeWorkItem(
 }
 
 /**
- * Build node work items in source order.
- *
- * @param nodes - nodes to enqueue
- *
- * @param context - execution context inherited by nodes
- *
- * @returns work items in source order
- *
- * @example
- * ```ts
- * nodeWorkItems({ nodes: pipeline.commands, context });
- * ```
+ Build node work items in source order.
+ 
+ @param nodes - nodes to enqueue
+ 
+ @param context - execution context inherited by nodes
+ 
+ @returns work items in source order
+ 
+ @example
+ ```ts
+ nodeWorkItems({ nodes: pipeline.commands, context });
+ ```
  */
 function nodeWorkItems(
   {
@@ -84,18 +84,18 @@ function nodeWorkItems(
 }
 
 /**
- * Build statement work items in source order.
- *
- * @param statements - statements to enqueue
- *
- * @param context - execution context inherited by statements
- *
- * @returns work items in source order
- *
- * @example
- * ```ts
- * statementWorkItems({ statements: script.commands, context });
- * ```
+ Build statement work items in source order.
+ 
+ @param statements - statements to enqueue
+ 
+ @param context - execution context inherited by statements
+ 
+ @returns work items in source order
+ 
+ @example
+ ```ts
+ statementWorkItems({ statements: script.commands, context });
+ ```
  */
 function statementWorkItems(
   {
@@ -115,18 +115,18 @@ function statementWorkItems(
 }
 
 /**
- * Build one word work item.
- *
- * @param word - word to enqueue
- *
- * @param context - execution context inherited by word
- *
- * @returns singleton word work item list
- *
- * @example
- * ```ts
- * wordWorkItems({ word, context });
- * ```
+ Build one word work item.
+ 
+ @param word - word to enqueue
+ 
+ @param context - execution context inherited by word
+ 
+ @returns singleton word work item list
+ 
+ @example
+ ```ts
+ wordWorkItems({ word, context });
+ ```
  */
 function wordWorkItems(
   {
@@ -145,18 +145,18 @@ function wordWorkItems(
 }
 
 /**
- * Build word work items in source order.
- *
- * @param words - words to enqueue
- *
- * @param context - execution context inherited by words
- *
- * @returns work items in source order
- *
- * @example
- * ```ts
- * wordsWorkItems({ words: command.suffix, context });
- * ```
+ Build word work items in source order.
+ 
+ @param words - words to enqueue
+ 
+ @param context - execution context inherited by words
+ 
+ @returns work items in source order
+ 
+ @example
+ ```ts
+ wordsWorkItems({ words: command.suffix, context });
+ ```
  */
 function wordsWorkItems(
   {
@@ -176,18 +176,18 @@ function wordsWorkItems(
 }
 
 /**
- * Build nested word items from parameter expansion.
- *
- * @param part - parameter expansion part
- *
- * @param context - execution context inherited by nested words
- *
- * @returns word work items in source order
- *
- * @example
- * ```ts
- * parameterWordItems({ part, context });
- * ```
+ Build nested word items from parameter expansion.
+ 
+ @param part - parameter expansion part
+ 
+ @param context - execution context inherited by nested words
+ 
+ @returns word work items in source order
+ 
+ @example
+ ```ts
+ parameterWordItems({ part, context });
+ ```
  */
 function parameterWordItems(
   {
@@ -241,18 +241,18 @@ function parameterWordItems(
 }
 
 /**
- * Build assignment value word items.
- *
- * @param assignments - assignment prefixes to scan
- *
- * @param context - execution context inherited by assignment words
- *
- * @returns word work items in source order
- *
- * @example
- * ```ts
- * assignmentWordItems({ assignments: command.prefix, context });
- * ```
+ Build assignment value word items.
+ 
+ @param assignments - assignment prefixes to scan
+ 
+ @param context - execution context inherited by assignment words
+ 
+ @returns word work items in source order
+ 
+ @example
+ ```ts
+ assignmentWordItems({ assignments: command.prefix, context });
+ ```
  */
 function assignmentWordItems(
   {
@@ -280,18 +280,18 @@ function assignmentWordItems(
 }
 
 /**
- * Build work items for words attached to redirects.
- *
- * @param redirects - redirects whose words should be scanned
- *
- * @param context - execution context inherited by redirect words
- *
- * @returns word work items in source order
- *
- * @example
- * ```ts
- * redirectWordItems({ redirects, context });
- * ```
+ Build work items for words attached to redirects.
+ 
+ @param redirects - redirects whose words should be scanned
+ 
+ @param context - execution context inherited by redirect words
+ 
+ @returns word work items in source order
+ 
+ @example
+ ```ts
+ redirectWordItems({ redirects, context });
+ ```
  */
 function redirectWordItems(
   {
@@ -321,18 +321,18 @@ function redirectWordItems(
 }
 
 /**
- * Build redirect-only work item.
- *
- * @param redirects - redirects to surface after child commands
- *
- * @param context - execution context inherited by redirect item
- *
- * @returns singleton redirect item when redirects exist
- *
- * @example
- * ```ts
- * redirectWorkItems({ redirects, context });
- * ```
+ Build redirect-only work item.
+ 
+ @param redirects - redirects to surface after child commands
+ 
+ @param context - execution context inherited by redirect item
+ 
+ @returns singleton redirect item when redirects exist
+ 
+ @example
+ ```ts
+ redirectWorkItems({ redirects, context });
+ ```
  */
 function redirectWorkItems(
   {
@@ -353,20 +353,20 @@ function redirectWorkItems(
 }
 
 /**
- * Build work items for words attached to command.
- *
- * @param command - command whose words should be scanned
- *
- * @param redirects - inherited redirects to scan with command redirects
- *
- * @param context - execution context inherited by command words
- *
- * @returns word work items in source order
- *
- * @example
- * ```ts
- * commandWordItems({ command, redirects: [], context });
- * ```
+ Build work items for words attached to command.
+ 
+ @param command - command whose words should be scanned
+ 
+ @param redirects - inherited redirects to scan with command redirects
+ 
+ @param context - execution context inherited by command words
+ 
+ @returns word work items in source order
+ 
+ @example
+ ```ts
+ commandWordItems({ command, redirects: [], context });
+ ```
  */
 function commandWordItems(
   {
@@ -405,18 +405,18 @@ function commandWordItems(
 }
 
 /**
- * Build words and body commands from case statement.
- *
- * @param node - case node to scan
- *
- * @param context - execution context inherited by case items
- *
- * @returns work items in source order
- *
- * @example
- * ```ts
- * caseItemWorkItems({ node, context });
- * ```
+ Build words and body commands from case statement.
+ 
+ @param node - case node to scan
+ 
+ @param context - execution context inherited by case items
+ 
+ @returns work items in source order
+ 
+ @example
+ ```ts
+ caseItemWorkItems({ node, context });
+ ```
  */
 function caseItemWorkItems(
   {

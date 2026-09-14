@@ -116,7 +116,7 @@ await describe({
             );
 
             /**
-             * User-local bin path expected by auto setup.
+             User-local bin path expected by auto setup.
              */
             const localBin = join(
               homeDir.path,
@@ -124,7 +124,7 @@ await describe({
               'bin',
             );
             /**
-             * CLI setup result.
+             CLI setup result.
              */
             const result = await autoSetupCli({
               extensionPath: join(
@@ -138,7 +138,7 @@ await describe({
               },
             },);
             /**
-             * Symlink expected from automatic setup.
+             Symlink expected from automatic setup.
              */
             const symlinkPath = join(
               localBin,

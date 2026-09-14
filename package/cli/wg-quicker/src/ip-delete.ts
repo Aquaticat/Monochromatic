@@ -2,7 +2,7 @@ import { CommandError, } from './errors.ts';
 import { runAllowingFailure, } from './runner.ts';
 
 /**
- * Exact idempotent-delete diagnostics emitted by `ip`.
+ Exact idempotent-delete diagnostics emitted by `ip`.
  */
 const ABSENT_DELETE_DIAGNOSTICS: ReadonlySet<string> = new Set([
   'Error: FIB table does not exist.',
@@ -11,26 +11,26 @@ const ABSENT_DELETE_DIAGNOSTICS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Deletes one route or rule while suppressing only exact absence.
- *
- * @param args - Arguments after `ip` describing delete operation.
- *
- * @throws {@link CommandError} for every nonzero result other than exact absence.
- *
- * @example
- * ```ts
- * await runIpDelete({ args: ['-4', 'rule', 'delete', 'pref', '50'] });
- * ```
+ Deletes one route or rule while suppressing only exact absence.
+ 
+ @param args - Arguments after `ip` describing delete operation.
+ 
+ @throws {@link CommandError} for every nonzero result other than exact absence.
+ 
+ @example
+ ```ts
+ await runIpDelete({ args: ['-4', 'rule', 'delete', 'pref', '50'] });
+ ```
  */
 export async function runIpDelete(
   { args, }: { readonly args: readonly string[]; },
 ): Promise<void> {
   /**
-   * Fresh arguments separated from caller-owned container.
+   Fresh arguments separated from caller-owned container.
    */
   const commandArgs = [...args,];
   /**
-   * Delete result translated only for idempotent absence.
+   Delete result translated only for idempotent absence.
    */
   const result = await runAllowingFailure({
     command: 'ip',

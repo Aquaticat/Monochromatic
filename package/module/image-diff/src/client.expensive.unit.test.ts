@@ -14,13 +14,13 @@ import {
 import type { Provider, } from './types.ts';
 
 /**
- * Generate a minimal 1x1 PNG as a base64 data URI.
- * The color parameter controls the RGBA pixel value to produce distinct images.
- *
- * @param red - red channel value (0-255)
- * @param green - green channel value (0-255)
- * @param blue - blue channel value (0-255)
- * @returns 1x1 PNG as base64 data URI
+ Generate a minimal 1x1 PNG as a base64 data URI.
+ The color parameter controls the RGBA pixel value to produce distinct images.
+ 
+ @param red - red channel value (0-255)
+ @param green - green channel value (0-255)
+ @param blue - blue channel value (0-255)
+ @returns 1x1 PNG as base64 data URI
  */
 function makeMinimalPngDataUri({
   red,
@@ -32,8 +32,8 @@ function makeMinimalPngDataUri({
   blue: number;
 },): string {
   /**
-   * Minimal 1x1 RGBA PNG built from raw bytes.
-   * Structure: PNG signature + IHDR + IDAT (zlib-compressed scanline) + IEND.
+   Minimal 1x1 RGBA PNG built from raw bytes.
+   Structure: PNG signature + IHDR + IDAT (zlib-compressed scanline) + IEND.
    */
   const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,];
 
@@ -112,9 +112,9 @@ function makeMinimalPngDataUri({
   const adler32 = Math.trunc(((adlerB << 16) | adlerA) >>> 0,);
 
   /**
-   * Zlib wrapper around a single uncompressed deflate block.
-   * CMF=0x78 (deflate, 32K window), FLG=0x01 (check bits for CMF).
-   * BFINAL=1, BTYPE=00 (no compression), LEN=5, NLEN=~5.
+   Zlib wrapper around a single uncompressed deflate block.
+   CMF=0x78 (deflate, 32K window), FLG=0x01 (check bits for CMF).
+   BFINAL=1, BTYPE=00 (no compression), LEN=5, NLEN=~5.
    */
   const len = rawScanline.length;
   const nlen = len ^ 0xFF_FF;

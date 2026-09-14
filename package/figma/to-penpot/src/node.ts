@@ -1,7 +1,7 @@
 /**
- * Figma NodeChange to Penpot shape conversion, with child recursion.
- *
- * @module figma-to-penpot-node
+ Figma NodeChange to Penpot shape conversion, with child recursion.
+ 
+ @module figma-to-penpot-node
  */
 
 import { figmaColorToFill, } from './color.ts';
@@ -33,7 +33,7 @@ import type {
 import { nextUuid, } from './uuid.ts';
 
 /**
- * Shared lookup tables threaded unchanged through the conversion recursion.
+ Shared lookup tables threaded unchanged through the conversion recursion.
  */
 export type ConvertContext = {
   nodeByGuid: Map<string, Record<string, unknown>>;
@@ -43,20 +43,20 @@ export type ConvertContext = {
 };
 
 /**
- * Resolve a node's Penpot parent UUID from its Figma parent index.
- *
- * @param nc - Figma NodeChange record
- *
- * @param parentUuid - fallback parent when no Figma parent resolves
- *
- * @param guidToUuidMap - GUID-key to Penpot-UUID index
- *
- * @returns resolved parent UUID
- *
- * @example
- * ```ts
- * const parentId = resolveParentUuid({ nc, parentUuid, guidToUuidMap, });
- * ```
+ Resolve a node's Penpot parent UUID from its Figma parent index.
+ 
+ @param nc - Figma NodeChange record
+ 
+ @param parentUuid - fallback parent when no Figma parent resolves
+ 
+ @param guidToUuidMap - GUID-key to Penpot-UUID index
+ 
+ @returns resolved parent UUID
+ 
+ @example
+ ```ts
+ const parentId = resolveParentUuid({ nc, parentUuid, guidToUuidMap, });
+ ```
  */
 function resolveParentUuid(
   {
@@ -70,13 +70,13 @@ function resolveParentUuid(
   }>,
 ): Uuid {
   /**
-   * Parsed Figma parent reference; {@link SKIP} keeps the recursion's parent.
+   Parsed Figma parent reference; {@link SKIP} keeps the recursion's parent.
    */
   const parent = parseParentIndex(nc.parentIndex,);
   if (parent === SKIP)
     return parentUuid;
   /**
-   * Composite key matching the parent entry in the GUID map.
+   Composite key matching the parent entry in the GUID map.
    */
   const parentKey = `${parent.parentGuid
     .sessionId}:${parent.parentGuid
@@ -86,16 +86,16 @@ function resolveParentUuid(
 }
 
 /**
- * Stamp uniform border radius onto a shape when the node has a positive corner radius.
- *
- * @param shape - {@link PenpotShape} being assembled (mutated in place)
- *
- * @param nc - Figma NodeChange record
- *
- * @example
- * ```ts
- * applyCornerRadius({ shape, nc, });
- * ```
+ Stamp uniform border radius onto a shape when the node has a positive corner radius.
+ 
+ @param shape - {@link PenpotShape} being assembled (mutated in place)
+ 
+ @param nc - Figma NodeChange record
+ 
+ @example
+ ```ts
+ applyCornerRadius({ shape, nc, });
+ ```
  */
 function applyCornerRadius(
   {
@@ -107,7 +107,7 @@ function applyCornerRadius(
   },
 ): void {
   /**
-   * Figma corner radius; only positive numbers produce Penpot radii.
+   Figma corner radius; only positive numbers produce Penpot radii.
    */
   const radius = nc.cornerRadius;
   if (((typeof radius) === 'number') && (radius > 0)) {
@@ -119,18 +119,18 @@ function applyCornerRadius(
 }
 
 /**
- * Apply type-specific fields (container shapes, radius, path content, text) to a shape.
- *
- * @param shape - {@link PenpotShape} being assembled (mutated in place)
- *
- * @param penpotType - resolved Penpot shape type
- *
- * @param nc - Figma NodeChange record
- *
- * @example
- * ```ts
- * applyTypeSpecific({ shape, penpotType, nc, });
- * ```
+ Apply type-specific fields (container shapes, radius, path content, text) to a shape.
+ 
+ @param shape - {@link PenpotShape} being assembled (mutated in place)
+ 
+ @param penpotType - resolved Penpot shape type
+ 
+ @param nc - Figma NodeChange record
+ 
+ @example
+ ```ts
+ applyTypeSpecific({ shape, penpotType, nc, });
+ ```
  */
 function applyTypeSpecific(
   {
@@ -152,7 +152,7 @@ function applyTypeSpecific(
       nc,
     },);
     /**
-     * Canvas background used as the frame fill when the node has no own fills.
+     Canvas background used as the frame fill when the node has no own fills.
      */
     const bgColor = nc.backgroundColor;
     if (isRecord(bgColor,) && (shape.fills
@@ -166,7 +166,7 @@ function applyTypeSpecific(
     shape.shapes = [];
     shape.boolType = 'union';
     /**
-     * First fill-geometry path, used as the boolean shape's content.
+     First fill-geometry path, used as the boolean shape's content.
      */
     const path = geometryPath(nc.fillGeometry,);
     if (path !== SKIP)
@@ -181,7 +181,7 @@ function applyTypeSpecific(
   if (penpotType === 'path') {
     shape.growType = 'fixed';
     /**
-     * Preferred fill-geometry path; falls back to stroke geometry for open paths.
+     Preferred fill-geometry path; falls back to stroke geometry for open paths.
      */
     const fillPath = geometryPath(nc.fillGeometry,);
     if (fillPath !== SKIP) {
@@ -189,7 +189,7 @@ function applyTypeSpecific(
     }
     else {
       /**
-       * Stroke-only geometry path for lines and open vectors.
+       Stroke-only geometry path for lines and open vectors.
        */
       const strokePath = geometryPath(nc.strokeGeometry,);
       if (strokePath !== SKIP)
@@ -203,24 +203,24 @@ function applyTypeSpecific(
 }
 
 /**
- * Convert a single Figma NodeChange to a Penpot shape and recurse into children.
- *
- * @param nodeKey - composite `"sessionID:localID"` key of the node
- *
- * @param parentUuid - parent shape UUID from the recursion
- *
- * @param frameUuid - enclosing frame UUID from the recursion
- *
- * @param pageId - page the shape belongs to
- *
- * @param ctx - shared {@link ConvertContext} lookup tables threaded through the recursion
- *
- * @returns the shape's Penpot UUID, or {@link SKIP} when the node has no equivalent
- *
- * @example
- * ```ts
- * const uuid = convertNode({ nodeKey, parentUuid, frameUuid, pageId, ctx, });
- * ```
+ Convert a single Figma NodeChange to a Penpot shape and recurse into children.
+ 
+ @param nodeKey - composite `"sessionID:localID"` key of the node
+ 
+ @param parentUuid - parent shape UUID from the recursion
+ 
+ @param frameUuid - enclosing frame UUID from the recursion
+ 
+ @param pageId - page the shape belongs to
+ 
+ @param ctx - shared {@link ConvertContext} lookup tables threaded through the recursion
+ 
+ @returns the shape's Penpot UUID, or {@link SKIP} when the node has no equivalent
+ 
+ @example
+ ```ts
+ const uuid = convertNode({ nodeKey, parentUuid, frameUuid, pageId, ctx, });
+ ```
  */
 export function convertNode(
   {
@@ -238,7 +238,7 @@ export function convertNode(
   },
 ): Uuid | typeof SKIP {
   /**
-   * NodeChange for this key; absence means the GUID was never indexed.
+   NodeChange for this key; absence means the GUID was never indexed.
    */
   const nc = ctx.nodeByGuid
     .get(nodeKey,);
@@ -246,29 +246,29 @@ export function convertNode(
     return SKIP;
 
   /**
-   * Penpot shape type, or {@link SKIP} for Figma node types with no equivalent.
+   Penpot shape type, or {@link SKIP} for Figma node types with no equivalent.
    */
   const penpotType = FIGMA_NODE_TYPE_MAP[asString(nc.type,)];
   if ((penpotType === undefined) || (penpotType === SKIP))
     return SKIP;
 
   /**
-   * Stable shape UUID, reusing the cross-pass GUID map when present.
+   Stable shape UUID, reusing the cross-pass GUID map when present.
    */
   const shapeUuid = ctx.guidToUuidMap
     .get(nodeKey,)
     ?? nextUuid();
   /**
-   * Effective geometry: position, size, selrect, and corner points.
+   Effective geometry: position, size, selrect, and corner points.
    */
   const geom = geometryOf(nc,);
   /**
-   * Frame ancestor UUID: this shape when it is a frame, else the enclosing frame.
+   Frame ancestor UUID: this shape when it is a frame, else the enclosing frame.
    */
   const frameId = penpotType === 'frame' ? shapeUuid : frameUuid;
 
   /**
-   * Penpot shape record; type-specific fields are layered on below.
+   Penpot shape record; type-specific fields are layered on below.
    */
   const shape: PenpotShape = {
     id: shapeUuid,
@@ -313,14 +313,14 @@ export function convertNode(
   },);
 
   /**
-   * Penpot UUIDs of converted children, used to populate container `shapes`.
+   Penpot UUIDs of converted children, used to populate container `shapes`.
    */
   const childUuids: Uuid[] = [];
   for (const childKey of ctx.childrenByParent
     .get(nodeKey,)
     ?? []) {
     /**
-     * Converted child UUID; {@link SKIP} children are dropped.
+     Converted child UUID; {@link SKIP} children are dropped.
      */
     const childUuid = convertNode({
       nodeKey: childKey,

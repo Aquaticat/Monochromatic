@@ -1,7 +1,7 @@
 /**
- * Procfs parent-PID reader for session discovery.
- *
- * @module
+ Procfs parent-PID reader for session discovery.
+ 
+ @module
  */
 
 import { splitWhitespace, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
@@ -15,7 +15,7 @@ import type { SessionDiscoveryIo, } from './types.ts';
 //region Logger
 
 /**
- * Module logger for procfs parent-PID reads.
+ Module logger for procfs parent-PID reads.
  */
 const l = tagged({ tag: 'agent-harnesses:session-discovery:procfs', },);
 
@@ -24,18 +24,18 @@ const l = tagged({ tag: 'agent-harnesses:session-discovery:procfs', },);
 //region Procfs scanning
 
 /**
- * Reads parent PID from Linux `/proc/{pid}/status`.
- *
- * @param pid - process identifier to inspect
- *
- * @param io - optional test IO seam
- *
- * @returns parent PID, or {@link SESSION_NOT_FOUND} when unavailable
- *
- * @example
- * ```ts
- * await readParentPid({ pid: 1234 });
- * ```
+ Reads parent PID from Linux `/proc/{pid}/status`.
+ 
+ @param pid - process identifier to inspect
+ 
+ @param io - optional test IO seam
+ 
+ @returns parent PID, or {@link SESSION_NOT_FOUND} when unavailable
+ 
+ @example
+ ```ts
+ await readParentPid({ pid: 1234 });
+ ```
  */
 async function readParentPid(
   {
@@ -51,14 +51,14 @@ async function readParentPid(
 
   try {
     /**
-     * Status file contents for process.
+     Status file contents for process.
      */
     const statusContent = await readTextFile({
       path: `/proc/${String(pid,)}/status`,
       ...optionalSessionDiscoveryIo(io,),
     },);
     /**
-     * Status line carrying parent process id.
+     Status line carrying parent process id.
      */
     const ppidLine = statusContent.split('\n',)
       .find(function isPpidLine(line,): boolean {
@@ -69,7 +69,7 @@ async function readParentPid(
       return SESSION_NOT_FOUND;
 
     /**
-     * Parsed parent process id from status line.
+     Parsed parent process id from status line.
      */
     const parentPid = Math.trunc(Number(
       splitWhitespace(ppidLine,)[1]

@@ -206,7 +206,7 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
     // ```ts
     // return [readTx, writeTx];
     // ```
-    (read_tx, write_tx)
+    return (read_tx, write_tx)
 }
 
 /// What:     `async fn run(path, mut read_rx, mut write_rx)`. The actor body: open the
@@ -321,10 +321,10 @@ async fn open_cache(path: Option<PathBuf>) -> Option<DecisionCache> {
     // try { return await DecisionCache.open(pathStr); } catch (e) { warn(e); return null; }
     // ```
     match DecisionCache::open(path_str).await {
-        Ok(cache) => Some(cache),
+        Ok(cache) => return Some(cache),
         Err(error) => {
             tracing::warn!(error = %error, "cache open failed; running degraded");
-            None
+            return None
         }
     }
 }
@@ -383,10 +383,10 @@ async fn get(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint
     // try { return await cache.get(fingerprint, identity); } catch (e) { warn(e); return null; }
     // ```
     match cache.get(fingerprint, identity).await {
-        Ok(decision) => decision,
+        Ok(decision) => return decision,
         Err(error) => {
             tracing::warn!(error = %error, "cache get failed; treating as miss");
-            None
+            return None
         }
     }
 }
@@ -421,10 +421,10 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
     // try { return await cache.exactFingerprints(identity); } catch (e) { warn(e); return new Set(); }
     // ```
     match cache.exact_fingerprints(identity).await {
-        Ok(set) => set,
+        Ok(set) => return set,
         Err(error) => {
             tracing::warn!(error = %error, "cache scan failed; empty skip-check");
-            HashSet::new()
+            return HashSet::new()
         }
     }
 }

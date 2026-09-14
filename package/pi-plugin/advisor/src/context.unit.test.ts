@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor context serialization.
- *
- * @module
+ Unit tests for Advisor context serialization.
+ 
+ @module
  */
 
 import type {
@@ -96,11 +96,11 @@ const otherCustomMessage: SessionEntry = {
 };
 
 /**
- * Build fixture Advisor model.
- *
- * @param contextWindow - token context window
- *
- * @returns fixture model
+ Build fixture Advisor model.
+ 
+ @param contextWindow - token context window
+ 
+ @returns fixture model
  */
 function fixtureModel(
   contextWindow: number,

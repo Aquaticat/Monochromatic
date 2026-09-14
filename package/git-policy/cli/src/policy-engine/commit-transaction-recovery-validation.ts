@@ -1,7 +1,7 @@
 /**
- * Validation and identity checks for transaction recovery.
- *
- * @module
+ Validation and identity checks for transaction recovery.
+ 
+ @module
  */
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import { lstat, } from 'node:fs/promises';
@@ -13,7 +13,7 @@ import type {
 } from './commit-transaction-journal.ts';
 
 /**
- * Strict journal and Git decoder.
+ Strict journal and Git decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
@@ -21,13 +21,13 @@ const DECODER = new TextDecoder(
 );
 
 /**
- * Interrupted transaction cannot be recovered automatically.
+ Interrupted transaction cannot be recovered automatically.
  */
 export class CommitTransactionRecoveryError extends Error {
   /**
-   * Creates recovery conflict.
-   *
-   * @param message - precise preserved-state diagnostic
+   Creates recovery conflict.
+   
+   @param message - precise preserved-state diagnostic
    */
   public constructor(message: string,) {
     super(message,);
@@ -36,11 +36,11 @@ export class CommitTransactionRecoveryError extends Error {
 }
 
 /**
- * Parses original HEAD discriminated value.
- *
- * @param value - untrusted journal field
- *
- * @returns validated original HEAD
+ Parses original HEAD discriminated value.
+ 
+ @param value - untrusted journal field
+ 
+ @returns validated original HEAD
  */
 function parseOriginalHead(value: object,): OriginalHead {
   if ((!('kind' in value))
@@ -57,20 +57,20 @@ function parseOriginalHead(value: object,): OriginalHead {
 }
 
 /**
- * Parses required prepared journal shape.
- *
- * @param bytes - exact journal bytes
- *
- * @returns validated prepared journal
- *
- * @example
- * ```ts
- * parsePreparedJournal(bytes);
- * ```
+ Parses required prepared journal shape.
+ 
+ @param bytes - exact journal bytes
+ 
+ @returns validated prepared journal
+ 
+ @example
+ ```ts
+ parsePreparedJournal(bytes);
+ ```
  */
 export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJournal {
   /**
-   * Untrusted parsed JSON value.
+   Untrusted parsed JSON value.
    */
   const value: unknown = JSON.parse(DECODER.decode(bytes,),);
   if (((typeof value) !== 'object') || (value === null)
@@ -126,7 +126,7 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
     || ((typeof value.lockInode) !== 'string'))
     throw new CommitTransactionRecoveryError('Prepared transaction journal is malformed.',);
   /**
-   * Validated original head union.
+   Validated original head union.
    */
   const originalHead = parseOriginalHead(value.originalHead,);
   return {
@@ -161,20 +161,20 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
 }
 
 /**
- * Parses required ref-updated marker.
- *
- * @param bytes - exact marker bytes
- *
- * @returns validated marker
- *
- * @example
- * ```ts
- * parseRefUpdated(bytes);
- * ```
+ Parses required ref-updated marker.
+ 
+ @param bytes - exact marker bytes
+ 
+ @returns validated marker
+ 
+ @example
+ ```ts
+ parseRefUpdated(bytes);
+ ```
  */
 export function parseRefUpdated(bytes: Uint8Array,): RefUpdatedMarker {
   /**
-   * Untrusted parsed JSON value.
+   Untrusted parsed JSON value.
    */
   const value: unknown = JSON.parse(DECODER.decode(bytes,),);
   if (((typeof value) !== 'object') || (value === null)
@@ -193,18 +193,18 @@ export function parseRefUpdated(bytes: Uint8Array,): RefUpdatedMarker {
 }
 
 /**
- * Tests exact original head equality.
- *
- * @param expected - journal original state
- *
- * @param current - observed current state
- *
- * @returns whether states match exactly
- *
- * @example
- * ```ts
- * headsEqual({ expected: { kind: 'absent' }, current: { kind: 'absent' } });
- * ```
+ Tests exact original head equality.
+ 
+ @param expected - journal original state
+ 
+ @param current - observed current state
+ 
+ @returns whether states match exactly
+ 
+ @example
+ ```ts
+ headsEqual({ expected: { kind: 'absent' }, current: { kind: 'absent' } });
+ ```
  */
 export function headsEqual({
   expected,
@@ -221,16 +221,16 @@ export function headsEqual({
 }
 
 /**
- * Verifies owned lock identity before recovery mutation.
- *
- * @param journal - prepared journal identity
- *
- * @param lockPath - current real-index lock path
- *
- * @example
- * ```ts
- * await assertOwnedLock({ journal, lockPath: '/repo/.git/index.lock' });
- * ```
+ Verifies owned lock identity before recovery mutation.
+ 
+ @param journal - prepared journal identity
+ 
+ @param lockPath - current real-index lock path
+ 
+ @example
+ ```ts
+ await assertOwnedLock({ journal, lockPath: '/repo/.git/index.lock' });
+ ```
  */
 export async function assertOwnedLock({
   journal,
@@ -240,7 +240,7 @@ export async function assertOwnedLock({
   lockPath: string;
 }>,): Promise<void> {
   /**
-   * Current non-followed lock metadata.
+   Current non-followed lock metadata.
    */
   const metadata = await lstat(
     lockPath,
@@ -249,7 +249,7 @@ export async function assertOwnedLock({
   if ((!metadata.isFile()) || metadata.isSymbolicLink())
     throw new CommitTransactionRecoveryError(`Index lock is not a regular owned file: ${lockPath}`,);
   /**
-   * Current lock filesystem identity.
+   Current lock filesystem identity.
    */
   const filesystem = await resolveFsId({
     path: lockPath,
@@ -262,20 +262,20 @@ export async function assertOwnedLock({
 }
 
 /**
- * Validates latest HEAD reflog entry as transaction-owned ref movement.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository root
- *
- * @param oid - current commit OID
- *
- * @param journal - prepared transaction
- *
- * @example
- * ```ts
- * await assertTransactionReflog({ gitPath: '/usr/bin/git', cwd: '/repo', oid, journal });
- * ```
+ Validates latest HEAD reflog entry as transaction-owned ref movement.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository root
+ 
+ @param oid - current commit OID
+ 
+ @param journal - prepared transaction
+ 
+ @example
+ ```ts
+ await assertTransactionReflog({ gitPath: '/usr/bin/git', cwd: '/repo', oid, journal });
+ ```
  */
 export async function assertTransactionReflog({
   gitPath,
@@ -289,7 +289,7 @@ export async function assertTransactionReflog({
   journal: PreparedTransactionJournal;
 }>,): Promise<void> {
   /**
-   * Latest reflog identity and subject separated without text ambiguity.
+   Latest reflog identity and subject separated without text ambiguity.
    */
   const result = await runTransactionGit({
     gitPath,
@@ -306,7 +306,7 @@ export async function assertTransactionReflog({
   if (result.exitCode !== 0)
     throw new CommitTransactionRecoveryError('Transaction ref movement lacks durable reflog provenance.',);
   /**
-   * Exact latest reflog output without terminal LF.
+   Exact latest reflog output without terminal LF.
    */
   const output = DECODER.decode(result.stdout,)
     .endsWith('\n',)
@@ -317,7 +317,7 @@ export async function assertTransactionReflog({
       )
     : DECODER.decode(result.stdout,);
   /**
-   * Unambiguous identity/subject separator.
+   Unambiguous identity/subject separator.
    */
   const separator = output.indexOf('\0',);
   if ((separator === (-1))
@@ -331,20 +331,20 @@ export async function assertTransactionReflog({
 }
 
 /**
- * Validates current commit as transaction-created result.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - repository root
- *
- * @param oid - current commit OID
- *
- * @param journal - prepared transaction
- *
- * @example
- * ```ts
- * await assertLandedCommit({ gitPath: '/usr/bin/git', cwd: '/repo', oid, journal });
- * ```
+ Validates current commit as transaction-created result.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - repository root
+ 
+ @param oid - current commit OID
+ 
+ @param journal - prepared transaction
+ 
+ @example
+ ```ts
+ await assertLandedCommit({ gitPath: '/usr/bin/git', cwd: '/repo', oid, journal });
+ ```
  */
 export async function assertLandedCommit({
   gitPath,
@@ -358,7 +358,7 @@ export async function assertLandedCommit({
   journal: PreparedTransactionJournal;
 }>,): Promise<void> {
   /**
-   * Exact landed tree.
+   Exact landed tree.
    */
   const tree = DECODER.decode((await runTransactionGit({
     gitPath,
@@ -373,7 +373,7 @@ export async function assertLandedCommit({
   if (tree !== journal.intendedTreeOid)
     throw new CommitTransactionRecoveryError('Current commit tree differs from prepared transaction tree.',);
   /**
-   * Commit and ordered parent identities.
+   Commit and ordered parent identities.
    */
   const commitAndParents = DECODER.decode((await runTransactionGit({
     gitPath,
@@ -388,7 +388,7 @@ export async function assertLandedCommit({
     .trim()
     .split(' ',);
   /**
-   * Ordered landed parent identities.
+   Ordered landed parent identities.
    */
   const landedParents = commitAndParents.slice(1,);
   if ((landedParents.length

@@ -1,7 +1,7 @@
 /**
- * PID mapping file reads for session discovery.
- *
- * @module
+ PID mapping file reads for session discovery.
+ 
+ @module
  */
 
 import { join, } from 'node:path';
@@ -22,7 +22,7 @@ import type {
 //region Logger
 
 /**
- * Module logger for PID mapping file reads.
+ Module logger for PID mapping file reads.
  */
 const l = tagged({ tag: 'agent-harnesses:session-discovery:mapping', },);
 
@@ -31,22 +31,22 @@ const l = tagged({ tag: 'agent-harnesses:session-discovery:mapping', },);
 //region Direct mapping reads
 
 /**
- * Reads PID-to-session mapping for one process id.
- *
- * @param pid - process identifier to map
- *
- * @param byPidDir - directory containing PID mapping files
- *
- * @param io - optional test IO seam
- *
- * @param parseMapping - host-owned parser for mapping file contents
- *
- * @returns parsed mapping, or {@link SESSION_NOT_FOUND} when absent or invalid
- *
- * @example
- * ```ts
- * await readPidMapping({ pid: 1234, byPidDir, parseMapping: JSON.parse });
- * ```
+ Reads PID-to-session mapping for one process id.
+ 
+ @param pid - process identifier to map
+ 
+ @param byPidDir - directory containing PID mapping files
+ 
+ @param io - optional test IO seam
+ 
+ @param parseMapping - host-owned parser for mapping file contents
+ 
+ @returns parsed mapping, or {@link SESSION_NOT_FOUND} when absent or invalid
+ 
+ @example
+ ```ts
+ await readPidMapping({ pid: 1234, byPidDir, parseMapping: JSON.parse });
+ ```
  */
 async function readPidMapping<TMapping>(
   {
@@ -58,14 +58,14 @@ async function readPidMapping<TMapping>(
 ): Promise<TMapping | typeof SESSION_NOT_FOUND> {
   try {
     /**
-     * Mapping file path for candidate process id.
+     Mapping file path for candidate process id.
      */
     const pidFilePath = join(
       byPidDir,
       String(pid,),
     );
     /**
-     * Mapping file text.
+     Mapping file text.
      */
     const raw = await readTextFile({
       path: pidFilePath,
@@ -84,18 +84,18 @@ async function readPidMapping<TMapping>(
 }
 
 /**
- * Reads PID mapping directory entries.
- *
- * @param byPidDir - directory containing PID mapping files
- *
- * @param io - optional test IO seam
- *
- * @returns filenames, or {@link SESSION_NOT_FOUND} when directory is absent
- *
- * @example
- * ```ts
- * await readByPidDir({ byPidDir });
- * ```
+ Reads PID mapping directory entries.
+ 
+ @param byPidDir - directory containing PID mapping files
+ 
+ @param io - optional test IO seam
+ 
+ @returns filenames, or {@link SESSION_NOT_FOUND} when directory is absent
+ 
+ @example
+ ```ts
+ await readByPidDir({ byPidDir });
+ ```
  */
 async function readByPidDir(
   {

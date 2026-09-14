@@ -2,7 +2,7 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
 /**
- * Shadow DOM styles for the `\<section-heading\>` component.
+ Shadow DOM styles for the `\<section-heading\>` component.
  */
 const STYLES = css(`
   :host {
@@ -32,22 +32,22 @@ const STYLES = css(`
 `,);
 
 /**
- * `\<section-heading\>`: collapsible section with icon, label, and toggle indicator.
- * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
+ `\<section-heading\>`: collapsible section with icon, label, and toggle indicator.
+ Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Whether the section content is currently expanded.
+   Whether the section content is currently expanded.
    */
   #open = true;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -55,16 +55,16 @@ class SectionHeading extends HTMLElement {
   }
 
   /**
-   * Whether the section is currently expanded.
-   *
-   * @returns True when the section content is visible
+   Whether the section is currently expanded.
+   
+   @returns True when the section content is visible
    */
   get open(): boolean {
     return this.#open;
   }
 
   /**
-   * Renders the heading and attaches the toggle click handler.
+   Renders the heading and attaches the toggle click handler.
    */
   connectedCallback(): void {
     this.#render();
@@ -78,10 +78,10 @@ class SectionHeading extends HTMLElement {
   }
 
   /**
-   * Toggles the open state and dispatches a toggle event.
-   *
-   * Bound to this instance at the listener site because it is attached to the
-   * inner `.heading` element, whose `currentTarget` is not this component.
+   Toggles the open state and dispatches a toggle event.
+   
+   Bound to this instance at the listener site because it is attached to the
+   inner `.heading` element, whose `currentTarget` is not this component.
    */
   #toggle(): void {
     this.#open = !this.#open;
@@ -98,18 +98,18 @@ class SectionHeading extends HTMLElement {
   }
 
   /**
-   * Updates the toggle indicator and content visibility.
+   Updates the toggle indicator and content visibility.
    */
   #updateToggle(): void {
     /**
-     * Toggle indicator span; absent before first render, so the check below guards.
+     Toggle indicator span; absent before first render, so the check below guards.
      */
     const toggle = this.#shadow
       .querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
     /**
-     * Content wrapper whose display style is flipped to show or hide the slotted content.
+     Content wrapper whose display style is flipped to show or hide the slotted content.
      */
     const content = this.#shadow
       .querySelector<HTMLElement>('.content',);
@@ -120,16 +120,16 @@ class SectionHeading extends HTMLElement {
   }
 
   /**
-   * Renders the heading, toggle indicator, and content slot into the shadow root.
+   Renders the heading, toggle indicator, and content slot into the shadow root.
    */
   #render(): void {
     /**
-     * Leading icon glyph from the `icon` attribute.
+     Leading icon glyph from the `icon` attribute.
      */
     const icon = this.getAttribute('icon',)
       ?? '';
     /**
-     * Heading text from the `label` attribute, displayed next to the icon.
+     Heading text from the `label` attribute, displayed next to the icon.
      */
     const label = this.getAttribute('label',)
       ?? '';

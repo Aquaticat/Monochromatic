@@ -1,7 +1,7 @@
 /**
- * Tests for pi guardrail Bash command blocking.
- *
- * @module
+ Tests for pi guardrail Bash command blocking.
+ 
+ @module
  */
 
 import {

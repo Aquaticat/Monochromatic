@@ -46,11 +46,11 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Main worktree root that must bypass copy lifecycle.
+         Main worktree root that must bypass copy lifecycle.
          */
         const repositoryRoot = join(fixture.path, 'repository',);
         /**
-         * Linked worktree created by forwarded real Git without copied state.
+         Linked worktree created by forwarded real Git without copied state.
          */
         const destinationRoot = join(fixture.path, 'topic',);
         await initializeMainRepository(repositoryRoot,);
@@ -87,7 +87,7 @@ await describe({
           ],
         },),);
         /**
-         * Main Git entries after direct and selected status prove no copy root was initialized.
+         Main Git entries after direct and selected status prove no copy root was initialized.
          */
         const mainGitEntriesAfterStatus = await readdir(join(
           repositoryRoot,
@@ -110,7 +110,7 @@ await describe({
         expect(await readdir(destinationRoot,),).not.toContain('state.txt',);
         expect(copySummaryLines(result.stderr,),).toHaveLength(0,);
         /**
-         * Main Git entries after worktree creation prove lifecycle remained bypassed.
+         Main Git entries after worktree creation prove lifecycle remained bypassed.
          */
         const mainGitEntriesAfterCreation = await readdir(join(
           repositoryRoot,
@@ -126,16 +126,16 @@ await describe({
       fn: async () => {
         await using fixture = await createTempDirectory();
         /**
-         * Source repository root.
+         Source repository root.
          */
         const repositoryRoot = join(fixture.path, 'repository',);
         /**
-         * New linked-worktree root.
+         New linked-worktree root.
          */
         const destinationRoot = join(fixture.path, 'topic',);
         await initializeRepository(repositoryRoot,);
         /**
-         * Shared common Git directory containing repository exclude file.
+         Shared common Git directory containing repository exclude file.
          */
         const commonDir = await resolveFixtureCommonDir(repositoryRoot,);
         await Promise.all([
@@ -183,7 +183,7 @@ await describe({
         ],);
 
         /**
-         * Successful built-wrapper worktree creation.
+         Successful built-wrapper worktree creation.
          */
         const result = requireSuccess(await captureWrapper({
           cwd: fixture.path,
@@ -635,7 +635,7 @@ await describe({
           ],
         },);
         /**
-         * Private staged payload sibling to destination.
+         Private staged payload sibling to destination.
          */
         const stageContainer = join(
           dirname(destinationRoot,),
@@ -650,7 +650,7 @@ await describe({
         ],);
         await chmod(join(stageRoot, 'state.txt',), 0o640,);
         /**
-         * Common Git directory returned by real Git.
+         Common Git directory returned by real Git.
          */
         const commonDir = (await runRealGit({
           cwd: repositoryRoot,
@@ -688,7 +688,7 @@ await describe({
         expect(await readFile(join(destinationRoot, 'state.txt',), 'utf8',),).toBe('recovered\n',);
         expect(result.stderr,).toContain('recovered ignored-state copies for 1 worktree transaction',);
         /**
-         * Next invocation proving no completed journal remains to recover.
+         Next invocation proving no completed journal remains to recover.
          */
         const nextResult = requireSuccess(await captureWrapper({
           cwd: repositoryRoot,

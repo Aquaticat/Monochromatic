@@ -15,9 +15,9 @@ import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
 /**
- * Marginal compressed bytes per commit, with a spread, plus how far the probe
- * walked and whether it stopped at the commit cap (making `observedCommits` a
- * lower bound on the branch).
+ Marginal compressed bytes per commit, with a spread, plus how far the probe
+ walked and whether it stopped at the commit cap (making `observedCommits` a
+ lower bound on the branch).
  */
 export type DeepenResult = {
   readonly marginalLo: number;
@@ -28,26 +28,26 @@ export type DeepenResult = {
 };
 
 /**
- * Sentinel returned by {@link probeDeepen} when no usable commit delta is observed.
+ Sentinel returned by {@link probeDeepen} when no usable commit delta is observed.
  */
 export const NO_DEEPEN: unique symbol = Symbol('git-clone-size/deepen-commit-delta-absent',);
 
 /**
- * Lower clamp on the repack pack-layout bias factor; a single full pack is never
- * assumed to be more than this much smaller than the incremental fetch growth.
+ Lower clamp on the repack pack-layout bias factor; a single full pack is never
+ assumed to be more than this much smaller than the incremental fetch growth.
  */
 const MIN_BIAS_FACTOR = 0.25;
 
 /**
- * Counts commits reachable from HEAD on the (single-branch) shallow clone.
- *
- * @param clonePath - bare shallow clone directory
- *
- * @returns commit count, or 0 when the command fails
+ Counts commits reachable from HEAD on the (single-branch) shallow clone.
+ 
+ @param clonePath - bare shallow clone directory
+ 
+ @returns commit count, or 0 when the command fails
  */
 async function countCommits({ clonePath, }: { readonly clonePath: string; },): Promise<number> {
   /**
-   * Captured `rev-list --count HEAD` output and exit code.
+   Captured `rev-list --count HEAD` output and exit code.
    */
   const {
     stdout,
@@ -63,19 +63,19 @@ async function countCommits({ clonePath, }: { readonly clonePath: string; },): P
     ],
   },);
   /**
-   * Parsed commit count; 0 on any parse or command failure.
+   Parsed commit count; 0 on any parse or command failure.
    */
   const count = Math.trunc(Number(stdout,),);
   return (exitCode === 0) && Number.isFinite(count,) ? count : 0;
 }
 
 /**
- * Floors a bytes-per-commit figure at {@link MIN_MARGINAL_BYTES} so an
- * empty-commit run never collapses the estimate to zero.
- *
- * @param value - raw bytes-per-commit figure
- *
- * @returns the value, never below the floor
+ Floors a bytes-per-commit figure at {@link MIN_MARGINAL_BYTES} so an
+ empty-commit run never collapses the estimate to zero.
+ 
+ @param value - raw bytes-per-commit figure
+ 
+ @returns the value, never below the floor
  */
 function floored(value: number,): number {
   return Math.max(
@@ -85,15 +85,15 @@ function floored(value: number,): number {
 }
 
 /**
- * Reduces a marginal-bytes-per-commit series to a corrected point and spread.
- * The point applies the repack pack-layout bias (incremental fetches overstate
- * per-commit cost); the raw maximum is kept as a conservative upper bound.
- *
- * @param marginals - per-step bytes-per-commit samples
- *
- * @param biasFactor - repacked/raw object-store ratio in (0, 1]
- *
- * @returns floored lo/point/hi marginal bytes per commit
+ Reduces a marginal-bytes-per-commit series to a corrected point and spread.
+ The point applies the repack pack-layout bias (incremental fetches overstate
+ per-commit cost); the raw maximum is kept as a conservative upper bound.
+ 
+ @param marginals - per-step bytes-per-commit samples
+ 
+ @param biasFactor - repacked/raw object-store ratio in (0, 1]
+ 
+ @returns floored lo/point/hi marginal bytes per commit
  */
 function summarizeMarginals(
   {
@@ -109,11 +109,11 @@ function summarizeMarginals(
   readonly hi: number;
 } {
   /**
-   * Arithmetic mean of the raw marginals.
+   Arithmetic mean of the raw marginals.
    */
   const mean = (function meanMarginal(): number {
     /**
-     * Marginal total isolated inside local mutation scope.
+     Marginal total isolated inside local mutation scope.
      */
     let total = 0;
     for (const value of marginals)
@@ -128,26 +128,26 @@ function summarizeMarginals(
 }
 
 /**
- * Bounded `git fetch --deepen` probe on an existing shallow clone. Each step
- * deepens by a fixed commit count and records object-store growth and the
- * commit delta, yielding marginal compressed bytes per commit and its variance.
- * A final bounded `git repack -adq` of the temp clone measures the
- * incremental-pack bias (raw fetch growth overstates a single full-clone pack),
- * which corrects the marginal. NEVER unshallows; stops at the commit cap.
- *
- * @param clonePath - bare shallow clone to deepen (mutated in the temp dir only)
- *
- * @param maxDeepenCommits - cap on commits walked before stopping
- *
- * @param signal - abort signal enforcing the wall-clock budget
- *
- * @returns marginal estimate and walk metadata, or {@link NO_DEEPEN} when no usable
- *   delta was observed (single-commit history or immediate failure)
- *
- * @example
- * ```ts
- * const deepen = await probeDeepen({ clonePath: shallow.clonePath });
- * ```
+ Bounded `git fetch --deepen` probe on an existing shallow clone. Each step
+ deepens by a fixed commit count and records object-store growth and the
+ commit delta, yielding marginal compressed bytes per commit and its variance.
+ A final bounded `git repack -adq` of the temp clone measures the
+ incremental-pack bias (raw fetch growth overstates a single full-clone pack),
+ which corrects the marginal. NEVER unshallows; stops at the commit cap.
+ 
+ @param clonePath - bare shallow clone to deepen (mutated in the temp dir only)
+ 
+ @param maxDeepenCommits - cap on commits walked before stopping
+ 
+ @param signal - abort signal enforcing the wall-clock budget
+ 
+ @returns marginal estimate and walk metadata, or {@link NO_DEEPEN} when no usable
+   delta was observed (single-commit history or immediate failure)
+ 
+ @example
+ ```ts
+ const deepen = await probeDeepen({ clonePath: shallow.clonePath });
+ ```
  */
 export async function probeDeepen(
   {
@@ -161,7 +161,7 @@ export async function probeDeepen(
   },
 ): Promise<DeepenResult | typeof NO_DEEPEN> {
   /**
-   * Tagged logger naming the deepen probe.
+   Tagged logger naming the deepen probe.
    */
   const rl = tagged({
     tag: probeDeepen.name,
@@ -169,9 +169,9 @@ export async function probeDeepen(
   },);
 
   /**
-   * Baseline object-store size before any deepening; unmeasurable here means no
-   * marginal can be derived, so the probe yields nothing rather than anchoring
-   * on a fabricated zero.
+   Baseline object-store size before any deepening; unmeasurable here means no
+   marginal can be derived, so the probe yields nothing rather than anchoring
+   on a fabricated zero.
    */
   const baseBytes = await objectsDirSize({ repoPath: clonePath, },);
   if (!isMeasured(baseBytes,)) {
@@ -179,18 +179,18 @@ export async function probeDeepen(
     return NO_DEEPEN;
   }
   /**
-   * Side-effecting cursor over the deepen walk: latest commit count and bytes.
+   Side-effecting cursor over the deepen walk: latest commit count and bytes.
    */
   const state = {
     commits: await countCommits({ clonePath, },),
     bytes: baseBytes,
   };
   /**
-   * Per-step marginal bytes-per-commit samples.
+   Per-step marginal bytes-per-commit samples.
    */
   const marginals: number[] = [];
   /**
-   * Whether the walk stopped at the commit cap (lower-bound commit count).
+   Whether the walk stopped at the commit cap (lower-bound commit count).
    */
   const meta = { hitCap: false, };
 
@@ -212,17 +212,17 @@ export async function probeDeepen(
       ],
     },);
     /**
-     * Commit count after this deepen step.
+     Commit count after this deepen step.
      */
     const commits = await countCommits({ clonePath, },);
     /**
-     * Object-store bytes after this deepen step.
+     Object-store bytes after this deepen step.
      */
     const bytes = await objectsDirSize({ repoPath: clonePath, },);
     if (!isMeasured(bytes,))
       break;
     /**
-     * New commits gained this step; non-positive means history root reached.
+     New commits gained this step; non-positive means history root reached.
      */
     const deltaCommits = commits - state.commits;
     if (deltaCommits <= 0)
@@ -239,7 +239,7 @@ export async function probeDeepen(
   }
 
   /**
-   * Raw object-store bytes before the corrective repack.
+   Raw object-store bytes before the corrective repack.
    */
   const rawBytes = state.bytes;
   await spawnResult({
@@ -253,12 +253,12 @@ export async function probeDeepen(
     ],
   },);
   /**
-   * Object-store bytes after consolidating into a single pack.
+   Object-store bytes after consolidating into a single pack.
    */
   const repackedBytes = await objectsDirSize({ repoPath: clonePath, },);
   /**
-   * Repacked/raw ratio, the incremental-pack bias term, clamped sanely; an
-   * unmeasurable repacked size disables the correction (factor 1).
+   Repacked/raw ratio, the incremental-pack bias term, clamped sanely; an
+   unmeasurable repacked size disables the correction (factor 1).
    */
   const biasFactor = (isMeasured(repackedBytes,) && (rawBytes > 0))
     ? clamp({
@@ -270,7 +270,7 @@ export async function probeDeepen(
   rl.debug(`deepen marginal bias factor ${biasFactor.toFixed(2,)} over ${String(state.commits,)} commits`,);
 
   /**
-   * Corrected marginal summary.
+   Corrected marginal summary.
    */
   const summary = summarizeMarginals({
     marginals,

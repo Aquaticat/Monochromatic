@@ -2,18 +2,18 @@
 // Expected violations: tsdoc(require-tsdoc) on each local const/let, not on for-loop bindings.
 
 /**
- * Adds an offset to each input.
- *
- * @param values - inputs to shift
- *
- * @param offset - value to add
- *
- * @returns shifted values
- *
- * @example
- * ```ts
- * shift([1, 2], 3);
- * ```
+ Adds an offset to each input.
+ 
+ @param values - inputs to shift
+ 
+ @param offset - value to add
+ 
+ @returns shifted values
+ 
+ @example
+ ```ts
+ shift([1, 2], 3);
+ ```
  */
 function shift(values: readonly number[], offset: number,): number[] {
   const out: number[] = [];

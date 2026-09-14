@@ -90,7 +90,7 @@ impl AudioSpec {
         // ```ts
         // return Number.isFinite(this.durationSecs) && this.durationSecs > 0;
         // ```
-        self.duration_secs.is_finite() && self.duration_secs > 0.0
+        return self.duration_secs.is_finite() && self.duration_secs > 0.0
     }
 }
 

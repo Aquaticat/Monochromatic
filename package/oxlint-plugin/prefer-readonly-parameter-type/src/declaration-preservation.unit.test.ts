@@ -26,9 +26,9 @@ type DeclarationFixture = {
 };
 
 /**
- * Creates disposable declaration fixture.
- *
- * @returns disposable fixture outside repository state.
+ Creates disposable declaration fixture.
+ 
+ @returns disposable fixture outside repository state.
  */
 function createDeclarationFixture(): DeclarationFixture {
   /** Unique fixture path under operating-system temporary root. */

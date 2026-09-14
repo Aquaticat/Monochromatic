@@ -29,7 +29,7 @@ export type {
 } from './networks.ts';
 
 /**
- * Text inputs accepted by {@link generateAllowedIps}.
+ Text inputs accepted by {@link generateAllowedIps}.
  */
 export type GenerateAllowedIpsOptions = {
   readonly allowedText: string;
@@ -37,27 +37,27 @@ export type GenerateAllowedIpsOptions = {
 };
 
 /**
- * Module logger for the production resolver boundary.
+ Module logger for the production resolver boundary.
  */
 const l = tagged({ tag: 'generate', },);
 
 /**
- * Operating-system lookup adapter contributing every address returned for one hostname.
- *
- * @param hostname - Domain name resolved through Node's operating-system lookup.
- *
- * @returns Every address from the point-in-time lookup.
- *
- * @example
- * ```ts
- * await lookupAddresses({ hostname: 'localhost' });
- * ```
+ Operating-system lookup adapter contributing every address returned for one hostname.
+ 
+ @param hostname - Domain name resolved through Node's operating-system lookup.
+ 
+ @returns Every address from the point-in-time lookup.
+ 
+ @example
+ ```ts
+ await lookupAddresses({ hostname: 'localhost' });
+ ```
  */
 async function lookupAddresses(
   { hostname, }: { readonly hostname: string; },
 ): Promise<readonly LookupAddress[]> {
   /**
-   * Function-scoped logger for operating-system resolution.
+   Function-scoped logger for operating-system resolution.
    */
   const fl = tagged({
     tag: lookupAddresses.name,
@@ -65,7 +65,7 @@ async function lookupAddresses(
   },);
   fl.debug(`resolving ${hostname} through operating-system lookup`,);
   /**
-   * Complete lookup result from Node.
+   Complete lookup result from Node.
    */
   const addresses = await lookup(
     hostname,
@@ -76,25 +76,25 @@ async function lookupAddresses(
 }
 
 /**
- * Generates a minimized WireGuard `AllowedIPs` value from allowed and disallowed file text.
- *
- * Domains resolve through the operating system once per input entry during this call.
- * ASNs resolve through IPinfo Lite with a process-owned per-ASN cache.
- *
- * @param allowedText - Complete allowed-file text.
- *
- * @param disallowedText - Complete disallowed-file text.
- *
- * @returns Empty string for complete subtraction, otherwise comma-separated CIDRs and one trailing newline.
- *
- * @example
- * ```ts
- * await generateAllowedIps({
- *   allowedText: '10.0.0.0/8',
- *   disallowedText: '10.0.0.0/9',
- * });
- * // => '10.128.0.0/9\n'
- * ```
+ Generates a minimized WireGuard `AllowedIPs` value from allowed and disallowed file text.
+ 
+ Domains resolve through the operating system once per input entry during this call.
+ ASNs resolve through IPinfo Lite with a process-owned per-ASN cache.
+ 
+ @param allowedText - Complete allowed-file text.
+ 
+ @param disallowedText - Complete disallowed-file text.
+ 
+ @returns Empty string for complete subtraction, otherwise comma-separated CIDRs and one trailing newline.
+ 
+ @example
+ ```ts
+ await generateAllowedIps({
+   allowedText: '10.0.0.0/8',
+   disallowedText: '10.0.0.0/9',
+ });
+ // => '10.128.0.0/9\n'
+ ```
  */
 export async function generateAllowedIps(
   {
@@ -103,7 +103,7 @@ export async function generateAllowedIps(
   }: GenerateAllowedIpsOptions,
 ): Promise<string> {
   /**
-   * Function-scoped logger for public generation lifecycle.
+   Function-scoped logger for public generation lifecycle.
    */
   const fl = tagged({
     tag: generateAllowedIps.name,
@@ -111,7 +111,7 @@ export async function generateAllowedIps(
   },);
   fl.debug('generating AllowedIPs text',);
   /**
-   * Result generated through the internal resolver seam.
+   Result generated through the internal resolver seam.
    */
   const result = await generateAllowedIpsWithLookup({
     allowedText,

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden;background:#000}</style></helmet>
+<div style="background:#000;width:100vw;height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;box-sizing:border-box;padding-bottom:88px;font-family:Roboto,system-ui,sans-serif">
+<div style="width:{{ boxW }};height:{{ boxH }};flex:0 0 auto;overflow:visible"><div style="width:411px;height:923px;transform:scale({{ scale }});transform-origin:top left;outline:1px solid #26262E;color:#E6E0E9;display:flex;flex-direction:column;overflow:hidden;background:#000;position:relative">
+  <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid #26262E">
+    <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500;min-width:0"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Camellia</span><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+    <div style="flex:1 1 auto"></div>
+    <div style="width:48px;height:48px;border-radius:24px;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#CAC4D0"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg></div>
+  </div>
+
+  <div style="flex:1 1 auto;min-height:0;overflow:auto">
+    <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="9">
+      <div onClick="{{ t.trash }}" style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }};cursor:pointer"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#5A5561;flex:0 0 auto"><path d="M7 20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7H7zM18 4h-3l-1-1h-4l-1 1H6v2h12z"></path></svg></div>
+    </sc-for>
+  </div>
+
+  <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E;background:#0A0A0D">
+    <div style="text-align:center"><div style="font-size:16px;font-weight:500">Another Xronixle</div><div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums">1 of 16 · −1.2 dBTP</div></div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px">
+      <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+      <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+      <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      <div style="position:absolute;right:0;top:50%;margin-top:-24px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"></path></svg></div>
+    </div>
+  </div>
+
+  <sc-if value="{{ errShown }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:0 0 auto;min-height:56px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:0 4px 0 16px;background:#2A1416;border-top:1px solid #4E2A2C">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#F2B8B5;flex:0 0 auto"><path d="M12 2 1 21h22zm1 15h-2v-2h2zm0-4h-2V8h2z"></path></svg>
+      <span style="flex:1 1 auto;min-width:0;font-size:12px;line-height:16px;color:#F2B8B5">{{ errLabel }}</span>
+      <div onClick="{{ dismissErr }}" style="flex:0 0 48px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center;cursor:pointer"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#F2B8B5"><path d="m19 6.4-1.4-1.4-5.6 5.6L6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6z"></path></svg></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastShown }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:16px;bottom:{{ toastBottom }};max-width:340px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;min-height:48px;background:#22222A;border-radius:24px;box-shadow:0 4px 8px 3px rgba(0,0,0,.6),0 1px 3px rgba(0,0,0,.7);z-index:6">
+      <span style="min-width:0;font-size:14px;color:#E6E0E9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ toastLabel }}</span>
+      <div onClick="{{ undo }}" style="flex:0 0 auto;min-height:40px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border-radius:20px;font-size:14px;font-weight:500;color:#D0BCFF;cursor:pointer">Undo</div>
+    </div>
+  </sc-if>
+</div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;padding:8px 16px;color:#8E8894;font-size:11px;line-height:14px;font-family:ui-monospace,monospace;background:#000">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:411,&quot;height&quot;:1019}}">
+const TITLES = [
+  ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+  ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+  ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"]
+];
+
+class Component extends DCLogic {
+  state = { scale: 1, trashed: [], toast: null, errShown: true, errCount: 3 };
+  componentDidMount() {
+    this.fit = () => this.setState({ scale: Math.min(1, window.innerWidth / 411, (window.innerHeight - 96) / 923) });
+    this.fit(); window.addEventListener("resize", this.fit);
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); clearTimeout(this.tm); }
+  trash(i) {
+    clearTimeout(this.tm);
+    this.setState((s) => ({ trashed: s.trashed.concat([i]), toast: TITLES[i][0] }));
+    this.tm = setTimeout(() => this.setState({ toast: null }), 6000);
+  }
+  undo() {
+    clearTimeout(this.tm);
+    this.setState((s) => ({ trashed: s.trashed.slice(0, -1), toast: null }));
+  }
+  renderVals() {
+    const s = this.state;
+    const live = TITLES.map((t, i) => [t, i]).filter(([, i]) => s.trashed.indexOf(i) < 0);
+    return {
+      scale: s.scale, boxW: Math.round(411 * s.scale) + "px", boxH: Math.round(923 * s.scale) + "px",
+      errShown: s.errShown, errCount: s.errCount,
+      errLabel: s.errCount === 1 ? "1 file is no longer on disk and was removed from the list" : s.errCount + " files are no longer on disk and were removed from the list",
+      dismissErr: () => this.setState({ errShown: false }),
+      toastShown: !!s.toast,
+      toastLabel: "Moved to trash",
+      toastBottom: s.errShown ? "72px" : "16px",
+      undo: () => this.undo(),
+      tracks: live.map(([t, i], n) => ({
+        num: n === 0 ? "▶" : String(n + 1), numFg: n === 0 ? "#D0BCFF" : "#5A5561",
+        title: t[0], sub: t[1] + " · " + t[2] + " dBTP", bg: n === 0 ? "#332F3F" : "transparent",
+        trash: () => this.trash(i)
+      })),
+      caption: "TOAST-A — the settled collision rule: the undo toast FLOATS ABOVE the error bar, both visible. The toast is content-width (Todoist model), left-aligned, 48dp tall, over the list — never full-width, never pushing layout; it sits 16dp above whatever owns the bottom edge, so it lifts when the error bar is up and drops when it is dismissed. Tap any row to trash it; tap the × to dismiss the error bar and watch the toast drop."
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,10 +1,10 @@
 /**
- * Per-command helpers used by `bashSignals` to score parsed bash AST nodes.
- *
- * Split out of `signals.ts` to keep the main flagger under the
- * max-lines cap; each helper focuses on one scope/dataflow predicate.
- *
- * @module
+ Per-command helpers used by `bashSignals` to score parsed bash AST nodes.
+ 
+ Split out of `signals.ts` to keep the main flagger under the
+ max-lines cap; each helper focuses on one scope/dataflow predicate.
+ 
+ @module
  */
 
 import {
@@ -22,17 +22,17 @@ import type {
 } from './types.ts';
 
 /** Check if a command name is in {@link MUTATING_COMMANDS}.
- *
- * @param name - the command name
- *
- * @returns `true` if the command is a mutating command
- *
- * @example
- * ```typescript
- * isMutatingCommand('rm'); // true
- * isMutatingCommand('cp'); // true
- * isMutatingCommand('ls'); // false
- * ```
+ 
+ @param name - the command name
+ 
+ @returns `true` if the command is a mutating command
+ 
+ @example
+ ```typescript
+ isMutatingCommand('rm'); // true
+ isMutatingCommand('cp'); // true
+ isMutatingCommand('ls'); // false
+ ```
  */
 function isMutatingCommand(
   name: string,
@@ -41,18 +41,18 @@ function isMutatingCommand(
 }
 
 /**
- * Check if any of the given flags are present in the argument list.
- *
- * Handles `--` end-of-options separator correctly. Long flag names are
- * resolved through {@link LONG_FLAGS} before comparison.
- *
- * @returns `true` if any of the flags are found
- *
- * @example
- * ```typescript
- * hasFlag({ args: ["-rf"], flags: ["r", "f"] }); // true
- * hasFlag({ args: ["--", "-f"], flags: ["f"] }); // false
- * ```
+ Check if any of the given flags are present in the argument list.
+ 
+ Handles `--` end-of-options separator correctly. Long flag names are
+ resolved through {@link LONG_FLAGS} before comparison.
+ 
+ @returns `true` if any of the flags are found
+ 
+ @example
+ ```typescript
+ hasFlag({ args: ["-rf"], flags: ["r", "f"] }); // true
+ hasFlag({ args: ["--", "-f"], flags: ["f"] }); // false
+ ```
  */
 function hasFlag(
   {
@@ -85,23 +85,23 @@ function hasFlag(
 }
 
 /** Check if any target in the command is the root directory.
- *
- * @param cmd - command info with args and redirect targets
- *
- * @returns `true` if a root target is found
- *
- * @example
- * ```typescript
- * hasRootTarget({ args: ['-rf', '/'], redirectTargets: [] }); // true
- * hasRootTarget({ args: ['file.txt'], redirectTargets: ['/'] }); // true
- * hasRootTarget({ args: ['-la', '/etc'], redirectTargets: [] }); // false
- * ```
+ 
+ @param cmd - command info with args and redirect targets
+ 
+ @returns `true` if a root target is found
+ 
+ @example
+ ```typescript
+ hasRootTarget({ args: ['-rf', '/'], redirectTargets: [] }); // true
+ hasRootTarget({ args: ['file.txt'], redirectTargets: ['/'] }); // true
+ hasRootTarget({ args: ['-la', '/etc'], redirectTargets: [] }); // false
+ ```
  */
 function hasRootTarget(
   cmd: Pick<CommandInfo, 'args' | 'redirectTargets'>,
 ): boolean {
   /**
-   * Every positional and redirect target as a flat list; each is tested for `/` or `/*`.
+   Every positional and redirect target as a flat list; each is tested for `/` or `/*`.
    */
   const allTargets = [
     ...cmd.args,
@@ -115,14 +115,14 @@ function hasRootTarget(
 }
 
 /** Check if a command has inline code, using flags registered in
- * {@link INTERPRETER_INLINE_FLAGS}.
- *
- * @returns `true` if the command has inline code
- *
- * @example
- * ```typescript
- * hasInlineCode({ name: 'python', args: ['-c', 'import os; os.system("ls")'] }); // true
- * ```
+ {@link INTERPRETER_INLINE_FLAGS}.
+ 
+ @returns `true` if the command has inline code
+ 
+ @example
+ ```typescript
+ hasInlineCode({ name: 'python', args: ['-c', 'import os; os.system("ls")'] }); // true
+ ```
  */
 function hasInlineCode(
   {
@@ -134,7 +134,7 @@ function hasInlineCode(
   },
 ): boolean {
   /**
-   * Inline-code flags registered for this interpreter; `undefined` for non-interpreters.
+   Inline-code flags registered for this interpreter; `undefined` for non-interpreters.
    */
   const flags = INTERPRETER_INLINE_FLAGS[name];
   if (flags === undefined)
@@ -152,19 +152,19 @@ function hasInlineCode(
 }
 
 /** Check if the analysis contains any command listed in {@link NETWORK_COMMANDS}.
- *
- * @param analysis - parsed bash command analysis
- *
- * @returns `true` if any network command is found
- *
- * @example
- * ```typescript
- * const analysis = analyzeBashCommand('curl https://example.com');
- * hasNetworkCommand(analysis); // true
- *
- * const safeAnalysis = analyzeBashCommand('ls -la');
- * hasNetworkCommand(safeAnalysis); // false
- * ```
+ 
+ @param analysis - parsed bash command analysis
+ 
+ @returns `true` if any network command is found
+ 
+ @example
+ ```typescript
+ const analysis = analyzeBashCommand('curl https://example.com');
+ hasNetworkCommand(analysis); // true
+ 
+ const safeAnalysis = analyzeBashCommand('ls -la');
+ hasNetworkCommand(safeAnalysis); // false
+ ```
  */
 function hasNetworkCommand(
   analysis: BashAnalysis,
@@ -177,19 +177,19 @@ function hasNetworkCommand(
 }
 
 /** Check if the analysis contains references matching {@link SECRET_VAR_PATTERN}.
- *
- * @param analysis - parsed bash command analysis
- *
- * @returns `true` if any secret variable reference is found
- *
- * @example
- * ```typescript
- * const analysis = analyzeBashCommand('curl -H "Authorization: Bearer $GITHUB_TOKEN" api.example.com');
- * hasSecretParamRefs(analysis); // true
- *
- * const safeAnalysis = analyzeBashCommand('echo $PATH');
- * hasSecretParamRefs(safeAnalysis); // false
- * ```
+ 
+ @param analysis - parsed bash command analysis
+ 
+ @returns `true` if any secret variable reference is found
+ 
+ @example
+ ```typescript
+ const analysis = analyzeBashCommand('curl -H "Authorization: Bearer $GITHUB_TOKEN" api.example.com');
+ hasSecretParamRefs(analysis); // true
+ 
+ const safeAnalysis = analyzeBashCommand('echo $PATH');
+ hasSecretParamRefs(safeAnalysis); // false
+ ```
  */
 function hasSecretParamRefs(
   analysis: BashAnalysis,
@@ -202,13 +202,13 @@ function hasSecretParamRefs(
 }
 
 /** Check if the analysis contains sensitive source files via {@link pathSignals}.
- *
- * @returns `true` if any sensitive source is found
- *
- * @example
- * ```typescript
- * hasSensitiveSource({ analysis, ctx }); // true when `cat .env | curl` is parsed
- * ```
+ 
+ @returns `true` if any sensitive source is found
+ 
+ @example
+ ```typescript
+ hasSensitiveSource({ analysis, ctx }); // true when `cat .env | curl` is parsed
+ ```
  */
 async function hasSensitiveSource(
   {
@@ -220,7 +220,7 @@ async function hasSensitiveSource(
   },
 ): Promise<boolean> {
   /**
-   * Concurrent path signal work for every file-like argument and redirect target.
+   Concurrent path signal work for every file-like argument and redirect target.
    */
   const signalPromises: Promise<boolean>[] = [];
   for (const filePath of analysis.allFiles) {
@@ -230,7 +230,7 @@ async function hasSensitiveSource(
     },);
   }
   /**
-   * Path signal decisions after all independent checks settle.
+   Path signal decisions after all independent checks settle.
    */
   const signalDecisions = await Promise.all(signalPromises,);
   for (const decision of signalDecisions) {

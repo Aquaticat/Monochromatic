@@ -1,8 +1,8 @@
 /**
- * Tests for the comment-as-data API: reading and setting value and key comments,
- * the absence sentinel, comment preservation across edits, and mergeComments.
- *
- * @module
+ Tests for the comment-as-data API: reading and setting value and key comments,
+ the absence sentinel, comment preservation across edits, and mergeComments.
+ 
+ @module
  */
 
 import {
@@ -11,8 +11,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   COMMENT_ABSENT,
   jsoncGetComment,
   jsoncGetKeyComment,
@@ -21,7 +21,7 @@ import {
   jsoncSetKeyComment,
   mergeComments,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

@@ -12,26 +12,26 @@ import { join, } from 'node:path';
 import { WorktreeCopyError, } from './errors.ts';
 
 /**
- * Private writable stage-directory mode used during cleanup.
+ Private writable stage-directory mode used during cleanup.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Private stage cleanup path is already absent.
+ Private stage cleanup path is already absent.
  */
 const STAGE_PATH_ABSENT: unique symbol = Symbol('worktree-copy stage path is absent',);
 
 /**
- * Reads no-follow stage metadata or completed-cleanup absence.
- *
- * @param path - private stage path
- *
- * @returns no-follow metadata or stage-path absence sentinel
- *
- * @example
- * ```ts
- * await lstatStageOrAbsent('/worktrees/.cli-git-worktree-copy-id');
- * ```
+ Reads no-follow stage metadata or completed-cleanup absence.
+ 
+ @param path - private stage path
+ 
+ @returns no-follow metadata or stage-path absence sentinel
+ 
+ @example
+ ```ts
+ await lstatStageOrAbsent('/worktrees/.cli-git-worktree-copy-id');
+ ```
  */
 async function lstatStageOrAbsent(
   path: string,
@@ -48,34 +48,34 @@ async function lstatStageOrAbsent(
 }
 
 /**
- * Restores owner traversal and mutation on staged directories before removal.
- *
- * Source directory modes can intentionally omit owner write permission.
- * Private stage ownership permits restoring only its directory modes before removal.
- *
- * @param stageContainer - validated private stage root
- *
- * @example
- * ```ts
- * await prepareStageRemoval('/worktrees/.cli-git-worktree-copy-id');
- * ```
+ Restores owner traversal and mutation on staged directories before removal.
+ 
+ Source directory modes can intentionally omit owner write permission.
+ Private stage ownership permits restoring only its directory modes before removal.
+ 
+ @param stageContainer - validated private stage root
+ 
+ @example
+ ```ts
+ await prepareStageRemoval('/worktrees/.cli-git-worktree-copy-id');
+ ```
  */
 export async function prepareStageRemoval(
   stageContainer: string,
 ): Promise<void> {
   /**
-   * Pending no-follow private directories.
+   Pending no-follow private directories.
    */
   const pending: string[] = [stageContainer,];
   while (pending.length > 0) {
     /**
-     * Current private directory candidate.
+     Current private directory candidate.
      */
     const directory = pending.pop();
     if (directory === undefined)
       throw new WorktreeCopyError('cli-git: private stage cleanup lost pending directory.',);
     /**
-     * Current no-follow metadata or completed-cleanup absence.
+     Current no-follow metadata or completed-cleanup absence.
      */
     // oxlint-disable-next-line no-await-in-loop -- no-follow cleanup walk remains bounded by private stage
     const stats = await lstatStageOrAbsent(directory,);
@@ -89,7 +89,7 @@ export async function prepareStageRemoval(
       PRIVATE_DIRECTORY_MODE,
     );
     /**
-     * Immediate entries after restoring private owner access.
+     Immediate entries after restoring private owner access.
      */
     // oxlint-disable-next-line no-await-in-loop -- child discovery follows restored private directory mode
     const entries = await readdir(

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Packed cli-git lifecycle latency benchmark and budget gate.
- *
- * Run only through the bounded `perf:lifecycle-latency` mise task.
- *
- * @module
+ Packed cli-git lifecycle latency benchmark and budget gate.
+ 
+ Run only through the bounded `perf:lifecycle-latency` mise task.
+ 
+ @module
  */
 
 import { writeFile, } from 'node:fs/promises';
@@ -22,15 +22,15 @@ import { collectLifecycleScenarios, } from './lifecycle-latency-scenarios.ts';
 //region Benchmark execution -- Prepare packed fixture, collect required paths, and emit reproducible evidence.
 
 /**
- * Prepared repositories and trust state.
+ Prepared repositories and trust state.
  */
 const fixture = await prepareLifecycleFixture();
 /**
- * Complete measured scenario matrix.
+ Complete measured scenario matrix.
  */
 const scenarios = await collectLifecycleScenarios(fixture,);
 /**
- * Machine-readable evidence containing raw samples and derived statistics.
+ Machine-readable evidence containing raw samples and derived statistics.
  */
 const benchmarkResult = {
   schemaVersion: 1,
@@ -66,7 +66,7 @@ const benchmarkResult = {
   scenarios,
 };
 /**
- * Stable serialized evidence shared by logs and CI artifact storage.
+ Stable serialized evidence shared by logs and CI artifact storage.
  */
 const serializedResult = JSON.stringify(
   benchmarkResult,
@@ -74,7 +74,7 @@ const serializedResult = JSON.stringify(
   2,
 );
 /**
- * Optional caller-owned artifact destination mounted outside the disposable benchmark container.
+ Optional caller-owned artifact destination mounted outside the disposable benchmark container.
  */
 const outputPath = process.env
   .CLI_GIT_BENCHMARK_OUTPUT;

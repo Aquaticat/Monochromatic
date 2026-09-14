@@ -79,6 +79,49 @@ Commit `300ccac29` records 58 standalone rewrites,
 while corrected imports embedded in the current plugin and TOML changes remain with those changes.
 `AGENTS.md` rule `ST3` records the workspace-wide source-subpath requirement.
 
+## Default-library observer callbacks remain a provenance gap
+
+Issue #427 reproduced foreign receiver elements losing ownership when a default-library collection member invokes an
+inline observer.
+`effect-readonly-view-application.ts` records an `ElementApplication`,
+and `propagateElementApplications` transfers mutation and opacity from the observer summary.
+The foreign-ownership graph has no corresponding receiver-element edge:
+`foreignBorrowedOwnershipSeed` initializes `elementApplications` to an empty list,
+and `foreignBorrowedDirectSummary` scans ordinary owned calls only.
+
+The gap affects `map`,
+`forEach`,
+`filter`,
+`find`,
+`findLast`,
+`every`,
+`some`,
+`flatMap`,
+`reduce`,
+and `reduceRight`.
+Verified controls distinguish it from a general marker failure:
+
+- explicitly marking the callback formal suppresses the finding,
+  but repeats the ownership claim at a descendant and is not the intended migration;
+- passing `children[0]` through an ordinary owned helper propagates foreign ownership;
+- an inline collection observer remains unproved;
+- adding one ordinary owned inbound correctly removes the guarantee.
+
+The required relation is position-aware.
+For ordinary observers,
+the receiver element reaches one callback parameter.
+For folds,
+the accumulator,
+receiver element,
+index,
+and collection positions are distinct even when TypeScript instantiates them with the same type.
+Broad effect reachability cannot prove which one carries foreign ownership.
+
+The implementation should record a foreign observer application beside `ElementApplication`,
+including receiver identity and exact callback position,
+then consume it in the same conjunctive inbound proof as ordinary call edges.
+No type-name allow-list or member-wide exemption is sound.
+
 ## Callback capability distinction
 
 Foreign provenance is independent of callback effects.
@@ -101,7 +144,7 @@ Focused fixture coverage includes:
 - foreign property and element descendants;
 - nested destructuring and aliases;
 - arrays packaged in fresh objects;
-- audited array callback elements;
+- callback elements explicitly marked at a boundary;
 - owned helper calls;
 - synchronous `for...of` bindings;
 - a mixed foreign and owned inbound call;
@@ -181,6 +224,17 @@ Invocation needs a contract without inventing referent mutation.
 
 The current verified propagation handles synchronous `for...of` bindings.
 Async-iterator consumption still needs a distinct effect decision before it can be treated as equivalent.
+
+### Treat all collection callback positions as receiver elements
+
+`reduce` and `reduceRight` pass fold state and receiver elements through separate positions.
+A shared instantiated type does not make those values share ownership.
+
+### Reuse effect reachability as ownership proof
+
+Effect propagation intentionally over-approximates what execution may reach.
+Foreign ownership needs exact value provenance and a conjunctive inbound guarantee,
+so broad reachability would suppress findings on unproved values.
 
 ## Upstream filing artifact
 

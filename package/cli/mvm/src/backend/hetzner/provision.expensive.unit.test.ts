@@ -1,20 +1,20 @@
 /**
- * Live, billed Hetzner provisioning check.
- *
- * Marked `.expensive.` so `test:unit` skips it unless run with `--all` or by
- * explicit path. It provisions real, billed servers, so it only runs when
- * `HCLOUD_TOKEN` is set; otherwise it reports a skip. Run it deliberately, for
- * example:
- *
- * ```sh
- * HCLOUD_TOKEN=... node package/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts
- * ```
- *
- * It provisions a throwaway server, execs a command, round-trips a file,
- * clones, lists, then destroys every mvm-labelled server and confirms the
- * account is clean (a safety-net disposable also tears down on failure).
- *
- * @module
+ Live, billed Hetzner provisioning check.
+ 
+ Marked `.expensive.` so `test:unit` skips it unless run with `--all` or by
+ explicit path. It provisions real, billed servers, so it only runs when
+ `HCLOUD_TOKEN` is set; otherwise it reports a skip. Run it deliberately, for
+ example:
+ 
+ ```sh
+ HCLOUD_TOKEN=... node package/cli/mvm/src/backend/hetzner/provision.expensive.unit.test.ts
+ ```
+ 
+ It provisions a throwaway server, execs a command, round-trips a file,
+ clones, lists, then destroys every mvm-labelled server and confirms the
+ account is clean (a safety-net disposable also tears down on failure).
+ 
+ @module
  */
 
 import { randomBytes, } from 'node:crypto';
@@ -35,7 +35,7 @@ import {
 import { selectBackend, } from '@monochromatic-dev/cli-mvm/ts/backend/registry.ts';
 
 /**
- * Whether a token is present to run the live, billed flow.
+ Whether a token is present to run the live, billed flow.
  */
 const HAS_TOKEN = ((typeof process.env.HCLOUD_TOKEN) === 'string')
   && (process.env.HCLOUD_TOKEN !== '');

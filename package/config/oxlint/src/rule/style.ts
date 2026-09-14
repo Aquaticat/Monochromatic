@@ -1,20 +1,20 @@
 /**
- * Style and pedantic rule configuration.
- *
- * Rules governing code style preferences, formatting conventions,
- * and pedantic checks that improve consistency but have legitimate
- * exceptions in certain contexts.
- *
- * @example
- * ```typescript
- * import { styleRules } from './rule/style.ts';
- * ```
+ Style and pedantic rule configuration.
+ 
+ Rules governing code style preferences, formatting conventions,
+ and pedantic checks that improve consistency but have legitimate
+ exceptions in certain contexts.
+ 
+ @example
+ ```typescript
+ import { styleRules } from './rule/style.ts';
+ ```
  */
 
 import type { DummyRuleMap, } from 'oxlint';
 
 /**
- * Style and pedantic rules.
+ Style and pedantic rules.
  */
 export const styleRules: DummyRuleMap = {
   //region pedantic
@@ -182,6 +182,14 @@ export const styleRules: DummyRuleMap = {
 
   'import/no-named-export': 'off',
   'import/no-namespace': 'off',
+
+  //region stylistic: comment layout
+  // TSDoc body lines omit canonical `* ` prefixes while retaining one-space block indentation.
+  'stylistic/require-asterisk-prefix': [
+    'warn',
+    'never',
+  ],
+  //endregion stylistic: comment layout
 
   //region stylistic: one-item-per-line enforcement
   'stylistic/param-per-line': 'warn',

@@ -8,7 +8,8 @@ Marks sockets from selected cgroups so policy routing can keep application traff
 This loader applies that mark to sockets created in Ghostty,
  Steam,
  Helium,
- and Pale Moon cgroups without enumerating their destination IPs.
+ Pale Moon,
+ and Firefox Nightly cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -44,7 +45,8 @@ wg-quicker-exempt detach <cgroup-dir>...
 List Ghostty,
  Steam,
  Helium,
- and Pale Moon targets without attaching:
+ Pale Moon,
+ and Firefox Nightly targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -118,8 +120,9 @@ The same failure affected maps,
  programs,
  and links at root and nested bpffs paths.
 
-An upstream fix moves the SELinux `SBLABEL_MNT` check before inode security-state initialization and requests stable
-backports.
+Upstream commit `28254722a459938d97150d3b0712b81e06d0645e` moves the SELinux `SBLABEL_MNT` check before
+inode security-state initialization.
+Kernel `7.2.0-ogc6.1.fc44.x86_64` was observed pinning all four links successfully.
 The loader reports the affected regression commit when `BPF_OBJ_PIN` returns `EINVAL`,
  then automatically uses its
 crash-recoverable descriptor keeper.
@@ -147,18 +150,27 @@ candidate replacement,
  committed and uncommitted transition recovery,
  removed cgroups,
  and wrong-owner cleanup retention.
-On an affected kernel,
- the same tests exercise the descriptor-keeper fallback.
+Fallback-specific debug functional tests inject same typed `BPF_OBJ_PIN EINVAL` boundary,
+so every kernel exercises descriptor-keeper behavior deterministically.
+Separate public-CLI lifecycle coverage uses current kernel's native pin path.
+Release builds omit injection seam.
 
 ## Caveats
 
 - Only socket operations occurring after attachment receive the mark.
 - Every new cgroup needs its own attachment.
-   Detached application watcher owns Ghostty and Steam enumeration,
-   future-cgroup inotify coverage,
-   and Helium and Pale Moon process rescans.
+   Detached application watcher owns Ghostty,
+   Steam,
+   Helium,
+   and Firefox Nightly service enumeration plus future-cgroup inotify coverage.
+   It periodically rescans Helium,
+   Pale Moon,
+   and Firefox Nightly processes.
+   Firefox Nightly matching accepts exact `firefox` and `firefox-bin` names only under a `firefox-nightly` directory.
 - Process discovery attaches entire current cgroup.
-   If Helium or Pale Moon shares that cgroup with another process,
+   If Helium,
+   Pale Moon,
+   or Firefox Nightly shares that cgroup with another process,
    every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
 - A newly started process-discovered application can create sockets before next periodic rescan,
    whose interval is 250 milliseconds.

@@ -11,13 +11,13 @@ import type {
 import { walk, } from '../walk.ts';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD026';
 
 /**
- * Punctuation banned at the end of a heading, matching the repo's
- * `.markdownlint-cli2.jsonc` `punctuation: ".:"` setting.
+ Punctuation banned at the end of a heading, matching the repo's
+ `.markdownlint-cli2.jsonc` `punctuation: ".:"` setting.
  */
 const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set([
   '.',
@@ -25,15 +25,15 @@ const TRAILING_PUNCTUATION: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Count of banned punctuation characters at the end of a string.
- *
- * @param value - text to inspect
- *
- * @returns length of the trailing punctuation run
+ Count of banned punctuation characters at the end of a string.
+ 
+ @param value - text to inspect
+ 
+ @returns length of the trailing punctuation run
  */
 function trailingPunctuationLength(value: string,): number {
   /**
-   * Number of trailing punctuation characters counted so far.
+   Number of trailing punctuation characters counted so far.
    */
   let count = 0;
   for (let index = value.length - 1; index >= 0; index -= 1) {
@@ -46,17 +46,17 @@ function trailingPunctuationLength(value: string,): number {
 }
 
 /**
- * Flag headings whose text ends in banned punctuation and attach a fix that
- * strips the trailing run. The edit lands on the heading's last `text` node, so
- * punctuation inside trailing emphasis (`**Done:**`) is stripped correctly.
- *
- * @param tree - mdast tree under lint
- *
- * @returns one diagnostic per heading ending in punctuation
+ Flag headings whose text ends in banned punctuation and attach a fix that
+ strips the trailing run. The edit lands on the heading's last `text` node, so
+ punctuation inside trailing emphasis (`**Done:**`) is stripped correctly.
+ 
+ @param tree - mdast tree under lint
+ 
+ @returns one diagnostic per heading ending in punctuation
  */
 function checkNoTrailingPunctuation({ tree, }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Diagnostics collected across the walk.
+   Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
   for (const { node, } of walk(tree,)) {
@@ -64,7 +64,7 @@ function checkNoTrailingPunctuation({ tree, }: RuleContext,): readonly Diagnosti
       continue;
     }
     /**
-     * The heading's last text node, where any trailing punctuation lives.
+     The heading's last text node, where any trailing punctuation lives.
      */
     const last = textNodes(node,)
       .at(-1,);
@@ -72,14 +72,14 @@ function checkNoTrailingPunctuation({ tree, }: RuleContext,): readonly Diagnosti
       continue;
     }
     /**
-     * Length of the trailing punctuation run on that text node.
+     Length of the trailing punctuation run on that text node.
      */
     const runLength = trailingPunctuationLength(last.value,);
     if (runLength === 0) {
       continue;
     }
     /**
-     * Source offsets of the last text node.
+     Source offsets of the last text node.
      */
     const { end, } = offsetsOf(last,);
     diagnostics.push(diagnose({
@@ -97,8 +97,8 @@ function checkNoTrailingPunctuation({ tree, }: RuleContext,): readonly Diagnosti
 }
 
 /**
- * MD026 no-trailing-punctuation: headings must not end with `.` or `:`.
- * Fixable: strips the trailing punctuation.
+ MD026 no-trailing-punctuation: headings must not end with `.` or `:`.
+ Fixable: strips the trailing punctuation.
  */
 export const noTrailingPunctuation: Rule = {
   id: ID,

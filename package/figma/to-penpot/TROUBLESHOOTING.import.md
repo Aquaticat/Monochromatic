@@ -22,7 +22,8 @@ Upload a generated `.penpot` file to a running Penpot instance at
 - URL:
    `https://penpot.c.aquati.cat`
 - Credentials:
-   `an@aquati.cat` / `uhb\u201cM2Ry;B]0Mq[Fs3` (password contains a Unicode left double quotation mark U+201C)
+   not stored in this repository;
+   obtain current account details through secret management
 - Team ID:
    `30932f05-8350-819c-8007-540c98666896`
 - Default project ID:
@@ -42,38 +43,25 @@ Upload a generated `.penpot` file to a running Penpot instance at
 
 ### 1. Penpot API login via curl/transit+json
 
-Sent `POST /api/main/methods/login-with-password` with transit+json encoded
-body `["^ ","~:email","an@aquati.cat","~:password",...]`.
+Sent `POST /api/main/methods/login-with-password` with a transit+json encoded
+body containing account-email and password placeholders.
 
 **Result**:
- `400 wrong-credentials` for every password encoding variant:
+ `400 wrong-credentials` for every quote-encoding variant tested against the
+then-current secret.
+ Literal credentials and attempted variants have been removed because this
+repository is public.
 
-- Raw ASCII double quote:
-   `uhb"M2Ry;B]0Mq[Fs3`
-- Unicode left double quotation mark (U+201C):
-   `uhb\u201cM2Ry;B]0Mq[Fs3`
-- Unicode right double quotation mark (U+201D):
-   `uhb\u201dM2Ry;B]0Mq[Fs3`
-- Escaped double quote:
-   `uhb\"M2Ry;B]0Mq[Fs3`
-- Single quote:
-   `uhb'M2Ry;B]0Mq[Fs3`
-
-**Root cause**:
- The password likely contains a Unicode smart quote that gets
-mangled in transit encoding,
- or Penpot's password hashing does not match the
-raw bytes sent.
- The browseros browser IS logged in (get-profile returns the
-real profile),
- so the credentials work in the UI.
+**Root cause considered at the time**:
+ Secret text encoding could have changed the bytes received by Penpot,
+ or the submitted bytes did not match the stored password hash.
+ The browseros browser was already authenticated,
+ so its session remained usable in the UI.
 
 **Possible fix**:
- Intercept the actual login request from the browser using
-CDP Network.
-requestWillBeSent to capture the exact transit-encoded body that
-the frontend sends,
- then replay it with curl.
+ Intercept a login request from the browser using
+CDP `Network.requestWillBeSent` to capture the exact transit-encoded body,
+ then replay its structure with current credentials loaded from secret management.
 
 ### 2. Browser file input click
 

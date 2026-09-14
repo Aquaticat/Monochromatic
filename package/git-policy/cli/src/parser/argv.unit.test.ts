@@ -10,13 +10,13 @@ import {
 } from './argv.ts';
 
 /**
- * Parse returned instead of refusing, which every refusal test rejects.
+ Parse returned instead of refusing, which every refusal test rejects.
  */
 const NO_REFUSAL: unique symbol = Symbol('parse returned without refusing',);
 
 /**
- * Declared surface mirroring the optique parser this module replaced, used to
- * pin behavior observed from `@optique/core` 1.1.1 before the migration.
+ Declared surface mirroring the optique parser this module replaced, used to
+ pin behavior observed from `@optique/core` 1.1.1 before the migration.
  */
 const spec: ArgvSpec = {
   flags: { allFlags: { names: [
@@ -30,15 +30,15 @@ const spec: ArgvSpec = {
 };
 
 /**
- * Parses one region against the shared declared surface.
- *
- * @param args - exact argv region
- *
- * @returns compact facts comparable with observed optique output
+ Parses one region against the shared declared surface.
+ 
+ @param args - exact argv region
+ 
+ @returns compact facts comparable with observed optique output
  */
 function parse(args: readonly string[],) {
   /**
-   * Parsed region facts.
+   Parsed region facts.
    */
   const result = parseArgv({
     args,
@@ -215,7 +215,7 @@ await describe({
       name: 'names the offending token and region when refusing',
       fn: async function testRefusalDetail() {
         /**
-         * Refusal captured from a value option missing its value.
+         Refusal captured from a value option missing its value.
          */
         const caught = (function captureRefusal() {
           try {

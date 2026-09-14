@@ -1,15 +1,15 @@
 /**
- * Replace (or extend into) an existing value in the block tree for {@link tomlSet}.
- *
- * Descends through standard-table bodies and array-of-tables instances to the
- * addressed key-value, then delegates value-node descent (arrays, inline tables)
- * to {@link replaceInValue} in `set-value-inline.ts`, returning a fresh block
- * list with that value replaced. An edited array/inline table is marked
- * synthetic so it re-renders canonically; the enclosing key-value's key line
- * stays clean. Returns {@link NOT_SET} when the path is not an existing value
- * (the caller then creates or table-replaces).
- *
- * @module
+ Replace (or extend into) an existing value in the block tree for {@link tomlSet}.
+ 
+ Descends through standard-table bodies and array-of-tables instances to the
+ addressed key-value, then delegates value-node descent (arrays, inline tables)
+ to {@link replaceInValue} in `set-value-inline.ts`, returning a fresh block
+ list with that value replaced. An edited array/inline table is marked
+ synthetic so it re-renders canonically; the enclosing key-value's key line
+ stays clean. Returns {@link NOT_SET} when the path is not an existing value
+ (the caller then creates or table-replaces).
+ 
+ @module
  */
 
 import { buildValueFromInput, } from './build-input.ts';
@@ -29,14 +29,14 @@ import type {
 } from './types.ts';
 
 /**
- * Replace the existing value at `path` within `blocks`.
- *
- * @returns Fresh blocks, or {@link NOT_SET} when the path has no existing value.
- *
- * @example
- * ```ts
- * replaceExistingValue({ blocks, path: ['a','x'], value: 2, options, },);
- * ```
+ Replace the existing value at `path` within `blocks`.
+ 
+ @returns Fresh blocks, or {@link NOT_SET} when the path has no existing value.
+ 
+ @example
+ ```ts
+ replaceExistingValue({ blocks, path: ['a','x'], value: 2, options, },);
+ ```
  */
 export function replaceExistingValue(
   {
@@ -53,7 +53,7 @@ export function replaceExistingValue(
 ): readonly Block[] | typeof NOT_SET {
   for (const [index, block,] of blocks.entries()) {
     /**
-     * Replacement block if this one owns the path, else the not-set sentinel.
+     Replacement block if this one owns the path, else the not-set sentinel.
      */
     const replaced = replaceInBlock({
       block,
@@ -71,9 +71,9 @@ export function replaceExistingValue(
 }
 
 /**
- * Attempt to replace the value at `path` within a single block.
- *
- * @returns Replacement block, or {@link NOT_SET}.
+ Attempt to replace the value at `path` within a single block.
+ 
+ @returns Replacement block, or {@link NOT_SET}.
  */
 function replaceInBlock(
   {
@@ -100,12 +100,12 @@ function replaceInBlock(
     !== 'table')
     return NOT_SET;
   /**
-   * Header path length; a strict prefix means the target lives in the body.
+   Header path length; a strict prefix means the target lives in the body.
    */
   const headerLen = block.headerSegments
     .length;
   /**
-   * For array instances the next segment must select this instance's index.
+   For array instances the next segment must select this instance's index.
    */
   const bodyPathStart = block.tableKind
     === 'array' ? headerLen + 1 : headerLen;
@@ -120,7 +120,7 @@ function replaceInBlock(
     + 1)))
     return NOT_SET;
   /**
-   * Body result after descending with the remaining path segments.
+   Body result after descending with the remaining path segments.
    */
   const newBody = replaceExistingValue({
     blocks: block.body,
@@ -137,9 +137,9 @@ function replaceInBlock(
 }
 
 /**
- * Attempt to replace the value at `path` within a key-value.
- *
- * @returns Replacement key-value, or {@link NOT_SET}.
+ Attempt to replace the value at `path` within a key-value.
+ 
+ @returns Replacement key-value, or {@link NOT_SET}.
  */
 function replaceInKeyValue(
   {
@@ -172,7 +172,7 @@ function replaceInKeyValue(
     };
   }
   /**
-   * Value after descending the remaining segments into the current value.
+   Value after descending the remaining segments into the current value.
    */
   const newValue = replaceInValue({
     value: kv.value,

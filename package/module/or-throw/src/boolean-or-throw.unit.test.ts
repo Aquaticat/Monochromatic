@@ -1,7 +1,7 @@
 /**
- * Tests for `booleanOrThrow`.
- *
- * @module
+ Tests for `booleanOrThrow`.
+ 
+ @module
  */
 
 import {

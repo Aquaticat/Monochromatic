@@ -1,7 +1,7 @@
 /**
- * Claude Code title entries for search, web, notebook, LSP, and discovery tools.
- *
- * @module
+ Claude Code title entries for search, web, notebook, LSP, and discovery tools.
+ 
+ @module
  */
 
 import {
@@ -17,17 +17,17 @@ import {
 //region AskUserQuestion helpers
 
 /**
- * Checks whether title formatter result is text-missing sentinel.
- *
- * @param value - because formatter result can be title text or sentinel
- *
- * @returns whether value is text-missing sentinel
- *
- * @example
- * ```ts
- * isToolTitleTextMissing(TOOL_TITLE_TEXT_MISSING);
- * // true
- * ```
+ Checks whether title formatter result is text-missing sentinel.
+ 
+ @param value - because formatter result can be title text or sentinel
+ 
+ @returns whether value is text-missing sentinel
+ 
+ @example
+ ```ts
+ isToolTitleTextMissing(TOOL_TITLE_TEXT_MISSING);
+ // true
+ ```
  */
 function isToolTitleTextMissing(
   value: string | typeof TOOL_TITLE_TEXT_MISSING,
@@ -37,18 +37,18 @@ function isToolTitleTextMissing(
 }
 
 /**
- * Tests whether object owns a question field.
- *
- * @param value - Runtime question candidate.
- *
- * @returns whether question field exists directly on candidate.
- *
- * @mutates value - `Object.hasOwn` may invoke caller-owned proxy hooks.
- *
- * @example
- * ```ts
- * hasOwnQuestion({ question: 'Continue?' });
- * ```
+ Tests whether object owns a question field.
+ 
+ @param value - Runtime question candidate.
+ 
+ @returns whether question field exists directly on candidate.
+ 
+ @mutates value - `Object.hasOwn` may invoke caller-owned proxy hooks.
+ 
+ @example
+ ```ts
+ hasOwnQuestion({ question: 'Continue?' });
+ ```
  */
 function hasOwnQuestion(value: object,): value is { readonly question: unknown; } {
   return Object.hasOwn(
@@ -58,31 +58,31 @@ function hasOwnQuestion(value: object,): value is { readonly question: unknown; 
 }
 
 /**
- * Extracts first question text from AskUserQuestion input.
- *
- * @param input - because AskUserQuestion nests text inside questions array
- *
- * @returns first question string or text-missing sentinel when input shape is absent
- *
- * @example
- * ```ts
- * firstQuestionText({ questions: [{ question: 'Continue?' }] });
- * // 'Continue?'
- * ```
+ Extracts first question text from AskUserQuestion input.
+ 
+ @param input - because AskUserQuestion nests text inside questions array
+ 
+ @returns first question string or text-missing sentinel when input shape is absent
+ 
+ @example
+ ```ts
+ firstQuestionText({ questions: [{ question: 'Continue?' }] });
+ // 'Continue?'
+ ```
  */
 function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_TEXT_MISSING {
   /**
-   * Candidate questions value from tool input.
+   Candidate questions value from tool input.
    */
   const { questions, } = input;
   if (!Array.isArray(questions,))
     return TOOL_TITLE_TEXT_MISSING;
   /**
-   * Questions narrowed to unknown entries before destructuring.
+   Questions narrowed to unknown entries before destructuring.
    */
   const unknownQuestions: readonly unknown[] = questions;
   /**
-   * First question candidate.
+   First question candidate.
    */
   const [first,] = unknownQuestions;
   if ((first === null) || ((typeof first) !== 'object'))
@@ -90,7 +90,7 @@ function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_T
   if (!hasOwnQuestion(first,))
     return TOOL_TITLE_TEXT_MISSING;
   /**
-   * Question text from first question object.
+   Question text from first question object.
    */
   const { question, } = first;
   if ((typeof question) === 'string')
@@ -103,17 +103,17 @@ function firstQuestionText(input: ToolTitleInput,): string | typeof TOOL_TITLE_T
 //region URL helpers
 
 /**
- * Formats URL host for title text.
- *
- * @param url - because WebFetch titles should show destination host
- *
- * @returns URL hostname or generic URL text when parsing fails
- *
- * @example
- * ```ts
- * webFetchValue('https://example.com/a');
- * // 'example.com'
- * ```
+ Formats URL host for title text.
+ 
+ @param url - because WebFetch titles should show destination host
+ 
+ @returns URL hostname or generic URL text when parsing fails
+ 
+ @example
+ ```ts
+ webFetchValue('https://example.com/a');
+ // 'example.com'
+ ```
  */
 function webFetchValue(url: string,): string {
   if (!URL.canParse(url,))
@@ -124,7 +124,7 @@ function webFetchValue(url: string,): string {
 //endregion URL helpers
 
 /**
- * Built-in tool names held in the search registry segment.
+ Built-in tool names held in the search registry segment.
  */
 type SearchToolTitleName =
   | 'WebSearch'
@@ -136,7 +136,7 @@ type SearchToolTitleName =
   | 'ToolSearch';
 
 /**
- * Title entries for search, web, notebook, LSP, skill, and discovery tools.
+ Title entries for search, web, notebook, LSP, skill, and discovery tools.
  */
 const SEARCH_TOOL_TITLES: Record<SearchToolTitleName, ToolTitleEntry> = {
   WebSearch: textTitleEntry({
@@ -160,7 +160,7 @@ const SEARCH_TOOL_TITLES: Record<SearchToolTitleName, ToolTitleEntry> = {
       tense,
     }): string | typeof TOOL_TITLE_TEXT_MISSING {
       /**
-       * First question text from nested input.
+       First question text from nested input.
        */
       const question = firstQuestionText(input,);
       if (isToolTitleTextMissing(question,))

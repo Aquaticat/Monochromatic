@@ -1,16 +1,18 @@
 /**
- * File transfer tool definitions: push and pull.
- * @module
+ File transfer tool definitions: push and pull.
+ @module
  */
 import {
   defineTool,
+  strictArguments,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
 import {
-  BACKEND_PROPERTY,
+  BACKEND_ARGUMENT,
   backendFromArgs,
 } from './backend.ts';
+import { requiredString, } from './tool-arguments.ts';
 import {
   errorResponse,
   textResponse,
@@ -20,53 +22,36 @@ import { requiredStringArgument, } from './required-string-argument.ts';
 //region Transfer tools: move files between host and guest VMs
 
 /**
- * MCP tool: push a file from the host into a running VM, on the backend
- * resolved via {@link backendFromArgs}.
+ MCP tool: push a file from the host into a running VM, on the backend
+ resolved via {@link backendFromArgs}.
  */
 export const pushTool: ToolEntry = defineTool({
   name: 'push_to_vm',
   entry: {
     description:
       'Pushes a file from the host filesystem into a running VM. libvirt writes via the virtiofs shared mount; hetzner copies to the given absolute remote path over SCP.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to push to',
-        },
-        hostPath: {
-          type: 'string',
-          description: 'Absolute or relative path on the host to read from',
-        },
-        guestPath: {
-          type: 'string',
-          description: 'Absolute path inside the guest to write to',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: [
-        'name',
-        'hostPath',
-        'guestPath',
-      ],
-    },
+    schema: strictArguments({
+      name: requiredString('VM name to push to',),
+      hostPath: requiredString('Absolute or relative path on the host to read from',),
+      guestPath: requiredString('Absolute path inside the guest to write to',),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handlePushToVm(args,) {
       /**
-       * Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
+       Target VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Host source path validated as string for the same reason as `name`.
+       Host source path validated as string for the same reason as `name`.
        */
       const hostPath = requiredStringArgument(args.hostPath,);
       /**
-       * Guest destination path validated as string for the same reason as `name`.
+       Guest destination path validated as string for the same reason as `name`.
        */
       const guestPath = requiredStringArgument(args.guestPath,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         await backend.pushFile({
@@ -87,64 +72,47 @@ export const pushTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: pull a file from a running VM to the host, on the backend
- * resolved via {@link backendFromArgs}.
+ MCP tool: pull a file from a running VM to the host, on the backend
+ resolved via {@link backendFromArgs}.
  */
 export const pullTool: ToolEntry = defineTool({
   name: 'pull_from_vm',
   entry: {
     description:
       'Pulls a file from a running VM to the host filesystem. libvirt reads via the virtiofs shared mount; hetzner copies from the given absolute remote path over SCP.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to pull from',
-        },
-        guestPath: {
-          type: 'string',
-          description: 'Absolute path inside the guest to read from',
-        },
-        hostPath: {
-          type: 'string',
-          description: 'Absolute or relative path on the host to write to',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: [
-        'name',
-        'guestPath',
-        'hostPath',
-      ],
-    },
+    schema: strictArguments({
+      name: requiredString('VM name to pull from',),
+      guestPath: requiredString('Absolute path inside the guest to read from',),
+      hostPath: requiredString('Absolute or relative path on the host to write to',),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handlePullFromVm(args,) {
       /**
-       * Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
+       Source VM name validated as string so downstream calls receive a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Guest source path validated as string for the same reason as `name`.
+       Guest source path validated as string for the same reason as `name`.
        */
       const guestPath = requiredStringArgument(args.guestPath,);
       /**
-       * Host destination path validated as string for the same reason as `name`.
+       Host destination path validated as string for the same reason as `name`.
        */
       const hostPath = requiredStringArgument(args.hostPath,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Raw file bytes pulled from the guest, written to the host below.
+         Raw file bytes pulled from the guest, written to the host below.
          */
         const content = await backend.pullFile({
           name,
           guestPath,
         },);
         /**
-         * Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path.
+         Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path.
          */
         const { writeFile, } = await import('node:fs/promises');
         await writeFile(

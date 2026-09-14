@@ -1,7 +1,7 @@
 /**
- * Catalan fragment renderer factory.
- *
- * @module
+ Catalan fragment renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -21,7 +21,7 @@ import {
 } from './types.ts';
 
 /**
- * Dependency bundle for {@link makeCatalanFragmentRenderer}.
+ Dependency bundle for {@link makeCatalanFragmentRenderer}.
  */
 type FragmentDeps<L extends string, S extends string, V extends string,
   N extends string,> = {
@@ -35,13 +35,13 @@ type FragmentDeps<L extends string, S extends string, V extends string,
   };
 
 /**
- * Picks the Catalan non-finite verb surface for a verb-phrase fragment.
- *
- * @param entry - Catalan verb entry
- *
- * @param form - requested non-finite form
- *
- * @returns non-finite surface
+ Picks the Catalan non-finite verb surface for a verb-phrase fragment.
+ 
+ @param entry - Catalan verb entry
+ 
+ @param form - requested non-finite form
+ 
+ @returns non-finite surface
  */
 function nonFiniteSurface(
   {
@@ -62,13 +62,13 @@ function nonFiniteSurface(
 }
 
 /**
- * Capitalizes a fragment surface using Catalan case-invariants.
- *
- * @param text - rendered surface
- *
- * @param mode - capitalization mode
- *
- * @returns capitalized surface
+ Capitalizes a fragment surface using Catalan case-invariants.
+ 
+ @param text - rendered surface
+ 
+ @param mode - capitalization mode
+ 
+ @returns capitalized surface
  */
 function capitalize(
   {
@@ -87,16 +87,16 @@ function capitalize(
 }
 
 /**
- * Builds a Catalan fragment renderer.
- *
- * @param deps - dependencies
- *
- * @returns render function for fragments
- *
- * @example
- * ```ts
- * const renderFragment = makeCatalanFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
- * ```
+ Builds a Catalan fragment renderer.
+ 
+ @param deps - dependencies
+ 
+ @returns render function for fragments
+ 
+ @example
+ ```ts
+ const renderFragment = makeCatalanFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
+ ```
  */
 export function makeCatalanFragmentRenderer<
   L extends string,
@@ -107,7 +107,7 @@ export function makeCatalanFragmentRenderer<
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
   /**
-   * Destructured locale dependencies captured for use across every sub-renderer below.
+   Destructured locale dependencies captured for use across every sub-renderer below.
    */
   const {
     labels,
@@ -118,29 +118,29 @@ export function makeCatalanFragmentRenderer<
   } = deps;
 
   /**
-   * Renders a verb-phrase fragment using the requested non-finite form.
-   *
-   * @param fragment - verb-phrase fragment AST
-   *
-   * @returns rendered surface
+   Renders a verb-phrase fragment using the requested non-finite form.
+   
+   @param fragment - verb-phrase fragment AST
+   
+   @returns rendered surface
    */
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /**
-     * Verb entry referenced by every non-finite branch.
+     Verb entry referenced by every non-finite branch.
      */
     const entry = verbs[fragment.phrase
       .verb];
     /**
-     * Non-finite surface for the requested form.
+     Non-finite surface for the requested form.
      */
     const head = nonFiniteSurface({
       entry,
       form: fragment.form,
     },);
     /**
-     * Rendered object surface; empty string when absent.
+     Rendered object surface; empty string when absent.
      */
     const object = fragment.phrase
       .object
@@ -149,7 +149,7 @@ export function makeCatalanFragmentRenderer<
       : renderNounPhrase(fragment.phrase
         .object,);
     /**
-     * Rendered infinitive complement; empty string when absent.
+     Rendered infinitive complement; empty string when absent.
      */
     const complement = fragment.phrase
       .complement
@@ -159,12 +159,12 @@ export function makeCatalanFragmentRenderer<
         .complement
         .phrase,);
     /**
-     * Rendered adverbial cluster; empty string when none.
+     Rendered adverbial cluster; empty string when none.
      */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
     /**
-     * Joined surface before capitalization fixup.
+     Joined surface before capitalization fixup.
      */
     const body = joinTokens([
       head,
@@ -180,11 +180,11 @@ export function makeCatalanFragmentRenderer<
   }
 
   /**
-   * Renders a single sequence part.
-   *
-   * @param part - part AST
-   *
-   * @returns rendered surface
+   Renders a single sequence part.
+   
+   @param part - part AST
+   
+   @returns rendered surface
    */
   function renderPart(
     part: Extract<Fragment<L, S, V, N>, { kind: 'fragment.sequence'; }>['parts'][number],
@@ -199,11 +199,11 @@ export function makeCatalanFragmentRenderer<
   }
 
   /**
-   * Renders a fragment AST by dispatching on `kind`.
-   *
-   * @param fragment - fragment AST
-   *
-   * @returns rendered surface
+   Renders a fragment AST by dispatching on `kind`.
+   
+   @param fragment - fragment AST
+   
+   @returns rendered surface
    */
   function renderFragment(fragment: Fragment<L, S, V, N>,): string {
     if (fragment.kind
@@ -218,7 +218,7 @@ export function makeCatalanFragmentRenderer<
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
     /**
-     * Rendered sequence parts space-joined.
+     Rendered sequence parts space-joined.
      */
     const joined = fragment
       .parts

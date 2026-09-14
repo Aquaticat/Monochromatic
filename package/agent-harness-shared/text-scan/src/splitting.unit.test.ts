@@ -36,11 +36,11 @@ await describe({
       name: 'tokenises a very large input in linear time',
       fn: async () => {
         /**
-         * Token count large enough that an array-spread accumulator would stall.
+         Token count large enough that an array-spread accumulator would stall.
          */
         const count = 200_000;
         /**
-         * Result of tokenising `count` single-character tokens separated by spaces.
+         Result of tokenising `count` single-character tokens separated by spaces.
          */
         const result = splitWhitespace('a '.repeat(count,),);
         expect(result.length,).toBe(count,);

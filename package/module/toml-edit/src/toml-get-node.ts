@@ -1,7 +1,7 @@
 /**
- * {@link tomlGetNode}: read the parse-time AST node at a path.
- *
- * @module
+ {@link tomlGetNode}: read the parse-time AST node at a path.
+ 
+ @module
  */
 
 import type { AST, } from 'toml-eslint-parser';
@@ -18,21 +18,21 @@ import type {
 } from './types.ts';
 
 /**
- * Return the parse-time AST node at `path`.
- *
- * Power-user escape hatch: it returns the retained AST node of a clean
- * (unmutated) node. A path created or edited by a mutation has no parse-time
- * node, so {@link TomlPathNotFoundError} is thrown; {@link tomlGetValue} returns
- * the current value instead.
- *
- * @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | readonly AST.TOMLTable[]`).
- *
- * @throws {@link TomlPathNotFoundError} when `path` has no clean parse-time node.
- *
- * @example
- * ```ts
- * const node = tomlGetNode({ edit, path: ['tools', 'bun',], },);
- * ```
+ Return the parse-time AST node at `path`.
+ 
+ Power-user escape hatch: it returns the retained AST node of a clean
+ (unmutated) node. A path created or edited by a mutation has no parse-time
+ node, so {@link TomlPathNotFoundError} is thrown; {@link tomlGetValue} returns
+ the current value instead.
+ 
+ @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | readonly AST.TOMLTable[]`).
+ 
+ @throws {@link TomlPathNotFoundError} when `path` has no clean parse-time node.
+ 
+ @example
+ ```ts
+ const node = tomlGetNode({ edit, path: ['tools', 'bun',], },);
+ ```
  */
 export function tomlGetNode(
   {
@@ -44,7 +44,7 @@ export function tomlGetNode(
   },
 ): AST.TOMLContentNode | AST.TOMLTable | readonly AST.TOMLTable[] {
   /**
-   * Structural location so a clean node's retained AST node can surface.
+   Structural location so a clean node's retained AST node can surface.
    */
   const located = locateValueNode({
     blocks: edit.blocks,
@@ -95,16 +95,16 @@ export function tomlGetNode(
 }
 
 /**
- * Narrow a retained parse-time node to a {@link AST.TOMLContentNode}, throwing
- * when the node kind does not match (rather than asserting the type).
- *
- * @param node - Retained parse-time node whose `.type` is checked at runtime.
- *
- * @param path - Requested path, used only to build the not-found error.
- *
- * @returns Content node (value, array, or inline table).
- *
- * @throws {@link TomlPathNotFoundError} when `node` is not a content node.
+ Narrow a retained parse-time node to a {@link AST.TOMLContentNode}, throwing
+ when the node kind does not match (rather than asserting the type).
+ 
+ @param node - Retained parse-time node whose `.type` is checked at runtime.
+ 
+ @param path - Requested path, used only to build the not-found error.
+ 
+ @returns Content node (value, array, or inline table).
+ 
+ @throws {@link TomlPathNotFoundError} when `node` is not a content node.
  */
 function asContentNode(
   {
@@ -126,16 +126,16 @@ function asContentNode(
 }
 
 /**
- * Narrow a retained parse-time node to a {@link AST.TOMLTable}, throwing when the
- * node kind does not match (rather than asserting the type).
- *
- * @param node - Retained parse-time node whose `.type` is checked at runtime.
- *
- * @param path - Requested path, used only to build the not-found error.
- *
- * @returns Table node.
- *
- * @throws {@link TomlPathNotFoundError} when `node` is not a table.
+ Narrow a retained parse-time node to a {@link AST.TOMLTable}, throwing when the
+ node kind does not match (rather than asserting the type).
+ 
+ @param node - Retained parse-time node whose `.type` is checked at runtime.
+ 
+ @param path - Requested path, used only to build the not-found error.
+ 
+ @returns Table node.
+ 
+ @throws {@link TomlPathNotFoundError} when `node` is not a table.
  */
 function asTable(
   {
@@ -153,9 +153,9 @@ function asTable(
 }
 
 /**
- * Build the not-found error for `path`.
- *
- * @returns Error to throw.
+ Build the not-found error for `path`.
+ 
+ @returns Error to throw.
  */
 function notFound({ path, }: { readonly path: TomlPath; },): TomlPathNotFoundError {
   return new TomlPathNotFoundError(

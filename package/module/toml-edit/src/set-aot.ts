@@ -1,11 +1,11 @@
 /**
- * Array-of-tables wholesale replace for {@link tomlSet}.
- *
- * Given the existing `[[foo]]` instances at a path, replace them with one
- * synthetic `[[foo]]` section per element of the array value. Passing `[]`
- * clears every instance.
- *
- * @module
+ Array-of-tables wholesale replace for {@link tomlSet}.
+ 
+ Given the existing `[[foo]]` instances at a path, replace them with one
+ synthetic `[[foo]]` section per element of the array value. Passing `[]`
+ clears every instance.
+ 
+ @module
  */
 
 import type {
@@ -22,17 +22,17 @@ import type {
 import { isPlainObject, } from './value-encoders.ts';
 
 /**
- * Replace the array-of-tables instances at `path` with `value`'s elements.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlTypeError} when `value` is not an array, or an element is not
- *         a plain object.
- *
- * @example
- * ```ts
- * doAotReplace({ edit, path: ['fruits'], value: [{ name: 'apple' }], },);
- * ```
+ Replace the array-of-tables instances at `path` with `value`'s elements.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlTypeError} when `value` is not an array, or an element is not
+         a plain object.
+ 
+ @example
+ ```ts
+ doAotReplace({ edit, path: ['fruits'], value: [{ name: 'apple' }], },);
+ ```
  */
 export function doAotReplace(
   {
@@ -53,13 +53,13 @@ export function doAotReplace(
     );
   }
   /**
-   * Header segments as strings so each new instance shares one header spelling.
+   Header segments as strings so each new instance shares one header spelling.
    */
   const header = path.map(function segmentText(segment,): string {
     return `${segment}`;
   },);
   /**
-   * One synthetic `[[header]]` block per array element.
+   One synthetic `[[header]]` block per array element.
    */
   const newTables: readonly TableNode[] = value.map(function each(
     el,
@@ -100,10 +100,10 @@ export function doAotReplace(
 }
 
 /**
- * Remove existing `[[header]]` instances and splice the new ones at the first
- * removed position (or at end when none existed).
- *
- * @returns Fresh block list.
+ Remove existing `[[header]]` instances and splice the new ones at the first
+ removed position (or at end when none existed).
+ 
+ @returns Fresh block list.
  */
 function spliceInstances(
   {
@@ -117,16 +117,16 @@ function spliceInstances(
   },
 ): readonly Block[] {
   /**
-   * True when a block is an existing array instance at the header path.
-   *
-   * @param block - Block tested for being an `[[header]]` instance.
-   *
-   * @returns Whether `block` is an array table whose header matches.
-   *
-   * @example
-   * ```ts
-   * isInstance(blocks[0],);
-   * ```
+   True when a block is an existing array instance at the header path.
+   
+   @param block - Block tested for being an `[[header]]` instance.
+   
+   @returns Whether `block` is an array table whose header matches.
+   
+   @example
+   ```ts
+   isInstance(blocks[0],);
+   ```
    */
   function isInstance(block: Block,): boolean {
     return (block.kind
@@ -145,19 +145,19 @@ function spliceInstances(
       },);
   }
   /**
-   * First existing-instance index so the replacements land in the same place.
+   First existing-instance index so the replacements land in the same place.
    */
   const firstIdx = blocks.findIndex(function atInstance(b,) {
     return isInstance(b,);
   },);
   /**
-   * Blocks with the old instances removed.
+   Blocks with the old instances removed.
    */
   const kept = blocks.filter(function keep(b,) {
     return !isInstance(b,);
   },);
   /**
-   * Insertion index within `kept`: everything before the first old instance is kept.
+   Insertion index within `kept`: everything before the first old instance is kept.
    */
   const insertAt = firstIdx === (-1) ? kept.length : firstIdx;
   return [

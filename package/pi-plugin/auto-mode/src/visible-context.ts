@@ -1,7 +1,7 @@
 /**
- * Complete user-visible session-message projection for judge context.
- *
- * @module
+ Complete user-visible session-message projection for judge context.
+ 
+ @module
  */
 
 import type {
@@ -24,26 +24,26 @@ import {
 } from './types.ts';
 
 /**
- * Session message union supplied by Pi branch entries.
+ Session message union supplied by Pi branch entries.
  */
 type SessionAgentMessage = SessionMessageEntry['message'];
 
 /**
- * JSON-compatible visible message projection.
+ JSON-compatible visible message projection.
  */
 type VisibleMessage = Readonly<Record<string, unknown>>;
 
 /**
- * Sentinel for session messages hidden from user transcript.
+ Sentinel for session messages hidden from user transcript.
  */
 const INVISIBLE_MESSAGE: unique symbol = Symbol('session message is hidden from user transcript',);
 
 /**
- * Copy complete visible text or image block without provider-only signatures.
- *
- * @param block - Pi text or image content block.
- *
- * @returns isolated visible content data.
+ Copy complete visible text or image block without provider-only signatures.
+ 
+ @param block - Pi text or image content block.
+ 
+ @returns isolated visible content data.
  */
 function visibleTextOrImageContent(
   block: ForeignBorrowed<TextContent | ImageContent>,
@@ -62,11 +62,11 @@ function visibleTextOrImageContent(
 }
 
 /**
- * Copy complete visible assistant block without provider-only signatures.
- *
- * @param block - Pi assistant content block.
- *
- * @returns isolated visible content data.
+ Copy complete visible assistant block without provider-only signatures.
+ 
+ @param block - Pi assistant content block.
+ 
+ @returns isolated visible content data.
  */
 function visibleAssistantContent(
   block: ForeignBorrowed<TextContent | ThinkingContent | ToolCall>,
@@ -87,11 +87,11 @@ function visibleAssistantContent(
 }
 
 /**
- * Copy string or visible text/image content in source order.
- *
- * @param content - User, tool-result, or custom-message content.
- *
- * @returns complete visible content data.
+ Copy string or visible text/image content in source order.
+ 
+ @param content - User, tool-result, or custom-message content.
+ 
+ @returns complete visible content data.
  */
 function visibleTextOrImageMessageContent(
   content: ForeignBorrowed<string | readonly (TextContent | ImageContent)[]>,
@@ -99,7 +99,7 @@ function visibleTextOrImageMessageContent(
   if ((typeof content) === 'string')
     return content;
   /**
-   * Isolated visible blocks in source order.
+   Isolated visible blocks in source order.
    */
   const visibleContent: VisibleMessage[] = [];
   for (const block of content)
@@ -108,17 +108,17 @@ function visibleTextOrImageMessageContent(
 }
 
 /**
- * Project one Pi message to fields visible in interactive transcript.
- *
- * Provider signatures,
- * token usage,
- * timestamps,
- * provider identity,
- * and hidden custom messages are omitted because user does not see them.
- *
- * @param message - Pi session message.
- *
- * @returns visible message data or hidden-message sentinel.
+ Project one Pi message to fields visible in interactive transcript.
+ 
+ Provider signatures,
+ token usage,
+ timestamps,
+ provider identity,
+ and hidden custom messages are omitted because user does not see them.
+ 
+ @param message - Pi session message.
+ 
+ @returns visible message data or hidden-message sentinel.
  */
 function visibleMessage(
   message: ForeignBorrowed<SessionAgentMessage>,
@@ -131,13 +131,13 @@ function visibleMessage(
   }
   if (message.role === 'assistant') {
     /**
-     * Complete visible assistant blocks in source order.
+     Complete visible assistant blocks in source order.
      */
     const content: VisibleMessage[] = [];
     for (const block of message.content)
       content[content.length] = visibleAssistantContent(block,);
     /**
-     * Whether Pi renders stop condition as visible assistant error.
+     Whether Pi renders stop condition as visible assistant error.
      */
     const showsStopReason = (message.stopReason === 'length')
       || (message.stopReason === 'aborted')
@@ -199,13 +199,13 @@ function visibleMessage(
 }
 
 /**
- * Attach guard verdict that Pi stores beside corresponding tool result.
- *
- * @param message - Visible tool-result data.
- *
- * @param verdict - Guard decision preceding tool result.
- *
- * @returns visible data plus safety decision context.
+ Attach guard verdict that Pi stores beside corresponding tool result.
+ 
+ @param message - Visible tool-result data.
+ 
+ @param verdict - Guard decision preceding tool result.
+ 
+ @returns visible data plus safety decision context.
  */
 function withGuardVerdict({
   message,
@@ -225,26 +225,26 @@ function withGuardVerdict({
 }
 
 /**
- * Sentinel when no guard verdict awaits tool result.
+ Sentinel when no guard verdict awaits tool result.
  */
 const NO_PENDING_VERDICT: unique symbol = Symbol('guard verdict is not awaiting tool result',);
 
 /**
- * Convert branch entries through same Pi projection used by transcript renderer.
- *
- * @param entries - Active Pi session branch.
- *
- * @returns complete visible messages in chronological order.
+ Convert branch entries through same Pi projection used by transcript renderer.
+ 
+ @param entries - Active Pi session branch.
+ 
+ @returns complete visible messages in chronological order.
  */
 function visibleMessages(
   entries: ForeignBorrowed<readonly SessionEntry[]>,
 ): readonly VisibleMessage[] {
   /**
-   * Complete visible messages in chronological order.
+   Complete visible messages in chronological order.
    */
   const messages: VisibleMessage[] = [];
   /**
-   * Guard verdict awaiting corresponding tool-result message.
+   Guard verdict awaiting corresponding tool-result message.
    */
   const pendingVerdict: { current: VerdictData | typeof NO_PENDING_VERDICT; } = {
     current: NO_PENDING_VERDICT,
@@ -256,13 +256,13 @@ function visibleMessages(
     }
     if (entry.type === 'message') {
       /**
-       * User-visible fields from current persisted message.
+       User-visible fields from current persisted message.
        */
       const projectedVisibleMessage = visibleMessage(entry.message,);
       if (projectedVisibleMessage === INVISIBLE_MESSAGE)
         continue;
       /**
-       * Persisted message role used to associate guard verdict.
+       Persisted message role used to associate guard verdict.
        */
       const { role, } = entry.message;
       if ((role === 'toolResult')
@@ -308,18 +308,18 @@ function visibleMessages(
 }
 
 /**
- * Locate latest user message in visible transcript.
- *
- * @param messages - Complete chronological visible messages.
- *
- * @returns latest user-message index or negative one.
+ Locate latest user message in visible transcript.
+ 
+ @param messages - Complete chronological visible messages.
+ 
+ @returns latest user-message index or negative one.
  */
 function latestUserMessageIndex(
   messages: readonly VisibleMessage[],
 ): number {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     /**
-     * Candidate visible message.
+     Candidate visible message.
      */
     const message = messages[index];
     if ((message !== undefined) && (message.role === 'user'))
@@ -329,28 +329,28 @@ function latestUserMessageIndex(
 }
 
 /**
- * Select larger of newest message floor and span from latest user message.
- *
- * @param messages - Complete chronological visible messages.
- *
- * @returns selected complete message window.
+ Select larger of newest message floor and span from latest user message.
+ 
+ @param messages - Complete chronological visible messages.
+ 
+ @returns selected complete message window.
  */
 function visibleMessageWindow(
   messages: readonly VisibleMessage[],
 ): readonly VisibleMessage[] {
   /**
-   * Latest visible user-message index.
+   Latest visible user-message index.
    */
   const latestUserIndex = latestUserMessageIndex(messages,);
   /**
-   * Earliest index retaining newest message floor.
+   Earliest index retaining newest message floor.
    */
   const floorStart = Math.max(
     0,
     messages.length - CONTEXT_MESSAGE_FLOOR,
   );
   /**
-   * Earlier start retains larger of both windows.
+   Earlier start retains larger of both windows.
    */
   const start = latestUserIndex === (-1)
     ? floorStart
@@ -359,12 +359,12 @@ function visibleMessageWindow(
       floorStart,
     );
   /**
-   * Isolated selected message references in source order.
+   Isolated selected message references in source order.
    */
   const selected: VisibleMessage[] = [];
   for (let index = start; index < messages.length; index += 1) {
     /**
-     * Selected visible message.
+     Selected visible message.
      */
     const message = messages[index];
     if (message !== undefined)
@@ -374,22 +374,22 @@ function visibleMessageWindow(
 }
 
 /**
- * Build canonical JSON for complete visible judge-context message window.
- *
- * @param entries - Active Pi session branch.
- *
- * @returns canonical request-only JSON transcript.
- *
- * @example
- * ```ts
- * buildVisibleContext(entries);
- * ```
+ Build canonical JSON for complete visible judge-context message window.
+ 
+ @param entries - Active Pi session branch.
+ 
+ @returns canonical request-only JSON transcript.
+ 
+ @example
+ ```ts
+ buildVisibleContext(entries);
+ ```
  */
 function buildVisibleContext(
   entries: ForeignBorrowed<readonly SessionEntry[]>,
 ): string {
   /**
-   * Complete selected visible message window.
+   Complete selected visible message window.
    */
   const selectedMessages = visibleMessageWindow(
     visibleMessages(entries,),

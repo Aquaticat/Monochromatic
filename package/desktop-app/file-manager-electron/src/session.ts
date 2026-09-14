@@ -1,13 +1,13 @@
 /**
- * The renderer session: model mutations, DOM re-render, and observed-state
- * reporting for boundary tests.
- *
- * @example
- * ```ts
- * renderAndReport({ session });
- * ```
- *
- * @packageDocumentation
+ The renderer session: model mutations, DOM re-render, and observed-state
+ reporting for boundary tests.
+ 
+ @example
+ ```ts
+ renderAndReport({ session });
+ ```
+ 
+ @packageDocumentation
  */
 
 import type {
@@ -35,46 +35,46 @@ import {
 } from './strip.js';
 
 /**
- * Tolerance in pixels when checking whether the root pane is pinned to the
- * scroller's top edge.
+ Tolerance in pixels when checking whether the root pane is pinned to the
+ scroller's top edge.
  */
 const PIN_EPSILON_PX = 1;
 
 /**
- * Mutable renderer session: the model, the DOM stores, and the strip element.
- *
- * @example
- * ```ts
- * // Created once by the renderer boot module.
- * ```
+ Mutable renderer session: the model, the DOM stores, and the strip element.
+ 
+ @example
+ ```ts
+ // Created once by the renderer boot module.
+ ```
  */
 export type RendererSession = {
   readonly bridge: FileManagerBridge;
   readonly stores: RendererStores;
 
   /**
-   * Current model snapshot; reassigned by every mutation.
+   Current model snapshot; reassigned by every mutation.
    */
   strip: Strip;
   readonly stripElement: HTMLElement;
 };
 
 /**
- * Counts pane pairs whose rendered boxes intersect; sticky flow must keep
- * this zero, and the boundary test asserts exactly that.
- *
- * @param session - Renderer session holding the pane elements.
- *
- * @returns Number of intersecting pane pairs.
- *
- * @example
- * ```ts
- * countOverlaps({ session });
- * ```
+ Counts pane pairs whose rendered boxes intersect; sticky flow must keep
+ this zero, and the boundary test asserts exactly that.
+ 
+ @param session - Renderer session holding the pane elements.
+ 
+ @returns Number of intersecting pane pairs.
+ 
+ @example
+ ```ts
+ countOverlaps({ session });
+ ```
  */
 function countOverlaps({ session, }: { readonly session: RendererSession; },): number {
   /**
-   * Rendered pane boxes in document coordinates.
+   Rendered pane boxes in document coordinates.
    */
   const rects = [...session.stores
     .paneElements
@@ -105,20 +105,20 @@ function countOverlaps({ session, }: { readonly session: RendererSession; },): n
 }
 
 /**
- * Focused pane's location path, or empty when nothing is focused.
- *
- * @param session - Renderer session to observe.
- *
- * @returns Focused location path or empty string.
- *
- * @example
- * ```ts
- * activePathOf({ session });
- * ```
+ Focused pane's location path, or empty when nothing is focused.
+ 
+ @param session - Renderer session to observe.
+ 
+ @returns Focused location path or empty string.
+ 
+ @example
+ ```ts
+ activePathOf({ session });
+ ```
  */
 function activePathOf({ session, }: { readonly session: RendererSession; },): string {
   /**
-   * Focused pane id captured before lookups.
+   Focused pane id captured before lookups.
    */
   const {active} = session.strip;
 
@@ -126,7 +126,7 @@ function activePathOf({ session, }: { readonly session: RendererSession; },): st
     return '';
 
   /**
-   * Focused pane, or the not-found sentinel for a stale focus.
+   Focused pane, or the not-found sentinel for a stale focus.
    */
   const pane = paneById({
     id: active,
@@ -141,19 +141,19 @@ function activePathOf({ session, }: { readonly session: RendererSession; },): st
 }
 
 /**
- * Whether the first root pane is pinned to the scroller's top edge while the
- * strip is scrolled down: the observable fact of sticky behavior.
- *
- * @param scrollTop - Current vertical scroll offset.
- *
- * @param session - Renderer session to observe.
- *
- * @returns Whether the root pane is pinned.
- *
- * @example
- * ```ts
- * isRootPinned({ session, scrollTop: 100 });
- * ```
+ Whether the first root pane is pinned to the scroller's top edge while the
+ strip is scrolled down: the observable fact of sticky behavior.
+ 
+ @param scrollTop - Current vertical scroll offset.
+ 
+ @param session - Renderer session to observe.
+ 
+ @returns Whether the root pane is pinned.
+ 
+ @example
+ ```ts
+ isRootPinned({ session, scrollTop: 100 });
+ ```
  */
 function isRootPinned(
   {
@@ -168,7 +168,7 @@ function isRootPinned(
     return false;
 
   /**
-   * First root pane, or the not-found sentinel for an empty strip.
+   First root pane, or the not-found sentinel for an empty strip.
    */
   const rootPane = firstPaneInColumn({
     column: 0,
@@ -179,7 +179,7 @@ function isRootPinned(
     return false;
 
   /**
-   * Root pane's element, absent before its first render.
+   Root pane's element, absent before its first render.
    */
   const rootElement = session.stores
     .paneElements
@@ -189,7 +189,7 @@ function isRootPinned(
     return false;
 
   /**
-   * Scroller box in viewport coordinates.
+   Scroller box in viewport coordinates.
    */
   const stripRect = session.stripElement
     .getBoundingClientRect();
@@ -201,20 +201,20 @@ function isRootPinned(
 }
 
 /**
- * Computes the shallow observable state snapshot for boundary tests.
- *
- * @param session - Renderer session to observe.
- *
- * @returns Shallow scalar snapshot.
- *
- * @example
- * ```ts
- * observeState({ session });
- * ```
+ Computes the shallow observable state snapshot for boundary tests.
+ 
+ @param session - Renderer session to observe.
+ 
+ @returns Shallow scalar snapshot.
+ 
+ @example
+ ```ts
+ observeState({ session });
+ ```
  */
 function observeState({ session, }: { readonly session: RendererSession; },): ObservedStripState {
   /**
-   * Vertical scroll offset of the strip scroller.
+   Vertical scroll offset of the strip scroller.
    */
   const { scrollTop, } = session.stripElement;
 
@@ -236,14 +236,14 @@ function observeState({ session, }: { readonly session: RendererSession; },): Ob
 }
 
 /**
- * Mirrors the current observable state across the bridge.
- *
- * @param session - Renderer session to observe.
- *
- * @example
- * ```ts
- * reportState({ session });
- * ```
+ Mirrors the current observable state across the bridge.
+ 
+ @param session - Renderer session to observe.
+ 
+ @example
+ ```ts
+ reportState({ session });
+ ```
  */
 export function reportState({ session, }: { readonly session: RendererSession; },): void {
   session.bridge
@@ -251,14 +251,14 @@ export function reportState({ session, }: { readonly session: RendererSession; }
 }
 
 /**
- * Re-renders the strip, reveals the focused pane, and reports state.
- *
- * @param session - Renderer session to render.
- *
- * @example
- * ```ts
- * renderAndReport({ session });
- * ```
+ Re-renders the strip, reveals the focused pane, and reports state.
+ 
+ @param session - Renderer session to render.
+ 
+ @example
+ ```ts
+ renderAndReport({ session });
+ ```
  */
 export function renderAndReport({ session, }: { readonly session: RendererSession; },): void {
   renderStrip({
@@ -284,21 +284,21 @@ export function renderAndReport({ session, }: { readonly session: RendererSessio
 }
 
 /**
- * Opens one listing entry: descend into a directory (fetching its listing
- * first so the new pane renders full) or spawn a preview pane for a file.
- *
- * @param entry - Entry to open.
- *
- * @param forceDuplicate - Whether to skip dedup and mint a duplicate pane.
- *
- * @param paneId - Pane the entry was opened from.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * await openEntry({ session, paneId, entry, forceDuplicate: false });
- * ```
+ Opens one listing entry: descend into a directory (fetching its listing
+ first so the new pane renders full) or spawn a preview pane for a file.
+ 
+ @param entry - Entry to open.
+ 
+ @param forceDuplicate - Whether to skip dedup and mint a duplicate pane.
+ 
+ @param paneId - Pane the entry was opened from.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ await openEntry({ session, paneId, entry, forceDuplicate: false });
+ ```
  */
 async function openEntry(
   {
@@ -314,16 +314,16 @@ async function openEntry(
   },
 ): Promise<void> {
   /**
-   * Location the new pane shows: a listing for directories, a preview
-   * otherwise (symlinks stay unresolved, matching the GTK original).
+   Location the new pane shows: a listing for directories, a preview
+   otherwise (symlinks stay unresolved, matching the GTK original).
    */
   const location = (entry.kind === 'directory')
     ? directoryLocation({ path: entry.path, },)
     : previewLocation({ path: entry.path, },);
 
   /**
-   * Listing fetched before the spawn so a new directory pane renders full;
-   * previews need no fetch.
+   Listing fetched before the spawn so a new directory pane renders full;
+   previews need no fetch.
    */
   const listing = (entry.kind === 'directory')
     ? await session.bridge
@@ -331,7 +331,7 @@ async function openEntry(
     : undefined;
 
   /**
-   * Model after the spawn, plus the (existing or new) pane id.
+   Model after the spawn, plus the (existing or new) pane id.
    */
   const spawned = spawnChild({
     forceDuplicate,
@@ -356,21 +356,21 @@ async function openEntry(
 }
 
 /**
- * Runs an async entry-open and surfaces any failure in the status line,
- * because DOM event handlers do not await async listeners.
- *
- * @param entry - Entry to open.
- *
- * @param forceDuplicate - Whether to skip dedup and mint a duplicate pane.
- *
- * @param paneId - Pane the entry was opened from.
- *
- * @param session - Renderer session to mutate.
- *
- * @example
- * ```ts
- * openEntryFromEvent({ session, paneId, entry, forceDuplicate: false });
- * ```
+ Runs an async entry-open and surfaces any failure in the status line,
+ because DOM event handlers do not await async listeners.
+ 
+ @param entry - Entry to open.
+ 
+ @param forceDuplicate - Whether to skip dedup and mint a duplicate pane.
+ 
+ @param paneId - Pane the entry was opened from.
+ 
+ @param session - Renderer session to mutate.
+ 
+ @example
+ ```ts
+ openEntryFromEvent({ session, paneId, entry, forceDuplicate: false });
+ ```
  */
 export function openEntryFromEvent(
   {
@@ -401,16 +401,16 @@ export function openEntryFromEvent(
 }
 
 /**
- * Builds the pane event handlers bound to one session.
- *
- * @param session - Renderer session the handlers mutate.
- *
- * @returns Handlers for the DOM reconciler.
- *
- * @example
- * ```ts
- * sessionHandlers({ session });
- * ```
+ Builds the pane event handlers bound to one session.
+ 
+ @param session - Renderer session the handlers mutate.
+ 
+ @returns Handlers for the DOM reconciler.
+ 
+ @example
+ ```ts
+ sessionHandlers({ session });
+ ```
  */
 export function sessionHandlers(
   { session, }: { readonly session: RendererSession; },

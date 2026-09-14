@@ -1,8 +1,8 @@
 /**
- * Text overlay layer CSS styles for the doodle widget.
- *
- * Renders styles for the text layer container and individual
- * text input elements (active and finalized).
+ Text overlay layer CSS styles for the doodle widget.
+ 
+ Renders styles for the text layer container and individual
+ text input elements (active and finalized).
  */
 import {
   cssCommaList,
@@ -14,26 +14,26 @@ import {
 import { INSET_ZERO_DECLS, } from './style-tokens.ts';
 
 /**
- * Text input minimum inline size in rem
+ Text input minimum inline size in rem
  */
 const TEXT_INPUT_MIN_INLINE_SIZE = 2 * 2
   * 2;
 
 /**
- * Text input line height (wider than CSS normal ~1.2 for readability)
+ Text input line height (wider than CSS normal ~1.2 for readability)
  */
 const TEXT_INPUT_LINE_HEIGHT = 1 + (2 / (2 + 2
   + 1));
 
 /**
- * Generates CSS rules for the text overlay layer and text inputs.
- *
- * @returns array of CSS rule strings
- *
- * @example
- * ```ts
- * const rules = renderTextStyles();
- * ```
+ Generates CSS rules for the text overlay layer and text inputs.
+ 
+ @returns array of CSS rule strings
+ 
+ @example
+ ```ts
+ const rules = renderTextStyles();
+ ```
  */
 export function renderTextStyles(): string[] {
   return [
@@ -77,7 +77,7 @@ export function renderTextStyles(): string[] {
     },),
 
     /**
-     * Finalized inputs look like plain text
+     Finalized inputs look like plain text
      */
     $({
       rule: '.text-input:read-only',

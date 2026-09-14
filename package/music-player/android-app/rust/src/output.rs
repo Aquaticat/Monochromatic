@@ -309,7 +309,7 @@ pub fn measure_output_latency_ms() -> Option<f64> {
     // ```ts
     // return latency;
     // ```
-    latency
+    return latency
 }
 
 /// What:     `fn silent_callback(_stream: &AudioStream, audio_data: *mut c_void,
@@ -417,7 +417,7 @@ fn silent_callback(
     // ```ts
     // return "continue";
     // ```
-    AudioCallbackResult::Continue
+    return AudioCallbackResult::Continue
 }
 
 /// What:     `fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64>`.
@@ -521,5 +521,5 @@ fn read_latency_ms(stream: &AudioStream, rate: i32) -> Option<f64> {
     // ```ts
     // return (buffered / rate) * MILLIS_PER_SEC;
     // ```
-    Some((buffered as f64) / (rate as f64) * MILLIS_PER_SEC)
+    return Some((buffered as f64) / (rate as f64) * MILLIS_PER_SEC)
 }

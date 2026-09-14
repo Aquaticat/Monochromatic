@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * CLI entry point for generating a WireGuard `AllowedIPs` value.
- *
- * @example
- * ```sh
- * wg-allowedips --allowed allowed.txt --disallowed disallowed.txt
- * ```
- *
- * @module
+ CLI entry point for generating a WireGuard `AllowedIPs` value.
+ 
+ @example
+ ```sh
+ wg-allowedips --allowed allowed.txt --disallowed disallowed.txt
+ ```
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -20,7 +20,7 @@ import { generateAllowedIps, } from '@monochromatic-dev/module-wg-allowedips/ts'
 import { CliUsageError, } from './errors.ts';
 
 /**
- * Required input paths parsed from command-line arguments.
+ Required input paths parsed from command-line arguments.
  */
 type CliPaths = {
   readonly allowedPath: string;
@@ -28,27 +28,27 @@ type CliPaths = {
 };
 
 /**
- * Module logger for command lifecycle.
+ Module logger for command lifecycle.
  */
 const l = tagged({ tag: 'wg-allowedips', },);
 
 /**
- * Parses the exact two-option command contract.
- *
- * @param argv - Arguments after runtime and script path.
- *
- * @returns Required allowed and disallowed file paths.
- *
- * @throws {@link CliUsageError} when either required option is absent.
- *
- * @example
- * ```ts
- * parseCliPaths({ argv: ['--allowed', 'a.txt', '--disallowed', 'd.txt'] });
- * ```
+ Parses the exact two-option command contract.
+ 
+ @param argv - Arguments after runtime and script path.
+ 
+ @returns Required allowed and disallowed file paths.
+ 
+ @throws {@link CliUsageError} when either required option is absent.
+ 
+ @example
+ ```ts
+ parseCliPaths({ argv: ['--allowed', 'a.txt', '--disallowed', 'd.txt'] });
+ ```
  */
 function parseCliPaths({ argv, }: { readonly argv: readonly string[]; },): CliPaths {
   /**
-   * Values parsed by Node's strict built-in argument parser.
+   Values parsed by Node's strict built-in argument parser.
    */
   const { values, } = parseArgs({
     args: [...argv,],
@@ -74,12 +74,12 @@ function parseCliPaths({ argv, }: { readonly argv: readonly string[]; },): CliPa
 }
 
 /**
- * Arguments after runtime and script path.
+ Arguments after runtime and script path.
  */
 const processArguments = process.argv
   .slice(2,);
 /**
- * Parsed file paths from process arguments.
+ Parsed file paths from process arguments.
  */
 const {
   allowedPath,
@@ -88,7 +88,7 @@ const {
 l.debug(`reading allowed input from ${allowedPath}`,);
 l.debug(`reading disallowed input from ${disallowedPath}`,);
 /**
- * Complete allowed and disallowed file texts read concurrently.
+ Complete allowed and disallowed file texts read concurrently.
  */
 const [allowedText, disallowedText,] = await Promise.all([
   readFile(
@@ -101,7 +101,7 @@ const [allowedText, disallowedText,] = await Promise.all([
   ),
 ],);
 /**
- * Exact stdout payload generated from both files.
+ Exact stdout payload generated from both files.
  */
 const output = await generateAllowedIps({
   allowedText,

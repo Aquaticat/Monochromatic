@@ -66,7 +66,7 @@ pub struct Violator {
 /// What: `min(0, -1 - 20*log10(peak))`. Why: this is the truth the probe gain is
 /// scored against; using `truepeak_core::peak_dbtp` keeps it identical to production.
 fn exact_gain_db(full_peak: f64, ceiling_dbtp: f64) -> f64 {
-    (ceiling_dbtp - peak_dbtp(full_peak)).min(0.0)
+    return (ceiling_dbtp - peak_dbtp(full_peak)).min(0.0)
 }
 
 /// Compute the probe gain in dB from a sampled peak and the margin, clamped to unity.
@@ -75,7 +75,7 @@ fn exact_gain_db(full_peak: f64, ceiling_dbtp: f64) -> f64 {
 /// shared `probe_estimated_peak` is the production inflation step.
 fn probe_gain_db(sampled_max: f64, margin_db: f64, ceiling_dbtp: f64) -> f64 {
     let estimated = probe_estimated_peak(sampled_max, margin_db);
-    (ceiling_dbtp - peak_dbtp(estimated)).min(0.0)
+    return (ceiling_dbtp - peak_dbtp(estimated)).min(0.0)
 }
 
 /// The per-window sampled peaks (linear) of one long track's placed probe windows.
@@ -95,7 +95,7 @@ pub fn sampled_windows(track: &Track, candidate: Candidate) -> Vec<f64> {
     let bins = &track.bin_peaks;
     let rate = f64::from(track.rate);
     // Each window covers the bins overlapping its frame span; take the loudest bin.
-    placement
+    return placement
         .starts
         .iter()
         .map(|&start| {
@@ -107,8 +107,8 @@ pub fn sampled_windows(track: &Track, candidate: Candidate) -> Vec<f64> {
                 .get(lo..hi)
                 .unwrap_or(&[])
                 .iter()
-                .fold(0.0_f32, |peak, &bin| peak.max(bin));
-            f64::from(window_peak)
+                .fold(0.0_f32, |peak, &bin| return peak.max(bin));
+            return f64::from(window_peak)
         })
         .collect()
 }
@@ -118,9 +118,9 @@ pub fn sampled_windows(track: &Track, candidate: Candidate) -> Vec<f64> {
 /// What: the max over `sampled_windows`. Why: the probe gain is decided from the loudest
 /// window the probe saw.
 fn sampled_max_peak(track: &Track, candidate: &Candidate) -> f64 {
-    sampled_windows(track, *candidate)
+    return sampled_windows(track, *candidate)
         .iter()
-        .fold(0.0_f64, |peak, &window| peak.max(window))
+        .fold(0.0_f64, |peak, &window| return peak.max(window))
 }
 
 /// Score one candidate over every track in the corpus.
@@ -174,7 +174,7 @@ pub fn evaluate(tracks: &[Track], candidate: Candidate) -> Report {
         }
     }
 
-    Report {
+    return Report {
         candidate,
         threshold_secs: threshold,
         short_count,

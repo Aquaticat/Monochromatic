@@ -98,7 +98,7 @@ fn normal_components(path: &Path) -> Vec<String> {
     // ```ts
     // return out;
     // ```
-    out
+    return out
 }
 
 /// What:     `fn common_prefix_len(lists: &[Vec<String>]) -> usize`. How many LEADING
@@ -125,7 +125,7 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // ```ts
     // const shortest = lists.length ? Math.min(...lists.map((l) => l.length)) : 0;
     // ```
-    let shortest = lists.iter().map(|list| list.len()).min().unwrap_or(0);
+    let shortest = lists.iter().map(|list| return list.len()).min().unwrap_or(0);
     // What:     `if shortest == 0 { return 0; }`. Early return when some path has no
     //           named segments (nothing to strip).
     // Why:      Avoid the `shortest - 1` underflow below (`usize` is unsigned, so
@@ -168,7 +168,7 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // ```ts
     // while (run < cap && lists.every((l) => l[run] === lists[0][run])) run++;
     // ```
-    while run < cap && lists.iter().all(|list| list[run] == lists[0][run]) {
+    while run < cap && lists.iter().all(|list| return list[run] == lists[0][run]) {
         // What:     `run += 1;`. Advance past a matching segment.
         // Why:      Move to the next position.
         //
@@ -185,7 +185,7 @@ fn common_prefix_len(lists: &[Vec<String>]) -> usize {
     // ```ts
     // return run;
     // ```
-    run
+    return run
 }
 
 /// What:     `pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String>`. Turn
@@ -230,7 +230,7 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // ```ts
     // const componentLists = tracks.map(normalComponents);
     // ```
-    let component_lists: Vec<Vec<String>> = tracks.iter().map(|p| normal_components(p)).collect();
+    let component_lists: Vec<Vec<String>> = tracks.iter().map(|p| return normal_components(p)).collect();
     // What:     `let prefix_len = common_prefix_len(&component_lists);`. `&...` lends
     //           the lists read-only to the helper.
     // Why:      Decide how many leading segments are the shared root.
@@ -252,7 +252,7 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
     // ```ts
     // return componentLists.map((list, i) => { ... });
     // ```
-    component_lists
+    return component_lists
         .iter()
         .zip(tracks.iter())
         .map(|(list, path)| {
@@ -279,9 +279,9 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
             // return relative === "" ? path : relative;
             // ```
             if relative.is_empty() {
-                path.to_string_lossy().into_owned()
+                return path.to_string_lossy().into_owned()
             } else {
-                relative
+                return relative
             }
         })
         .collect()

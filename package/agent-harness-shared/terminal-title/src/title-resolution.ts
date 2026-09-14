@@ -1,7 +1,7 @@
 /**
- * Terminal title registry lookup and known-entry resolution.
- *
- * @module
+ Terminal title registry lookup and known-entry resolution.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -22,20 +22,20 @@ import type {
 //region Registry lookup
 
 /**
- * Looks up formatter entry for exact own tool name.
- *
- * @param registry - because each host owns its tool-name vocabulary
- *
- * @param toolName - because event adapters pass host-specific tool names
- *
- * @returns matching own registry entry or undefined
- *
- * @mutates registry - `Object.hasOwn` may invoke proxy `getOwnPropertyDescriptor` traps
- *
- * @example
- * ```ts
- * lookupToolTitleEntry({ registry, toolName: 'Read' });
- * ```
+ Looks up formatter entry for exact own tool name.
+ 
+ @param registry - because each host owns its tool-name vocabulary
+ 
+ @param toolName - because event adapters pass host-specific tool names
+ 
+ @returns matching own registry entry or undefined
+ 
+ @mutates registry - `Object.hasOwn` may invoke proxy `getOwnPropertyDescriptor` traps
+ 
+ @example
+ ```ts
+ lookupToolTitleEntry({ registry, toolName: 'Read' });
+ ```
  */
 function lookupToolTitleEntry(
   {
@@ -59,19 +59,19 @@ function lookupToolTitleEntry(
 //region Field extraction
 
 /**
- * Extracts a string field from raw tool input.
- *
- * @param input - because tool payloads arrive as untyped records
- *
- * @param field - because field entries name one display-relevant value
- *
- * @returns string field value or undefined
- *
- * @example
- * ```ts
- * stringField({ input: { path: 'a.ts' }, field: 'path' });
- * // 'a.ts'
- * ```
+ Extracts a string field from raw tool input.
+ 
+ @param input - because tool payloads arrive as untyped records
+ 
+ @param field - because field entries name one display-relevant value
+ 
+ @returns string field value or undefined
+ 
+ @example
+ ```ts
+ stringField({ input: { path: 'a.ts' }, field: 'path' });
+ // 'a.ts'
+ ```
  */
 function stringField(
   {
@@ -83,7 +83,7 @@ function stringField(
   }>,
 ): string | typeof TOOL_TITLE_FIELD_MISSING {
   /**
-   * Candidate field value.
+   Candidate field value.
    */
   const value = input[field];
   if ((typeof value) === 'string')
@@ -96,22 +96,22 @@ function stringField(
 //region Entry resolution
 
 /**
- * Formats a known entry for requested lifecycle tense.
- *
- * @param entry - because registry lookup already found matching tool entry
- *
- * @param input - because entries can inspect tool payloads
- *
- * @param tense - because lifecycle verbs differ around tool execution
- *
- * @param context - because hosts may provide cwd or related formatting context
- *
- * @returns title body for known tool
- *
- * @example
- * ```ts
- * formatKnownToolTitle({ entry, input: {}, tense: 'pre', context: {} });
- * ```
+ Formats a known entry for requested lifecycle tense.
+ 
+ @param entry - because registry lookup already found matching tool entry
+ 
+ @param input - because entries can inspect tool payloads
+ 
+ @param tense - because lifecycle verbs differ around tool execution
+ 
+ @param context - because hosts may provide cwd or related formatting context
+ 
+ @returns title body for known tool
+ 
+ @example
+ ```ts
+ formatKnownToolTitle({ entry, input: {}, tense: 'pre', context: {} });
+ ```
  */
 function formatKnownToolTitle(
   {
@@ -130,7 +130,7 @@ function formatKnownToolTitle(
     return entry.title[tense];
   if (entry.kind === 'field') {
     /**
-     * Extracted string field value.
+     Extracted string field value.
      */
     const value = stringField({
       input,
@@ -146,7 +146,7 @@ function formatKnownToolTitle(
     },);
   }
   /**
-   * Whole-input formatter result.
+   Whole-input formatter result.
    */
   const formatted = entry.format({
     input,

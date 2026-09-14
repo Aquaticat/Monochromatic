@@ -1,7 +1,7 @@
 /**
- * CLI argument parser definitions for the mvm command.
- * Defines the result type and combines subcommand parsers
- * into a single top-level parser.
+ CLI argument parser definitions for the mvm command.
+ Defines the result type and combines subcommand parsers
+ into a single top-level parser.
  */
 
 // TODO: deprecate Optique
@@ -26,7 +26,7 @@ import {
 //region Result types: discriminated union for subcommand dispatch
 
 /**
- * Discriminated union of all subcommand parse results
+ Discriminated union of all subcommand parse results
  */
 export type MvmArgs =
   | {
@@ -75,13 +75,13 @@ export type MvmArgs =
 
 /* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
 /**
- * TODO: deprecate Optique
- * Combined top-level parser across all subcommands.
- *
- * @example
- * ```ts
- * const result = parser.parse(process.argv.slice(2,),);
- * ```
+ TODO: deprecate Optique
+ Combined top-level parser across all subcommands.
+ 
+ @example
+ ```ts
+ const result = parser.parse(process.argv.slice(2,),);
+ ```
  */
 export const parser: Parser<'sync', MvmArgs, any> = or(
   createCmd,

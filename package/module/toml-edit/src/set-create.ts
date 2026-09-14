@@ -1,13 +1,13 @@
 /**
- * Path-create for {@link tomlSet}: insert a fresh dotted key-value when the path
- * does not resolve to an existing value.
- *
- * A new key-value is placed inside the deepest standard table whose header is a
- * prefix of the path, else at top level before the first table header (the TOML
- * grammar requires bare keys to precede section headers). The inserted block is
- * synthetic and renders canonically.
- *
- * @module
+ Path-create for {@link tomlSet}: insert a fresh dotted key-value when the path
+ does not resolve to an existing value.
+ 
+ A new key-value is placed inside the deepest standard table whose header is a
+ prefix of the path, else at top level before the first table header (the TOML
+ grammar requires bare keys to precede section headers). The inserted block is
+ synthetic and renders canonically.
+ 
+ @module
  */
 
 import { buildValueFromInput, } from './build-input.ts';
@@ -24,14 +24,14 @@ import type {
 } from './types.ts';
 
 /**
- * Build a synthetic key-value block for `segments = value`.
- *
- * @returns Computed {@link KeyValueNode}.
- *
- * @example
- * ```ts
- * makeKeyValue({ segments: ['a','b'], value: 1, options, },);
- * ```
+ Build a synthetic key-value block for `segments = value`.
+ 
+ @returns Computed {@link KeyValueNode}.
+ 
+ @example
+ ```ts
+ makeKeyValue({ segments: ['a','b'], value: 1, options, },);
+ ```
  */
 export function makeKeyValue(
   {
@@ -57,16 +57,16 @@ export function makeKeyValue(
 }
 
 /**
- * Create a new key-value at a currently-absent `path`.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlImmutableNodeError} when the remaining tail has a numeric segment.
- *
- * @example
- * ```ts
- * doCreate({ edit, path: ['a','b','c'], value: 42, },);
- * ```
+ Create a new key-value at a currently-absent `path`.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlImmutableNodeError} when the remaining tail has a numeric segment.
+ 
+ @example
+ ```ts
+ doCreate({ edit, path: ['a','b','c'], value: 42, },);
+ ```
  */
 export function doCreate(
   {
@@ -85,7 +85,7 @@ export function doCreate(
     basePath: [],
   },);
   /**
-   * Index of the deepest standard table whose header is a strict prefix of path.
+   Index of the deepest standard table whose header is a strict prefix of path.
    */
   const tableIndex = deepestTableIndex({
     blocks: edit.blocks,
@@ -98,7 +98,7 @@ export function doCreate(
       value,
     },);
   /**
-   * The owning table block; its body gains the new dotted key-value.
+   The owning table block; its body gains the new dotted key-value.
    */
   const table = edit.blocks[tableIndex];
   if ((table === undefined) || (table.kind
@@ -109,7 +109,7 @@ export function doCreate(
       value,
     },);
   /**
-   * Dotted tail relative to the table header.
+   Dotted tail relative to the table header.
    */
   const segments = dottedTail({
     path,
@@ -137,9 +137,9 @@ export function doCreate(
 }
 
 /**
- * Insert a new top-level dotted key-value before the first table header.
- *
- * @returns Fresh {@link TomlEditState}.
+ Insert a new top-level dotted key-value before the first table header.
+ 
+ @returns Fresh {@link TomlEditState}.
  */
 function createAtTopLevel(
   {
@@ -153,7 +153,7 @@ function createAtTopLevel(
   },
 ): TomlEditState {
   /**
-   * New key-value block for the full path (all segments are top-level here).
+   New key-value block for the full path (all segments are top-level here).
    */
   const kv = makeKeyValue({
     segments: dottedTail({
@@ -164,7 +164,7 @@ function createAtTopLevel(
     options: edit.canonical,
   },);
   /**
-   * First table header index; the key-value must land before it.
+   First table header index; the key-value must land before it.
    */
   const firstTable = edit.blocks
     .findIndex(function isTable(b,) {
@@ -172,14 +172,14 @@ function createAtTopLevel(
       === 'table';
   },);
   /**
-   * Leading newline filler when the source does not already end on a line break.
+   Leading newline filler when the source does not already end on a line break.
    */
   const needsNewline = (firstTable === (-1))
     && (edit.source !== '')
     && (!edit.source
       .endsWith('\n',));
   /**
-   * Blocks to splice in: the key-value, preceded by a newline filler if needed.
+   Blocks to splice in: the key-value, preceded by a newline filler if needed.
    */
   const inserted: readonly Block[] = needsNewline
     ? [
@@ -214,11 +214,11 @@ function createAtTopLevel(
 }
 
 /**
- * Throw when `path` would be created under an existing scalar or array leaf
- * (a key-value whose absolute key strictly prefixes `path` and whose value is
- * not a table shape). Path-create cannot descend through such a value.
- *
- * @throws {@link TomlImmutableNodeError} on a scalar/array prefix conflict.
+ Throw when `path` would be created under an existing scalar or array leaf
+ (a key-value whose absolute key strictly prefixes `path` and whose value is
+ not a table shape). Path-create cannot descend through such a value.
+ 
+ @throws {@link TomlImmutableNodeError} on a scalar/array prefix conflict.
  */
 function assertNoScalarPrefix(
   {
@@ -235,7 +235,7 @@ function assertNoScalarPrefix(
     if (block.kind
       === 'keyvalue') {
       /**
-       * Absolute key of this entry so the prefix test spans table context.
+       Absolute key of this entry so the prefix test spans table context.
        */
       const abs = [
         ...basePath,
@@ -270,9 +270,9 @@ function assertNoScalarPrefix(
 }
 
 /**
- * Index of the deepest standard table whose header strictly prefixes `path`.
- *
- * @returns Block index, or `-1` when none.
+ Index of the deepest standard table whose header strictly prefixes `path`.
+ 
+ @returns Block index, or `-1` when none.
  */
 function deepestTableIndex(
   {
@@ -295,7 +295,7 @@ function deepestTableIndex(
           !== 'standard'))
         return best;
       /**
-       * Header length; a strict prefix qualifies this table as a container.
+       Header length; a strict prefix qualifies this table as a container.
        */
       const len = block.headerSegments
         .length;
@@ -310,7 +310,7 @@ function deepestTableIndex(
           },)))
         return best;
       /**
-       * Current best header length so the longest (deepest) prefix wins.
+       Current best header length so the longest (deepest) prefix wins.
        */
       const bestLen = (best === (-1)) || (blocks[best] === undefined)
         || (blocks[best]
@@ -327,11 +327,11 @@ function deepestTableIndex(
 }
 
 /**
- * Remaining path segments after `consumed`, verified all-string.
- *
- * @returns Computed dotted segments.
- *
- * @throws {@link TomlImmutableNodeError} when a remaining segment is numeric.
+ Remaining path segments after `consumed`, verified all-string.
+ 
+ @returns Computed dotted segments.
+ 
+ @throws {@link TomlImmutableNodeError} when a remaining segment is numeric.
  */
 function dottedTail(
   {

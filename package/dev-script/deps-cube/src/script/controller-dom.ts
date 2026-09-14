@@ -1,21 +1,21 @@
 /**
- * DOM-access helpers + initial-value sync for the controller.
- *
- * Three typed accessors ({@link el}, {@link elInput}, {@link elSelect})
- * narrow `document.getElementById` results via `instanceof` checks so
- * downstream call sites don't need `as` casts; {@link syncDomFromState}
- * pushes every value from an {@link AppState} into the corresponding
- * control element, used after wholesale state swaps (reset button,
- * URL-hash restore).
- *
- * Browser-only: relies on `document` / `window` / `HTMLInputElement`.
- *
- * @example
- * ```ts
- * import { elInput, syncDomFromState } from './controller-dom.ts';
- * elInput('search').value = 'etag';
- * syncDomFromState({ state: nextState });
- * ```
+ DOM-access helpers + initial-value sync for the controller.
+ 
+ Three typed accessors ({@link el}, {@link elInput}, {@link elSelect})
+ narrow `document.getElementById` results via `instanceof` checks so
+ downstream call sites don't need `as` casts; {@link syncDomFromState}
+ pushes every value from an {@link AppState} into the corresponding
+ control element, used after wholesale state swaps (reset button,
+ URL-hash restore).
+ 
+ Browser-only: relies on `document` / `window` / `HTMLInputElement`.
+ 
+ @example
+ ```ts
+ import { elInput, syncDomFromState } from './controller-dom.ts';
+ elInput('search').value = 'etag';
+ syncDomFromState({ state: nextState });
+ ```
  */
 
 import type {
@@ -30,7 +30,7 @@ import {
 //region Constants
 
 /**
- * Channel keys, fixed order.
+ Channel keys, fixed order.
  */
 const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
@@ -46,24 +46,24 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
 //region Typed accessors
 
 /**
- * Resolves an element by id, throwing if absent. The control panel's
- * IDs are generated statically by `../render-controls.ts`, so a missing
- * element is a programming error and must surface loudly.
- *
- * @param id - Element id.
- *
- * @returns Element typed as `HTMLElement`.
- *
- * @throws When the element is absent from the DOM.
- *
- * @example
- * ```ts
- * el('dim-x').classList.add('active');
- * ```
+ Resolves an element by id, throwing if absent. The control panel's
+ IDs are generated statically by `../render-controls.ts`, so a missing
+ element is a programming error and must surface loudly.
+ 
+ @param id - Element id.
+ 
+ @returns Element typed as `HTMLElement`.
+ 
+ @throws When the element is absent from the DOM.
+ 
+ @example
+ ```ts
+ el('dim-x').classList.add('active');
+ ```
  */
 export function el(id: string,): HTMLElement {
   /**
-   * Raw `querySelector` result, validated below so the caller receives a non-null element.
+   Raw `querySelector` result, validated below so the caller receives a non-null element.
    */
   const node = document.querySelector<HTMLElement>(`#${id}`,);
   if (node === null)
@@ -72,22 +72,22 @@ export function el(id: string,): HTMLElement {
 }
 
 /**
- * Resolves an `<input>` element by id, narrowing via `instanceof`.
- *
- * @param id - Element id.
- *
- * @returns Element typed as `HTMLInputElement`.
- *
- * @throws When the element is absent or not an `<input>`.
- *
- * @example
- * ```ts
- * elInput('search').value = 'etag';
- * ```
+ Resolves an `<input>` element by id, narrowing via `instanceof`.
+ 
+ @param id - Element id.
+ 
+ @returns Element typed as `HTMLInputElement`.
+ 
+ @throws When the element is absent or not an `<input>`.
+ 
+ @example
+ ```ts
+ elInput('search').value = 'etag';
+ ```
  */
 export function elInput(id: string,): HTMLInputElement {
   /**
-   * Element resolved by {@link el}, narrowed below to `HTMLInputElement` via `instanceof`.
+   Element resolved by {@link el}, narrowed below to `HTMLInputElement` via `instanceof`.
    */
   const node = el(id,);
   if (!(node instanceof HTMLInputElement))
@@ -96,22 +96,22 @@ export function elInput(id: string,): HTMLInputElement {
 }
 
 /**
- * Resolves a `<select>` element by id, narrowing via `instanceof`.
- *
- * @param id - Element id.
- *
- * @returns Element typed as `HTMLSelectElement`.
- *
- * @throws When the element is absent or not a `<select>`.
- *
- * @example
- * ```ts
- * elSelect('dim-x').value = 'tsRatio';
- * ```
+ Resolves a `<select>` element by id, narrowing via `instanceof`.
+ 
+ @param id - Element id.
+ 
+ @returns Element typed as `HTMLSelectElement`.
+ 
+ @throws When the element is absent or not a `<select>`.
+ 
+ @example
+ ```ts
+ elSelect('dim-x').value = 'tsRatio';
+ ```
  */
 export function elSelect(id: string,): HTMLSelectElement {
   /**
-   * Element resolved by {@link el}, narrowed below to `HTMLSelectElement` via `instanceof`.
+   Element resolved by {@link el}, narrowed below to `HTMLSelectElement` via `instanceof`.
    */
   const node = el(id,);
   if (!(node instanceof HTMLSelectElement))
@@ -124,19 +124,19 @@ export function elSelect(id: string,): HTMLSelectElement {
 //region State → DOM sync
 
 /**
- * Pushes every value from `state` into the corresponding control
- * element. Used after a wholesale state swap (reset button, URL-hash
- * overwrite) so the on-screen controls reflect the new state.
- *
- * Per-channel updates: dim dropdown + slider values. Per-toggle: radio
- * input checked. Search input, display checkboxes, name-labels select.
- *
- * @param state - State whose values to write into the DOM.
- *
- * @example
- * ```ts
- * syncDomFromState({ state: defaultAppState() });
- * ```
+ Pushes every value from `state` into the corresponding control
+ element. Used after a wholesale state swap (reset button, URL-hash
+ overwrite) so the on-screen controls reflect the new state.
+ 
+ Per-channel updates: dim dropdown + slider values. Per-toggle: radio
+ input checked. Search input, display checkboxes, name-labels select.
+ 
+ @param state - State whose values to write into the DOM.
+ 
+ @example
+ ```ts
+ syncDomFromState({ state: defaultAppState() });
+ ```
  */
 export function syncDomFromState(
   { state, }: { readonly state: AppState; },
@@ -145,7 +145,7 @@ export function syncDomFromState(
     elSelect(`dim-${channel}`,)
       .value = state.dimMapping[channel];
     /**
-     * Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below.
+     Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below.
      */
     const [
       lo,
@@ -158,11 +158,11 @@ export function syncDomFromState(
   },);
   TOGGLE_KEYS.forEach(function syncToggle(key: ToggleKey,) {
     /**
-     * Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below.
+     Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below.
      */
     const value = state.toggles[key];
     /**
-     * Radio input matching the current toggle value; absent radios are silently skipped (the toggle is read-only on that frame).
+     Radio input matching the current toggle value; absent radios are silently skipped (the toggle is read-only on that frame).
      */
     const radio = document.querySelector<HTMLInputElement>(
       `input[name="toggle-${key}"][value="${value}"]`,

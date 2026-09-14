@@ -262,10 +262,14 @@ On affected kernels it uses detached descriptor keeper:
 
 See `doc/troubleshooting/linux-bpffs-selinux-object-pin-einval.md` for source trace,
 reproduction,
-upstream patch,
-and filing decision.
+upstream fix,
+and recovered-kernel comparison.
+Kernel `7.2.0-ogc6.1.fc44.x86_64` pins links successfully.
+Fallback-specific debug functional tests inject typed object-pin failure so descriptor-keeper coverage remains
+deterministic.
+Separate public-CLI lifecycle test retains native pin-path coverage.
 
-## Ghostty, Steam, Helium, and Pale Moon coverage
+## Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly coverage
 
 `wg-quicker` starts Rust watcher only after bypass route exists.
 It stops watcher before removing bypass routing.
@@ -275,7 +279,8 @@ Every `up` whose parsed config omits `ExemptMark` emits a non-fatal warning befo
 It states that Ghostty,
  Steam,
  Helium,
- and Pale Moon will use the tunnel.
+ Pale Moon,
+ and Firefox Nightly will use the tunnel.
 It instructs the user to add `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
@@ -320,11 +325,13 @@ Watcher behavior:
 - attaches future Ghostty surface scopes;
 - identifies Steam's `app-steam@*.service` immediately;
 - identifies Helium Chrome application-ID service immediately;
+- identifies Firefox Nightly's `app-firefox\x2dnightly@*.service` immediately;
 - maps live Helium,
   renderer,
   zygote,
   and crashpad executables to current cgroups;
 - maps exact `palemoon` and `palemoon-bin` executable names to current cgroups;
+- maps exact `firefox` and `firefox-bin` names under a `firefox-nightly` install directory to current cgroups;
 - periodically rescans processes entering existing cgroups;
 - retains known process-discovered cgroups through process restarts until cgroup removal;
 - holds links directly for watcher lifetime;
@@ -352,17 +359,45 @@ Pale Moon follow-up audit found:
   and UDP6 sockets created in disposable Pale Moon cgroup with `8888`;
 - tunnel and real application cgroup marking remained untouched.
 
+Firefox Nightly follow-up verification found:
+
+- installed launcher resolves to `/var/home/user/.local/opt/firefox-nightly/firefox`;
+- transient scope status showed launcher and child commands under same install directory as `firefox-bin`;
+- rebuilt `wg-quicker-exempt list-targets` included a disposable app-slice scope running actual Firefox Nightly;
+- normal KDE desktop launch created `app-firefox\x2dnightly@*.service` from `firefox-nightly.desktop`;
+- `/proc/<pid>/exe` for desktop-launched Nightly resolved to installed `firefox-bin`;
+- rebuilt target listing included exact desktop service and omitted running Firefox ESR service;
+- both Nightly verification processes ended;
+- disposable headless profile was removed without changing live tunnel or application cgroups.
+
 Process discovery attaches entire current cgroup.
-Sibling processes sharing Helium or Pale Moon cgroup also receive exemption until cgroup disappears or watcher stops.
+Sibling processes sharing Helium,
+Pale Moon,
+or Firefox Nightly cgroup also receive exemption until cgroup disappears or watcher stops.
 A newly started process-discovered application can create sockets before next 250-millisecond rescan;
 applications present at watcher startup are attached before readiness.
 
-The active `mx-que-mx1` watcher was refreshed with latest rebuilt companion,
+The historical `mx-que-mx1` watcher refresh used latest rebuilt companion at that time,
 its persisted mark,
 and its desktop UID.
 Readiness handshake succeeded without restarting WireGuard interface or changing live routing.
 No real application cgroup was marked during read-only audits.
 State-mutating watcher tests used disposable cgroups.
+
+After disposable verification passed,
+active `gb-lon-gb2` watcher was replaced through rebuilt release companion with existing key,
+mark `8888`,
+and desktop UID `1000`.
+New watcher start time replaced August process,
+and `/proc/<pid>/exe` had same device and inode as rebuilt release binary.
+Watcher readiness completed without restarting WireGuard interface or changing live routes.
+Current target listing still excludes running Firefox ESR service.
+Disposable exact Nightly-named cgroup created under watched `app.slice` received mark `8888` on TCP4,
+TCP6,
+UDP4,
+and UDP6 socket probes from active watcher.
+Fixture cgroup and probe were removed;
+watcher remained active with empty error log.
 
 ## Verification evidence
 
@@ -460,11 +495,19 @@ Privileged disposable-cgroup tests cover:
 - committed and uncommitted transition recovery;
 - wrong-owner state retention;
 - removed-cgroup cleanup;
-- existing and future Ghostty scope coverage;
+- existing Firefox Nightly and Ghostty service marking;
+- Firefox ESR service remaining unmarked;
+- future Ghostty scope coverage;
 - public watcher start and stop lifecycle.
 
 Unit tests additionally cover target-name precision,
-fake procfs Helium and Pale Moon mapping,
+fake procfs Helium,
+Pale Moon,
+and Firefox Nightly mapping,
+Firefox Nightly service,
+executable,
+channel,
+and install-directory boundaries,
 Pale Moon case and suffix near misses,
 path-key injectivity,
 exact cleanup,

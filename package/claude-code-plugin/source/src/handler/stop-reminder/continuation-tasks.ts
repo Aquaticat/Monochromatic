@@ -1,19 +1,19 @@
 /**
- * Task-list release for forced continuation.
- *
- * A session whose tracked tasks are all finished has nothing for another turn
- * to advance, so blocking its stop buys a restatement rather than work.
- *
- * State is replayed from the transcript because the `Stop` payload carries
- * background tasks but not the task list. `TaskCreate` results announce an id,
- * and `TaskUpdate` calls carry `taskId` and `status`, so the latest status per
- * id reconstructs the list without a sidecar.
- *
- * An absent task list is deliberately not treated as finished. Most sessions
- * never create a task, and releasing on an empty list would disable forced
- * continuation for all of them.
- *
- * @module
+ Task-list release for forced continuation.
+ 
+ A session whose tracked tasks are all finished has nothing for another turn
+ to advance, so blocking its stop buys a restatement rather than work.
+ 
+ State is replayed from the transcript because the `Stop` payload carries
+ background tasks but not the task list. `TaskCreate` results announce an id,
+ and `TaskUpdate` calls carry `taskId` and `status`, so the latest status per
+ id reconstructs the list without a sidecar.
+ 
+ An absent task list is deliberately not treated as finished. Most sessions
+ never create a task, and releasing on an empty list would disable forced
+ continuation for all of them.
+ 
+ @module
  */
 
 import type { TranscriptRecord, } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
@@ -24,11 +24,11 @@ import {
 } from './continuation-depth.ts';
 
 /**
- * Statuses meaning a task needs no further work.
- *
- * Observed vocabulary across this repository's transcripts is `pending`,
- * `in_progress`, `completed`, and `deleted`. A deleted task is finished in the
- * sense that matters here: nothing remains to do for it.
+ Statuses meaning a task needs no further work.
+ 
+ Observed vocabulary across this repository's transcripts is `pending`,
+ `in_progress`, `completed`, and `deleted`. A deleted task is finished in the
+ sense that matters here: nothing remains to do for it.
  */
 const FINISHED_STATUSES: ReadonlySet<string> = new Set([
   'completed',
@@ -36,37 +36,37 @@ const FINISHED_STATUSES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Status a task carries between creation and its first update.
+ Status a task carries between creation and its first update.
  */
 const INITIAL_STATUS = 'pending' as const;
 
 /**
- * Outcome of reading task state from a transcript.
- *
- * `no-task-list` is distinct from `all-finished` because an absent list must not
- * release, while a list whose every entry is done must.
+ Outcome of reading task state from a transcript.
+ 
+ `no-task-list` is distinct from `all-finished` because an absent list must not
+ release, while a list whose every entry is done must.
  */
 type TaskListState = 'no-task-list' | 'all-finished' | 'work-remains';
 
 /**
- * Replays task state from transcript records.
- *
- * Scans oldest to newest so later updates win. Only successful calls matter, but
- * a failed `TaskUpdate` merely records a status that a later call corrects, so
- * result inspection is not needed for the release decision.
- *
- * @param transcriptLines - transcript JSONL lines, oldest first
- *
- * @returns whether the list is absent, entirely finished, or still has work
- *
- * @example
- * ```ts
- * taskListState(lines); // 'all-finished'
- * ```
+ Replays task state from transcript records.
+ 
+ Scans oldest to newest so later updates win. Only successful calls matter, but
+ a failed `TaskUpdate` merely records a status that a later call corrects, so
+ result inspection is not needed for the release decision.
+ 
+ @param transcriptLines - transcript JSONL lines, oldest first
+ 
+ @returns whether the list is absent, entirely finished, or still has work
+ 
+ @example
+ ```ts
+ taskListState(lines); // 'all-finished'
+ ```
  */
 function taskListState(transcriptLines: readonly string[],): TaskListState {
   /**
-   * Latest known status per task id.
+   Latest known status per task id.
    */
   const statusById = new Map<string, string>();
 
@@ -76,7 +76,7 @@ function taskListState(transcriptLines: readonly string[],): TaskListState {
     }
 
     /**
-     * Parsed record, or the sentinel for a truncated line.
+     Parsed record, or the sentinel for a truncated line.
      */
     const record = parseRecord(line,);
 
@@ -102,34 +102,34 @@ function taskListState(transcriptLines: readonly string[],): TaskListState {
 }
 
 /**
- * Reports whether a status means no further work is needed.
- *
- * @param status - task status from a `TaskUpdate` call
- *
- * @returns whether this status is terminal
- *
- * @example
- * ```ts
- * isFinishedStatus('completed'); // true
- * ```
+ Reports whether a status means no further work is needed.
+ 
+ @param status - task status from a `TaskUpdate` call
+ 
+ @returns whether this status is terminal
+ 
+ @example
+ ```ts
+ isFinishedStatus('completed'); // true
+ ```
  */
 function isFinishedStatus(status: string,): boolean {
   return FINISHED_STATUSES.has(status,);
 }
 
 /**
- * Registers a task announced by a `TaskCreate` result.
- *
- * @param record - parsed transcript record
- *
- * @param statusById - accumulator mutated with newly created task ids
- *
- * @mutates statusById - inserts newly created task ids at their initial status
- *
- * @example
- * ```ts
- * recordTaskCreation(record, new Map());
- * ```
+ Registers a task announced by a `TaskCreate` result.
+ 
+ @param record - parsed transcript record
+ 
+ @param statusById - accumulator mutated with newly created task ids
+ 
+ @mutates statusById - inserts newly created task ids at their initial status
+ 
+ @example
+ ```ts
+ recordTaskCreation(record, new Map());
+ ```
  */
 function recordTaskCreation(
   {
@@ -141,13 +141,13 @@ function recordTaskCreation(
   },
 ): void {
   /**
-   * Task envelope present on a successful `TaskCreate` result.
+   Task envelope present on a successful `TaskCreate` result.
    */
   const task = record
     .toolUseResult
     ?.task;
   /**
-   * Identifier Claude Code assigned, absent on every other record.
+   Identifier Claude Code assigned, absent on every other record.
    */
   const id = task?.id;
 
@@ -162,18 +162,18 @@ function recordTaskCreation(
 }
 
 /**
- * Applies a `TaskUpdate` call to the replayed state.
- *
- * @param record - parsed transcript record
- *
- * @param statusById - accumulator mutated with the updated status
- *
- * @mutates statusById - overwrites the status for the referenced task id
- *
- * @example
- * ```ts
- * recordTaskUpdate(record, new Map());
- * ```
+ Applies a `TaskUpdate` call to the replayed state.
+ 
+ @param record - parsed transcript record
+ 
+ @param statusById - accumulator mutated with the updated status
+ 
+ @mutates statusById - overwrites the status for the referenced task id
+ 
+ @example
+ ```ts
+ recordTaskUpdate(record, new Map());
+ ```
  */
 function recordTaskUpdate(
   {
@@ -185,7 +185,7 @@ function recordTaskUpdate(
   },
 ): void {
   /**
-   * Assistant content blocks, an array only for structured messages.
+   Assistant content blocks, an array only for structured messages.
    */
   const content = record
     .message
@@ -197,13 +197,13 @@ function recordTaskUpdate(
   }
   for (const call of content) {
     /**
-     * Task identifier the call addresses, absent on every other tool.
+     Task identifier the call addresses, absent on every other tool.
      */
     const taskId = call
       .input
       ?.taskId;
     /**
-     * Status the call applies.
+     Status the call applies.
      */
     const status = call
       .input

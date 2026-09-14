@@ -1,7 +1,7 @@
 /**
- * Tests for the current-vs-selected diff.
- *
- * @module
+ Tests for the current-vs-selected diff.
+ 
+ @module
  */
 
 import {

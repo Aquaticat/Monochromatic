@@ -1,12 +1,12 @@
 /**
- * Managed SSH keypair for the Hetzner backend.
- *
- * Generates a local ed25519 keypair on first use and ensures it exists in the
- * Hetzner project, matched by public-key material (not by name) so an unrelated
- * key already named `mvm` is never reused. Returns the numeric key id to inject
- * at server creation.
- *
- * @module
+ Managed SSH keypair for the Hetzner backend.
+ 
+ Generates a local ed25519 keypair on first use and ensures it exists in the
+ Hetzner project, matched by public-key material (not by name) so an unrelated
+ key already named `mvm` is never reused. Returns the numeric key id to inject
+ at server creation.
+ 
+ @module
  */
 
 import {
@@ -26,19 +26,19 @@ import {
 import { HETZNER_DATA_DIR, } from './config.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 //region Key paths
 
 /**
- * Path to the managed ed25519 private key.
+ Path to the managed ed25519 private key.
  */
 export const PRIVATE_KEY_PATH: string = join(
   HETZNER_DATA_DIR,
@@ -46,12 +46,12 @@ export const PRIVATE_KEY_PATH: string = join(
 );
 
 /**
- * Path to the managed ed25519 public key.
+ Path to the managed ed25519 public key.
  */
 const PUBLIC_KEY_PATH = `${PRIVATE_KEY_PATH}.pub`;
 
 /**
- * Number of trailing key-material characters used to name an uploaded key.
+ Number of trailing key-material characters used to name an uploaded key.
  */
 const NAME_SUFFIX_LENGTH = 12;
 
@@ -60,16 +60,16 @@ const NAME_SUFFIX_LENGTH = 12;
 //region Keypair generation
 
 /**
- * Ensures the managed keypair exists on disk, generating it if absent.
- *
- * @example
- * ```ts
- * await ensureKeypair();
- * ```
+ Ensures the managed keypair exists on disk, generating it if absent.
+ 
+ @example
+ ```ts
+ await ensureKeypair();
+ ```
  */
 async function ensureKeypair(): Promise<void> {
   /**
-   * Logger scoped to this helper so generation is namespaced.
+   Logger scoped to this helper so generation is namespaced.
    */
   const rl = tagged({
     tag: ensureKeypair.name,
@@ -110,21 +110,21 @@ async function ensureKeypair(): Promise<void> {
 //region Material matching
 
 /**
- * Extracts the type-and-base64 material of a public key line, dropping the
- * trailing comment so two keys with the same key but different comments match.
- *
- * @param publicKeyLine - full public key line
- *
- * @returns `"<type> <base64>"`, or the trimmed input when it has fewer fields
- *
- * @example
- * ```ts
- * keyMaterial('ssh-ed25519 AAAAC3... mvm'); // 'ssh-ed25519 AAAAC3...'
- * ```
+ Extracts the type-and-base64 material of a public key line, dropping the
+ trailing comment so two keys with the same key but different comments match.
+ 
+ @param publicKeyLine - full public key line
+ 
+ @returns `"<type> <base64>"`, or the trimmed input when it has fewer fields
+ 
+ @example
+ ```ts
+ keyMaterial('ssh-ed25519 AAAAC3... mvm'); // 'ssh-ed25519 AAAAC3...'
+ ```
  */
 function keyMaterial(publicKeyLine: string,): string {
   /**
-   * Whitespace-separated fields of the key line: type, base64, optional comment.
+   Whitespace-separated fields of the key line: type, base64, optional comment.
    */
   const [type, base64,] = splitOnWhitespace(publicKeyLine,);
   if ((type === undefined) || (base64 === undefined)) {
@@ -134,17 +134,17 @@ function keyMaterial(publicKeyLine: string,): string {
 }
 
 /**
- * Checks whether `c` is ASCII alphanumeric.
- *
- * @param c - single-character string to inspect
- *
- * @returns whether `c` is `[A-Za-z0-9]`
- *
- * @example
- * ```ts
- * isAlphaNum('a'); // true
- * isAlphaNum('/'); // false
- * ```
+ Checks whether `c` is ASCII alphanumeric.
+ 
+ @param c - single-character string to inspect
+ 
+ @returns whether `c` is `[A-Za-z0-9]`
+ 
+ @example
+ ```ts
+ isAlphaNum('a'); // true
+ isAlphaNum('/'); // false
+ ```
  */
 function isAlphaNum(c: string,): boolean {
   return ((c >= 'a') && (c <= 'z'))
@@ -153,22 +153,22 @@ function isAlphaNum(c: string,): boolean {
 }
 
 /**
- * Derives a collision-resistant key name from key material, using only
- * alphanumeric characters so the Hetzner key name is always valid.
- *
- * @param material - the `"<type> <base64>"` material
- *
- * @returns key name like `mvm-<suffix>`
- *
- * @example
- * ```ts
- * uniqueKeyName('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5'); // 'mvm-zaC1lZDI1NTE5'
- * ```
+ Derives a collision-resistant key name from key material, using only
+ alphanumeric characters so the Hetzner key name is always valid.
+ 
+ @param material - the `"<type> <base64>"` material
+ 
+ @returns key name like `mvm-<suffix>`
+ 
+ @example
+ ```ts
+ uniqueKeyName('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5'); // 'mvm-zaC1lZDI1NTE5'
+ ```
  */
 function uniqueKeyName(material: string,): string {
   /**
-   * Alphanumeric-only characters of the material, in order; built with a
-   * for...of loop to avoid spreading a string into an array.
+   Alphanumeric-only characters of the material, in order; built with a
+   for...of loop to avoid spreading a string into an array.
    */
   const alnum: string[] = [];
   for (const c of material) {
@@ -177,7 +177,7 @@ function uniqueKeyName(material: string,): string {
     }
   }
   /**
-   * Trailing slice used as the suffix, or a constant fallback when empty.
+   Trailing slice used as the suffix, or a constant fallback when empty.
    */
   const suffix = alnum.slice(-NAME_SUFFIX_LENGTH,)
     .join('',);
@@ -189,32 +189,32 @@ function uniqueKeyName(material: string,): string {
 //region Key id resolution
 
 /**
- * Ensures the managed keypair exists locally and in the Hetzner project, then
- * returns the numeric key id to inject at server creation. Matches an existing
- * project key by public-key material; uploads a uniquely named key otherwise.
- *
- * @returns numeric Hetzner SSH key id
- *
- * @example
- * ```ts
- * const sshKeyId = await ensureSshKeyId();
- * ```
+ Ensures the managed keypair exists locally and in the Hetzner project, then
+ returns the numeric key id to inject at server creation. Matches an existing
+ project key by public-key material; uploads a uniquely named key otherwise.
+ 
+ @returns numeric Hetzner SSH key id
+ 
+ @example
+ ```ts
+ const sshKeyId = await ensureSshKeyId();
+ ```
  */
 export async function ensureSshKeyId(): Promise<number> {
   await ensureKeypair();
   /**
-   * Managed public key line read from disk.
+   Managed public key line read from disk.
    */
   const publicKey = (await readFile(
     PUBLIC_KEY_PATH,
     'utf8',
   )).trim();
   /**
-   * Material of our key, used to match a project key regardless of its name.
+   Material of our key, used to match a project key regardless of its name.
    */
   const ourMaterial = keyMaterial(publicKey,);
   /**
-   * Project key whose material matches ours, when one already exists.
+   Project key whose material matches ours, when one already exists.
    */
   const existing = (await listSshKeys()).find(function sameMaterial(key,) {
     return keyMaterial(key.public_key,) === ourMaterial;

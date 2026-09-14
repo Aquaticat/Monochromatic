@@ -1,5 +1,5 @@
 /**
- * Recursive trust revocation planning and transaction. @module
+ Recursive trust revocation planning and transaction. @module
  */
 import type { TrustIdentity, } from './types.ts';
 import {
@@ -15,27 +15,27 @@ import {
 } from './registry-transaction.ts';
 
 /**
- * Recursive untrust result.
+ Recursive untrust result.
  */
 export type RecursiveUntrustResult = Readonly<{
   /**
-   * Whether exact target record existed.
+   Whether exact target record existed.
    */
   removed: boolean;
   /**
-   * Canonical recursive roots revoked by cascade.
+   Canonical recursive roots revoked by cascade.
    */
   affectedRoots: readonly string[];
 }>;
 
 /**
- * Expands nested recursive-root cascade through provenance graph.
- *
- * @param targets - exact target records
- *
- * @param entriesByKey - installed records by identity
- *
- * @returns identities whose authority must be removed
+ Expands nested recursive-root cascade through provenance graph.
+ 
+ @param targets - exact target records
+ 
+ @param entriesByKey - installed records by identity
+ 
+ @returns identities whose authority must be removed
  */
 function cascadeRootKeys({
   targets,
@@ -45,14 +45,14 @@ function cascadeRootKeys({
   entriesByKey: ReadonlyMap<string, TrustCatalogEntry>;
 }>,): ReadonlySet<string> {
   /**
-   * Mutable structural graph work state.
+   Mutable structural graph work state.
    */
   const revoked = new Set<string>(targets.map(function targetKey(target,) {
     return trustIdentityKey(target.record
       .identity,);
   },),);
   /**
-   * Bounded provenance graph work stack.
+   Bounded provenance graph work stack.
    */
   const pending = targets.flatMap(function recursiveAuthorizers(target,) {
     return target.record
@@ -61,19 +61,19 @@ function cascadeRootKeys({
   },);
   while (pending.length > 0) {
     /**
-     * Next outer authorizer.
+     Next outer authorizer.
      */
     const identity = pending.pop();
     if (identity === undefined)
       continue;
     /**
-     * Exact authorizer key.
+     Exact authorizer key.
      */
     const key = trustIdentityKey(identity,);
     if (revoked.has(key,))
       continue;
     /**
-     * Installed recursive outer root.
+     Installed recursive outer root.
      */
     const outer = entriesByKey.get(key,);
     if ((outer === undefined) || (!outer.record
@@ -87,13 +87,13 @@ function cascadeRootKeys({
 }
 
 /**
- * Computes final provenance operations after root cascade.
- *
- * @param entries - installed catalog
- *
- * @param revokedKeys - identities losing authority
- *
- * @returns only changed record operations
+ Computes final provenance operations after root cascade.
+ 
+ @param entries - installed catalog
+ 
+ @param revokedKeys - identities losing authority
+ 
+ @returns only changed record operations
  */
 function planOperations({
   entries,
@@ -104,12 +104,12 @@ function planOperations({
 }>,): readonly ProvenanceOperation[] {
   return entries.flatMap<ProvenanceOperation>(function planEntry(entry,) {
     /**
-     * Current record identity key.
+     Current record identity key.
      */
     const entryKey = trustIdentityKey(entry.record
       .identity,);
     /**
-     * Provenance surviving cascade.
+     Provenance surviving cascade.
      */
     const retained = entry.record
       .authorizingRoots
@@ -117,14 +117,14 @@ function planOperations({
       return !revokedKeys.has(trustIdentityKey(identity,),);
     },);
     /**
-     * Legacy empty provenance denotes explicit trust.
+     Legacy empty provenance denotes explicit trust.
      */
     const legacyExplicit = entry.record
       .authorizingRoots
       .length
       === 0;
     /**
-     * Whether record itself is one revoked root.
+     Whether record itself is one revoked root.
      */
     const revokeRecord = revokedKeys.has(entryKey,);
     if ((revokeRecord && legacyExplicit)
@@ -150,20 +150,20 @@ function planOperations({
 }
 
 /**
- * Revokes exact target plus inherited and nested recursive authority.
- *
- * @param registryRoot - complete private registry root
- *
- * @param identities - current or recovered target identities
- *
- * @param disclose - prints affected recursive roots before mutation
- *
- * @returns removal and cascade summary
- *
- * @example
- * ```ts
- * await revokeRecursiveTrust({ registryRoot, identities: [identity], disclose: console.error });
- * ```
+ Revokes exact target plus inherited and nested recursive authority.
+ 
+ @param registryRoot - complete private registry root
+ 
+ @param identities - current or recovered target identities
+ 
+ @param disclose - prints affected recursive roots before mutation
+ 
+ @returns removal and cascade summary
+ 
+ @example
+ ```ts
+ await revokeRecursiveTrust({ registryRoot, identities: [identity], disclose: console.error });
+ ```
  */
 export async function revokeRecursiveTrust({
   registryRoot,
@@ -175,16 +175,16 @@ export async function revokeRecursiveTrust({
   readonly disclose: (text: string,) => void;
 },): Promise<RecursiveUntrustResult> {
   /**
-   * Registry-wide lock serializes revocation against descendant enrollment.
+   Registry-wide lock serializes revocation against descendant enrollment.
    */
   await using recursiveLock = await acquireRecursiveRegistryLock({ registryRoot, },);
   await recoverProvenanceTransactions({ registryRoot, },);
   /**
-   * Every installed record before mutation.
+   Every installed record before mutation.
    */
   const entries = await listTrustRecords({ registryRoot, },);
   /**
-   * Installed records by exact identity.
+   Installed records by exact identity.
    */
   const entriesByKey = new Map(entries.map(function keyedEntry(entry,) {
     return [
@@ -194,7 +194,7 @@ export async function revokeRecursiveTrust({
     ] as const;
   },),);
   /**
-   * Exact current or recovered target entries.
+   Exact current or recovered target entries.
    */
   const targets = identities
     .map(function targetEntry(identity,) {
@@ -209,14 +209,14 @@ export async function revokeRecursiveTrust({
       affectedRoots: [],
     };
   /**
-   * Root identities removed directly or by nested cascade.
+   Root identities removed directly or by nested cascade.
    */
   const revokedKeys = cascadeRootKeys({
     targets,
     entriesByKey,
   },);
   /**
-   * Canonical affected recursive root paths.
+   Canonical affected recursive root paths.
    */
   const affectedRootCandidates = [...revokedKeys,]
     .map(function affectedEntry(key,) {
@@ -232,7 +232,7 @@ export async function revokeRecursiveTrust({
         .repositoryRoot;
     },);
   /**
-   * Deterministic unique affected paths across replaced identities.
+   Deterministic unique affected paths across replaced identities.
    */
   const affectedRoots = [...new Set(affectedRootCandidates,)].toSorted();
   if (affectedRoots.length > 0) {
@@ -245,7 +245,7 @@ export async function revokeRecursiveTrust({
     ].join('\n',),);
   }
   /**
-   * Complete changed provenance plan.
+   Complete changed provenance plan.
    */
   const operations = planOperations({
     entries,

@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlGetComments`.
- *
- * @module
+ Tests for `tomlGetComments`.
+ 
+ @module
  */
 
 import {

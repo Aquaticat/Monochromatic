@@ -1,5 +1,5 @@
 /**
- * Shared types and helper functions for the task data-access layer.
+ Shared types and helper functions for the task data-access layer.
  */
 import db from '../db.ts';
 import {
@@ -13,149 +13,149 @@ import { SQL_SELECT_TASK_BY_ID, } from './tasks-sql.ts';
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors `@tursodatabase/database` `prepare().get()/.all()` raw row shape: SQLite NULL columns materialize as JS `null` on the returned row object, so the honest type for a nullable column is `T | null`; `mapTask` converts these to absent (`?:`) fields at the application boundary */
 /**
- * Raw SQLite row shape before mapping to the application-level `Task` type.
+ Raw SQLite row shape before mapping to the application-level `Task` type.
  */
 export type TaskRow = {
   /**
-   * Primary key UUID.
+   Primary key UUID.
    */
   readonly id: string;
   /**
-   * Task title text.
+   Task title text.
    */
   readonly title: string;
   /**
-   * Optional task description.
+   Optional task description.
    */
   readonly description: string | null;
   /**
-   * JSON-encoded string array (`'["tag1","tag2"]'`).
+   JSON-encoded string array (`'["tag1","tag2"]'`).
    */
   readonly tags: string;
   /**
-   * JSON-encoded string array.
+   JSON-encoded string array.
    */
   readonly locations: string;
   /**
-   * Task priority level or null.
+   Task priority level or null.
    */
   readonly priority: TaskPriority | null;
   /**
-   * ISO date string for due date or null.
+   ISO date string for due date or null.
    */
   readonly due_date: string | null;
   /**
-   * Task complexity level or null.
+   Task complexity level or null.
    */
   readonly complexity: TaskComplexity | null;
   /**
-   * JSON-encoded string array.
+   JSON-encoded string array.
    */
   readonly reminders: string;
   /**
-   * JSON-encoded string array of blocker task IDs.
+   JSON-encoded string array of blocker task IDs.
    */
   readonly blocked_by: string;
   /**
-   * Total tracked seconds.
+   Total tracked seconds.
    */
   readonly tracked_time: number;
   /**
-   * ISO timestamp when timer was started, or null.
+   ISO timestamp when timer was started, or null.
    */
   readonly timer_started_at: string | null;
   /**
-   * Current task workflow status.
+   Current task workflow status.
    */
   readonly status: TaskStatus;
   /**
-   * Source system that created this task.
+   Source system that created this task.
    */
   readonly source: Task['source'];
   /**
-   * External source identifier.
+   External source identifier.
    */
   readonly source_id: string | null;
   /**
-   * Additional source metadata as JSON.
+   Additional source metadata as JSON.
    */
   readonly source_meta: string | null;
   /**
-   * ISO timestamp of creation.
+   ISO timestamp of creation.
    */
   readonly created_at: string;
   /**
-   * ISO timestamp of last update.
+   ISO timestamp of last update.
    */
   readonly updated_at: string;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**
- * Summary of a single blocker task, used to report why completion was refused.
+ Summary of a single blocker task, used to report why completion was refused.
  */
 export type BlockerSummary = {
   /**
-   * UUID of the blocking task.
+   UUID of the blocking task.
    */
   blockerId: string;
   /**
-   * Title of the blocking task.
+   Title of the blocking task.
    */
   blockerTitle: string;
 };
 
 /**
- * Outcome of a {@link completeTask} call; carries blockers when completion is refused.
+ Outcome of a {@link completeTask} call; carries blockers when completion is refused.
  */
 export type CompleteTaskResult = {
   /**
-   * Whether the task was successfully completed and deleted.
+   Whether the task was successfully completed and deleted.
    */
   completed: boolean;
   /**
-   * Whether the task ID was not found in the database.
+   Whether the task ID was not found in the database.
    */
   notFound: boolean;
   /**
-   * List of active blockers that prevented completion.
+   List of active blockers that prevented completion.
    */
   blockedBy: BlockerSummary[];
 };
 
 /**
- * Returns the current timestamp in ISO 8601 format for database writes.
- *
- * @returns Current ISO timestamp string
- *
- * @example
- * ```ts
- * const timestamp = nowIso();
- * // '2026-04-05T12:00:00.000Z'
- * ```
+ Returns the current timestamp in ISO 8601 format for database writes.
+ 
+ @returns Current ISO timestamp string
+ 
+ @example
+ ```ts
+ const timestamp = nowIso();
+ // '2026-04-05T12:00:00.000Z'
+ ```
  */
 export function nowIso(): string {
   return new Date().toISOString();
 }
 
 /**
- * Safely parses a JSON string expected to contain a string array.
- * Returns an empty array on parse failure or unexpected shape.
- *
- * @param value - Raw JSON text from a SQLite TEXT column
- *
- * @returns Parsed string array, or empty array on failure
- *
- * @example
- * ```ts
- * const tags = parseStringArray('["errand","home"]');
- * // ['errand', 'home']
- * ```
+ Safely parses a JSON string expected to contain a string array.
+ Returns an empty array on parse failure or unexpected shape.
+ 
+ @param value - Raw JSON text from a SQLite TEXT column
+ 
+ @returns Parsed string array, or empty array on failure
+ 
+ @example
+ ```ts
+ const tags = parseStringArray('["errand","home"]');
+ // ['errand', 'home']
+ ```
  */
 export function parseStringArray(value: string,): string[] {
   try {
     /**
-     * Untyped parse result narrowed by the array guard below.
+     Untyped parse result narrowed by the array guard below.
      */
     const parsed = JSON.parse(value,) as unknown;
     if (!Array.isArray(parsed,))
@@ -175,18 +175,18 @@ export function parseStringArray(value: string,): string[] {
 }
 
 /**
- * Deduplicates, trims, and filters empty strings from an optional array.
- * Used to normalize user-supplied tag/location/blocker arrays before DB writes.
- *
- * @param values - Raw string array, or `undefined` to produce an empty result
- *
- * @returns Normalized deduplicated array
- *
- * @example
- * ```ts
- * const tags = normalizeStringArray([' errand ', 'home', '', 'errand']);
- * // ['errand', 'home']
- * ```
+ Deduplicates, trims, and filters empty strings from an optional array.
+ Used to normalize user-supplied tag/location/blocker arrays before DB writes.
+ 
+ @param values - Raw string array, or `undefined` to produce an empty result
+ 
+ @returns Normalized deduplicated array
+ 
+ @example
+ ```ts
+ const tags = normalizeStringArray([' errand ', 'home', '', 'errand']);
+ // ['errand', 'home']
+ ```
  */
 export function normalizeStringArray(values?: readonly string[],): string[] {
   if (values === undefined)
@@ -202,22 +202,22 @@ export function normalizeStringArray(values?: readonly string[],): string[] {
 }
 
 /**
- * Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
- * Parses JSON-encoded array columns via {@link parseStringArray} and renames
- * snake_case to camelCase.
- *
- * @param row - Raw database row
- *
- * @returns Mapped task object
- *
- * @example
- * ```ts
- * const task = mapTask(row);
- * ```
+ Converts a raw SQLite {@link TaskRow} to the application-level {@link Task} shape.
+ Parses JSON-encoded array columns via {@link parseStringArray} and renames
+ snake_case to camelCase.
+ 
+ @param row - Raw database row
+ 
+ @returns Mapped task object
+ 
+ @example
+ ```ts
+ const task = mapTask(row);
+ ```
  */
 export function mapTask(row: Readonly<TaskRow>,): Task {
   /**
-   * Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field.
+   Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field.
    */
   const task: { -readonly [K in keyof Task]: Task[K]; } = {
     id: row.id,
@@ -257,20 +257,20 @@ export function mapTask(row: Readonly<TaskRow>,): Task {
 }
 
 /**
- * Fetches a single task row by primary key without mapping.
- *
- * @param id - Task UUID
- *
- * @returns Raw task row, or {@link TASK_NOT_FOUND} when not found
- *
- * @example
- * ```ts
- * const row = await getTaskRowById('abc-123');
- * ```
+ Fetches a single task row by primary key without mapping.
+ 
+ @param id - Task UUID
+ 
+ @returns Raw task row, or {@link TASK_NOT_FOUND} when not found
+ 
+ @example
+ ```ts
+ const row = await getTaskRowById('abc-123');
+ ```
  */
 export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK_NOT_FOUND> {
   /**
-   * Raw row read from SQLite; nullish when no row matches the requested ID.
+   Raw row read from SQLite; nullish when no row matches the requested ID.
    */
   const taskRow: unknown = await (await db.prepare(SQL_SELECT_TASK_BY_ID,))
     .get(id,);

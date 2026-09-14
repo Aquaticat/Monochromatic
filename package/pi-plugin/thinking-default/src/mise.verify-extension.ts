@@ -1,7 +1,7 @@
 /**
- * Verifies the built thinking-default extension registers expected Pi events.
- *
- * @module
+ Verifies the built thinking-default extension registers expected Pi events.
+ 
+ @module
  */
 
 import {
@@ -14,12 +14,12 @@ import {
 //region Constants
 
 /**
- * Built extension path consumed by Pi.
+ Built extension path consumed by Pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected event registrations from the extension entry point.
+ Expected event registrations from the extension entry point.
  */
 const EXPECTED_REGISTRATIONS = [
   'event:session_start',
@@ -31,11 +31,11 @@ const EXPECTED_REGISTRATIONS = [
 //region Types
 
 /**
- * Built thinking-default extension module shape.
+ Built thinking-default extension module shape.
  */
 type ThinkingDefaultsExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   readonly default: ExtensionFactory;
 };
@@ -45,22 +45,22 @@ type ThinkingDefaultsExtensionModule = {
 //region Verification
 
 /**
- * Verifies that the built extension exports and registers correctly,
- * checking the import with {@link isThinkingDefaultsExtensionModule} and
- * registering through {@link fakePiApi}.
- *
- * @returns verification result text
- *
- * @throws when built extension import or registration fails
- *
- * @example
- * ```typescript
- * console.log(await verifyBuiltExtension());
- * ```
+ Verifies that the built extension exports and registers correctly,
+ checking the import with {@link isThinkingDefaultsExtensionModule} and
+ registering through {@link fakePiApi}.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import or registration fails
+ 
+ @example
+ ```typescript
+ console.log(await verifyBuiltExtension());
+ ```
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isThinkingDefaultsExtensionModule(mod,)) {
@@ -70,7 +70,7 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API plus its captured registration log.
+   Fake Pi API plus its captured registration log.
    */
   const {
     api,
@@ -79,7 +79,7 @@ async function verifyBuiltExtension(): Promise<string> {
   await mod.default(api,);
 
   /**
-   * Expected registrations not observed.
+   Expected registrations not observed.
    */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
@@ -95,16 +95,16 @@ async function verifyBuiltExtension(): Promise<string> {
 }
 
 /**
- * Detects built thinking-default extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module matches {@link ThinkingDefaultsExtensionModule}, exporting an extension factory
- *
- * @example
- * ```typescript
- * isThinkingDefaultsExtensionModule(await import('../dist/final/node/index.mjs'));
- * ```
+ Detects built thinking-default extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module matches {@link ThinkingDefaultsExtensionModule}, exporting an extension factory
+ 
+ @example
+ ```typescript
+ isThinkingDefaultsExtensionModule(await import('../dist/final/node/index.mjs'));
+ ```
  */
 function isThinkingDefaultsExtensionModule(
   value: unknown,
@@ -115,25 +115,25 @@ function isThinkingDefaultsExtensionModule(
 }
 
 /**
- * Builds fake Pi API used to verify extension registration.
- *
- * @returns fake Pi extension API plus its captured registration log
- *
- * @example
- * ```typescript
- * const { api, registrations } = fakePiApi();
- * ```
+ Builds fake Pi API used to verify extension registration.
+ 
+ @returns fake Pi extension API plus its captured registration log
+ 
+ @example
+ ```typescript
+ const { api, registrations } = fakePiApi();
+ ```
  */
 function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: readonly string[];
 } {
   /**
-   * Mutable registration call log captured by the fake API.
+   Mutable registration call log captured by the fake API.
    */
   const registrations: string[] = [];
   /**
-   * Fake Pi API recording each registration into the captured log.
+   Fake Pi API recording each registration into the captured log.
    */
   const api: ExtensionAPI = {
     on(event: string,) {

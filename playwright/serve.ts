@@ -8,7 +8,7 @@ import {
 } from 'h3';
 
 /**
- * Map file extensions to MIME types for browser test assets.
+ Map file extensions to MIME types for browser test assets.
  */
 const mimeTypes: Record<string, string> = {
   '.html': 'text/html',
@@ -20,7 +20,7 @@ const mimeTypes: Record<string, string> = {
 };
 
 /**
- * Test-harness HTTP server; routes serve the harness HTML and built dist assets to Playwright.
+ Test-harness HTTP server; routes serve the harness HTML and built dist assets to Playwright.
  */
 const app = new H3();
 
@@ -28,7 +28,7 @@ app.all(
   '/**',
   defineHandler(async function serveTestHarness(event,) {
     /**
-     * Request URL path; routed below by prefix match.
+     Request URL path; routed below by prefix match.
      */
     const { pathname, } = event.url;
 
@@ -41,15 +41,58 @@ app.all(
       );
     }
 
-    if (pathname.startsWith('/dist/module-logger/',)) {
+    if (pathname.startsWith('/dist/module-test/',)) {
       /**
-       * Resolved MIME type for the requested asset; falls back to a safe binary type.
+       Browser acceptance imports only this package's built fixture assets.
+       */
+      const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
+      return new Response(
+        await readFile(`package/module/test/dist/${pathname.slice('/dist/module-test/'.length,)}`,),
+        { headers: { 'content-type': contentType, }, },
+      );
+    }
+
+    if (pathname.startsWith('/dist/module-logger.fuzz/',)) {
+      /**
+       Resolved MIME type for the requested sidecar asset; falls back to a safe binary type.
        */
       const contentType = mimeTypes[extname(pathname,)]
         ?? 'application/octet-stream';
       return new Response(
         await readFile(
-          `packages/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
+          `package/module/logger.fuzz/dist/${pathname.slice('/dist/module-logger.fuzz/'.length,)}`,
+        ),
+        {
+          headers: { 'content-type': contentType, },
+        },
+      );
+    }
+
+    if (pathname.startsWith('/dist/module-fs-path/',)) {
+      /**
+       Resolved MIME type for the requested fs-path asset; falls back to a safe binary type.
+       */
+      const contentType = mimeTypes[extname(pathname,)]
+        ?? 'application/octet-stream';
+      return new Response(
+        await readFile(
+          `package/module/fs-path/dist/${pathname.slice('/dist/module-fs-path/'.length,)}`,
+        ),
+        {
+          headers: { 'content-type': contentType, },
+        },
+      );
+    }
+
+    if (pathname.startsWith('/dist/module-logger/',)) {
+      /**
+       Resolved MIME type for the requested asset; falls back to a safe binary type.
+       */
+      const contentType = mimeTypes[extname(pathname,)]
+        ?? 'application/octet-stream';
+      return new Response(
+        await readFile(
+          `package/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
         ),
         {
           headers: { 'content-type': contentType, },

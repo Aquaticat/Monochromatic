@@ -12,7 +12,9 @@ MCP server that exposes [mvm](../../cli/mvm/) VM management operations to AI age
    `server_type`/`location`)
 - **destroy_vm**:
    force-stops and deletes a VM by name,
-   or all managed VMs when `all` is true
+   or all managed VMs when `all` is true.
+   Exactly one of the two:
+   a call carrying both is refused before any backend is resolved
 - **exec_in_vm**:
    runs a shell command inside a running VM (guest agent for libvirt,
    SSH for hetzner)
@@ -51,16 +53,41 @@ follow-up tool calls that you used in `create_vm`.
 
 ## Usage
 
+Build the server,
+then register the built bin by absolute path:
+
+```sh
+mise run //package/mcp/mvm:build
+claude mcp add --scope user mvm -- node /path/to/package/mcp/mvm/dist/final/node/index.mjs
+```
+
+Registering it by hand instead produces the same entry:
+
 ```json
 {
   "mcpServers": {
     "mvm": {
-      "command": "bun",
-      "args": ["run", "/path/to/packages/mcp/mvm/src/index.ts"]
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/package/mcp/mvm/dist/final/node/index.mjs"]
     }
   }
 }
 ```
+
+Point the path at the built bin,
+not at `src/index.ts`:
+the source entry imports workspace packages by name and does not run standalone.
+A registration whose path no longer resolves fails as `CONNECTION_CLOSED`,
+because the process exits before writing a JSON-RPC frame;
+`claude mcp get mvm` reports the path it actually tried.
+
+## Protocol
+
+Serves MCP revision **2026-07-28** and only that revision,
+through [`@monochromatic-dev/mcp-stdio`](../stdio/).
+Clients that open with the removed `initialize` handshake are not served;
+see that package's README for what the revision changed.
 
 ## Requirements
 

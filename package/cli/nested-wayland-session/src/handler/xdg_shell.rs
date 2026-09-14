@@ -65,7 +65,7 @@ fn set_fullscreen(surface: &ToplevelSurface, output: &Output) {
     // ```ts
     // const size = output.currentMode()?.size ?? { w: 0, h: 0 };
     // ```
-    let size = output.current_mode().map(|m| m.size).unwrap_or_default();
+    let size = output.current_mode().map(|m| return m.size).unwrap_or_default();
 
     // What:     `surface.with_pending_state(|state| { ... });`. Runs the closure with a
     //           mutable borrow of the toplevel's not-yet-sent configure state.
@@ -129,7 +129,7 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
     let toplevels: Vec<ToplevelSurface> = state
         .space
         .elements()
-        .filter_map(|w| w.toplevel().cloned())
+        .filter_map(|w| return w.toplevel().cloned())
         .collect();
 
     // What:     `for toplevel in &toplevels { ... }`. Borrow each collected toplevel in
@@ -157,7 +157,7 @@ impl XdgShellHandler for Compositor {
     fn xdg_shell_state(&mut self) -> &mut XdgShellState {
         // What:     `&mut self.xdg_shell_state`. Mutable borrow (tail expression).
         // Why:      Return the shell state.
-        &mut self.xdg_shell_state
+        return &mut self.xdg_shell_state
     }
 
     /// What:     `fn new_toplevel(&mut self, surface: ToplevelSurface)`. Called when the
@@ -292,7 +292,7 @@ pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>, surface: 
     // Why:      Toplevel-specific: send the first configure if not yet sent.
     if let Some(window) = space
         .elements()
-        .find(|w| w.toplevel().unwrap().wl_surface() == surface)
+        .find(|w| return w.toplevel().unwrap().wl_surface() == surface)
         .cloned()
     {
         // What:     `let initial_configure_sent = with_states(surface, |states| { states
@@ -303,7 +303,7 @@ pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>, surface: 
         //           boolean flag.
         // Why:      Decide whether the first configure still needs sending.
         let initial_configure_sent = with_states(surface, |states| {
-            states
+            return states
                 .data_map
                 .get::<XdgToplevelSurfaceData>()
                 .unwrap()
@@ -373,7 +373,7 @@ impl Compositor {
         let Some(window) = self
             .space
             .elements()
-            .find(|w| w.toplevel().unwrap().wl_surface() == &root)
+            .find(|w| return w.toplevel().unwrap().wl_surface() == &root)
         else {
             return;
         };

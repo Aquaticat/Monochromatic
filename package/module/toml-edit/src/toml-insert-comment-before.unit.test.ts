@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlInsertCommentBefore`.
- *
- * @module
+ Tests for `tomlInsertCommentBefore`.
+ 
+ @module
  */
 
 import {

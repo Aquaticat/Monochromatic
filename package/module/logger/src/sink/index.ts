@@ -1,11 +1,8 @@
+// Cross-platform factories only. The file sink lives behind the `./node`
+// subpath (`src/node.ts`) and the IndexedDB and OPFS sinks behind `./browser`
+// (`src/browser.ts`), so the root entry never pulls `node:fs` into the
+// neutral artifact nor browser-only storage code into the Node artifact.
 export { createConsoleSink, } from './console.ts';
-export {
-  createFileSink,
-  findNodeModulesUp,
-  NO_NODE_MODULES_FOUND,
-} from './file.ts';
-export { createIndexedDbSink, } from './indexed-db.ts';
 export { createLocalStorageSink, } from './local-storage.ts';
 export { createNoopSink, } from './noop.ts';
-export { createOpfsSink, } from './opfs.ts';
 export { createSessionStorageSink, } from './session-storage.ts';

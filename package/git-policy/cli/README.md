@@ -5,7 +5,18 @@ The package also exposes a side-effect-free policy authoring API.
 
 ## Runtime
 
-Cli-git requires Node `^22.18.0 || >=24.11.0`.
+Cli-git supports the latest Node LTS line,
+currently Node `^24.11.0`.
+The single `engines.node` range in `package.json` is canonical:
+the build derives its transform target from that range,
+and CI builds,
+tests,
+imports,
+and invokes the package at its exact floor.
+CI also compares the range with Node's published latest LTS release each day.
+When a new Node line becomes LTS,
+replace the range with that line's first LTS release instead of adding a historical branch.
+
 Installing the package exposes a shadowing `git` executable.
 Put the package's `node_modules/.bin` directory before the real Git directory on `PATH`;
 the wrapper resolves and forwards to the next real Git executable.
@@ -20,8 +31,10 @@ trusted policies,
 fixed transforms,
 and post-commit auto-push.
 Use a known absolute real-Git path only for deliberate bypasses such as fixture setup or forensic inspection.
-Cli-git's own real-Git resolver rejects its package entry and package-manager shims that point back to that entry,
-then follows PATH directory order and Windows `PATHEXT` extension order.
+The shared `@monochromatic-dev/git-executable` resolver rejects cli-git's package entry and package-manager shims that
+point back to that entry.
+Common platform Git paths exposed by `PATH` have priority;
+remaining candidates follow `PATH` directory order and Windows `PATHEXT` extension order.
 
 The package is prepared for npm distribution,
 but registry publication is deliberately deferred to issue #358.
@@ -146,7 +159,11 @@ It is an in-process unique symbol and is never serialized to JSONL.
 ## Shipped optional policies
 
 Repo-owned policies ship in the same package-root MJS artifact but remain disabled until trusted config registers them.
-The current optional export is `repositoryPolicyPlugin`.
+The current optional exports are `repositoryPolicyPlugin`,
+`forbiddenStringsPlugin`,
+and `markdownLintPlugin`.
+`markdownLintPlugin` runs `cli-markdown-lint --fix` over Markdown candidates inside the commit transaction;
+its source and options live in `package/git-policy/markdown-lint/README.md`.
 
 ```ts
 import {
@@ -294,9 +311,11 @@ Do not remove the retained directory merely to silence that diagnostic;
 the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
 whose index installation was interrupted.
 
-Use the namespaced Optique management commands:
+Use the namespaced cli-git management commands:
 
 ```sh
+git cli-git --help
+git cli-git trust --help
 git cli-git trust
 git cli-git trust --yes
 git cli-git untrust
@@ -304,6 +323,13 @@ git cli-git status
 git cli-git check --all
 git cli-git check --policy require-root -- path/to/file
 ```
+
+Namespace and trust help exit `0`,
+write help to stdout,
+and return before repository config discovery,
+trust-registry access,
+or transaction recovery.
+Unknown options remain usage failures with exit `2`.
 
 `status` reports whether repository config is absent,
 untrusted,
@@ -340,7 +366,9 @@ Known inspection-only Git commands skip config loading.
 `branch` and `tag` use argument-aware classification;
 unknown or ambiguous commands take the config-loading path and therefore block on untrusted config.
 
-First config-loading use exits `2` without executing repository code and points to `git cli-git trust`.
+First config-loading use exits `2` without executing repository code.
+Its `config-untrusted` event names the affected configuration and points to both consent paths:
+interactive `git cli-git trust` and explicit noninteractive `git cli-git trust --yes`.
 Trust validates UTF-8,
 JavaScript syntax,
 and module edges before consent.
@@ -358,9 +386,15 @@ complete filesystem identity and stability,
 exact snapshot state and byte count,
 retained Node built-ins,
 and arbitrary-code authority.
-`--yes` is explicit noninteractive consent for CI.
+`--yes` is explicit noninteractive consent for automation,
+including CI and agent sessions.
 Without `--yes`,
-noninteractive input declines with exit `2`.
+trust requires terminal stdin and stderr.
+Missing terminal streams or input ending before a response emit `trust-consent-unavailable` with exit `2`
+and recommend `git cli-git trust --yes` after review.
+The failed attempt installs or replaces no trust record;
+a previous record remains unchanged.
+A completed interactive response other than exact `yes` remains a decline reported as `trust-failed`.
 Trusted code is not sandboxed:
 it runs with full account file,
 process,

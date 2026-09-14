@@ -81,7 +81,7 @@ import { join, } from 'node:path';
 import { RELAXATIONS, } from './port-betterleaks-relaxations.ts';
 
 /**
- * One rule extracted from the upstream TOML, before conversion.
+ One rule extracted from the upstream TOML, before conversion.
  */
 type RawRule = {
   readonly id: string;
@@ -94,38 +94,38 @@ type RawRule = {
 };
 
 /** Escape resharp-only meta characters that PCRE treats as literal: `~`,
- *  `_`, `&`. `~` is the resharp complement operator, `_` is the universal
- *  wildcard, `&` is intersection. Outside a character class these need
- *  backslash escapes; inside `[...]` they're already literal (resharp's
- *  class-level operators are doubled, e.g. `[A&&B]`).
- *
- *  The walker tracks whether the cursor is inside `[...]`, skips `\X`
- *  escape sequences verbatim (so existing escapes are preserved), and
- *  treats `]` as a class terminator unless it appears in the
- *  literal-`]` position immediately after `[` or `[^`.
+  `_`, `&`. `~` is the resharp complement operator, `_` is the universal
+  wildcard, `&` is intersection. Outside a character class these need
+  backslash escapes; inside `[...]` they're already literal (resharp's
+  class-level operators are doubled, e.g. `[A&&B]`).
+ 
+  The walker tracks whether the cursor is inside `[...]`, skips `\X`
+  escape sequences verbatim (so existing escapes are preserved), and
+  treats `]` as a class terminator unless it appears in the
+  literal-`]` position immediately after `[` or `[^`.
  */
 function escapeResharpOnlyMeta({ pattern, }: { readonly pattern: string; },): string {
   /**
-   * Accumulator for the rewritten pattern, built char-by-char.
+   Accumulator for the rewritten pattern, built char-by-char.
    */
   let out = '';
   /**
-   * Cursor into `pattern`; advanced by one or two chars per iteration.
+   Cursor into `pattern`; advanced by one or two chars per iteration.
    */
   let i = 0;
   /**
-   * Tracks whether the cursor currently sits inside a `[...]` character class.
+   Tracks whether the cursor currently sits inside a `[...]` character class.
    */
   let inClass = false;
   /**
-   * Index where the current class body begins (right after `[` or `[^`).
-   *
-   * Used to recognise the literal-`]` position: a `]` at `classBodyStart` is
-   * a literal character, not the class terminator.
+   Index where the current class body begins (right after `[` or `[^`).
+   
+   Used to recognise the literal-`]` position: a `]` at `classBodyStart` is
+   a literal character, not the class terminator.
    */
   let classBodyStart = -1;
   /**
-   * Resharp-only meta characters that need backslash-escaping outside `[...]`.
+   Resharp-only meta characters that need backslash-escaping outside `[...]`.
    */
   const META: ReadonlySet<string> = new Set([
     '~',
@@ -135,7 +135,7 @@ function escapeResharpOnlyMeta({ pattern, }: { readonly pattern: string; },): st
   while (i < pattern
     .length) {
     /**
-     * Current character under the cursor; shorthand to avoid repeating `pattern[i]!`.
+     Current character under the cursor; shorthand to avoid repeating `pattern[i]!`.
      */
     const c = pattern[i]!;
     // Pass an escape sequence through unmodified (consumes two chars).
@@ -185,12 +185,12 @@ function escapeResharpOnlyMeta({ pattern, }: { readonly pattern: string; },): st
 }
 
 /**
- * Convert a betterleaks-style PCRE regex to resharp-compatible form, finishing
- * with {@link escapeResharpOnlyMeta} for the resharp-only meta characters.
+ Convert a betterleaks-style PCRE regex to resharp-compatible form, finishing
+ with {@link escapeResharpOnlyMeta} for the resharp-only meta characters.
  */
 function pcreToResharp({ pattern, }: { readonly pattern: string; },): string {
   /**
-   * Working copy threaded through the three rewrite passes below.
+   Working copy threaded through the three rewrite passes below.
    */
   let out = pattern;
   // Drop named-capture syntax: `(?P<name>...)` -> `(?:...)`. Resharp
@@ -218,30 +218,30 @@ function pcreToResharp({ pattern, }: { readonly pattern: string; },): string {
 }
 
 /**
- * Parse the betterleaks TOML and yield the subset of fields we care about,
- * one {@link RawRule} per parsed entry.
+ Parse the betterleaks TOML and yield the subset of fields we care about,
+ one {@link RawRule} per parsed entry.
  */
 function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] {
   /**
-   * Line-split TOML so the parser can step line-by-line via index `i`.
+   Line-split TOML so the parser can step line-by-line via index `i`.
    */
   const lines = toml.split('\n',);
   /**
-   * Accumulator that collects every successfully parsed rule.
+   Accumulator that collects every successfully parsed rule.
    */
   const out: RawRule[] = [];
   /**
-   * Cursor into `lines`; mutated by the nested helpers as well.
+   Cursor into `lines`; mutated by the nested helpers as well.
    */
   let i = 0;
 
   /** Read a triple-quoted string starting at `lines[i]` after the `=`.
-   *  Advances `i` past the closing `'''` line. */
+    Advances `i` past the closing `'''` line. */
   function readTripleQuoted({ initial, }: { readonly initial: string; },): string {
     // initial is the substring after `'''` on the opening line.
     if (initial.includes("'''",)) {
       /**
-       * Position of the closing `'''` on the same line as the opener.
+       Position of the closing `'''` on the same line as the opener.
        */
       const end = initial.indexOf("'''",);
       i += 1;
@@ -251,7 +251,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
       );
     }
     /**
-     * Accumulator for the multi-line body; first slot holds the opening-line remainder.
+     Accumulator for the multi-line body; first slot holds the opening-line remainder.
      */
     const parts: string[] = [initial,];
     i += 1;
@@ -264,11 +264,11 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
     if (i < lines
       .length) {
       /**
-       * Closing line containing the terminating `'''`.
+       Closing line containing the terminating `'''`.
        */
       const close = lines[i]!;
       /**
-       * Position of `'''` inside `close`, used to trim the trailing content.
+       Position of `'''` inside `close`, used to trim the trailing content.
        */
       const end = close.indexOf("'''",);
       parts.push(close.slice(
@@ -283,52 +283,52 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
   while (i < lines
     .length) {
     /**
-     * Current TOML line at the cursor, tested for table headers.
+     Current TOML line at the cursor, tested for table headers.
      */
     const line = lines[i]!;
     // Look for top-level rule opener `[[rules]]` (not `[[rules.something]]`).
     if (/^\[\[rules]]\s*$/.test(line,)) {
       i += 1;
       /**
-       * Required `id = "..."` of the current rule; rule is dropped if missing.
+       Required `id = "..."` of the current rule; rule is dropped if missing.
        */
       let id: string | undefined;
       /**
-       * Required `description = "..."` of the current rule.
+       Required `description = "..."` of the current rule.
        */
       let description: string | undefined;
       /**
-       * Required `regex = '''...'''` body; dropped if missing.
+       Required `regex = '''...'''` body; dropped if missing.
        */
       let regex: string | undefined;
       /**
-       * Optional upstream `path = '''...'''` scope; preserved as a note in the output.
+       Optional upstream `path = '''...'''` scope; preserved as a note in the output.
        */
       let pathScope: string | undefined;
       /**
-       * Optional `secretGroup = N` redaction span; preserved as a note in the output.
+       Optional `secretGroup = N` redaction span; preserved as a note in the output.
        */
       let secretGroup: number | undefined;
       /**
-       * Upstream `skipReport = true` marker; suppresses this rule from emission.
+       Upstream `skipReport = true` marker; suppresses this rule from emission.
        */
       let skipReport = false;
       /**
-       * Set when the rule body contains `[[rules.required]]`; preserved as a note.
+       Set when the rule body contains `[[rules.required]]`; preserved as a note.
        */
       let hasRequired = false;
       // Scan rule body until the next top-level table marker.
       while (i < lines
         .length) {
         /**
-         * Current line inside the rule body.
+         Current line inside the rule body.
          */
         const rl = lines[i]!;
         // Sub-tables of the current rule: `[[rules.required]]` /
         // `[[rules.allowlists]]`. Mark `hasRequired` when applicable
         // and skip through their bodies.
         /**
-         * Capture of any `[[rules.<name>]]` sub-table header at the cursor.
+         Capture of any `[[rules.<name>]]` sub-table header at the cursor.
          */
         const subTableMatch = /^\[\[rules\.([\w]+)]]\s*$/.exec(rl,);
         if (subTableMatch !== null) {
@@ -350,7 +350,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           break;
         // Field extractors. Each consumes its own lines via `i`.
         /**
-         * Match for the `id = "..."` field.
+         Match for the `id = "..."` field.
          */
         const idM = /^id\s*=\s*"([^"]*)"/.exec(rl,);
         if (idM !== null) {
@@ -359,7 +359,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           continue;
         }
         /**
-         * Match for the `description = "..."` field; capture handles `\"` escapes.
+         Match for the `description = "..."` field; capture handles `\"` escapes.
          */
         const descM = /^description\s*=\s*"((?:[^"\\]|\\.)*)"/.exec(rl,);
         if (descM !== null) {
@@ -372,12 +372,12 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           continue;
         }
         /**
-         * Match for `regex = '''` opening the triple-quoted body.
+         Match for `regex = '''` opening the triple-quoted body.
          */
         const regexOpen = /^regex\s*=\s*'''/.exec(rl,);
         if (regexOpen !== null) {
           /**
-           * Remainder of the opening line after `regex = '''`, passed to the body reader.
+           Remainder of the opening line after `regex = '''`, passed to the body reader.
            */
           const initial = rl.slice(regexOpen[0]!
             .length,);
@@ -385,12 +385,12 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           continue;
         }
         /**
-         * Match for `path = '''` opening a triple-quoted path scope.
+         Match for `path = '''` opening a triple-quoted path scope.
          */
         const pathOpen = /^path\s*=\s*'''/.exec(rl,);
         if (pathOpen !== null) {
           /**
-           * Remainder of the opening line after `path = '''`, passed to the body reader.
+           Remainder of the opening line after `path = '''`, passed to the body reader.
            */
           const initial = rl.slice(pathOpen[0]!
             .length,);
@@ -398,7 +398,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           continue;
         }
         /**
-         * Match for the optional `secretGroup = N` capture-group selector.
+         Match for the optional `secretGroup = N` capture-group selector.
          */
         const sgM = /^secretGroup\s*=\s*(\d+)/.exec(rl,);
         if (sgM !== null) {
@@ -439,7 +439,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
 }
 
 /**
- * Rules to drop unconditionally.
+ Rules to drop unconditionally.
  */
 const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
   // Without the ~1000-entry word allowlist + entropy filter this rule
@@ -471,22 +471,22 @@ const DROPPED_BY_ID: ReadonlyMap<string, string> = new Map([
 ],);
 
 /**
- * Reports whether an id fits the tail-format strict section-name grammar.
- *
- * Rejecting here fails the generation loudly instead of shipping a baseline
- * whose header the scanner would refuse as a near-header at load time.
- *
- * @example
- * ```ts
- * isStrictSectionName({ id: '1password-secret-key' }); // true
- * isStrictSectionName({ id: 'Bad_Name' }); // false
- * ```
+ Reports whether an id fits the tail-format strict section-name grammar.
+ 
+ Rejecting here fails the generation loudly instead of shipping a baseline
+ whose header the scanner would refuse as a near-header at load time.
+ 
+ @example
+ ```ts
+ isStrictSectionName({ id: '1password-secret-key' }); // true
+ isStrictSectionName({ id: 'Bad_Name' }); // false
+ ```
  */
 function isStrictSectionName({ id, }: { readonly id: string; },): boolean {
   if (id.length === 0)
     return false;
   /**
-   * Leading character; the grammar restricts it to `[a-z0-9]`.
+   Leading character; the grammar restricts it to `[a-z0-9]`.
    */
   const first = id.charAt(0,);
   if (!(((first >= 'a') && (first <= 'z')) || ((first >= '0') && (first <= '9'))))
@@ -495,11 +495,11 @@ function isStrictSectionName({ id, }: { readonly id: string; },): boolean {
   // so any surrogate half fails the range checks and rejects correctly.
   for (let index = 0; index < id.length; index += 1) {
     /**
-     * Single UTF-16 unit under the cursor.
+     Single UTF-16 unit under the cursor.
      */
     const ch = id.charAt(index,);
     /**
-     * Whether the unit sits inside the strict section-name alphabet.
+     Whether the unit sits inside the strict section-name alphabet.
      */
     const isNameChar = ((ch >= 'a') && (ch <= 'z'))
       || ((ch >= '0') && (ch <= '9'))
@@ -512,17 +512,17 @@ function isStrictSectionName({ id, }: { readonly id: string; },): boolean {
 }
 
 /**
- * Render one rule as a tail-format section (header + comments + regex line),
- * applying any {@link RELAXATIONS} entry before converting via {@link pcreToResharp}.
- *
- * @throws Error when the betterleaks id falls outside the strict section-name
- * grammar the scanner enforces on headers.
+ Render one rule as a tail-format section (header + comments + regex line),
+ applying any {@link RELAXATIONS} entry before converting via {@link pcreToResharp}.
+ 
+ @throws Error when the betterleaks id falls outside the strict section-name
+ grammar the scanner enforces on headers.
  */
 function renderRule({ rule, }: { readonly rule: RawRule; },): string {
   if (!isStrictSectionName({ id: rule.id, },))
     throw new Error(`betterleaks id '${rule.id}' is not a valid tail-format section name`,);
   /**
-   * Accumulator for the output block; joined with newlines at the end.
+   Accumulator for the output block; joined with newlines at the end.
    */
   const lines: string[] = [];
   // The betterleaks id doubles as the tail-format section name: the scanner
@@ -553,11 +553,11 @@ function renderRule({ rule, }: { readonly rule: RawRule; },): string {
     );
   }
   /**
-   * Optional relaxation for this rule id; rewrites the regex before conversion.
+   Optional relaxation for this rule id; rewrites the regex before conversion.
    */
   const relaxation = RELAXATIONS.get(rule.id,);
   /**
-   * Working regex, starting from the upstream form and possibly relaxed below.
+   Working regex, starting from the upstream form and possibly relaxed below.
    */
   let pattern = rule.regex;
   if (relaxation?.transform
@@ -569,11 +569,11 @@ function renderRule({ rule, }: { readonly rule: RawRule; },): string {
     lines.push(`# RELAXATION: ${relaxation.note}`,);
   }
   /**
-   * Resharp-compatible form of the pattern, ready for final relaxation.
+   Resharp-compatible form of the pattern, ready for final relaxation.
    */
   const convertedBase = pcreToResharp({ pattern, },);
   /**
-   * Final emitted resharp form, including engine-specific algebra relaxations.
+   Final emitted resharp form, including engine-specific algebra relaxations.
    */
   const converted = relaxation?.convertedTransform?.(convertedBase,)
     ?? convertedBase;
@@ -585,10 +585,10 @@ function renderRule({ rule, }: { readonly rule: RawRule; },): string {
 }
 
 /**
- * Banner prepended to the generated built-in baseline file.
- *
- * Documents that the file is generated, names the source TOML and converter
- * script, and reminds readers of forbidden-strings' line-level grammar.
+ Banner prepended to the generated built-in baseline file.
+ 
+ Documents that the file is generated, names the source TOML and converter
+ script, and reminds readers of forbidden-strings' line-level grammar.
  */
 const HEADER = `# forbidden-strings built-in baseline deny-list.
 #
@@ -638,12 +638,12 @@ const HEADER = `# forbidden-strings built-in baseline deny-list.
 `;
 
 /**
- * Trailer appended to the generated built-in baseline file.
- *
- * Includes two engine-specific set-algebra demonstration sections
- * (intersection and complement) so consumers can see capabilities that
- * pure-PCRE engines lack. Each demonstration is its own named section
- * because the tail format gives every rule its own identity.
+ Trailer appended to the generated built-in baseline file.
+ 
+ Includes two engine-specific set-algebra demonstration sections
+ (intersection and complement) so consumers can see capabilities that
+ pure-PCRE engines lack. Each demonstration is its own named section
+ because the tail format gives every rule its own identity.
  */
 const FOOTER = `==> set-algebra-demo-build-tag <==
 # The two demonstration sections here are engine-specific (forbidden-regex
@@ -673,16 +673,16 @@ const FOOTER = `==> set-algebra-demo-build-tag <==
 `;
 
 /**
- * Entry point. Reads the upstream TOML, extracts rules via {@link parseRules},
- * and writes each kept rule through {@link renderRule}.
+ Entry point. Reads the upstream TOML, extracts rules via {@link parseRules},
+ and writes each kept rule through {@link renderRule}.
  */
 async function main(): Promise<void> {
   /**
-   * Directory holding this script, used as the anchor for path resolution.
+   Directory holding this script, used as the anchor for path resolution.
    */
   const here = import.meta.dirname;
   /**
-   * Path to the verbatim upstream TOML; input to the port.
+   Path to the verbatim upstream TOML; input to the port.
    */
   const tomlPath = join(
     here,
@@ -691,9 +691,9 @@ async function main(): Promise<void> {
     'betterleaks-default-config.toml',
   );
   /**
-   * Path to the repo-root `.cache` scratch directory holding the stage-one
-   * intermediate; gitignored wholesale, shared with the file-enforcer
-   * generated rules file.
+   Path to the repo-root `.cache` scratch directory holding the stage-one
+   intermediate; gitignored wholesale, shared with the file-enforcer
+   generated rules file.
    */
   const cacheDir = join(
     here,
@@ -704,9 +704,9 @@ async function main(): Promise<void> {
     '.cache',
   );
   /**
-   * Path to the stage-one intermediate: tail-format sections whose bodies are
-   * still PCRE. The dialectport bin (stage two) reads exactly this path and
-   * writes the final embedded baseline into the package `data/` directory.
+   Path to the stage-one intermediate: tail-format sections whose bodies are
+   still PCRE. The dialectport bin (stage two) reads exactly this path and
+   writes the final embedded baseline into the package `data/` directory.
    */
   const outPath = join(
     cacheDir,
@@ -714,23 +714,23 @@ async function main(): Promise<void> {
   );
 
   /**
-   * Verbatim upstream TOML contents read from disk.
+   Verbatim upstream TOML contents read from disk.
    */
   const toml = await readFile(
     tomlPath,
     'utf8',
   );
   /**
-   * Every rule parsed from the TOML, pre-filter.
+   Every rule parsed from the TOML, pre-filter.
    */
   const all = parseRules({ toml, },);
 
   /**
-   * Rules that survive the drop filter and will be rendered into the output.
+   Rules that survive the drop filter and will be rendered into the output.
    */
   const kept: RawRule[] = [];
   /**
-   * Rules excluded from output, paired with the reason for the exclusion.
+   Rules excluded from output, paired with the reason for the exclusion.
    */
   const dropped: {
     rule: RawRule;
@@ -745,7 +745,7 @@ async function main(): Promise<void> {
       continue;
     }
     /**
-     * Lookup of the rule id against {@link DROPPED_BY_ID}; non-undefined means dropped.
+     Lookup of the rule id against {@link DROPPED_BY_ID}; non-undefined means dropped.
      */
     const dropReason = DROPPED_BY_ID.get(rule.id,);
     if (dropReason !== undefined) {
@@ -759,8 +759,8 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Every kept id, used for the duplicate check below; duplicate section
-   * names are a fail-closed load error in the scanner, so catch them here.
+   Every kept id, used for the duplicate check below; duplicate section
+   names are a fail-closed load error in the scanner, so catch them here.
    */
   const seenIds = new Set<string>();
   for (const rule of kept) {
@@ -770,7 +770,7 @@ async function main(): Promise<void> {
   }
 
   /**
-   * Concatenated rule blocks rendered between the header and footer.
+   Concatenated rule blocks rendered between the header and footer.
    */
   const body = kept
     .map(function rulePass(rule,): string {
@@ -779,7 +779,7 @@ async function main(): Promise<void> {
     .join('',);
 
   /**
-   * Full output file contents written to disk.
+   Full output file contents written to disk.
    */
   const content = `${HEADER}${body}${FOOTER}`;
   await mkdir(

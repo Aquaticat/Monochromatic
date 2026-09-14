@@ -1,7 +1,7 @@
 /**
- * Pre-forward policy engine with command-specific candidate facts.
- *
- * @module
+ Pre-forward policy engine with command-specific candidate facts.
+ 
+ @module
  */
 import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
@@ -16,20 +16,20 @@ import type {
 } from './types.ts';
 
 /**
- * Runs pre-forward engine with exact private add candidates when applicable.
- *
- * @param options - ordinary engine options
- *
- * @param gitPath - resolved real Git executable
- *
- * @mutates options through https://github.com/open-circle/valibot safeParse access to options.config getters, proxy hooks, and schema callbacks
- *
- * @returns settled policy result
- *
- * @example
- * ```ts
- * await runPreForwardPolicyEngine({ options: { args: ['status'], trigger: 'pre-forward' }, gitPath });
- * ```
+ Runs pre-forward engine with exact private add candidates when applicable.
+ 
+ @param options - ordinary engine options
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @mutates options through https://github.com/open-circle/valibot safeParse access to options.config getters, proxy hooks, and schema callbacks
+ 
+ @returns settled policy result
+ 
+ @example
+ ```ts
+ await runPreForwardPolicyEngine({ options: { args: ['status'], trigger: 'pre-forward' }, gitPath });
+ ```
  */
 export async function runPreForwardPolicyEngine({
   options,
@@ -39,18 +39,18 @@ export async function runPreForwardPolicyEngine({
   gitPath: string;
 }>,): Promise<PolicyEngineResult> {
   /**
-   * Effective registry used to strip exact wrapper controls before private Git.
+   Effective registry used to strip exact wrapper controls before private Git.
    */
   const registeredPolicies = options.registeredPolicies ?? BUILT_IN_POLICIES;
   /**
-   * Wrapper-control-free command used only for candidate derivation.
+   Wrapper-control-free command used only for candidate derivation.
    */
   const controls = parsePolicyControls({
     args: options.args,
     registeredPolicies,
   },);
   /**
-   * Optional private add candidate state.
+   Optional private add candidate state.
    */
   const addFacts = await createAddPolicyFacts({
     args: controls.args,
@@ -62,11 +62,11 @@ export async function runPreForwardPolicyEngine({
     return runPolicyEngine(options,);
   }
   /**
-   * Scope-bound exact private add candidate facts.
+   Scope-bound exact private add candidate facts.
    */
   await using scopedAddFacts = addFacts;
   /**
-   * Policy result settled before private candidate disposal.
+   Policy result settled before private candidate disposal.
    */
   const result = await runPolicyEngine({
     ...options,

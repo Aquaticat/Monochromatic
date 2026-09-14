@@ -1,18 +1,18 @@
 /**
- * Owned call-edge construction for effect propagation.
- *
- * Every argument contributes the origins of everything it packages, with no filter
- * derived from what the callee's authored `@mutates` blocks happen to name. An earlier
- * revision narrowed an object-literal argument to the contract-named property names
- * whenever the callee's parameter was a destructuring pattern, which `ST9` makes the
- * normal shape here. That let an authored comment delete a recorded mutation: a callee
- * writing through a property its contract omitted had that write attributed to nothing,
- * and the caller's parameter was then offered as readonly. `directRestrictedRowEffect`
- * in the result-provenance fixture is the measured case, and
- * `doc/decision/prefer-readonly-contract-name-narrowing.md` records why the precise
- * version has to measure the callee instead of reading its contract.
- *
- * @module
+ Owned call-edge construction for effect propagation.
+ 
+ Every argument contributes the origins of everything it packages, with no filter
+ derived from what the callee's authored `@mutates` blocks happen to name. An earlier
+ revision narrowed an object-literal argument to the contract-named property names
+ whenever the callee's parameter was a destructuring pattern, which `ST9` makes the
+ normal shape here. That let an authored comment delete a recorded mutation: a callee
+ writing through a property its contract omitted had that write attributed to nothing,
+ and the caller's parameter was then offered as readonly. `directRestrictedRowEffect`
+ in the result-provenance fixture is the measured case, and
+ `doc/decision/prefer-readonly-contract-name-narrowing.md` records why the precise
+ version has to measure the callee instead of reading its contract.
+ 
+ @module
  */
 
 import type { CallExpression, } from 'typescript/unstable/ast';
@@ -61,45 +61,45 @@ import {
 } from './effect-formal-actual-mapping.ts';
 
 /**
- * Sentinel marking a formal that no single actual argument fills.
+ Sentinel marking a formal that no single actual argument fills.
  */
 const NO_SOLE_POSITION = -1;
 
 /**
- * Sentinel marking a slot that stands for a whole parameter rather than one of its properties.
+ Sentinel marking a slot that stands for a whole parameter rather than one of its properties.
  */
 const SLOT_IS_WHOLE_PARAMETER: unique symbol = Symbol(
   'effect slot stands for a whole parameter and names no property',
 );
 
 /**
- * Property key one slot names, or the sentinel for a whole-parameter slot.
+ Property key one slot names, or the sentinel for a whole-parameter slot.
  */
 type SlotPropertyKey = string | typeof SLOT_IS_WHOLE_PARAMETER;
 
 /**
- * Adds one owned call edge with caller-relative parameter roots.
- *
- * @param project - TypeScript project resolving callbacks and provenance.
- *
- * @param call - Owned call expression.
- *
- * @param callee - Exact owned callable declaration.
- *
- * @param allArgumentIndexes - Caller roots packaged by each argument.
- *
- * @param summary - Caller summary receiving edge.
- *
- * @param foreignInbound - Whether call belongs directly to caller summary.
- *
- * @param analysisRoot - Optional external implementation root.
- *
- * @mutates summary - Appends exact owned call edge.
- *
- * @example
- * ```ts
- * addOwnedCallEdge({ project, call, callee, allArgumentIndexes, summary, foreignInbound });
- * ```
+ Adds one owned call edge with caller-relative parameter roots.
+ 
+ @param project - TypeScript project resolving callbacks and provenance.
+ 
+ @param call - Owned call expression.
+ 
+ @param callee - Exact owned callable declaration.
+ 
+ @param allArgumentIndexes - Caller roots packaged by each argument.
+ 
+ @param summary - Caller summary receiving edge.
+ 
+ @param foreignInbound - Whether call belongs directly to caller summary.
+ 
+ @param analysisRoot - Optional external implementation root.
+ 
+ @mutates summary - Appends exact owned call edge.
+ 
+ @example
+ ```ts
+ addOwnedCallEdge({ project, call, callee, allArgumentIndexes, summary, foreignInbound });
+ ```
  */
 export function addOwnedCallEdge({
   project,
@@ -119,19 +119,19 @@ export function addOwnedCallEdge({
   readonly analysisRoot?: string;
 }): void {
   /**
-   * Actual positions each formal can receive, covering `this`, rest and spread.
+   Actual positions each formal can receive, covering `this`, rest and spread.
    */
   const positionsByFormal = formalActualPositions({
     callee,
     call,
   },);
   /**
-   * Caller origins packaged into each formal, unioned over the positions it can receive.
+   Caller origins packaged into each formal, unioned over the positions it can receive.
    */
   const originsByFormal = positionsByFormal
     .map(function originsForFormal(positions,): readonly EffectSlot[] {
       /**
-       * Distinct caller slots reaching this formal.
+       Distinct caller slots reaching this formal.
        */
       const origins = new Set<EffectSlot>();
       positions.forEach(function collectPosition(position,): void {
@@ -151,7 +151,7 @@ export function addOwnedCallEdge({
    * This is the one place holding both the callee declaration and the call expression, so it is
    * where the receiver can fill that formal. */
   /**
-   * Caller origins reaching each formal, with the receiver filling an explicit `this`.
+   Caller origins reaching each formal, with the receiver filling an explicit `this`.
    */
   const originsWithReceiver = calleeHasThisParameter({ callee, },)
     ? originsByFormal.map(function fillReceiver(
@@ -161,7 +161,7 @@ export function addOwnedCallEdge({
       if (formalIndex !== 0)
         return origins;
       /**
-       * Value before the dot, absent when the call names no member.
+       Value before the dot, absent when the call names no member.
        */
       const receiver = memberCallReceiver({ call, },);
       return receiver === NO_MEMBER_RECEIVER
@@ -174,7 +174,7 @@ export function addOwnedCallEdge({
     },)
     : originsByFormal;
   /**
-   * Owned callback declarations paired with actual argument positions.
+   Owned callback declarations paired with actual argument positions.
    */
   const callbacks = call.arguments
     .map(function callbackDeclaration(argument,) {
@@ -185,33 +185,33 @@ export function addOwnedCallEdge({
       },);
     },);
   /**
-   * Sole actual position filling each formal, absent when several or none can.
-   *
-   * A callback identity names one declaration, so it only means anything for a formal
-   * fed by exactly one actual. A rest formal or one past a spread reports no callback,
-   * which makes `propagateInvokedCapabilities` treat its invocation as unresolved rather
-   * than assume an owned body it cannot name.
+   Sole actual position filling each formal, absent when several or none can.
+   
+   A callback identity names one declaration, so it only means anything for a formal
+   fed by exactly one actual. A rest formal or one past a spread reports no callback,
+   which makes `propagateInvokedCapabilities` treat its invocation as unresolved rather
+   than assume an owned body it cannot name.
    */
   const soleByFormal = positionsByFormal
     .map(function soleForFormal(positions,): number {
       return positions.length === 1 ? positions[0] ?? NO_SOLE_POSITION : NO_SOLE_POSITION;
     },);
   /**
-   * Slots the callee owns, allocated from the callee declaration exactly as its own summary
-   * allocated them.
+   Slots the callee owns, allocated from the callee declaration exactly as its own summary
+   allocated them.
    */
   const calleeSlots = parameterSlotTable({ declaration: callee, },);
   /**
-   * Property key each callee slot names, absent for a whole-parameter slot.
+   Property key each callee slot names, absent for a whole-parameter slot.
    */
   const keyOfSlot = slotPropertyKeys({ calleeSlots, },);
   /**
-   * Authored property structure of the actuals filling each formal.
-   *
-   * Sentinel for a formal fed by anything this cannot read, which is the ordinary case: an
-   * identifier, a call result, a conditional, or a position past a spread. A formal fed by
-   * several actuals decomposes only when every one of them does, because a property of the
-   * formal could come from any of them.
+   Authored property structure of the actuals filling each formal.
+   
+   Sentinel for a formal fed by anything this cannot read, which is the ordinary case: an
+   identifier, a call result, a conditional, or a position past a spread. A formal fed by
+   several actuals decomposes only when every one of them does, because a property of the
+   formal could come from any of them.
    */
   const viewsByFormal = positionsByFormal
     .map(function viewsForFormal(
@@ -223,20 +223,20 @@ export function addOwnedCallEdge({
        * actual, and resolving that key against a caller's `{ named: owned }` would find
        * nothing and lose every write through `box`. */
       /**
-       * Formal this position describes, absent when the mapping outruns the declaration.
+       Formal this position describes, absent when the mapping outruns the declaration.
        */
       const formal = callee.parameters[formalIndex];
       if ((formal === undefined) || (formal.dotDotDotToken !== undefined))
         return ARGUMENT_NOT_DECOMPOSABLE;
       /**
-       * Decomposition of every actual that can fill this formal.
+       Decomposition of every actual that can fill this formal.
        */
       const views = positions
         .map(function viewForPosition(
           position,
         ): ArgumentPropertyView | typeof ARGUMENT_NOT_DECOMPOSABLE {
           /**
-           * Actual at this position, absent when the mapping names one the call lacks.
+           Actual at this position, absent when the mapping names one the call lacks.
            */
           const argument = call.arguments[position];
           return argument === undefined
@@ -254,14 +254,14 @@ export function addOwnedCallEdge({
         : ARGUMENT_NOT_DECOMPOSABLE;
     },);
   /**
-   * Caller origins per callee slot, narrowed to the property filling it where possible.
-   *
-   * A whole-parameter slot always takes every origin its formal packages. A property slot takes
-   * only what the caller's authored literal puts under that key, and falls back to the formal's
-   * full origins whenever the actual exposes no readable structure. That fallback is what keeps
-   * this sound: propagation looks the edge up by whichever slot the callee recorded its effect
-   * against and never consults the whole-parameter slot, so a property slot filled from nothing
-   * would discard a write the callee really performs.
+   Caller origins per callee slot, narrowed to the property filling it where possible.
+   
+   A whole-parameter slot always takes every origin its formal packages. A property slot takes
+   only what the caller's authored literal puts under that key, and falls back to the formal's
+   full origins whenever the actual exposes no readable structure. That fallback is what keeps
+   this sound: propagation looks the edge up by whichever slot the callee recorded its effect
+   against and never consults the whole-parameter slot, so a property slot filled from nothing
+   would discard a write the callee really performs.
    */
   const originsByCalleeSlot = calleeSlots.parameterOfSlot
     .map(function originsForSlot(
@@ -271,15 +271,15 @@ export function addOwnedCallEdge({
       /* A formal-indexed array read with a parameter position. Those coincide by
        * construction, and no brand checks it: a branded number indexes anything. */
       /**
-       * Every origin this formal packages, which a whole slot takes unnarrowed.
+       Every origin this formal packages, which a whole slot takes unnarrowed.
        */
       const wholeOrigins = originsWithReceiver[owner] ?? [];
       /**
-       * Key this slot names, sentinel when the slot is the whole parameter.
+       Key this slot names, sentinel when the slot is the whole parameter.
        */
       const key = keyOfSlot[slot] ?? SLOT_IS_WHOLE_PARAMETER;
       /**
-       * Decomposed actuals filling this formal, sentinel when any resists decomposition.
+       Decomposed actuals filling this formal, sentinel when any resists decomposition.
        */
       const views = viewsByFormal[owner];
       if ((key === SLOT_IS_WHOLE_PARAMETER)
@@ -287,7 +287,7 @@ export function addOwnedCallEdge({
         || (views === ARGUMENT_NOT_DECOMPOSABLE))
         return wholeOrigins;
       /**
-       * Origins reaching this key across every actual that can fill the formal.
+       Origins reaching this key across every actual that can fill the formal.
        */
       const narrowed = new Set<EffectSlot>();
       views.forEach(function narrowView(view,): void {
@@ -343,7 +343,7 @@ export function addOwnedCallEdge({
         return (positions.length > 0)
           && positions.every(function positionIsForeign(position,): boolean {
             /**
-             * Actual argument at this position, absent when the call supplies none.
+             Actual argument at this position, absent when the call supplies none.
              */
             const argument = call.arguments[position];
             return (argument !== undefined)
@@ -362,7 +362,7 @@ export function addOwnedCallEdge({
     callbackKeysByCalleeSlot: calleeSlots.parameterOfSlot
       .map(function callbackKeyForSlot(owner,) {
         /**
-         * Resolved callback at the sole filling position, when there is one.
+         Resolved callback at the sole filling position, when there is one.
          */
         const candidate = soleCallback({
           soleByFormal,
@@ -376,7 +376,7 @@ export function addOwnedCallEdge({
     callbackFileNamesByCalleeSlot: calleeSlots.parameterOfSlot
       .map(function callbackFileNameForSlot(owner,) {
         /**
-         * Resolved callback at the sole filling position, when there is one.
+         Resolved callback at the sole filling position, when there is one.
          */
         const candidate = soleCallback({
           soleByFormal,
@@ -392,22 +392,22 @@ export function addOwnedCallEdge({
 }
 
 /**
- * Inverts the callee's per-parameter key maps into one key per slot.
- *
- * @param calleeSlots - Slot table of the callee this edge names.
- *
- * @returns key each slot names, absent at every whole-parameter slot.
- *
- * @example
- * ```ts
- * slotPropertyKeys({ calleeSlots });
- * ```
+ Inverts the callee's per-parameter key maps into one key per slot.
+ 
+ @param calleeSlots - Slot table of the callee this edge names.
+ 
+ @returns key each slot names, absent at every whole-parameter slot.
+ 
+ @example
+ ```ts
+ slotPropertyKeys({ calleeSlots });
+ ```
  */
 function slotPropertyKeys(
   { calleeSlots, }: { readonly calleeSlots: ParameterSlotTable; },
 ): readonly SlotPropertyKey[] {
   /**
-   * Keys accumulated per slot, standing for the whole parameters that come first.
+   Keys accumulated per slot, standing for the whole parameters that come first.
    */
   const keys: SlotPropertyKey[] = calleeSlots.parameterOfSlot
     .map(function noKey(): typeof SLOT_IS_WHOLE_PARAMETER {
@@ -426,20 +426,20 @@ function slotPropertyKeys(
 }
 
 /**
- * Resolves the callback filling one formal, when exactly one actual fills it.
- *
- * @param soleByFormal - Sole filling actual position per formal.
- *
- * @param callbacks - Callables resolved at each actual position.
- *
- * @param formalIndex - Formal whose callback is wanted.
- *
- * @returns owned callback declaration, or sentinel when none is named.
- *
- * @example
- * ```ts
- * soleCallback({ soleByFormal, callbacks, formalIndex: 0 });
- * ```
+ Resolves the callback filling one formal, when exactly one actual fills it.
+ 
+ @param soleByFormal - Sole filling actual position per formal.
+ 
+ @param callbacks - Callables resolved at each actual position.
+ 
+ @param formalIndex - Formal whose callback is wanted.
+ 
+ @returns owned callback declaration, or sentinel when none is named.
+ 
+ @example
+ ```ts
+ soleCallback({ soleByFormal, callbacks, formalIndex: 0 });
+ ```
  */
 function soleCallback({
   soleByFormal,
@@ -453,7 +453,7 @@ function soleCallback({
   readonly formalIndex: number;
 },): EffectCallableDeclaration | typeof OWNED_CALLABLE_UNAVAILABLE {
   /**
-   * Actual position solely filling this formal, absent when several or none can.
+   Actual position solely filling this formal, absent when several or none can.
    */
   const position = soleByFormal[formalIndex] ?? NO_SOLE_POSITION;
   if (position === NO_SOLE_POSITION)

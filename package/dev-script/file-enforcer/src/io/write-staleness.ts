@@ -11,20 +11,20 @@ import {
 import type { GlobDestination, } from './write-each-destinations.ts';
 
 /**
- * Returns globally tracked glob expansions in manifest-ready form.
- *
- * @returns Glob expansions observed during the current config execution.
- *
- * @example
- * ```ts
- * const trackedGlobs = currentTrackedGlobs();
- * ```
+ Returns globally tracked glob expansions in manifest-ready form.
+ 
+ @returns Glob expansions observed during the current config execution.
+ 
+ @example
+ ```ts
+ const trackedGlobs = currentTrackedGlobs();
+ ```
  */
 function currentTrackedGlobs(): readonly TrackedGlob[] {
   return [...globs.entries(),]
     .map(function toTrackedGlob(entry,): TrackedGlob {
       /**
-       * Glob pattern and matched paths tuple.
+       Glob pattern and matched paths tuple.
        */
       const [pattern, paths,] = entry;
       return {
@@ -35,20 +35,20 @@ function currentTrackedGlobs(): readonly TrackedGlob[] {
 }
 
 /**
- * Records staleness metadata for an eager write call by delegating to
- * {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDest}
- * and globs from {@link currentTrackedGlobs}.
- *
- * @param dest - Destination file path.
- *
- * @param content - Generated destination content.
- *
- * @param manifestPath - Resolved staleness manifest path.
- *
- * @example
- * ```ts
- * await rememberEagerWrite({ dest: './CLAUDE.md', content: '...', manifestPath });
- * ```
+ Records staleness metadata for an eager write call by delegating to
+ {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDest}
+ and globs from {@link currentTrackedGlobs}.
+ 
+ @param dest - Destination file path.
+ 
+ @param content - Generated destination content.
+ 
+ @param manifestPath - Resolved staleness manifest path.
+ 
+ @example
+ ```ts
+ await rememberEagerWrite({ dest: './CLAUDE.md', content: '...', manifestPath });
+ ```
  */
 export async function rememberEagerWrite(
   {
@@ -75,20 +75,20 @@ export async function rememberEagerWrite(
 }
 
 /**
- * Records staleness metadata for an eager glob mirror rule by delegating to
- * {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDestGlob}
- * and globs from {@link currentTrackedGlobs}.
- *
- * @param destGlob - Destination glob pattern.
- *
- * @param destinations - Concrete destinations written by the rule.
- *
- * @param manifestPath - Resolved staleness manifest path.
- *
- * @example
- * ```ts
- * await rememberEagerEach({ destGlob: './out/*.md', destinations, manifestPath });
- * ```
+ Records staleness metadata for an eager glob mirror rule by delegating to
+ {@link rememberFreshStalenessEntry} with a key from {@link stalenessKeyForDestGlob}
+ and globs from {@link currentTrackedGlobs}.
+ 
+ @param destGlob - Destination glob pattern.
+ 
+ @param destinations - Concrete destinations written by the rule.
+ 
+ @param manifestPath - Resolved staleness manifest path.
+ 
+ @example
+ ```ts
+ await rememberEagerEach({ destGlob: './out/*.md', destinations, manifestPath });
+ ```
  */
 export async function rememberEagerEach(
   {

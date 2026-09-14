@@ -51,6 +51,46 @@ pub struct CompiledRules {
     pub names: Vec<Option<String>>,
 }
 
+/// Runtime rule kind retained across parser and hybrid matcher seam.
+pub(crate) enum RuntimeRuleKind {
+    /// Original exact literal bytes before dialect escaping.
+    ExactLiteral(
+        /// Exact source bytes consumed by direct literal matcher.
+        Vec<u8>,
+    ),
+    /// Engine-ready restricted-regex dialect pattern.
+    RestrictedRegex(
+        /// Parsed dialect pattern consumed by in-house regex engine.
+        String,
+    ),
+}
+
+/// Parsed runtime rule with finding identity and pre-escape kind.
+pub(crate) struct RuntimeRuleInput {
+    /// Optional tail-format section identity.
+    pub(crate) name: Option<String>,
+    /// Exact-literal or restricted-regex matcher input.
+    pub(crate) kind: RuntimeRuleKind,
+}
+
+/// Parses runtime source while preserving bare-literal distinction.
+pub(crate) fn parse_runtime_rules(
+    text: &str,
+) -> Result<Vec<RuntimeRuleInput>, LoadError> {
+    let rules = format::parse_rules(text)?;
+    return Ok(rules
+        .into_iter()
+        .map(|rule| {
+            let kind = if let Some(literal) = rule.literal {
+                RuntimeRuleKind::ExactLiteral(literal)
+            } else {
+                RuntimeRuleKind::RestrictedRegex(rule.pattern)
+            };
+            return RuntimeRuleInput { name: rule.name, kind }
+        })
+        .collect())
+}
+
 /// Compiles a rule source into a combined `RegexSet` plus its per-rule names.
 ///
 /// Parses the autodetected format (escaping literals, applying the flag policy,

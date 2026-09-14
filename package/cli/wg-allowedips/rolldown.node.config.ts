@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Self-contained production CLI bundle.
+ Self-contained production CLI bundle.
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: ['./src/index.ts',],

@@ -130,32 +130,32 @@ export function piped<
   } & NoStepsAfter9,
 ): TStep9;
 /**
- * Runs a synchronous value through one or more left-to-right pipeline steps,
- * delegating to {@link runPipe}.
- *
- * @param args - input value, contiguous step functions, and optional logger
- *
- * @returns final pipeline output
- *
- * @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
- * runtime step keys are invalid
- *
- * @throws whatever pipeline step throws; the throw propagates unchanged
- *
- * @example
- * ```ts
- * import { piped } from '\@monochromatic-dev/module-pipe';
- *
- * const result = piped({
- *   value: 1,
- *   fn1: (input: number) => input + 1,
- *   fn2: (input) => String(input),
- * });
- * ```
+ Runs a synchronous value through one or more left-to-right pipeline steps,
+ delegating to {@link runPipe}.
+ 
+ @param args - input value, contiguous step functions, and optional logger
+ 
+ @returns final pipeline output
+ 
+ @throws {@link PipeStepGapError} or {@link PipeStepOverflowError} when
+ runtime step keys are invalid
+ 
+ @throws whatever pipeline step throws; the throw propagates unchanged
+ 
+ @example
+ ```ts
+ import { piped } from '\@monochromatic-dev/module-pipe';
+ 
+ const result = piped({
+   value: 1,
+   fn1: (input: number) => input + 1,
+   fn2: (input) => String(input),
+ });
+ ```
  */
 export function piped(args: RunArgs,): unknown {
   /**
-   * Logger tagged at the eager public API boundary.
+   Logger tagged at the eager public API boundary.
    */
   const l = tagged(args.l
     === undefined

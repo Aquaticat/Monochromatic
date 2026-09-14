@@ -1,7 +1,7 @@
 /**
- * Side-effect-free authoring helpers.
- *
- * @module
+ Side-effect-free authoring helpers.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -22,17 +22,17 @@ import type {
 } from './policy-types.ts';
 
 /**
- * Preserves a Valibot policy-options schema without widening its output.
- *
- * @param schema - Schema whose output becomes policy options
- *
- * @returns Same schema instance
- *
- * @example
- * ```ts
- * import * as v from 'valibot';
- * const options = definePolicyOptions(v.object({ suffix: v.string() }));
- * ```
+ Preserves a Valibot policy-options schema without widening its output.
+ 
+ @param schema - Schema whose output becomes policy options
+ 
+ @returns Same schema instance
+ 
+ @example
+ ```ts
+ import * as v from 'valibot';
+ const options = definePolicyOptions(v.object({ suffix: v.string() }));
+ ```
  */
 export function definePolicyOptions<const TInput, const TOutput>(
   schema: ForeignBorrowed<GenericSchema<TInput, TOutput>>,
@@ -41,22 +41,22 @@ export function definePolicyOptions<const TInput, const TOutput>(
 }
 
 /**
- * Preserves policy name and options output.
- *
- * @param definition - Policy declaration
- *
- * @returns Same declaration instance
- *
- * @example
- * ```ts
- * const policy = definePolicy({
- *   name: 'check',
- *   defaultSeverity: 'error',
- *   warnSafe: true,
- *   triggers: ['direct-check'],
- *   check: async () => [],
- * });
- * ```
+ Preserves policy name and options output.
+ 
+ @param definition - Policy declaration
+ 
+ @returns Same declaration instance
+ 
+ @example
+ ```ts
+ const policy = definePolicy({
+   name: 'check',
+   defaultSeverity: 'error',
+   warnSafe: true,
+   triggers: ['direct-check'],
+   check: async () => [],
+ });
+ ```
  */
 export function definePolicy<
   const TName extends string,
@@ -68,16 +68,16 @@ export function definePolicy<
 }
 
 /**
- * Preserves plugin namespace and policy declarations.
- *
- * @param definition - Plugin declaration
- *
- * @returns Same declaration instance
- *
- * @example
- * ```ts
- * const plugin = definePlugin({ name: 'example', policies: [policy] });
- * ```
+ Preserves plugin namespace and policy declarations.
+ 
+ @param definition - Plugin declaration
+ 
+ @returns Same declaration instance
+ 
+ @example
+ ```ts
+ const plugin = definePlugin({ name: 'example', policies: [policy] });
+ ```
  */
 export function definePlugin<
   const TName extends string,
@@ -89,21 +89,21 @@ export function definePlugin<
 }
 
 /**
- * Checks consumer configuration against declared plugin policy IDs and options.
- *
- * JavaScript spread and merge behavior remains consumer-owned.
- *
- * @param config - Consumer configuration
- *
- * @returns Same configuration instance
- *
- * @example
- * ```ts
- * export default defineConfig({
- *   plugins: { example: plugin },
- *   policies: { 'example/check': 'warn' },
- * });
- * ```
+ Checks consumer configuration against declared plugin policy IDs and options.
+ 
+ JavaScript spread and merge behavior remains consumer-owned.
+ 
+ @param config - Consumer configuration
+ 
+ @returns Same configuration instance
+ 
+ @example
+ ```ts
+ export default defineConfig({
+   plugins: { example: plugin },
+   policies: { 'example/check': 'warn' },
+ });
+ ```
  */
 export function defineConfig<const TConfig extends CliGitConfigInput>(
   config: Readonly<

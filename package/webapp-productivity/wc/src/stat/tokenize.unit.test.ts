@@ -1,7 +1,7 @@
 /**
- * Tests for text-tokenization primitives.
- *
- * @module
+ Tests for text-tokenization primitives.
+ 
+ @module
  */
 
 import {
@@ -53,8 +53,8 @@ await describe({
       name: 'collapses a combining accent onto its base letter into one grapheme',
       fn: async function collapsesCombiningAccent(): Promise<void> {
         /**
-         * Letter `a` followed by a combining acute accent (U+0301), two
-         * codepoints that render as one visible character.
+         Letter `a` followed by a combining acute accent (U+0301), two
+         codepoints that render as one visible character.
          */
         const decomposed = 'á';
 

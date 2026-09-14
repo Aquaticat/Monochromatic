@@ -1,10 +1,10 @@
 /**
- * Test-only vocabulary barrel.
- *
- * Re-exports the per-locale tables and union types used by `*.unit.test.ts`
- * files in the package. Not exported from the package root.
- *
- * @module
+ Test-only vocabulary barrel.
+ 
+ Re-exports the per-locale tables and union types used by `*.unit.test.ts`
+ files in the package. Not exported from the package root.
+ 
+ @module
  */
 
 export type {

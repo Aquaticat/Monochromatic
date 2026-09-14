@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { createPostCommitGitFacts, } from './post-commit-facts.ts';
 
 /** Absolute real Git executable. */
@@ -26,9 +26,9 @@ type RepositoryFixture = Readonly<{
 }>;
 
 /**
- * Creates empty configured repository.
- *
- * @returns disposable repository
+ Creates empty configured repository.
+ 
+ @returns disposable repository
  */
 async function createRepository(): Promise<RepositoryFixture> {
   /** Disposable repository root. */
@@ -45,13 +45,13 @@ async function createRepository(): Promise<RepositoryFixture> {
 }
 
 /**
- * Commits staged state and returns landed OID.
- *
- * @param repository - fixture repository root
- *
- * @param message - commit message
- *
- * @returns landed commit OID
+ Commits staged state and returns landed OID.
+ 
+ @param repository - fixture repository root
+ 
+ @param message - commit message
+ 
+ @returns landed commit OID
  */
 async function commitAll({
   repository,
@@ -69,13 +69,13 @@ async function commitAll({
 }
 
 /**
- * Loads landed-delta candidates for one commit.
- *
- * @param repository - fixture repository root
- *
- * @param landedOid - landed commit OID
- *
- * @returns path-sorted delta candidates
+ Loads landed-delta candidates for one commit.
+ 
+ @param repository - fixture repository root
+ 
+ @param landedOid - landed commit OID
+ 
+ @returns path-sorted delta candidates
  */
 async function loadDelta({
   repository,

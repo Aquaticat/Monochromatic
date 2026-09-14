@@ -1,10 +1,10 @@
 /**
- * Unit tests for the structural edit branches: setting an existing array element
- * versus appending, missing-segment and out-of-range errors, duplicate-key
- * last-wins, nested descent, comment preservation, deletion, and the read-side
- * navigation guards.
- *
- * @module
+ Unit tests for the structural edit branches: setting an existing array element
+ versus appending, missing-segment and out-of-range errors, duplicate-key
+ last-wins, nested descent, comment preservation, deletion, and the read-side
+ navigation guards.
+ 
+ @module
  */
 
 import {
@@ -13,8 +13,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   COMMENT_ABSENT,
   jsoncDelete,
   jsoncGetComment,
@@ -24,7 +24,7 @@ import {
   jsoncSet,
   jsoncStringify,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 
@@ -36,6 +36,11 @@ const matrix = (): ReturnType<typeof parseJsoncEdit> =>
 
 const dup = (): ReturnType<typeof parseJsoncEdit> =>
   parseJsoncEdit({ source: asJsonc('{ "a": 1, "a": 2 } // c',), },);
+
+/**
+ Fractional segment used to verify array indexes must be integers.
+ */
+const HALF_INDEX = 1 / 2;
 
 await describe({
   name: 'edit-set branches',
@@ -58,10 +63,13 @@ await describe({
           },
         },),
         it({
-          name: 'throws on a negative index',
+          name: 'throws on a negative or fractional index',
           fn: async () => {
             expect(() => {
               jsoncSet({ state: base(), path: ['list', -1,], value: 1, },);
+            },).toThrow('no JSONC node at path',);
+            expect(() => {
+              jsoncSet({ state: base(), path: ['list', HALF_INDEX,], value: 1, },);
             },).toThrow('no JSONC node at path',);
           },
         },),
@@ -223,6 +231,14 @@ await describe({
           fn: async () => {
             expect(() => {
               jsoncDelete({ state: matrix(), path: ['m', -1, 0,], },);
+            },).toThrow('no JSONC node at path',);
+          },
+        },),
+        it({
+          name: 'throws on a fractional array index',
+          fn: async () => {
+            expect(() => {
+              jsoncDelete({ state: base(), path: ['list', HALF_INDEX,], },);
             },).toThrow('no JSONC node at path',);
           },
         },),

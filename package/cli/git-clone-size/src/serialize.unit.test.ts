@@ -1,7 +1,7 @@
 /**
- * Tests that serialize emits exactly one valid JSON line, colored or plain.
- *
- * @module
+ Tests that serialize emits exactly one valid JSON line, colored or plain.
+ 
+ @module
  */
 
 import {
@@ -13,7 +13,7 @@ import { serializeSnapshot, } from './serialize.ts';
 import type { EstimateSnapshot, } from './types.ts';
 
 /**
- * A representative snapshot with every optional field populated.
+ A representative snapshot with every optional field populated.
  */
 const SNAPSHOT: EstimateSnapshot = {
   metric: 'm',
@@ -33,16 +33,16 @@ const SNAPSHOT: EstimateSnapshot = {
 };
 
 /**
- * ESC byte marking an ANSI sequence.
+ ESC byte marking an ANSI sequence.
  */
 const ESC = String.fromCodePoint(27);
 
 /**
- * Removes `ESC ... m` ANSI sequences from a string via a linear scan.
- *
- * @param text - possibly-colored text
- *
- * @returns the text without ANSI escapes
+ Removes `ESC ... m` ANSI sequences from a string via a linear scan.
+ 
+ @param text - possibly-colored text
+ 
+ @returns the text without ANSI escapes
  */
 function stripAnsi(text: string): string {
   const cursor = { i: 0, };

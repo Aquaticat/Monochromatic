@@ -1,7 +1,7 @@
 /**
- * Active-branch post-start evidence serialization for completion reviewers.
- *
- * @module
+ Active-branch post-start evidence serialization for settlement reviewers.
+ 
+ @module
  */
 
 import type {
@@ -10,10 +10,7 @@ import type {
   ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import type {
-  SessionEntry,
-  SessionMessageEntry,
-} from '@earendil-works/pi-coding-agent';
+import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
@@ -22,29 +19,29 @@ import {
 } from './constants.ts';
 import type {
   GoalReviewEvidence,
-  ValidGoalCompletionRequest,
+  GoalSettlementReviewRequest,
 } from './completion-types.ts';
 import { isGoalEvent, } from './events.ts';
 
 /**
- * Sentinel for branch entries intentionally excluded from reviewer evidence.
+ Sentinel for branch entries intentionally excluded from reviewer evidence.
  */
 const EVIDENCE_ENTRY_OMITTED: unique symbol = Symbol('goal/evidence-entry-omitted',);
 
 /**
- * Convert text, image, or tool-call blocks to bounded textual evidence.
- *
- * @param content - finalized message content block
- *
- * @returns reviewer-visible text
- *
- * @example
- * ```ts
- * contentBlockText({ type: 'text', text: 'done' });
- * ```
+ Convert finalized content block to reviewer-visible text.
+ 
+ @param content - finalized message content block
+ 
+ @returns reviewer-visible text
+ 
+ @example
+ ```ts
+ contentBlockText({ type: 'text', text: 'done' });
+ ```
  */
 function contentBlockText(
-  content: Readonly<TextContent | ImageContent | ToolCall | ThinkingContent>,
+  content: ForeignBorrowed<TextContent | ImageContent | ToolCall | ThinkingContent>,
 ): string {
   if (content.type === 'text')
     return content.text;
@@ -56,19 +53,21 @@ function contentBlockText(
 }
 
 /**
- * Convert string or block-array message content to reviewer text.
- *
- * @param content - finalized message content
- *
- * @returns joined textual evidence
- *
- * @example
- * ```ts
- * messageContentText('done');
- * ```
+ Convert string or block-array message content to reviewer text.
+ 
+ @param content - finalized message content
+ 
+ @returns joined textual evidence
+ 
+ @example
+ ```ts
+ messageContentText('done');
+ ```
  */
 function messageContentText(
-  content: string | readonly (TextContent | ImageContent | ToolCall | ThinkingContent)[],
+  content: ForeignBorrowed<
+    string | (TextContent | ImageContent | ToolCall | ThinkingContent)[]
+  >,
 ): string {
   if ((typeof content) === 'string')
     return content;
@@ -78,51 +77,20 @@ function messageContentText(
 }
 
 /**
- * Detect pending completion call in assistant message excluded from evidence.
- *
- * @param message - finalized assistant message
- *
- * @param toolCallId - pending completion call identity
- *
- * @returns whether assistant message contains pending completion claim
- *
- * @example
- * ```ts
- * assistantContainsToolCall({ message, toolCallId: 'call-1' });
- * ```
- */
-function assistantContainsToolCall(
-  {
-    message,
-    toolCallId,
-  }: {
-    readonly message: ForeignBorrowed<SessionMessageEntry['message']>;
-    readonly toolCallId: string;
-  },
-): boolean {
-  if (message.role !== 'assistant')
-    return false;
-  return message.content
-    .some(function matchesToolCall(content,) {
-    return (content.type === 'toolCall') && (content.id === toolCallId);
-  },);
-}
-
-/**
- * Validate visible current-generation goal-message provenance.
- *
- * @param details - unknown custom-message details
- *
- * @param runId - active run identity
- *
- * @param generationId - active generation identity
- *
- * @returns whether details identify visible kickoff or continuation
- *
- * @example
- * ```ts
- * isCurrentGoalMessageDetails({ details, runId: 'run-1', generationId: 'generation-1' });
- * ```
+ Validate current-generation task-message provenance.
+ 
+ @param details - unknown custom-message details
+ 
+ @param runId - active run identity
+ 
+ @param generationId - active generation identity
+ 
+ @returns whether details identify current kickoff or continuation
+ 
+ @example
+ ```ts
+ isCurrentGoalMessageDetails({ details, runId: 'run-1', generationId: 'generation-1' });
+ ```
  */
 function isCurrentGoalMessageDetails(
   {
@@ -152,32 +120,28 @@ function isCurrentGoalMessageDetails(
 }
 
 /**
- * Serialize one eligible branch entry or return omission sentinel.
- *
- * @param entry - active-branch session entry
- *
- * @param toolCallId - pending completion call excluded from evidence
- *
- * @param runId - current active run identity
- *
- * @param generationId - current active generation identity
- *
- * @returns labeled evidence chunk or omission sentinel
- *
- * @example
- * ```ts
- * serializeEvidenceEntry({ entry, toolCallId: 'call-1' });
- * ```
+ Serialize one eligible branch entry or return omission sentinel.
+ 
+ @param entry - active-branch session entry
+ 
+ @param runId - current active run identity
+ 
+ @param generationId - current active generation identity
+ 
+ @returns labeled evidence chunk or omission sentinel
+ 
+ @example
+ ```ts
+ serializeEvidenceEntry({ entry, runId: 'run-1', generationId: 'generation-1' });
+ ```
  */
 function serializeEvidenceEntry(
   {
     entry,
-    toolCallId,
     runId,
     generationId,
   }: {
     readonly entry: ForeignBorrowed<SessionEntry>;
-    readonly toolCallId: string;
     readonly runId: string;
     readonly generationId: string;
   },
@@ -192,19 +156,14 @@ function serializeEvidenceEntry(
       },))) {
       return EVIDENCE_ENTRY_OMITTED;
     }
-    return `Goal continuation:\n${messageContentText(entry.content,)}`;
+    return `Task context:\n${messageContentText(entry.content,)}`;
   }
   if (entry.type !== 'message')
     return EVIDENCE_ENTRY_OMITTED;
   /**
-   * Finalized agent message stored by selected branch.
+   Finalized agent message stored by selected branch.
    */
   const { message, } = entry;
-  if (assistantContainsToolCall({
-    message,
-    toolCallId,
-  },))
-    return EVIDENCE_ENTRY_OMITTED;
   if (message.role === 'user')
     return `User:\n${messageContentText(message.content,)}`;
   if (message.role === 'assistant')
@@ -220,20 +179,20 @@ function serializeEvidenceEntry(
 }
 
 /**
- * Find matching run-start index on selected branch.
- *
- * @param branch - selected active branch
- *
- * @param runId - active run identity
- *
- * @returns matching entry index
- *
- * @throws when active run start is missing from branch
- *
- * @example
- * ```ts
- * findRunStartIndex({ branch, runId: 'run-1' });
- * ```
+ Find matching run-start index on selected branch.
+ 
+ @param branch - selected active branch
+ 
+ @param runId - active run identity
+ 
+ @returns matching entry index
+ 
+ @throws when active run start is missing from branch
+ 
+ @example
+ ```ts
+ findRunStartIndex({ branch, runId: 'run-1' });
+ ```
  */
 function findRunStartIndex(
   {
@@ -245,7 +204,7 @@ function findRunStartIndex(
   },
 ): number {
   /**
-   * Matching run-start entry position.
+   Matching run-start entry position.
    */
   const index = branch.findIndex(function isMatchingRunStart(entry,) {
     if ((entry.type !== 'custom') || (entry.customType !== GOAL_STATE_ENTRY_TYPE))
@@ -254,7 +213,8 @@ function findRunStartIndex(
       return false;
     return (entry.data
       .kind
-      === 'run_started') && (entry.data
+      === 'run_started')
+      && (entry.data
         .runId
         === runId);
   },);
@@ -264,18 +224,18 @@ function findRunStartIndex(
 }
 
 /**
- * Build reviewer evidence from selected branch after active run start.
- *
- * @param branch - `SessionManager.getBranch()` result
- *
- * @param request - locally validated completion request
- *
- * @returns objective, summary, and finalized post-start chunks
- *
- * @example
- * ```ts
- * buildGoalReviewEvidence({ branch, request });
- * ```
+ Build reviewer evidence from selected branch after active run start.
+ 
+ @param branch - `SessionManager.getBranch()` result
+ 
+ @param request - captured settlement identity
+ 
+ @returns objective and finalized post-start chunks
+ 
+ @example
+ ```ts
+ buildGoalReviewEvidence({ branch, request });
+ ```
  */
 function buildGoalReviewEvidence(
   {
@@ -283,11 +243,11 @@ function buildGoalReviewEvidence(
     request,
   }: {
     readonly branch: readonly ForeignBorrowed<SessionEntry>[];
-    readonly request: ValidGoalCompletionRequest;
+    readonly request: GoalSettlementReviewRequest;
   },
 ): GoalReviewEvidence {
   /**
-   * Matching run-start position defining transcript boundary.
+   Matching run-start position defining transcript seam.
    */
   const startIndex = findRunStartIndex({
     branch,
@@ -295,21 +255,20 @@ function buildGoalReviewEvidence(
       .runId,
   },);
   /**
-   * Active run and generation identities filtering custom messages.
+   Active run identities filtering task messages.
    */
   const {
     runId,
     generationId,
   } = request.goal;
   /**
-   * Eligible serialized chunks after current run started.
+   Eligible serialized chunks after current run started.
    */
   const transcriptChunks = branch
     .slice(startIndex + 1,)
     .map(function serializeEntry(entry,) {
       return serializeEvidenceEntry({
         entry,
-        toolCallId: request.toolCallId,
         runId,
         generationId,
       },);
@@ -322,7 +281,6 @@ function buildGoalReviewEvidence(
   return {
     objective: request.goal
       .objective,
-    summary: request.summary,
     transcriptChunks,
   };
 }

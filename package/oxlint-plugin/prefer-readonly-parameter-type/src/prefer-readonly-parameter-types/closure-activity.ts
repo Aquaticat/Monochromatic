@@ -1,7 +1,7 @@
 /**
- * Active nested-closure selection for callable effect scans.
- *
- * @module
+ Active nested-closure selection for callable effect scans.
+ 
+ @module
  */
 
 import {
@@ -34,17 +34,17 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Activates callables reachable through escaped expression containers and aliases.
- *
- * @param project - TypeScript project resolving variable aliases.
- *
- * @param node - Passed or returned expression whose callables escape.
- *
- * @param nestedKeys - Callable declarations nested under outer body.
- *
- * @param activeKeys - Accumulator receiving escaped callable keys.
- *
- * @mutates activeKeys - Adds every reachable nested callable key.
+ Activates callables reachable through escaped expression containers and aliases.
+ 
+ @param project - TypeScript project resolving variable aliases.
+ 
+ @param node - Passed or returned expression whose callables escape.
+ 
+ @param nestedKeys - Callable declarations nested under outer body.
+ 
+ @param activeKeys - Accumulator receiving escaped callable keys.
+ 
+ @mutates activeKeys - Adds every reachable nested callable key.
  */
 function activateEscapedCallables({
   project,
@@ -58,22 +58,22 @@ function activateEscapedCallables({
   readonly activeKeys: Set<string>;
 }): void {
   /**
-   * Explicit work stack for container and alias traversal.
+   Explicit work stack for container and alias traversal.
    */
   const stack: Node[] = [node,];
   /**
-   * Stable node keys prevent cyclic object and variable aliases.
+   Stable node keys prevent cyclic object and variable aliases.
    */
   const visited = new Set<string>();
   while (stack.length > 0) {
     /**
-     * Next escaped expression node.
+     Next escaped expression node.
      */
     const current = stack.pop();
     if (current === undefined)
       continue;
     /**
-     * Stable source span for cycle detection.
+     Stable source span for cycle detection.
      */
     const currentKey = `${current.getSourceFile()
       .fileName}:${String(current.pos,)}:${String(current.end,)}`;
@@ -82,7 +82,7 @@ function activateEscapedCallables({
     visited.add(currentKey,);
     if (isEffectCallableDeclaration(current,)) {
       /**
-       * Stable callable key activated as escaped value.
+       Stable callable key activated as escaped value.
        */
       const key = callableKey(current,);
       if (nestedKeys.has(key,))
@@ -91,12 +91,12 @@ function activateEscapedCallables({
     }
     if (isIdentifier(current,)) {
       /**
-       * Symbol reached through identifier alias.
+       Symbol reached through identifier alias.
        */
       const symbol = project.checker
         .getResolvedSymbol(current,);
       /**
-       * Declaration reached through identifier alias.
+       Declaration reached through identifier alias.
        */
       const declaration = (symbol?.valueDeclaration
         ?? symbol?.declarations
@@ -121,16 +121,16 @@ function activateEscapedCallables({
 }
 
 /**
- * Tests that node is enclosed only by active nested closures.
- *
- * @param node - Descendant whose closure ancestry is checked.
- *
- * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
- * than to the body.
- *
- * @param activeKeys - Nested callables proven active.
- *
- * @returns whether every enclosing nested closure is active.
+ Tests that node is enclosed only by active nested closures.
+ 
+ @param node - Descendant whose closure ancestry is checked.
+ 
+ @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ than to the body.
+ 
+ @param activeKeys - Nested callables proven active.
+ 
+ @returns whether every enclosing nested closure is active.
  */
 function insideOnlyActiveClosures({
   node,
@@ -142,7 +142,7 @@ function insideOnlyActiveClosures({
   readonly activeKeys: ReadonlySet<string>;
 }): boolean {
   /**
-   * Parent cursor ascending through every nested closure.
+   Parent cursor ascending through every nested closure.
    */
   const cursor: { current: Node; } = { current: node.parent, };
   /* A decorator is lexically inside the declaration it decorates and does not run inside it. It runs
@@ -153,7 +153,7 @@ function insideOnlyActiveClosures({
    * So the ascent skips exactly one declaration after passing out of a decorator, and keeps gating on
    * everything above it, which is what still excludes a decorator written inside an inactive closure. */
   /**
-   * Whether the ascent has just left a decorator, whose next declaration it decorates rather than runs in.
+   Whether the ascent has just left a decorator, whose next declaration it decorates rather than runs in.
    */
   const leftDecorator: { pending: boolean; } = { pending: isDecorator(node,), };
   while (cursor.current !== boundary) {
@@ -176,37 +176,37 @@ function insideOnlyActiveClosures({
 }
 
 /**
- * Selects outer body nodes plus nested closures that may execute or escape.
- *
- * Direct invocation,
- * direct callback arguments,
- * and direct returns activate nested closure body.
- * Unreferenced local function declarations remain outside outer callable effect.
- *
- * @param project - TypeScript project resolving callable references.
- *
- * @param body - Outer callable body.
- *
- * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
- * than to the body.
- *
- * @param parameterInitializerNodes - Nodes of every parameter default, joining the same universe
- * the body contributes so one ancestry filter gates both.
- *
- * @param bindingOriginBySymbolId - Binding symbols mapped to source parameters.
- *
- * @returns effect-relevant body nodes.
- *
- * @example
- * ```ts
- * const nodes = activeCallableBodyNodes({
- *   project,
- *   body,
- *   boundary,
- *   parameterInitializerNodes,
- *   bindingOriginBySymbolId,
- * });
- * ```
+ Selects outer body nodes plus nested closures that may execute or escape.
+ 
+ Direct invocation,
+ direct callback arguments,
+ and direct returns activate nested closure body.
+ Unreferenced local function declarations remain outside outer callable effect.
+ 
+ @param project - TypeScript project resolving callable references.
+ 
+ @param body - Outer callable body.
+ 
+ @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ than to the body.
+ 
+ @param parameterInitializerNodes - Nodes of every parameter default, joining the same universe
+ the body contributes so one ancestry filter gates both.
+ 
+ @param bindingOriginBySymbolId - Binding symbols mapped to source parameters.
+ 
+ @returns effect-relevant body nodes.
+ 
+ @example
+ ```ts
+ const nodes = activeCallableBodyNodes({
+   project,
+   body,
+   boundary,
+   parameterInitializerNodes,
+   bindingOriginBySymbolId,
+ });
+ ```
  */
 export function activeCallableBodyNodes({
   project,
@@ -233,14 +233,14 @@ export function activeCallableBodyNodes({
    * `closureDefaultInvoked` keeps the write it genuinely performs while
    * `closureDefaultNeverInvoked` loses the one it never reaches. */
   /**
-   * Complete descendants used to discover nested declarations and activations.
+   Complete descendants used to discover nested declarations and activations.
    */
   const allNodes = [
     ...parameterInitializerNodes,
     ...collectAstNodes(body,),
   ];
   /**
-   * Stable keys for every nested callable declaration.
+   Stable keys for every nested callable declaration.
    */
   const nestedKeys = new Set(
     allNodes
@@ -252,7 +252,7 @@ export function activeCallableBodyNodes({
       },),
   );
   /**
-   * Nested callable keys proven invoked or escaped.
+   Nested callable keys proven invoked or escaped.
    */
   const activeKeys = new Set<string>();
   /* Gated on ancestry and iterated to a fixed point, rather than scanned once over every node.
@@ -270,13 +270,13 @@ export function activeCallableBodyNodes({
    *
    * Termination: `activeKeys` only grows, and it is bounded by `nestedKeys`, which is fixed. */
   /**
-   * Whether the last pass activated anything, so the loop knows to look again.
+   Whether the last pass activated anything, so the loop knows to look again.
    */
   const state: { changed: boolean; } = { changed: true, };
   while (state.changed) {
     state.changed = false;
     /**
-     * Keys already active before this pass, so growth is what ends the loop.
+     Keys already active before this pass, so growth is what ends the loop.
      */
     const knownBefore = activeKeys.size;
     activationSites({
@@ -299,34 +299,34 @@ export function activeCallableBodyNodes({
 }
 
 /**
- * Activates every callable reachable from a site the enclosing callable can actually run.
- *
- * @param project - TypeScript project resolving call targets.
- *
- * @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
- *
- * @param allNodes - Every node of the body.
- *
- * @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
- * than to the body.
- *
- * @param nestedKeys - Keys of every callable nested under the body.
- *
- * @param activeKeys - Accumulator receiving newly activated keys.
- *
- * @mutates activeKeys - Adds every key reachable from a runnable site.
- *
- * @example
- * ```ts
- * activationSites({
- *   project,
- *   bindingOriginBySymbolId,
- *   allNodes,
- *   boundary,
- *   nestedKeys,
- *   activeKeys,
- * });
- * ```
+ Activates every callable reachable from a site the enclosing callable can actually run.
+ 
+ @param project - TypeScript project resolving call targets.
+ 
+ @param bindingOriginBySymbolId - Parameter and alias origins of the callable being summarised.
+ 
+ @param allNodes - Every node of the body.
+ 
+ @param boundary - Declaration owning the scan, which parameter initializers ascend to rather
+ than to the body.
+ 
+ @param nestedKeys - Keys of every callable nested under the body.
+ 
+ @param activeKeys - Accumulator receiving newly activated keys.
+ 
+ @mutates activeKeys - Adds every key reachable from a runnable site.
+ 
+ @example
+ ```ts
+ activationSites({
+   project,
+   bindingOriginBySymbolId,
+   allNodes,
+   boundary,
+   nestedKeys,
+   activeKeys,
+ });
+ ```
  */
 function activationSites({
   project,
@@ -370,12 +370,12 @@ function activationSites({
       return;
     }
     /**
-     * Callee and interpolated or written actuals, absent when this node invokes nothing.
+     Callee and interpolated or written actuals, absent when this node invokes nothing.
      */
     const invoked = invokedParts({ node, },);
     if (invoked !== INVOKES_NOTHING) {
       /**
-       * Callable selected by overload resolution.
+       Callable selected by overload resolution.
        */
       const signatureDeclaration = project.checker
         .getResolvedSignature(node,)
@@ -384,7 +384,7 @@ function activationSites({
       if ((signatureDeclaration !== undefined)
         && isEffectCallableDeclaration(signatureDeclaration,)) {
         /**
-         * Stable declaration key for selected nested call target.
+         Stable declaration key for selected nested call target.
          */
         const key = callableKey(signatureDeclaration,);
         if (nestedKeys.has(key,))
@@ -446,20 +446,20 @@ function activationSites({
 }
 
 /**
- * Names every value assigned to one binding anywhere in the scanned body.
- *
- * @param allNodes - Every node of the body.
- *
- * @param project - TypeScript project resolving binding symbols.
- *
- * @param target - Expression naming the binding whose assignments are wanted.
- *
- * @returns right operands of assignments to that binding.
- *
- * @example
- * ```ts
- * assignedValues({ allNodes, project, target });
- * ```
+ Names every value assigned to one binding anywhere in the scanned body.
+ 
+ @param allNodes - Every node of the body.
+ 
+ @param project - TypeScript project resolving binding symbols.
+ 
+ @param target - Expression naming the binding whose assignments are wanted.
+ 
+ @returns right operands of assignments to that binding.
+ 
+ @example
+ ```ts
+ assignedValues({ allNodes, project, target });
+ ```
  */
 function assignedValues({
   allNodes,
@@ -473,7 +473,7 @@ function assignedValues({
   if (!isIdentifier(target,))
     return [];
   /**
-   * Symbol the called binding resolves to.
+   Symbol the called binding resolves to.
    */
   const symbol = project.checker
     .getResolvedSymbol(target,);
@@ -489,7 +489,7 @@ function assignedValues({
     if (!isIdentifier(node.left,))
       return [];
     /**
-     * Symbol the assignment target resolves to.
+     Symbol the assignment target resolves to.
      */
     const assigned = project.checker
       .getResolvedSymbol(node.left,);

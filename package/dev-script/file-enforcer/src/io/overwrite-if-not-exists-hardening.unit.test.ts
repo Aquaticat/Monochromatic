@@ -18,14 +18,14 @@ import { overwriteIfNotExists, } from '../../dist/final/node/index.mjs';
 //region Temporary fixture helpers
 
 /**
- * Creates an isolated temporary directory for overwrite-if-absent hardening tests.
- *
- * @returns Absolute temporary directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temporary directory for overwrite-if-absent hardening tests.
+ 
+ @returns Absolute temporary directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return mkdtemp(join(
@@ -35,14 +35,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes an isolated temporary directory after a hardening test.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temporary directory after a hardening test.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(

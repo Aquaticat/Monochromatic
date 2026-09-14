@@ -1,18 +1,18 @@
 /**
- * Git command classification for trusted configuration loading.
- *
- * Fixtures target Git 2.54.0 command documentation.
- *
- * @module
+ Git command classification for trusted configuration loading.
+ 
+ Fixtures target Git 2.54.0 command documentation.
+ 
+ @module
  */
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 
 /**
- * Configuration loading decision.
+ Configuration loading decision.
  */
 export type ConfigLoadingDecision = 'load-config' | 'skip-config';
 /**
- * Known commands whose documented forms are inspection-only.
+ Known commands whose documented forms are inspection-only.
  */
 const READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
   'annotate',
@@ -44,7 +44,7 @@ const READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
   'whatchanged',
 ]);
 /**
- * Branch flags that necessarily mutate refs or branch metadata.
+ Branch flags that necessarily mutate refs or branch metadata.
  */
 const BRANCH_MUTATING_LONG_FLAGS: ReadonlySet<string> = new Set([
   '--copy',
@@ -56,7 +56,7 @@ const BRANCH_MUTATING_LONG_FLAGS: ReadonlySet<string> = new Set([
   '--unset-upstream',
 ]);
 /**
- * Branch short-option letters that necessarily mutate.
+ Branch short-option letters that necessarily mutate.
  */
 const BRANCH_MUTATING_SHORT_FLAGS: ReadonlySet<string> = new Set([
   'c',
@@ -68,14 +68,14 @@ const BRANCH_MUTATING_SHORT_FLAGS: ReadonlySet<string> = new Set([
   'M',
 ]);
 /**
- * Branch flags that make following positionals listing patterns.
+ Branch flags that make following positionals listing patterns.
  */
 const BRANCH_LIST_FLAGS: ReadonlySet<string> = new Set([
   '--list',
   '-l',
 ]);
 /**
- * Tag flags that necessarily create, update, or delete refs.
+ Tag flags that necessarily create, update, or delete refs.
  */
 const TAG_MUTATING_LONG_FLAGS: ReadonlySet<string> = new Set([
   '--annotate',
@@ -85,7 +85,7 @@ const TAG_MUTATING_LONG_FLAGS: ReadonlySet<string> = new Set([
   '--sign',
 ]);
 /**
- * Tag short-option letters that necessarily mutate.
+ Tag short-option letters that necessarily mutate.
  */
 const TAG_MUTATING_SHORT_FLAGS: ReadonlySet<string> = new Set([
   'a',
@@ -96,14 +96,14 @@ const TAG_MUTATING_SHORT_FLAGS: ReadonlySet<string> = new Set([
   'u',
 ]);
 /**
- * Tag flags that make following positionals listing patterns.
+ Tag flags that make following positionals listing patterns.
  */
 const TAG_LIST_FLAGS: ReadonlySet<string> = new Set([
   '--list',
   '-l',
 ]);
 /**
- * Options whose next token is an option value rather than positional input.
+ Options whose next token is an option value rather than positional input.
  */
 const MIXED_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '--column',
@@ -118,30 +118,30 @@ const MIXED_VALUE_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Mixed-command scan result.
+ Mixed-command scan result.
  */
 type MixedCommandScan = Readonly<{
   /**
-   * Whether a mutation flag appears.
+   Whether a mutation flag appears.
    */
   mutating: boolean;
   /**
-   * Whether explicit list mode appears.
+   Whether explicit list mode appears.
    */
   listing: boolean;
   /**
-   * Positionals outside option values.
+   Positionals outside option values.
    */
   positionalCount: number;
 }>;
 /**
- * Checks whether clustered short flags contain a mutating letter.
- *
- * @param token - one argv token
- *
- * @param mutatingLetters - action letters for current mixed command
- *
- * @returns whether token is an action-bearing short option
+ Checks whether clustered short flags contain a mutating letter.
+ 
+ @param token - one argv token
+ 
+ @param mutatingLetters - action letters for current mixed command
+ 
+ @returns whether token is an action-bearing short option
  */
 function hasMutatingShortFlag({
   token,
@@ -163,17 +163,17 @@ function hasMutatingShortFlag({
 }
 
 /**
- * Scans argument-aware mixed command forms.
- *
- * @param args - tokens after mixed subcommand
- *
- * @param mutatingLongFlags - long action flags
- *
- * @param mutatingShortFlags - short action letters
- *
- * @param listFlags - explicit list-mode flags
- *
- * @returns mutation, listing, and positional facts
+ Scans argument-aware mixed command forms.
+ 
+ @param args - tokens after mixed subcommand
+ 
+ @param mutatingLongFlags - long action flags
+ 
+ @param mutatingShortFlags - short action letters
+ 
+ @param listFlags - explicit list-mode flags
+ 
+ @returns mutation, listing, and positional facts
  */
 function scanMixedCommand({
   args,
@@ -187,7 +187,7 @@ function scanMixedCommand({
   listFlags: ReadonlySet<string>;
 }>,): MixedCommandScan {
   /**
-   * Mutable linear scanner state isolated to this function.
+   Mutable linear scanner state isolated to this function.
    */
   const state: {
     afterSeparator: boolean;
@@ -221,11 +221,11 @@ function scanMixedCommand({
     }
     if (token.startsWith('--',)) {
       /**
-       * Long option name without optional inline assignment.
+       Long option name without optional inline assignment.
        */
       const assignmentIndex = token.indexOf('=',);
       /**
-       * Exact long flag used for classification.
+       Exact long flag used for classification.
        */
       const optionName = assignmentIndex === (-1)
         ? token
@@ -251,26 +251,26 @@ function scanMixedCommand({
 }
 
 /**
- * Classifies whether invocation may load trusted repository configuration.
- *
- * Unknown and ambiguous commands fail toward config loading.
- *
- * @param args - exact wrapper arguments
- *
- * @returns trusted-config loading decision
- *
- * @example
- * ```ts
- * classifyConfigLoading(['status']);
- * ```
+ Classifies whether invocation may load trusted repository configuration.
+ 
+ Unknown and ambiguous commands fail toward config loading.
+ 
+ @param args - exact wrapper arguments
+ 
+ @returns trusted-config loading decision
+ 
+ @example
+ ```ts
+ classifyConfigLoading(['status']);
+ ```
  */
 export function classifyConfigLoading(args: readonly string[],): ConfigLoadingDecision {
   /**
-   * Parsed subcommand location after Git globals.
+   Parsed subcommand location after Git globals.
    */
   const { subcommandIndex, } = parseGlobalOptions(args,);
   /**
-   * Exact parsed Git subcommand.
+   Exact parsed Git subcommand.
    */
   const subcommand = args[subcommandIndex];
   if (subcommand === undefined)
@@ -281,7 +281,7 @@ export function classifyConfigLoading(args: readonly string[],): ConfigLoadingDe
     return 'load-config';
 
   /**
-   * Argument-aware mixed command facts.
+   Argument-aware mixed command facts.
    */
   const scan = subcommand === 'branch'
     ? scanMixedCommand({

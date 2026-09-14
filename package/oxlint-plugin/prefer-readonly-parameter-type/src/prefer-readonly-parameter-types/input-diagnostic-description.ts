@@ -1,19 +1,19 @@
 /**
- * Plain-language descriptions for semantic input diagnostics.
- *
- * @module
+ Plain-language descriptions for semantic input diagnostics.
+ 
+ @module
  */
 
 /**
- * Builds subject plus verb from authored input binding names.
- *
- * @param names - Unquoted input binding names.
- *
- * @returns subject plus verb matching singular or plural names.
+ Builds subject plus verb from authored input binding names.
+ 
+ @param names - Unquoted input binding names.
+ 
+ @returns subject plus verb matching singular or plural names.
  */
 function usageSubject(names: readonly string[],): string {
   /**
-   * Quoted authored names ready for diagnostic prose.
+   Quoted authored names ready for diagnostic prose.
    */
   const quotedNames = names.map(function quoteName(name,): string {
     return `"${name}"`;
@@ -25,11 +25,11 @@ function usageSubject(names: readonly string[],): string {
   if (quotedNames.length === 2)
     return `The function inputs named ${quotedNames[0]} and ${quotedNames[1]} are`;
   /**
-   * Final binding name joined after comma-separated leading names.
+   Final binding name joined after comma-separated leading names.
    */
   const finalName = quotedNames.at(-1,) ?? '"unknown input"';
   /**
-   * Leading names joined before final human-readable conjunction.
+   Leading names joined before final human-readable conjunction.
    */
   const leadingNames = quotedNames
     .slice(
@@ -41,13 +41,13 @@ function usageSubject(names: readonly string[],): string {
 }
 
 /**
- * Collects binding names belonging to one semantic input index.
- *
- * @param targetIndexes - Binding names mapped to owning input indexes.
- *
- * @param parameterIndex - Input index being described.
- *
- * @returns authored binding names in source order.
+ Collects binding names belonging to one semantic input index.
+ 
+ @param targetIndexes - Binding names mapped to owning input indexes.
+ 
+ @param parameterIndex - Input index being described.
+ 
+ @returns authored binding names in source order.
  */
 function parameterNames({
   targetIndexes,
@@ -59,7 +59,7 @@ function parameterNames({
   readonly affectedNames?: ReadonlySet<string>;
 },): readonly string[] {
   /**
-   * Authored binding names belonging to current input.
+   Authored binding names belonging to current input.
    */
   const names: string[] = [];
   targetIndexes.forEach(function collectName(
@@ -72,9 +72,9 @@ function parameterNames({
   if (affectedNames === undefined)
     return names;
   /**
-   * Names whose own slot carries the reported effect, in the order they were authored.
-   *
-   * Filtered rather than taken from the set directly, so the order stays the declaration's.
+   Names whose own slot carries the reported effect, in the order they were authored.
+   
+   Filtered rather than taken from the set directly, so the order stays the declaration's.
    */
   const affected = names.filter(function carriesEffect(name,): boolean {
     return affectedNames.has(name,);
@@ -87,20 +87,20 @@ function parameterNames({
 }
 
 /**
- * Describes identifier names that belong to one function input.
- *
- * @param targetIndexes - Binding names mapped to owning input indexes.
- *
- * @param parameterIndex - Input index being described.
- *
- * @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
- *
- * @returns subject plus verb for singular or destructured input names.
- *
- * @example
- * ```ts
- * inputUsageSubject({ targetIndexes, parameterIndex: 0, affectedNames });
- * ```
+ Describes identifier names that belong to one function input.
+ 
+ @param targetIndexes - Binding names mapped to owning input indexes.
+ 
+ @param parameterIndex - Input index being described.
+ 
+ @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
+ 
+ @returns subject plus verb for singular or destructured input names.
+ 
+ @example
+ ```ts
+ inputUsageSubject({ targetIndexes, parameterIndex: 0, affectedNames });
+ ```
  */
 export function inputUsageSubject({
   targetIndexes,
@@ -119,22 +119,22 @@ export function inputUsageSubject({
 }
 
 /**
- * Describes only bindings used as receivers of unknown method calls.
- *
- * @param boundaries - Authored unknown method call expressions.
- *
- * @param targetIndexes - Binding names mapped to owning input indexes.
- *
- * @param parameterIndex - Input index being described.
- *
- * @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
- *
- * @returns subject plus verb naming method receiver bindings only.
- *
- * @example
- * ```ts
- * inputMethodUsageSubject({ boundaries: ['ctx.ui.notify'], targetIndexes, parameterIndex: 0 });
- * ```
+ Describes only bindings used as receivers of unknown method calls.
+ 
+ @param boundaries - Authored unknown method call expressions.
+ 
+ @param targetIndexes - Binding names mapped to owning input indexes.
+ 
+ @param parameterIndex - Input index being described.
+ 
+ @param affectedNames - Bindings whose own slot carries the effect, absent to name them all.
+ 
+ @returns subject plus verb naming method receiver bindings only.
+ 
+ @example
+ ```ts
+ inputMethodUsageSubject({ boundaries: ['ctx.ui.notify'], targetIndexes, parameterIndex: 0 });
+ ```
  */
 export function inputMethodUsageSubject({
   boundaries,
@@ -148,7 +148,7 @@ export function inputMethodUsageSubject({
   readonly affectedNames?: ReadonlySet<string>;
 },): string {
   /**
-   * Receivers among the bindings whose own slot carries the effect.
+   Receivers among the bindings whose own slot carries the effect.
    */
   const narrowed = receiverNames({
     names: parameterNames({
@@ -180,18 +180,18 @@ export function inputMethodUsageSubject({
 }
 
 /**
- * Keeps the names used as the receiver of at least one unknown call.
- *
- * @param names - Candidate input binding names.
- *
- * @param boundaries - Authored unknown method call expressions.
- *
- * @returns names some boundary calls a method on.
- *
- * @example
- * ```ts
- * receiverNames({ names: ['ctx'], boundaries: ['ctx.ui.notify'] });
- * ```
+ Keeps the names used as the receiver of at least one unknown call.
+ 
+ @param names - Candidate input binding names.
+ 
+ @param boundaries - Authored unknown method call expressions.
+ 
+ @returns names some boundary calls a method on.
+ 
+ @example
+ ```ts
+ receiverNames({ names: ['ctx'], boundaries: ['ctx.ui.notify'] });
+ ```
  */
 function receiverNames({
   names,
@@ -208,20 +208,20 @@ function receiverNames({
 }
 
 /**
- * Tests whether every unknown call is a method called on current input.
- *
- * @param boundaries - Authored unknown call expressions.
- *
- * @param targetIndexes - Binding names mapped to owning input indexes.
- *
- * @param parameterIndex - Input index being described.
- *
- * @returns whether every boundary starts from a current input binding.
- *
- * @example
- * ```ts
- * everyBoundaryIsInputMethod({ boundaries: ['api.write'], targetIndexes, parameterIndex: 0 });
- * ```
+ Tests whether every unknown call is a method called on current input.
+ 
+ @param boundaries - Authored unknown call expressions.
+ 
+ @param targetIndexes - Binding names mapped to owning input indexes.
+ 
+ @param parameterIndex - Input index being described.
+ 
+ @returns whether every boundary starts from a current input binding.
+ 
+ @example
+ ```ts
+ everyBoundaryIsInputMethod({ boundaries: ['api.write'], targetIndexes, parameterIndex: 0 });
+ ```
  */
 export function everyBoundaryIsInputMethod({
   boundaries,

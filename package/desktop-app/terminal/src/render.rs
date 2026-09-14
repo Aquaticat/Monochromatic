@@ -69,7 +69,7 @@ impl From<RgbColor> for Rgb {
         // ```ts
         // return { red: color.r, green: color.g, blue: color.b };
         // ```
-        Self {
+        return Self {
             red: color.r,
             green: color.g,
             blue: color.b,

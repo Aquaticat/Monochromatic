@@ -12,7 +12,7 @@ import {
 } from './test-fixtures.ts';
 
 /**
- * Invalid CIDR syntax fixture and expected diagnostic fragment.
+ Invalid CIDR syntax fixture and expected diagnostic fragment.
  */
 type InvalidCidrCase = {
   readonly entry: string;
@@ -20,7 +20,7 @@ type InvalidCidrCase = {
 };
 
 /**
- * Dependency parser failure paths that must propagate.
+ Dependency parser failure paths that must propagate.
  */
 const INVALID_CIDR_CASES: readonly InvalidCidrCase[] = [
   {
@@ -46,7 +46,7 @@ await describe({
       name: 'trims lines and skips blanks and whole-line comments',
       fn: async () => {
         /**
-         * Output from active Windows- and Unix-terminated lines.
+         Output from active Windows- and Unix-terminated lines.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: '  \r\n # comment\r\n 192.0.2.1 \r\n 2001:db8::1\n',
@@ -62,7 +62,7 @@ await describe({
       name: 'normalizes CIDR host bits before subtraction',
       fn: async () => {
         /**
-         * Normalized dual-stack networks.
+         Normalized dual-stack networks.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.7/24\n2001:db8::7/126',
@@ -78,7 +78,7 @@ await describe({
       name: 'treats inline comment text as part of a domain',
       fn: async () => {
         /**
-         * Host route returned for exact inline-comment-looking domain fixture.
+         Host route returned for exact inline-comment-looking domain fixture.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: 'inline#comment.example',
@@ -98,7 +98,7 @@ await describe({
       name: 'adds every domain address and subtracts resolved disallowed addresses',
       fn: async () => {
         /**
-         * Domain result after removing its IPv4 address.
+         Domain result after removing its IPv4 address.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: 'allowed.example',
@@ -114,7 +114,7 @@ await describe({
       name: 'skips every domain whose lookup returns ENOTFOUND',
       fn: async () => {
         /**
-         * Direct route retained while each unresolved domain contributes nothing.
+         Direct route retained while each unresolved domain contributes nothing.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1\nmissing-one.example',
@@ -130,7 +130,7 @@ await describe({
       name: 'propagates lookup failure other than ENOTFOUND',
       fn: async () => {
         /**
-         * Error from unregistered deterministic resolver hostname.
+         Error from unregistered deterministic resolver hostname.
          */
         const error = await captureError({
           operation: async function generateUnknownDomain(): Promise<string> {
@@ -150,7 +150,7 @@ await describe({
       name: 'rejects an invalid address returned by the resolver',
       fn: async () => {
         /**
-         * Error naming invalid resolver output and its domain.
+         Error naming invalid resolver output and its domain.
          */
         const error = await captureError({
           operation: async function generateInvalidResolvedAddress(): Promise<string> {
@@ -174,7 +174,7 @@ await describe({
       name: 'adds case-insensitive ASN networks and subtracts another ASN',
       fn: async () => {
         /**
-         * Dual-stack ASN result after subtracting first half of each network.
+         Dual-stack ASN result after subtracting first half of each network.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: 'as64500',
@@ -190,7 +190,7 @@ await describe({
       name: 'turns single addresses from ASN database into host routes',
       fn: async () => {
         /**
-         * Host routes from database records without prefixes.
+         Host routes from database records without prefixes.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: 'AS64502',
@@ -206,14 +206,14 @@ await describe({
       name: 'warns once for each ASN contributing no networks',
       fn: async ({ sinon, }) => {
         /**
-         * Console warning spy observing built logger output after its microtask flush.
+         Console warning spy observing built logger output after its microtask flush.
          */
         const warningSpy = sinon.spy(
           console,
           'warn',
         );
         /**
-         * Direct route retained while empty ASNs in both sets contribute nothing.
+         Direct route retained while empty ASNs in both sets contribute nothing.
          */
         const output = await generateAllowedIpsWithLookup({
           allowedText: '192.0.2.1\nAS64503',
@@ -223,7 +223,7 @@ await describe({
         },);
         await Promise.resolve();
         /**
-         * Every console warning argument flattened for per-ASN occurrence checks.
+         Every console warning argument flattened for per-ASN occurrence checks.
          */
         const warningText = warningSpy.args
           .map(function warningArgument([message,],): string {
@@ -244,7 +244,7 @@ await describe({
       name: 'rejects an invalid network returned by ASN database',
       fn: async () => {
         /**
-         * Invalid ASN database record diagnostic.
+         Invalid ASN database record diagnostic.
          */
         const error = await captureError({
           operation: async function generateInvalidAsnNetwork(): Promise<string> {
@@ -264,7 +264,7 @@ await describe({
       name: 'propagates ASN lookup failure',
       fn: async () => {
         /**
-         * Error from unregistered deterministic ASN resolver fixture.
+         Error from unregistered deterministic ASN resolver fixture.
          */
         const error = await captureError({
           operation: async function generateUnknownAsn(): Promise<string> {
@@ -288,7 +288,7 @@ await describe({
       name: 'rejects blank and comment-only allowed input',
       fn: async () => {
         /**
-         * Empty-allowed diagnostic.
+         Empty-allowed diagnostic.
          */
         const error = await captureError({
           operation: async function generateEmptyAllowed(): Promise<string> {
@@ -308,7 +308,7 @@ await describe({
       name: 'rejects an allowed domain resolving to no addresses',
       fn: async () => {
         /**
-         * Empty-resolver-result diagnostic.
+         Empty-resolver-result diagnostic.
          */
         const error = await captureError({
           operation: async function generateEmptyResolvedAllowed(): Promise<string> {
@@ -332,7 +332,7 @@ await describe({
       name: 'rejects nonstandard shorthand IPv4 accepted by the dependency parser',
       fn: async () => {
         /**
-         * Original-address validation diagnostic.
+         Original-address validation diagnostic.
          */
         const error = await captureError({
           operation: async function generateShorthandIpv4(): Promise<string> {
@@ -352,7 +352,7 @@ await describe({
       name: 'rejects an IPv4 prefix above 32 and names the entry',
       fn: async () => {
         /**
-         * IPv4 family-bound diagnostic.
+         IPv4 family-bound diagnostic.
          */
         const error = await captureError({
           operation: async function generateOversizedIpv4Prefix(): Promise<string> {
@@ -372,7 +372,7 @@ await describe({
       name: 'rejects an IPv6 prefix above 128 and names the entry',
       fn: async () => {
         /**
-         * IPv6 family-bound diagnostic.
+         IPv6 family-bound diagnostic.
          */
         const error = await captureError({
           operation: async function generateOversizedIpv6Prefix(): Promise<string> {
@@ -396,7 +396,7 @@ await describe({
         name: `propagates parser rejection for ${entry}`,
         fn: async () => {
           /**
-           * Dependency parser diagnostic.
+           Dependency parser diagnostic.
            */
           const error = await captureError({
             operation: async function generateInvalidCidr(): Promise<string> {

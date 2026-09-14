@@ -1,10 +1,10 @@
 /**
- * Verification script for Figma Kiwi parser fixtures.
- *
- * @example
- * ```bash
- * node package/figma/kiwi/src/verify.ts
- * ```
+ Verification script for Figma Kiwi parser fixtures.
+ 
+ @example
+ ```bash
+ node package/figma/kiwi/src/verify.ts
+ ```
  */
 
 import { caughtValueText as caughtErrorMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -15,17 +15,17 @@ import {
 } from './index.ts';
 
 /**
- * Reference directory holding hand-curated Figma exports used as integration fixtures.
+ Reference directory holding hand-curated Figma exports used as integration fixtures.
  */
 const SOURCE_DIR = '/home/user/Nextcloud/Text/Reference/Figma export';
 
 /**
- * Number of sample nodes printed from each decoded document.
+ Number of sample nodes printed from each decoded document.
  */
 const NODE_PREVIEW_COUNT = 3;
 
 /**
- * Fixture catalogue covering every Figma file extension the parser must decode.
+ Fixture catalogue covering every Figma file extension the parser must decode.
  */
 const TEST_FILES = [
   {
@@ -43,41 +43,41 @@ const TEST_FILES = [
 ] as const;
 
 /**
- * Result of verifying one fixture.
- *
- * @example
- * ```ts
- * const result: VerifyResult = { ok: true };
- * ```
+ Result of verifying one fixture.
+ 
+ @example
+ ```ts
+ const result: VerifyResult = { ok: true };
+ ```
  */
 type VerifyResult = {
   readonly ok: boolean;
 };
 
 /**
- * Verifies every fixture and prints summary.
- *
- * @example
- * ```ts
- * await main();
- * ```
+ Verifies every fixture and prints summary.
+ 
+ @example
+ ```ts
+ await main();
+ ```
  */
 async function main(): Promise<void> {
   /**
-   * Per-fixture verification results.
+   Per-fixture verification results.
    */
   const results = await Promise.all(TEST_FILES.map(function verifyFixture(test,): Promise<VerifyResult> {
     return verifyOne({ test, },);
   },),);
   /**
-   * Count of passing fixtures.
+   Count of passing fixtures.
    */
   const passed = results.filter(function passedFixture(result,): boolean {
     return result.ok;
   },)
     .length;
   /**
-   * Count of failing fixtures.
+   Count of failing fixtures.
    */
   const failed = results.length - passed;
 
@@ -87,29 +87,29 @@ async function main(): Promise<void> {
 }
 
 /**
- * Verifies one fixture.
- *
- * @param test - Fixture descriptor.
- *
- * @returns Verification result.
- *
- * @example
- * ```ts
- * await verifyOne({ test: TEST_FILES[0] });
- * ```
+ Verifies one fixture.
+ 
+ @param test - Fixture descriptor.
+ 
+ @returns Verification result.
+ 
+ @example
+ ```ts
+ await verifyOne({ test: TEST_FILES[0] });
+ ```
  */
 async function verifyOne(
   { test, }: { readonly test: (typeof TEST_FILES)[number]; },
 ): Promise<VerifyResult> {
   /**
-   * Absolute fixture path.
+   Absolute fixture path.
    */
   const path = `${SOURCE_DIR}/${test.name}`;
   console.log(`\n=== Testing: ${test.name} ===`,);
 
   try {
     /**
-     * Parsed fixture.
+     Parsed fixture.
      */
     const file = await parseFigmaFile(path,);
     if (file.fileType !== test.type)
@@ -119,7 +119,7 @@ async function verifyOne(
     logSchemaSummary({ file, },);
 
     /**
-     * NodeType enum lookup.
+     NodeType enum lookup.
      */
     const nodeType = file.schema
       .enumByName
@@ -127,7 +127,7 @@ async function verifyOne(
     if (nodeType === undefined)
       return fail({ message: 'NodeType enum not found', },);
     /**
-     * DOCUMENT enum field.
+     DOCUMENT enum field.
      */
     const docField = nodeType.fields
       .find(function documentField(field,): boolean {
@@ -154,14 +154,14 @@ async function verifyOne(
 }
 
 /**
- * Logs schema summary.
- *
- * @param file - Parsed file wrapper.
- *
- * @example
- * ```ts
- * logSchemaSummary({ file });
- * ```
+ Logs schema summary.
+ 
+ @param file - Parsed file wrapper.
+ 
+ @example
+ ```ts
+ logSchemaSummary({ file });
+ ```
  */
 function logSchemaSummary(
   { file, }: {
@@ -173,13 +173,13 @@ function logSchemaSummary(
   },
 ): void {
   /**
-   * Total definition count.
+   Total definition count.
    */
   const totalDefs = file.schema
     .definitions
     .length;
   /**
-   * Enum definition count.
+   Enum definition count.
    */
   const enums = file.schema
     .definitions
@@ -188,7 +188,7 @@ function logSchemaSummary(
   },)
     .length;
   /**
-   * Struct definition count.
+   Struct definition count.
    */
   const structs = file.schema
     .definitions
@@ -197,7 +197,7 @@ function logSchemaSummary(
   },)
     .length;
   /**
-   * Message definition count.
+   Message definition count.
    */
   const messages = file.schema
     .definitions
@@ -209,20 +209,20 @@ function logSchemaSummary(
 }
 
 /**
- * Verifies decoded document shape.
- *
- * @param document - Decoded document record.
- *
- * @param imageCount - Image count.
- *
- * @param fileName - File name from metadata.
- *
- * @returns Verification result.
- *
- * @example
- * ```ts
- * verifyDocument({ document: { type: 'MessageType.NODE_CHANGES', nodeChanges: [] }, imageCount: 0, fileName: 'demo' });
- * ```
+ Verifies decoded document shape.
+ 
+ @param document - Decoded document record.
+ 
+ @param imageCount - Image count.
+ 
+ @param fileName - File name from metadata.
+ 
+ @returns Verification result.
+ 
+ @example
+ ```ts
+ verifyDocument({ document: { type: 'MessageType.NODE_CHANGES', nodeChanges: [] }, imageCount: 0, fileName: 'demo' });
+ ```
  */
 function verifyDocument(
   {
@@ -238,7 +238,7 @@ function verifyDocument(
   if (document.type !== 'MessageType.NODE_CHANGES')
     return fail({ message: `expected MessageType.NODE_CHANGES, got ${caughtErrorMessage(document.type,)}`, },);
   /**
-   * Candidate node changes value.
+   Candidate node changes value.
    */
   const { nodeChanges, } = document;
   if (!Array.isArray(nodeChanges,))
@@ -251,14 +251,14 @@ function verifyDocument(
 }
 
 /**
- * Logs first decoded node records.
- *
- * @param nodeChanges - Node changes array.
- *
- * @example
- * ```ts
- * logNodePreview({ nodeChanges: [] });
- * ```
+ Logs first decoded node records.
+ 
+ @param nodeChanges - Node changes array.
+ 
+ @example
+ ```ts
+ logNodePreview({ nodeChanges: [] });
+ ```
  */
 function logNodePreview({ nodeChanges, }: { readonly nodeChanges: readonly unknown[]; },): void {
   for (let loopIndex = 0; loopIndex < Math.min(
@@ -266,20 +266,20 @@ function logNodePreview({ nodeChanges, }: { readonly nodeChanges: readonly unkno
     nodeChanges.length,
   ); loopIndex++) {
     /**
-     * Current node-change value.
+     Current node-change value.
      */
     const nodeChange = nodeChanges[loopIndex];
     if (!isRecord(nodeChange,))
       continue;
     /**
-     * Display name.
+     Display name.
      */
     const name = stringField({
       record: nodeChange,
       key: 'name',
     },);
     /**
-     * Display type.
+     Display type.
      */
     const type = stringField({
       record: nodeChange,
@@ -290,17 +290,17 @@ function logNodePreview({ nodeChanges, }: { readonly nodeChanges: readonly unkno
 }
 
 /**
- * Logs failure and returns failed result.
- *
- * @param message - Failure message.
- *
- * @returns Failed verification result.
- *
- * @example
- * ```ts
- * fail({ message: 'bad' });
- * // { ok: false }
- * ```
+ Logs failure and returns failed result.
+ 
+ @param message - Failure message.
+ 
+ @returns Failed verification result.
+ 
+ @example
+ ```ts
+ fail({ message: 'bad' });
+ // { ok: false }
+ ```
  */
 function fail({ message, }: { readonly message: string; },): VerifyResult {
   console.error(`  FAIL: ${message}`,);
@@ -308,17 +308,17 @@ function fail({ message, }: { readonly message: string; },): VerifyResult {
 }
 
 /**
- * Returns whether value is a non-array record.
- *
- * @param value - Candidate value.
- *
- * @returns Whether value is a record.
- *
- * @example
- * ```ts
- * isRecord({});
- * // true
- * ```
+ Returns whether value is a non-array record.
+ 
+ @param value - Candidate value.
+ 
+ @returns Whether value is a record.
+ 
+ @example
+ ```ts
+ isRecord({});
+ // true
+ ```
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object')
@@ -327,19 +327,19 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
 }
 
 /**
- * Reads string field from record.
- *
- * @param record - Source record.
- *
- * @param key - Field key.
- *
- * @returns String field or question mark fallback.
- *
- * @example
- * ```ts
- * stringField({ record: { name: 'demo' }, key: 'name' });
- * // 'demo'
- * ```
+ Reads string field from record.
+ 
+ @param record - Source record.
+ 
+ @param key - Field key.
+ 
+ @returns String field or question mark fallback.
+ 
+ @example
+ ```ts
+ stringField({ record: { name: 'demo' }, key: 'name' });
+ // 'demo'
+ ```
  */
 function stringField(
   {
@@ -351,7 +351,7 @@ function stringField(
   },
 ): string {
   /**
-   * Field value.
+   Field value.
    */
   const value = record[key];
   return (typeof value) === 'string' ? value : '?';

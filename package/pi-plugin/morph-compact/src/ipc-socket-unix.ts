@@ -1,11 +1,11 @@
 /**
- * Unix domain socket IPC for morph-compact.
- *
- * Creates a one-shot server that writes compressed context to the
- * first client connection, then closes. Used as a fallback when
- * the temp-file tier fails (e.g. `/tmp` is read-only).
- *
- * @module
+ Unix domain socket IPC for morph-compact.
+ 
+ Creates a one-shot server that writes compressed context to the
+ first client connection, then closes. Used as a fallback when
+ the temp-file tier fails (e.g. `/tmp` is read-only).
+ 
+ @module
  */
 
 import { randomUUID, } from 'node:crypto';
@@ -24,7 +24,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 //region Module logger
 
 /**
- * Module logger tagged for morph-compact unix-socket IPC.
+ Module logger tagged for morph-compact unix-socket IPC.
  */
 const l = tagged({ tag: 'morph-compact:ipc-socket-unix', },);
 
@@ -33,12 +33,12 @@ const l = tagged({ tag: 'morph-compact:ipc-socket-unix', },);
 //region Constants
 
 /**
- * Milliseconds before the server auto-closes if no client connects.
+ Milliseconds before the server auto-closes if no client connects.
  */
 const SERVER_IDLE_TIMEOUT_MS = 30_000;
 
 /**
- * Milliseconds before a client read attempt times out.
+ Milliseconds before a client read attempt times out.
  */
 const CLIENT_READ_TIMEOUT_MS = 10_000;
 
@@ -47,15 +47,15 @@ const CLIENT_READ_TIMEOUT_MS = 10_000;
 //region Types
 
 /**
- * Result of creating a one-shot socket server.
+ Result of creating a one-shot socket server.
  */
 export type OneShotSocketServerResult = {
   /**
-   * Filesystem path of the Unix domain socket.
+   Filesystem path of the Unix domain socket.
    */
   socketPath: string;
   /**
-   * Unlinks the socket file and closes the server.
+   Unlinks the socket file and closes the server.
    */
   cleanup: () => void;
 };
@@ -65,31 +65,31 @@ export type OneShotSocketServerResult = {
 //region Server
 
 /**
- * Create a one-shot Unix domain socket server.
- *
- * Listens on a unique socket path under the system tmpdir.
- * When a client connects, the entire `text` is written to that
- * single connection, the server closes, and the socket file is unlinked.
- *
- * A 30-second idle timeout auto-cleans if no client connects.
- *
- * @param text - the compressed context string to serve
- *
- * @returns the socket path and a cleanup function
- *
- * @throws when the socket cannot be created or bound
- *
- * @example
- * ```typescript
- * const { socketPath, cleanup } = createOneShotSocketServer(compressedText);
- * // pass socketPath to new pi session via --morph-compact-socket
- * ```
+ Create a one-shot Unix domain socket server.
+ 
+ Listens on a unique socket path under the system tmpdir.
+ When a client connects, the entire `text` is written to that
+ single connection, the server closes, and the socket file is unlinked.
+ 
+ A 30-second idle timeout auto-cleans if no client connects.
+ 
+ @param text - the compressed context string to serve
+ 
+ @returns the socket path and a cleanup function
+ 
+ @throws when the socket cannot be created or bound
+ 
+ @example
+ ```typescript
+ const { socketPath, cleanup } = createOneShotSocketServer(compressedText);
+ // pass socketPath to new pi session via --morph-compact-socket
+ ```
  */
 export function createOneShotSocketServer(
   text: string,
 ): OneShotSocketServerResult {
   /**
-   * Unique socket path under the system tmpdir for this one-shot run.
+   Unique socket path under the system tmpdir for this one-shot run.
    */
   const socketPath = join(
     tmpdir(),
@@ -97,29 +97,29 @@ export function createOneShotSocketServer(
   );
 
   /**
-   * Lazily assigned server and idle-timer handles, held in a mutable record so
-   * the net.Server event handlers (handleConnection, handleError, close, idle
-   * timer) can share and clear them without a function-root `let` or a nullish
-   * union. Absent property means "not created / already cleared".
+   Lazily assigned server and idle-timer handles, held in a mutable record so
+   the net.Server event handlers (handleConnection, handleError, close, idle
+   timer) can share and clear them without a function-root `let` or a nullish
+   union. Absent property means "not created / already cleared".
    */
   const handles: {
     server?: Server;
     idleTimer?: ReturnType<typeof setTimeout>;
   } = {};
   /**
-   * Guards against re-entry when multiple clients race to connect.
+   Guards against re-entry when multiple clients race to connect.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
   /**
-   * Close the server and unlink the socket file.
-   *
-   * Stays synchronous so it satisfies its `queueMicrotask`, `setTimeout`,
-   * `EventEmitter.on`, and disposable-cleanup call sites (all void-return
-   * slots). The socket-file removal is async (`unlink`), so it runs as a
-   * detached, self-contained task via the `void (async () => {})()` idiom
-   * the workspace uses for async work in synchronous callback positions.
+   Close the server and unlink the socket file.
+   
+   Stays synchronous so it satisfies its `queueMicrotask`, `setTimeout`,
+   `EventEmitter.on`, and disposable-cleanup call sites (all void-return
+   slots). The socket-file removal is async (`unlink`), so it runs as a
+   detached, self-contained task via the `void (async () => {})()` idiom
+   the workspace uses for async work in synchronous callback positions.
    */
   function close(): void {
     if (handles.idleTimer
@@ -150,11 +150,11 @@ export function createOneShotSocketServer(
 
   handles.server = createServer(
     /**
-     * Serves text through accepted host socket.
-     *
-     * @param socket - Accepted Unix socket.
-     *
-     * @mutates socket - `socket.write` and `socket.end` advance and close stream state.
+     Serves text through accepted host socket.
+     
+     @param socket - Accepted Unix socket.
+     
+     @mutates socket - `socket.write` and `socket.end` advance and close stream state.
      */
     function handleConnection(
       socket,
@@ -209,24 +209,24 @@ export function createOneShotSocketServer(
 
 /* oxlint-disable eslint-plugin-promise/avoid-new -- wrapping callback-based net.createConnection requires manual Promise construction */
 /**
- * Read compressed context from a Unix domain socket.
- *
- * Connects to the one-shot server, reads all data until the
- * server closes the connection, and returns the text.
- *
- * A 10-second timeout prevents hanging if the server never responds.
- *
- * @param socketPath - filesystem path of the Unix domain socket
- *
- * @returns the compressed context string
- *
- * @throws when the socket cannot be connected to or reading times out
- *
- * @example
- * ```typescript
- * const text = await readFromUnixSocket(socketPath);
- * // text contains the Morph-compressed conversation context
- * ```
+ Read compressed context from a Unix domain socket.
+ 
+ Connects to the one-shot server, reads all data until the
+ server closes the connection, and returns the text.
+ 
+ A 10-second timeout prevents hanging if the server never responds.
+ 
+ @param socketPath - filesystem path of the Unix domain socket
+ 
+ @returns the compressed context string
+ 
+ @throws when the socket cannot be connected to or reading times out
+ 
+ @example
+ ```typescript
+ const text = await readFromUnixSocket(socketPath);
+ // text contains the Morph-compressed conversation context
+ ```
  */
 export function readFromUnixSocket(
   socketPath: string,
@@ -237,28 +237,28 @@ export function readFromUnixSocket(
       reject,
     ): void {
       /**
-       * Captured data buffers concatenated when the server ends the stream.
+       Captured data buffers concatenated when the server ends the stream.
        */
       const chunks: Buffer[] = [];
       /**
-       * Latch ensuring resolve/reject is called exactly once.
+       Latch ensuring resolve/reject is called exactly once.
        */
       // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch shared between data/end/error handlers and the timeout
       let settled = false;
 
       /**
-       * Settle the promise with either an error or a result.
-       *
-       * @param settlement - Error or result selected by one socket lifecycle event.
-       *
-       * @mutates settlement - Promise rejection retains `settlement.error` as its rejection reason.
+       Settle the promise with either an error or a result.
+       
+       @param settlement - Error or result selected by one socket lifecycle event.
+       
+       @mutates settlement - Promise rejection retains `settlement.error` as its rejection reason.
        */
       function finish(settlement: {
         readonly error?: Error;
         readonly result?: string;
       },): void {
         /**
-         * Settlement fields read after naming effect boundary.
+         Settlement fields read after naming effect boundary.
          */
         const {
           error,
@@ -275,7 +275,7 @@ export function readFromUnixSocket(
       }
 
       /**
-       * Outbound connection whose event handlers feed the promise lifecycle.
+       Outbound connection whose event handlers feed the promise lifecycle.
        */
       const socket = createConnection(
         { path: socketPath, },
@@ -300,11 +300,11 @@ export function readFromUnixSocket(
           socket.on(
             'error',
             /**
-             * Settles read with host socket failure.
-             *
-             * @param err - Host-owned socket error.
-             *
-             * @mutates err - Promise rejection retains error as its rejection reason.
+             Settles read with host socket failure.
+             
+             @param err - Host-owned socket error.
+             
+             @mutates err - Promise rejection retains error as its rejection reason.
              */
             function onError(
               err: ForeignBorrowed<Error>,
@@ -318,11 +318,11 @@ export function readFromUnixSocket(
       socket.on(
         'error',
         /**
-         * Settles connection with host socket failure.
-         *
-         * @param err - Host-owned connection error.
-         *
-         * @mutates err - Promise rejection retains error as its rejection reason.
+         Settles connection with host socket failure.
+         
+         @param err - Host-owned connection error.
+         
+         @mutates err - Promise rejection retains error as its rejection reason.
          */
         function onError(
           err: ForeignBorrowed<Error>,

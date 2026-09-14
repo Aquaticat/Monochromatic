@@ -10,8 +10,9 @@
   },
   "dependencies": {
     "@monochromatic-dev/cli-mvm": "workspace:*",
+    "@monochromatic-dev/mcp-stdio": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/mcp-stdio": "workspace:*"
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",

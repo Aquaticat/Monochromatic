@@ -1,7 +1,7 @@
 /**
- * Tests for the statistical fusion: dominance, tightening, and disagreement.
- *
- * @module
+ Tests for the statistical fusion: dominance, tightening, and disagreement.
+ 
+ @module
  */
 
 import {

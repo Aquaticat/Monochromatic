@@ -110,7 +110,12 @@ Nice-to-have features and experimental improvements.
 ### Active development (March 2026)
 
 - **MCP packages**:
-   Building mcp-stdio and mcp-nvim → package/mcp/
+   mcp-stdio implements MCP revision 2026-07-28 and backs package/mcp/mvm,
+   verified against a live client;
+   remaining work is concurrency
+   ([#433](https://github.com/Aquaticat/Monochromatic/issues/433))
+   and argument validation
+   ([#434](https://github.com/Aquaticat/Monochromatic/issues/434))
 - **Build System**:
    Fixing ordering issues for fresh clones → [Build System Todo](build-system.md#fresh-clone-setup-problems)
 - **Security**:

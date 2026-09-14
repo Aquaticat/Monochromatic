@@ -24,15 +24,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for repository-shape fixtures.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for repository-shape fixtures.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -56,14 +56,14 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Creates minimum valid Git administrative directory structure.
- *
- * @param gitDirectory - administrative directory path
- *
- * @example
- * ```ts
- * await createValidGitDirectory({ gitDirectory: '/repo/.git' });
- * ```
+ Creates minimum valid Git administrative directory structure.
+ 
+ @param gitDirectory - administrative directory path
+ 
+ @example
+ ```ts
+ await createValidGitDirectory({ gitDirectory: '/repo/.git' });
+ ```
  */
 async function createValidGitDirectory({
   gitDirectory,
@@ -96,14 +96,14 @@ async function createValidGitDirectory({
 }
 
 /**
- * Creates a valid relative gitfile marker and target.
- *
- * @param repositoryRoot - worktree root receiving marker
- *
- * @example
- * ```ts
- * await createValidGitFile({ repositoryRoot: '/repo' });
- * ```
+ Creates a valid relative gitfile marker and target.
+ 
+ @param repositoryRoot - worktree root receiving marker
+ 
+ @example
+ ```ts
+ await createValidGitFile({ repositoryRoot: '/repo' });
+ ```
  */
 async function createValidGitFile({
   repositoryRoot,
@@ -126,17 +126,17 @@ async function createValidGitFile({
 }
 
 /**
- * Captures asynchronous error from require-root invocation.
- *
- * @param args - Git argv to pass through require-root rule.
- *
- * @returns Error thrown by rule, or `undefined` when rule passes.
- *
- * @example
- * ```ts
- * const caught = await catchRequireRootError(['-C', '/repo/sub', 'status']);
- * expect(caught).toBeInstanceOf(Error);
- * ```
+ Captures asynchronous error from require-root invocation.
+ 
+ @param args - Git argv to pass through require-root rule.
+ 
+ @returns Error thrown by rule, or `undefined` when rule passes.
+ 
+ @example
+ ```ts
+ const caught = await catchRequireRootError(['-C', '/repo/sub', 'status']);
+ expect(caught).toBeInstanceOf(Error);
+ ```
  */
 async function catchRequireRootError(args: readonly string[],): Promise<unknown> {
   try {

@@ -60,7 +60,7 @@ fn channel_routing_survives_mid_frame_chunk_split() {
         .flat_map(|frame| {
             let left = if frame % 2 == 0 { 0.9 } else { 0.1 };
             let right = if frame % 2 == 0 { -0.2 } else { 0.5 };
-            [left, right]
+            return [left, right]
         })
         .collect();
 

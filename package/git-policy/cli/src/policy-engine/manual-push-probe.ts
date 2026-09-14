@@ -1,7 +1,7 @@
 /**
- * Authoritative manual-push update facts.
- *
- * @module
+ Authoritative manual-push update facts.
+ 
+ @module
  */
 import nanoSpawn from 'nano-spawn';
 import {
@@ -16,11 +16,11 @@ import {
 } from './manual-push-probe-types.ts';
 
 /**
- * Parses authoritative `git ls-remote --refs` output.
- *
- * @param output - exact command stdout
- *
- * @returns remote ref to object-ID map
+ Parses authoritative `git ls-remote --refs` output.
+ 
+ @param output - exact command stdout
+ 
+ @returns remote ref to object-ID map
  */
 function parseRemoteRefs(output: string,): ReadonlyMap<string, string> {
   return new Map(output.split('\n',)
@@ -32,7 +32,7 @@ function parseRemoteRefs(output: string,): ReadonlyMap<string, string> {
       string
     ] {
       /**
-       * Tab separating object ID from fully qualified ref.
+       Tab separating object ID from fully qualified ref.
        */
       const separator = line.indexOf('\t',);
       if (separator === (-1))
@@ -48,17 +48,17 @@ function parseRemoteRefs(output: string,): ReadonlyMap<string, string> {
 }
 
 /**
- * Resolves one destination's authoritative remote object IDs.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param remoteLocation - destination remote location
- *
- * @param updates - negotiated updates for destination
- *
- * @returns public push updates
+ Resolves one destination's authoritative remote object IDs.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param remoteLocation - destination remote location
+ 
+ @param updates - negotiated updates for destination
+ 
+ @returns public push updates
  */
 async function resolveRemoteGroup({
   gitPath,
@@ -72,7 +72,7 @@ async function resolveRemoteGroup({
   updates: readonly ProbedPushUpdate[];
 }>,): Promise<PushUpdate[]> {
   /**
-   * Authoritative remote reference query.
+   Authoritative remote reference query.
    */
   const result = await nanoSpawn(
     gitPath,
@@ -87,16 +87,16 @@ async function resolveRemoteGroup({
     { cwd, },
   );
   /**
-   * Authoritative remote references by fully qualified name.
+   Authoritative remote references by fully qualified name.
    */
   const remoteRefs = parseRemoteRefs(result.stdout,);
   return updates.map(function publicUpdate(update,): PushUpdate {
     /**
-     * Authoritative destination value after dry-run negotiation.
+     Authoritative destination value after dry-run negotiation.
      */
     const authoritativeOid = remoteRefs.get(update.remoteRef,);
     /**
-     * Whether push negotiation observed destination absence.
+     Whether push negotiation observed destination absence.
      */
     const advertisedAbsent = isZeroOid(update.advertisedRemoteOid,);
     if ((authoritativeOid === undefined) !== advertisedAbsent)
@@ -113,15 +113,15 @@ async function resolveRemoteGroup({
 }
 
 /**
- * Resolves authoritative remote object IDs and validates negotiation freshness.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param updates - Git-negotiated destination updates
- *
- * @returns public push updates
+ Resolves authoritative remote object IDs and validates negotiation freshness.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param updates - Git-negotiated destination updates
+ 
+ @returns public push updates
  */
 async function resolveRemoteOids({
   gitPath,
@@ -133,12 +133,12 @@ async function resolveRemoteOids({
   updates: readonly ProbedPushUpdate[];
 }>,): Promise<PushUpdate[]> {
   /**
-   * Updates grouped by exact destination location.
+   Updates grouped by exact destination location.
    */
   const byLocation = new Map<string, ProbedPushUpdate[]>();
   for (const update of updates) {
     /**
-     * Existing updates for current exact destination.
+     Existing updates for current exact destination.
      */
     const locationUpdates = byLocation.get(update.remoteLocation,);
     if (locationUpdates === undefined) {
@@ -151,7 +151,7 @@ async function resolveRemoteOids({
     locationUpdates.push(update,);
   }
   /**
-   * Concurrent authority queries, one per destination.
+   Concurrent authority queries, one per destination.
    */
   const resolvedGroups = await Promise.all([...byLocation.entries(),]
     .map(function resolveLocation([remoteLocation, locationUpdates,],) {
@@ -166,20 +166,20 @@ async function resolveRemoteOids({
 }
 
 /**
- * Discovers exact updates Git would push without updating remote refs.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param args - transformed push arguments
- *
- * @returns authoritative push updates
- *
- * @example
- * ```ts
- * await probeManualPushUpdates({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['push', 'origin', 'main'] });
- * ```
+ Discovers exact updates Git would push without updating remote refs.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param args - transformed push arguments
+ 
+ @returns authoritative push updates
+ 
+ @example
+ ```ts
+ await probeManualPushUpdates({ gitPath: '/usr/bin/git', cwd: '/repo', args: ['push', 'origin', 'main'] });
+ ```
  */
 export async function probeManualPushUpdates({
   gitPath,
@@ -191,7 +191,7 @@ export async function probeManualPushUpdates({
   args: readonly string[];
 }>,): Promise<PushUpdate[]> {
   /**
-   * Git-resolved mappings from private dry-run hook.
+   Git-resolved mappings from private dry-run hook.
    */
   const updates = await captureProbedPushUpdates({
     gitPath,

@@ -8,38 +8,38 @@ import {
 } from './config.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Opens an interactive serial console session to a running VM via `virsh console`.
- * The VM is configured with auto-login on ttyS0, so no credentials are needed.
- * Press `Ctrl+]` to disconnect from the console.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @example
- * ```ts
- * await shell({ name: 'dev-01' });
- * ```
+ Opens an interactive serial console session to a running VM via `virsh console`.
+ The VM is configured with auto-login on ttyS0, so no credentials are needed.
+ Press `Ctrl+]` to disconnect from the console.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @example
+ ```ts
+ await shell({ name: 'dev-01' });
+ ```
  */
 export async function shell({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
   /**
-   * Tagged logger so console-session messages name the call site.
+   Tagged logger so console-session messages name the call site.
    */
   const rl = tagged({
     tag: shell.name,
     l,
   },);
   /**
-   * Fully prefixed VM name expected by virsh commands.
+   Fully prefixed VM name expected by virsh commands.
    */
   const fullName = `${VM_PREFIX}${name}`;
 
@@ -68,7 +68,7 @@ export async function shell({ name, }: { readonly name: string; },): Promise<voi
       && ('exitCode' in error))
     {
       /**
-       * Forwarded so the shell exit code reflects the virsh console outcome.
+       Forwarded so the shell exit code reflects the virsh console outcome.
        */
       const exitCode = ((typeof error.exitCode) === 'number')
         ? error.exitCode

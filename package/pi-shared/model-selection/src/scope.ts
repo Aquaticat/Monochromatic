@@ -1,7 +1,7 @@
 /**
- * Model scope reconstruction helpers for pi plugins.
- *
- * @module
+ Model scope reconstruction helpers for pi plugins.
+ 
+ @module
  */
 
 export * from './argv-scope.ts';

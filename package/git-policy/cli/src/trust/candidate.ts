@@ -1,7 +1,7 @@
 /**
- * Exact trust candidate capture without config execution.
- *
- * @module
+ Exact trust candidate capture without config execution.
+ 
+ @module
  */
 import {
   constants,
@@ -17,13 +17,13 @@ import type {
 } from './types.ts';
 
 /**
- * Candidate capture failure.
+ Candidate capture failure.
  */
 export class TrustCandidateError extends Error {
   /**
-   * Creates candidate failure.
-   *
-   * @param message - safe failure explanation
+   Creates candidate failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -32,13 +32,13 @@ export class TrustCandidateError extends Error {
 }
 
 /**
- * Selects handle-backed identity target where operating system exposes one.
- *
- * @param configPath - canonical live config path
- *
- * @param fileDescriptor - opened source descriptor
- *
- * @returns identity target and whether resolver must preserve its spelling
+ Selects handle-backed identity target where operating system exposes one.
+ 
+ @param configPath - canonical live config path
+ 
+ @param fileDescriptor - opened source descriptor
+ 
+ @returns identity target and whether resolver must preserve its spelling
  */
 function filesystemIdentityTarget({
   configPath,
@@ -63,48 +63,48 @@ function filesystemIdentityTarget({
 }
 
 /**
- * Captures exact bytes and same-handle metadata from non-symlink source.
- *
- * @param discovered - canonical configuration location
- *
- * @returns exact candidate plus complete filesystem identity
- *
- * @example
- * ```ts
- * await captureTrustCandidate(discovered);
- * ```
+ Captures exact bytes and same-handle metadata from non-symlink source.
+ 
+ @param discovered - canonical configuration location
+ 
+ @returns exact candidate plus complete filesystem identity
+ 
+ @example
+ ```ts
+ await captureTrustCandidate(discovered);
+ ```
  */
 export async function captureTrustCandidate(discovered: DiscoveredConfig,): Promise<TrustCandidate> {
   /**
-   * No-follow source handle opened before filesystem identity resolution.
+   No-follow source handle opened before filesystem identity resolution.
    */
   const handle = await open(
     discovered.configPath,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Automatically closed source handle.
+   Automatically closed source handle.
    */
   await using disposableHandle = handle;
   /**
-   * Same-handle metadata before byte capture.
+   Same-handle metadata before byte capture.
    */
   const beforeMetadata = await handle.stat({ bigint: true, },);
   if (!beforeMetadata.isFile())
     throw new TrustCandidateError('Configuration must remain a regular file during capture.',);
   /**
-   * Exact bytes from opened source object.
+   Exact bytes from opened source object.
    */
   const bytes = await handle.readFile();
   /**
-   * Handle-backed identity target where host provides process descriptor paths.
+   Handle-backed identity target where host provides process descriptor paths.
    */
   const identityTarget = filesystemIdentityTarget({
     configPath: discovered.configPath,
     fileDescriptor: handle.fd,
   },);
   /**
-   * Fresh source-qualified filesystem identity without logger stream pollution.
+   Fresh source-qualified filesystem identity without logger stream pollution.
    */
   const filesystem = await resolveFsId({
     path: identityTarget.path,
@@ -112,11 +112,11 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
     preserveTargetPath: identityTarget.preserveTargetPath,
   },);
   /**
-   * Same-handle metadata after byte capture and identity resolution.
+   Same-handle metadata after byte capture and identity resolution.
    */
   const metadata = await handle.stat({ bigint: true, },);
   /**
-   * Live path metadata proving identity resolution still named opened object.
+   Live path metadata proving identity resolution still named opened object.
    */
   const pathMetadata = await lstat(
     discovered.configPath,
@@ -151,49 +151,49 @@ export async function captureTrustCandidate(discovered: DiscoveredConfig,): Prom
 }
 
 /**
- * Captures exact local source bytes through no-follow stable handle.
- *
- * @param path - resolved local source path
- *
- * @returns canonical exact source snapshot
- *
- * @example
- * ```ts
- * await captureTrustSource('/repo/policy.ts');
- * ```
+ Captures exact local source bytes through no-follow stable handle.
+ 
+ @param path - resolved local source path
+ 
+ @returns canonical exact source snapshot
+ 
+ @example
+ ```ts
+ await captureTrustSource('/repo/policy.ts');
+ ```
  */
 export async function captureTrustSource(path: string,): Promise<CapturedTrustSource> {
   /**
-   * Canonical source path before no-follow open.
+   Canonical source path before no-follow open.
    */
   const canonicalPath = await realpath(path,);
   /**
-   * No-follow exact source handle.
+   No-follow exact source handle.
    */
   const handle = await open(
     canonicalPath,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Automatically closed tracked-source handle.
+   Automatically closed tracked-source handle.
    */
   await using disposableHandle = handle;
   /**
-   * Same-handle metadata before capture.
+   Same-handle metadata before capture.
    */
   const beforeMetadata = await handle.stat({ bigint: true, },);
   if (!beforeMetadata.isFile())
     throw new TrustCandidateError(`Tracked source is not a regular file: ${canonicalPath}`,);
   /**
-   * Exact bytes supplied to TypeScript builder.
+   Exact bytes supplied to TypeScript builder.
    */
   const bytes = await handle.readFile();
   /**
-   * Same-handle metadata after capture.
+   Same-handle metadata after capture.
    */
   const metadata = await handle.stat({ bigint: true, },);
   /**
-   * Live canonical-path metadata proving object agreement.
+   Live canonical-path metadata proving object agreement.
    */
   const pathMetadata = await lstat(
     canonicalPath,

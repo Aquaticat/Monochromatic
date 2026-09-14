@@ -29,30 +29,30 @@ import type {
 } from './model.ts';
 
 /**
- * Exclusive copy-on-write request with full-copy fallback.
+ Exclusive copy-on-write request with full-copy fallback.
  */
 const EXCLUSIVE_COPY_MODE = constants.COPYFILE_EXCL | constants.COPYFILE_FICLONE;
 
 /**
- * Temporary writable mode for newly installed selected directories.
+ Temporary writable mode for newly installed selected directories.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Captures exact no-follow identity after successful exclusive creation.
- *
- * @param destinationPath - newly created native filesystem path
- *
- * @param relativePath - repository path for durable ownership
- *
- * @param selected - whether path came from selected source manifest
- *
- * @returns exact created-path identity
- *
- * @example
- * ```ts
- * await captureInstalledPath({ destinationPath: '/wt/cache', relativePath: 'cache', selected: true });
- * ```
+ Captures exact no-follow identity after successful exclusive creation.
+ 
+ @param destinationPath - newly created native filesystem path
+ 
+ @param relativePath - repository path for durable ownership
+ 
+ @param selected - whether path came from selected source manifest
+ 
+ @returns exact created-path identity
+ 
+ @example
+ ```ts
+ await captureInstalledPath({ destinationPath: '/wt/cache', relativePath: 'cache', selected: true });
+ ```
  */
 async function captureInstalledPath({
   destinationPath,
@@ -64,7 +64,7 @@ async function captureInstalledPath({
   selected: boolean;
 }>,): Promise<InstalledWorktreePath> {
   /**
-   * Exact no-follow post-creation filesystem identity.
+   Exact no-follow post-creation filesystem identity.
    */
   const stats = await lstat(
     destinationPath,
@@ -81,18 +81,18 @@ async function captureInstalledPath({
 }
 
 /**
- * Asserts every existing destination entry is identical before mutation.
- *
- * @param snapshot - validated staged source state
- *
- * @param destinationRoot - newly registered worktree root
- *
- * @throws {@link WorktreeCopyError} on first differing collision
- *
- * @example
- * ```ts
- * await preflightDestination({ snapshot, destinationRoot: '/wt' });
- * ```
+ Asserts every existing destination entry is identical before mutation.
+ 
+ @param snapshot - validated staged source state
+ 
+ @param destinationRoot - newly registered worktree root
+ 
+ @throws {@link WorktreeCopyError} on first differing collision
+ 
+ @example
+ ```ts
+ await preflightDestination({ snapshot, destinationRoot: '/wt' });
+ ```
  */
 async function preflightDestination({
   snapshot,
@@ -103,7 +103,7 @@ async function preflightDestination({
 }>,): Promise<void> {
   for (const entry of snapshot.entries) {
     /**
-     * Destination path aligned with staged entry.
+     Destination path aligned with staged entry.
      */
     const destinationPath = filesystemPath({
       root: destinationRoot,
@@ -111,7 +111,7 @@ async function preflightDestination({
     },);
     /* oxlint-disable no-await-in-loop -- fail-fast collision order must follow deterministic manifest */
     /**
-     * Current destination no-follow metadata or absence.
+     Current destination no-follow metadata or absence.
      */
     const stats = await lstatOrAbsent(destinationPath,);
     /* oxlint-enable no-await-in-loop */
@@ -131,22 +131,22 @@ async function preflightDestination({
 }
 
 /**
- * Creates missing unselected parent directories for one selected entry.
- *
- * @param destinationRoot - newly registered worktree root
- *
- * @param entry - selected staged entry
- *
- * @param created - mutable transaction-owned creation list
- *
- * @param journalState - mutable durable transaction state
- *
- * @mutates journalState - records proven scaffold identities through {@link recordCreatedEntry}
- *
- * @example
- * ```ts
- * await ensureParents({ destinationRoot: '/wt', entry, created: [], journalState });
- * ```
+ Creates missing unselected parent directories for one selected entry.
+ 
+ @param destinationRoot - newly registered worktree root
+ 
+ @param entry - selected staged entry
+ 
+ @param created - mutable transaction-owned creation list
+ 
+ @param journalState - mutable durable transaction state
+ 
+ @mutates journalState - records proven scaffold identities through {@link recordCreatedEntry}
+ 
+ @example
+ ```ts
+ await ensureParents({ destinationRoot: '/wt', entry, created: [], journalState });
+ ```
  */
 async function ensureParents({
   destinationRoot,
@@ -160,7 +160,7 @@ async function ensureParents({
   journalState: JournalState;
 }>,): Promise<void> {
   /**
-   * Selected path components excluding selected entry itself.
+   Selected path components excluding selected entry itself.
    */
   const parentComponents = entry.relativePath
     .split('/')
@@ -169,7 +169,7 @@ async function ensureParents({
       -1,
     );
   /**
-   * Ordered parent repository paths from shallow to deep.
+   Ordered parent repository paths from shallow to deep.
    */
   const parentPaths = parentComponents.map(function parentPath(
     _component,
@@ -184,7 +184,7 @@ async function ensureParents({
   },);
   for (const current of parentPaths) {
     /**
-     * Current native destination parent.
+     Current native destination parent.
      */
     const destinationPath = filesystemPath({
       root: destinationRoot,
@@ -192,7 +192,7 @@ async function ensureParents({
     },);
     /* oxlint-disable no-await-in-loop -- parent chain is ordered and each child depends on prior directory */
     /**
-     * Current parent no-follow metadata or absence.
+     Current parent no-follow metadata or absence.
      */
     const stats = await lstatOrAbsent(destinationPath,);
     /* oxlint-enable no-await-in-loop */
@@ -207,7 +207,7 @@ async function ensureParents({
     // oxlint-disable-next-line no-await-in-loop -- parent chain creation is necessarily sequential
     await mkdir(destinationPath,);
     /**
-     * Proven scaffold identity captured after exclusive creation.
+     Proven scaffold identity captured after exclusive creation.
      */
     // oxlint-disable-next-line no-await-in-loop -- ownership identity must follow successful scaffold creation
     const installed = await captureInstalledPath({
@@ -225,18 +225,18 @@ async function ensureParents({
 }
 
 /**
- * Creates one absent selected entry from private stage.
- *
- * @param snapshot - validated staged source state
- *
- * @param destinationRoot - newly registered worktree root
- *
- * @param entry - absent selected entry
- *
- * @example
- * ```ts
- * await createSelectedEntry({ snapshot, destinationRoot: '/wt', entry });
- * ```
+ Creates one absent selected entry from private stage.
+ 
+ @param snapshot - validated staged source state
+ 
+ @param destinationRoot - newly registered worktree root
+ 
+ @param entry - absent selected entry
+ 
+ @example
+ ```ts
+ await createSelectedEntry({ snapshot, destinationRoot: '/wt', entry });
+ ```
  */
 async function createSelectedEntry({
   snapshot,
@@ -248,14 +248,14 @@ async function createSelectedEntry({
   entry: WorktreeCopyEntry;
 }>,): Promise<void> {
   /**
-   * Staged expected filesystem path.
+   Staged expected filesystem path.
    */
   const stagePath = filesystemPath({
     root: snapshot.stageRoot,
     repositoryPath: entry.relativePath,
   },);
   /**
-   * Destination filesystem path.
+   Destination filesystem path.
    */
   const destinationPath = filesystemPath({
     root: destinationRoot,
@@ -287,7 +287,7 @@ async function createSelectedEntry({
     }
   }
   /**
-   * Exact staged symbolic-link target text.
+   Exact staged symbolic-link target text.
    */
   const target = await readlink(stagePath,);
   await symlink(
@@ -297,24 +297,24 @@ async function createSelectedEntry({
 }
 
 /**
- * Installs validated ignored snapshot without overwriting destination state.
- *
- * @param snapshot - validated private source snapshot
- *
- * @param destinationRoot - newly registered worktree root
- *
- * @param journalState - mutable durable transaction state
- *
- * @mutates journalState - records selected intents and proven identities through journal helpers
- *
- * @returns count of newly installed selected entries
- *
- * @throws {@link WorktreeCopyError} after ownership-checked rollback on failure
- *
- * @example
- * ```ts
- * await installSnapshot({ snapshot, destinationRoot: '/wt', journalState });
- * ```
+ Installs validated ignored snapshot without overwriting destination state.
+ 
+ @param snapshot - validated private source snapshot
+ 
+ @param destinationRoot - newly registered worktree root
+ 
+ @param journalState - mutable durable transaction state
+ 
+ @mutates journalState - records selected intents and proven identities through journal helpers
+ 
+ @returns count of newly installed selected entries
+ 
+ @throws {@link WorktreeCopyError} after ownership-checked rollback on failure
+ 
+ @example
+ ```ts
+ await installSnapshot({ snapshot, destinationRoot: '/wt', journalState });
+ ```
  */
 export async function installSnapshot({
   snapshot,
@@ -326,7 +326,7 @@ export async function installSnapshot({
   journalState: JournalState;
 }>,): Promise<number> {
   /**
-   * Prior paths with durable post-creation identities.
+   Prior paths with durable post-creation identities.
    */
   const created: InstalledWorktreePath[] = journalState.pending
     .record
@@ -348,7 +348,7 @@ export async function installSnapshot({
         journalState,
       },);
       /**
-       * Current destination path after parent creation.
+       Current destination path after parent creation.
        */
       const destinationPath = filesystemPath({
         root: destinationRoot,
@@ -369,7 +369,7 @@ export async function installSnapshot({
         entry,
       },);
       /**
-       * Proven selected identity captured after exclusive creation.
+       Proven selected identity captured after exclusive creation.
        */
       // oxlint-disable-next-line no-await-in-loop -- ownership identity must follow successful selected creation
       const installed = await captureInstalledPath({
@@ -395,7 +395,7 @@ export async function installSnapshot({
   }
   catch (error: unknown) {
     /**
-     * Paths that rollback could not safely remove.
+     Paths that rollback could not safely remove.
      */
     const retained = await rollbackCreated({
       snapshot,
@@ -403,7 +403,7 @@ export async function installSnapshot({
       created,
     },);
     /**
-     * Incomplete rollback suffix retaining exact paths.
+     Incomplete rollback suffix retaining exact paths.
      */
     const suffix = retained.length === 0
       ? ''

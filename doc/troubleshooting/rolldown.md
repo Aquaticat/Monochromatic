@@ -13,8 +13,14 @@ has its own canonical section.
 Upstream issue:
 [rolldown/rolldown#2758](https://github.com/rolldown/rolldown/issues/2758)
 (open,
- on hold).
- Date 2026-03-15.
+ assigned to `@shulaoda`,
+ and no longer on hold).
+ Status checked 2026-09-09.
+ See
+ [`doc/research/rolldown-import-attributes-upstream-status.md`](../research/rolldown-import-attributes-upstream-status.md)
+ for the upstream timeline,
+ capacity evidence,
+ and donation assessment.
 
 ### Symptom
 
@@ -60,17 +66,18 @@ What does not work:
   `new_url.rs` for `new URL()` patterns
   (`ModuleType::Asset`).
 
-Source citations (rolldown `main` as of 2026-03-15):
+Source citations (rolldown `main` commit `9704b5650`,
+ checked 2026-09-09):
 
-- `crates/rolldown/src/ast_scanner/mod.rs:674-676`:
+- `crates/rolldown/src/ast_scanner/mod.rs:902-923`:
    stores
-  attributes but does not set module type.
-- `crates/rolldown/src/ast_scanner/new_url.rs:68`:
+  attributes but passes no asserted module type.
+- `crates/rolldown/src/ast_scanner/new_url.rs:69`:
    only
-  place `asserted_module_type` is set.
-- `crates/rolldown_common/src/types/import_record.rs:31`:
+  assignment to `asserted_module_type` sets `ModuleType::Asset`.
+- `crates/rolldown_common/src/types/import_record.rs:32`:
   `asserted_module_type: Option<ModuleType>`.
-- `package/rolldown/src/plugin/index.ts:132-157`:
+- `packages/rolldown/src/plugin/index.ts:223-246`:
   `ResolveIdExtraOptions` lacks `attributes`.
 
 ### Verification
@@ -81,6 +88,13 @@ Version under test:
  Reproduce by
 importing any non-JS asset with `with { type: 'text' }` in a
 client-side bundle.
+
+The original upstream issue's dynamic JSON case now works in `rolldown@1.2.7`.
+A disposable 2026-09-09 check bundled
+`import('./file.json', { with: { type: 'json' } })`,
+rewrote it to the emitted JavaScript chunk,
+and loaded the expected JSON value.
+That does not test or fix this section's static `type: 'text'` failure.
 
 ### Verified workarounds
 
@@ -127,7 +141,7 @@ same module type.
    so the plugin cannot tell which type the
   import requested.
 
-### Why we do not file this upstream (already filed; on hold)
+### Why we do not file this upstream (already filed; now assigned)
 
 Already represented by rolldown/rolldown#2758.
  5 constraints:
@@ -143,9 +157,9 @@ Already represented by rolldown/rolldown#2758.
 3. **Are they supporting this use case?
    ** Documented goal.
 4. **Will they likely fix it?
-   ** Issue is on hold;
-    no PR
-   merged yet.
+   ** The 2026 Q3 roadmap names import attributes as a Vite 8 migration blocker;
+    `@shulaoda` is assigned,
+    but the documented searches did not find a complete implementation PR.
 5. **Have we prototyped a minimal fix?
    ** External plugin is
    the prototype.

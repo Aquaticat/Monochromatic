@@ -1,7 +1,7 @@
 /**
- * Callback-free structured reviewer request transport.
- *
- * @module
+ Callback-free structured reviewer request transport.
+ 
+ @module
  */
 
 import type {
@@ -32,12 +32,12 @@ import type {
 } from './types.ts';
 
 /**
- * Shared package logger.
+ Shared package logger.
  */
 const parentLogger = tagged({ tag: 'model-review', },);
 
 /**
- * Attempt transport logger.
+ Attempt transport logger.
  */
 const l = tagged({
   tag: 'attempt',
@@ -45,23 +45,23 @@ const l = tagged({
 },);
 
 /**
- * Build cancellation signal covering caller abort and complete attempt timeout.
- *
- * Caller creates this once and shares it across forced-tool and JSON requests,
- * preserving one deadline across complete candidate attempt.
- *
- * @param signal - optional caller cancellation signal
- *
- * @param timeoutMs - complete attempt timeout
- *
- * @returns composed abort signal
- *
- * @mutates signal - DOM dependent-signal relations can retain caller signal
- *
- * @example
- * ```ts
- * structuredReviewSignal({ timeoutMs: 10_000 });
- * ```
+ Build cancellation signal covering caller abort and complete attempt timeout.
+ 
+ Caller creates this once and shares it across forced-tool and JSON requests,
+ preserving one deadline across complete candidate attempt.
+ 
+ @param signal - optional caller cancellation signal
+ 
+ @param timeoutMs - complete attempt timeout
+ 
+ @returns composed abort signal
+ 
+ @mutates signal - DOM dependent-signal relations can retain caller signal
+ 
+ @example
+ ```ts
+ structuredReviewSignal({ timeoutMs: 10_000 });
+ ```
  */
 function structuredReviewSignal(
   {
@@ -73,7 +73,7 @@ function structuredReviewSignal(
   },
 ): AbortSignal {
   /**
-   * Timeout-only abort signal.
+   Timeout-only abort signal.
    */
   const timeoutSignal = AbortSignal.timeout(timeoutMs,);
   return signal === undefined
@@ -85,22 +85,22 @@ function structuredReviewSignal(
 }
 
 /**
- * Build Pi AI stream options without widening absent fields.
- *
- * @param auth - resolved provider credentials
- *
- * @param signal - complete attempt cancellation signal
- *
- * @param toolChoice - optional provider-specific forced selector
- *
- * @param maxOutputTokens - optional output cap
- *
- * @returns final provider stream options
- *
- * @example
- * ```ts
- * buildAttemptStreamOptions({ auth: {}, signal: AbortSignal.timeout(1000) });
- * ```
+ Build Pi AI stream options without widening absent fields.
+ 
+ @param auth - resolved provider credentials
+ 
+ @param signal - complete attempt cancellation signal
+ 
+ @param toolChoice - optional provider-specific forced selector
+ 
+ @param maxOutputTokens - optional output cap
+ 
+ @returns final provider stream options
+ 
+ @example
+ ```ts
+ buildAttemptStreamOptions({ auth: {}, signal: AbortSignal.timeout(1000) });
+ ```
  */
 function buildAttemptStreamOptions(
   {
@@ -125,18 +125,18 @@ function buildAttemptStreamOptions(
 }
 
 /**
- * Build one-message provider context from caller prompt.
- *
- * @param prompt - reviewer system and user content
- *
- * @param tool - optional structured tool for initial request
- *
- * @returns Pi AI provider context
- *
- * @example
- * ```ts
- * contextForPrompt({ prompt: { systemPrompt: 'Judge.', userContent: 'Evidence' } });
- * ```
+ Build one-message provider context from caller prompt.
+ 
+ @param prompt - reviewer system and user content
+ 
+ @param tool - optional structured tool for initial request
+ 
+ @returns Pi AI provider context
+ 
+ @example
+ ```ts
+ contextForPrompt({ prompt: { systemPrompt: 'Judge.', userContent: 'Evidence' } });
+ ```
  */
 function contextForPrompt(
   {
@@ -159,26 +159,26 @@ function contextForPrompt(
 }
 
 /**
- * Dispatch one direct-JSON request and parse its text object.
- *
- * @param request - callback-free request data
- *
- * @returns unknown JSON object for caller-owned strict parsing
- *
- * @mutates request - provider consumes model, auth, signal, and test transport capabilities
- *
- * @throws {@link EmptyStructuredReviewTextError} when provider emits no text
- *
- * @example
- * ```ts
- * await runDirectJsonRequest(request);
- * ```
+ Dispatch one direct-JSON request and parse its text object.
+ 
+ @param request - callback-free request data
+ 
+ @returns unknown JSON object for caller-owned strict parsing
+ 
+ @mutates request - provider consumes model, auth, signal, and test transport capabilities
+ 
+ @throws {@link EmptyStructuredReviewTextError} when provider emits no text
+ 
+ @example
+ ```ts
+ await runDirectJsonRequest(request);
+ ```
  */
 function runDirectJsonRequest(
   request: ForeignBorrowed<StructuredReviewJsonRequest>,
 ): Promise<unknown> {
   /**
-   * Final direct-JSON provider options.
+   Final direct-JSON provider options.
    */
   const options = buildAttemptStreamOptions({
     auth: request.auth,
@@ -188,7 +188,7 @@ function runDirectJsonRequest(
       : { maxOutputTokens: request.maxOutputTokens, }),
   },);
   /**
-   * Direct-JSON provider stream.
+   Direct-JSON provider stream.
    */
   const stream = streamStructuredReview({
     model: request.model,
@@ -205,24 +205,24 @@ function runDirectJsonRequest(
 }
 
 /**
- * Run initial forced-tool request without caller-specific parsing or retry logic.
- *
- * @param request - model, auth, prompt, tool, signal, and optional test script data
- *
- * @returns tool arguments or omitted-tool text
- *
- * @mutates request - provider consumes model, auth, signal, and test transport capabilities
- *
- * @example
- * ```ts
- * const result = await runStructuredToolRequest(request);
- * ```
+ Run initial forced-tool request without caller-specific parsing or retry logic.
+ 
+ @param request - model, auth, prompt, tool, signal, and optional test script data
+ 
+ @returns tool arguments or omitted-tool text
+ 
+ @mutates request - provider consumes model, auth, signal, and test transport capabilities
+ 
+ @example
+ ```ts
+ const result = await runStructuredToolRequest(request);
+ ```
  */
 async function runStructuredToolRequest(
   request: ForeignBorrowed<StructuredReviewToolRequest>,
 ): Promise<StructuredReviewInitialResult> {
   /**
-   * Per-call logger carrying selected reviewer identity.
+   Per-call logger carrying selected reviewer identity.
    */
   const innerL = tagged({
     tag: runStructuredToolRequest.name,
@@ -234,7 +234,7 @@ async function runStructuredToolRequest(
         .id} using ${request.toolName}`,
   );
   /**
-   * Initial forced-tool provider options.
+   Initial forced-tool provider options.
    */
   const options = buildAttemptStreamOptions({
     auth: request.auth,
@@ -249,7 +249,7 @@ async function runStructuredToolRequest(
       : { maxOutputTokens: request.maxOutputTokens, }),
   },);
   /**
-   * Initial forced-tool event stream.
+   Initial forced-tool event stream.
    */
   const stream = streamStructuredReview({
     model: request.model,
@@ -263,7 +263,7 @@ async function runStructuredToolRequest(
       : { testTransport: request.testTransport, }),
   },);
   /**
-   * Unparsed initial provider result.
+   Unparsed initial provider result.
    */
   const result = await collectStructuredStream({
     stream,
@@ -275,20 +275,20 @@ async function runStructuredToolRequest(
 }
 
 /**
- * Run one direct-JSON request, retrying once only when first response is empty.
- *
- * Caller builds prompt from initial omitted-tool text before calling this function.
- *
- * @param request - model, auth, complete retry prompt, signal, and optional script data
- *
- * @returns unknown JSON object for caller-owned strict parsing
- *
- * @mutates request - provider consumes model, auth, signal, and test transport capabilities
- *
- * @example
- * ```ts
- * const value = await runStructuredJsonRetries(request);
- * ```
+ Run one direct-JSON request, retrying once only when first response is empty.
+ 
+ Caller builds prompt from initial omitted-tool text before calling this function.
+ 
+ @param request - model, auth, complete retry prompt, signal, and optional script data
+ 
+ @returns unknown JSON object for caller-owned strict parsing
+ 
+ @mutates request - provider consumes model, auth, signal, and test transport capabilities
+ 
+ @example
+ ```ts
+ const value = await runStructuredJsonRetries(request);
+ ```
  */
 async function runStructuredJsonRetries(
   request: ForeignBorrowed<StructuredReviewJsonRequest>,
@@ -300,7 +300,7 @@ async function runStructuredJsonRetries(
     if (!(error instanceof EmptyStructuredReviewTextError))
       throw error;
     /**
-     * Per-call logger for bounded empty-output retry.
+     Per-call logger for bounded empty-output retry.
      */
     const innerL = tagged({
       tag: runStructuredJsonRetries.name,

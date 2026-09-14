@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Self-contained production CLI and public tunnel-orchestration bundles.
+ Self-contained production CLI and public tunnel-orchestration bundles.
  */
 const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [
@@ -13,6 +13,9 @@ const config: NodeFlavorConfigs = perEntryNodeConfig({
     './src/application-exemption-command.ts',
     './src/privilege-context-data.ts',
     './src/policy-routing-conflict.ts',
+    './src/opensnitch.ts',
+    './src/opensnitch-config-tree.ts',
+    './src/opensnitch-live.ts',
     './src/tunnel.ts',
     './src/config.ts',
     './src/tunnel-bypass.ts',

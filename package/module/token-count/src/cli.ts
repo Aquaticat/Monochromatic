@@ -21,19 +21,19 @@ import { countFileTokens, } from './client.ts';
 //region CLI: parses args and counts tokens in files
 
 /**
- * Column width for right-aligning token counts in output.
+ Column width for right-aligning token counts in output.
  */
 const PAD_WIDTH = 8;
 
 /**
- * TODO: deprecate Optique
- * Optique parser for the token-count CLI.
- *
- * @example
- * ```bash
- * token-count CLAUDE.md
- * token-count --model claude-haiku-4-5 file1.md file2.md
- * ```
+ TODO: deprecate Optique
+ Optique parser for the token-count CLI.
+ 
+ @example
+ ```bash
+ token-count CLAUDE.md
+ token-count --model claude-haiku-4-5 file1.md file2.md
+ ```
  */
 const parser = object({
   model: optional(option(
@@ -46,8 +46,8 @@ const parser = object({
 },);
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments
+ TODO: deprecate Optique
+ Parsed CLI arguments
  */
 const args = runSync(
   parser,
@@ -63,16 +63,16 @@ if (args.files
   throw new Error('At least one FILE argument is required',);
 
 /**
- * Model override from `--model` flag, or `undefined` for the default.
+ Model override from `--model` flag, or `undefined` for the default.
  */
 const model = ((typeof args.model) === 'string') ? args.model : undefined;
 /**
- * Configuration object passed to each `countFileTokens` call.
+ Configuration object passed to each `countFileTokens` call.
  */
 const config = model !== undefined ? { model, } : {};
 
 /**
- * Token count results for all files, resolved concurrently.
+ Token count results for all files, resolved concurrently.
  */
 const results = await Promise.all(
   args.files
@@ -91,7 +91,7 @@ for (const result of results)
 if (results.length
   > 1) {
   /**
-   * Aggregate across files so the trailing summary line matches `wc -l`-style output.
+   Aggregate across files so the trailing summary line matches `wc -l`-style output.
    */
   const total = results.reduce(
     function sumTokens(

@@ -14,18 +14,18 @@ import type {
 } from './model.ts';
 
 /**
- * Reports current relation to exact post-creation filesystem identity.
- *
- * @param path - current destination path
- *
- * @param installed - durable post-creation identity
- *
- * @returns absent, exact identity match, or changed identity
- *
- * @example
- * ```ts
- * await installedIdentityState({ path: '/wt/cache', installed });
- * ```
+ Reports current relation to exact post-creation filesystem identity.
+ 
+ @param path - current destination path
+ 
+ @param installed - durable post-creation identity
+ 
+ @returns absent, exact identity match, or changed identity
+ 
+ @example
+ ```ts
+ await installedIdentityState({ path: '/wt/cache', installed });
+ ```
  */
 async function installedIdentityState({
   path,
@@ -36,7 +36,7 @@ async function installedIdentityState({
 }>,): Promise<'absent' | 'changed' | 'match'> {
   try {
     /**
-     * Current no-follow destination identity.
+     Current no-follow destination identity.
      */
     const stats = await lstat(
       path,
@@ -60,20 +60,20 @@ async function installedIdentityState({
 }
 
 /**
- * Removes unchanged entries created by failed installation.
- *
- * @param snapshot - validated stage retained for ownership comparison
- *
- * @param destinationRoot - partially populated worktree
- *
- * @param created - paths created by current installation
- *
- * @returns paths retained because ownership could not be proven
- *
- * @example
- * ```ts
- * await rollbackCreated({ snapshot, destinationRoot: '/wt', created });
- * ```
+ Removes unchanged entries created by failed installation.
+ 
+ @param snapshot - validated stage retained for ownership comparison
+ 
+ @param destinationRoot - partially populated worktree
+ 
+ @param created - paths created by current installation
+ 
+ @returns paths retained because ownership could not be proven
+ 
+ @example
+ ```ts
+ await rollbackCreated({ snapshot, destinationRoot: '/wt', created });
+ ```
  */
 export async function rollbackCreated({
   snapshot,
@@ -85,7 +85,7 @@ export async function rollbackCreated({
   created: readonly InstalledWorktreePath[];
 }>,): Promise<readonly string[]> {
   /**
-   * Selected expected entries indexed for exact comparison.
+   Selected expected entries indexed for exact comparison.
    */
   const selectedByPath = new Map(snapshot.entries
     .map(function indexEntry(entry,) {
@@ -95,24 +95,24 @@ export async function rollbackCreated({
     ] as const;
   },),);
   /**
-   * Paths retained after conservative rollback.
+   Paths retained after conservative rollback.
    */
   const retained: string[] = [];
   for (const installed of created.toReversed()) {
     /**
-     * Native installed destination path.
+     Native installed destination path.
      */
     const destinationPath = filesystemPath({
       root: destinationRoot,
       repositoryPath: installed.relativePath,
     },);
     /**
-     * Selected expected entry, absent for scaffolding directory.
+     Selected expected entry, absent for scaffolding directory.
      */
     const expected = selectedByPath.get(installed.relativePath,);
     try {
       /**
-       * Current relation to proven post-creation identity.
+       Current relation to proven post-creation identity.
        */
       // oxlint-disable-next-line no-await-in-loop -- exact identity gates every destructive rollback candidate
       const initialIdentity = await installedIdentityState({
@@ -128,7 +128,7 @@ export async function rollbackCreated({
       if (expected !== undefined) {
         /* oxlint-disable no-await-in-loop -- ownership proof precedes each destructive rollback step */
         /**
-         * Whether installed selected entry still equals private snapshot.
+         Whether installed selected entry still equals private snapshot.
          */
         const unchanged = await entryMatches({
           expectedRoot: snapshot.stageRoot,
@@ -142,7 +142,7 @@ export async function rollbackCreated({
         }
       }
       /**
-       * Identity recheck narrowing replacement race before removal.
+       Identity recheck narrowing replacement race before removal.
        */
       // oxlint-disable-next-line no-await-in-loop -- replacement check must immediately precede destructive rollback
       const finalIdentity = await installedIdentityState({

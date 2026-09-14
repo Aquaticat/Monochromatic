@@ -26,8 +26,10 @@ Column(modifier = Modifier.width(IntrinsicSize.Min)) {
 The app asked Compose for minimum intrinsic width even though the design needs the unwrapped content width.
 Android's intrinsic-measurement documentation distinguishes the questions explicitly:
 
-- `IntrinsicSize.Min`: minimum width needed to display content.
-- `IntrinsicSize.Max`: maximum width needed to display content.
+- `IntrinsicSize.Min`:
+   minimum width needed to display content.
+- `IntrinsicSize.Max`:
+   maximum width needed to display content.
 
 The Foundation Layout 1.11.2 source jar has SHA-256
 `12a468b3f9be15ec7941ef63cdade939aa0e84d2e766e948a2f61c1f2dc56135`.
@@ -125,7 +127,8 @@ The regression is verified at the user boundary on the connected device.
 Use `IntrinsicSize.Max` for a control whose width should equal the unwrapped label width.
 Also set `maxLines = 1` and an overflow policy on the `Text` itself.
 
-Tradeoff: a single label wider than the screen is ellipsized rather than wrapped.
+Tradeoff:
+ a single label wider than the screen is ellipsized rather than wrapped.
 That preserves one-tab-per-label geometry and prevents horizontal overflow.
 
 ## What does not work
@@ -147,16 +150,22 @@ found no matching report.
 
 The filing constraints resolve as follows:
 
-1. **Upstream fault:** no.
+1. **Upstream fault:**
+    no.
    Compose implements the documented distinction between minimum and maximum intrinsic size.
-2. **Upstream can fix it:** not applicable because changing `Min` to mean maximum one-line width
+2. **Upstream can fix it:**
+    not applicable because changing `Min` to mean maximum one-line width
    would break its contract.
-3. **Supported use case:** yes.
+3. **Supported use case:**
+    yes.
    The official intrinsic-measurement guide documents both variants.
-4. **Contribution policy:** AndroidX source is public,
+4. **Contribution policy:**
+    AndroidX source is public,
    but no contribution is appropriate for correct behavior.
-5. **Likely fix:** not applicable upstream.
-6. **Compatible prototype:** the consumer-side change to `IntrinsicSize.Max` is implemented and device-verified.
+5. **Likely fix:**
+    not applicable upstream.
+6. **Compatible prototype:**
+    the consumer-side change to `IntrinsicSize.Max` is implemented and device-verified.
 
 No upstream issue or comment draft is retained because this was incorrect consumer API selection,
 not an AndroidX defect.

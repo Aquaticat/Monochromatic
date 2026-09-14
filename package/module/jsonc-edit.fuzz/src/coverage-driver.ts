@@ -1,10 +1,10 @@
 /**
- * Deterministic coverage driver: exercises every exported function and its error
- * paths with fixed inputs, so the V8 coverage it produces is reproducible. Run
- * under `NODE_V8_COVERAGE` by the `fuzz:coverage` task, then summarized by
- * `coverage-report.ts`.
- *
- * @module
+ Deterministic coverage driver: exercises every exported function and its error
+ paths with fixed inputs, so the V8 coverage it produces is reproducible. Run
+ under `NODE_V8_COVERAGE` by the `fuzz:coverage` task, then summarized by
+ `coverage-report.ts`.
+ 
+ @module
  */
 
 import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
@@ -28,15 +28,15 @@ import {
 //region Helpers
 
 /**
- * Runs a thunk that is expected to throw, swallowing the error so the driver
- * keeps exercising remaining paths. Re-throws anything that is not an `Error`.
- *
- * @param thunk - Operation expected to throw.
- *
- * @example
- * ```ts
- * swallow(function bad() { parseJsonc({ source: '42' as StringJsonc }); });
- * ```
+ Runs a thunk that is expected to throw, swallowing the error so the driver
+ keeps exercising remaining paths. Re-throws anything that is not an `Error`.
+ 
+ @param thunk - Operation expected to throw.
+ 
+ @example
+ ```ts
+ swallow(function bad() { parseJsonc({ source: '42' as StringJsonc }); });
+ ```
  */
 function swallow(thunk: () => void,): void {
   try {
@@ -49,16 +49,16 @@ function swallow(thunk: () => void,): void {
 }
 
 /**
- * Brands a string as JSONC for the driver's fixed inputs.
- *
- * @param source - Raw source.
- *
- * @returns Branded source.
- *
- * @example
- * ```ts
- * asJsonc('{}');
- * ```
+ Brands a string as JSONC for the driver's fixed inputs.
+ 
+ @param source - Raw source.
+ 
+ @returns Branded source.
+ 
+ @example
+ ```ts
+ asJsonc('{}');
+ ```
  */
 function asJsonc(source: string,): StringJsonc {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branding a fixed driver input string
@@ -70,20 +70,20 @@ function asJsonc(source: string,): StringJsonc {
 //region Exercise
 
 /**
- * Exercises parsing, serialization, editing, and the comment API across the
- * fast-path, the structured path, and every error class.
- *
- * @example
- * ```ts
- * exercise();
- * ```
+ Exercises parsing, serialization, editing, and the comment API across the
+ fast-path, the structured path, and every error class.
+ 
+ @example
+ ```ts
+ exercise();
+ ```
  */
 function exercise(): void {
   // Fast-path and value serializer.
   emitJsoncValue({ value: parseJsonc({ source: asJsonc('{"a":1,"b":[1,2,3]}',), },), },);
   // Structured path: comments on keys and values, trailing commas, blocks, region.
   /**
-   * Structured state exercising comments, trailing commas, and nesting.
+   Structured state exercising comments, trailing commas, and nesting.
    */
   const state = parseJsoncEdit({
     source: asJsonc('// doc\n{\n  // k\n  "a": 1, // v\n  /* b */ "list": [10, 20,],\n  "obj": { "x": true }\n}',),
@@ -115,7 +115,7 @@ function exercise(): void {
 
   // Edits: replace, add key, append, nested, delete key and element.
   /**
-   * State after a chain of set, add, append, and delete edits.
+   State after a chain of set, add, append, and delete edits.
    */
   const edited = jsoncDelete({
     state: jsoncSet({

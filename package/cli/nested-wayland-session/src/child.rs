@@ -13,7 +13,11 @@
 /// ```ts
 /// // Duration ~ a ms count.
 /// ```
-use std::time::Duration;
+use std::{
+    ffi::OsStr,
+    process::Command,
+    time::{Duration, Instant},
+};
 
 /// What:     Grouped `use` of the calloop timer types and loop handle.
 /// Why:      `register_exit_poll` inserts a `Timer` source through the `LoopHandle`.
@@ -59,13 +63,32 @@ use crate::{state::Compositor, systemd::Isolation};
 /// ```
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
+/// Grace period between compositor close request and forced child termination.
+const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
+
+/// Applies child-only Wayland and optional private session-bus environment.
+fn configure_child_environment(
+    command: &mut Command,
+    socket_name: &OsStr,
+    session_bus_address: Option<&str>,
+) {
+    command.env("WAYLAND_DISPLAY", socket_name);
+    command.env_remove("WAYLAND_SOCKET");
+    if let Some(address) = session_bus_address {
+        command.env("DBUS_SESSION_BUS_ADDRESS", address);
+        command.env_remove("DBUS_STARTER_ADDRESS");
+        command.env_remove("DBUS_STARTER_BUS_TYPE");
+    }
+}
+
 /// Spawn the hosted client, pointed at the nested Wayland socket.
 ///
-/// What:     `pub fn spawn_child(state: &mut Compositor, command: &[String]) ->
-///           Result<()>`. Borrows the state mutably (to store the `Child`) and the
-///           command read-only. `Result<()>` returns the unit `()` on success.
-/// Why:      Launch the one client the fixture exists to host, connected to us rather
-///           than to the host compositor.
+/// What:     `pub fn spawn_child(...) -> Result<()>` receives compositor state,
+///           command,
+///           isolation,
+///           and optional private session-bus address.
+/// Why:      Launch the one client on nested Wayland and isolated appearance portal
+///           rather than host compositor or host Settings portal.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -76,7 +99,12 @@ const POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// ```ts
 /// spawnChild(state, ["music-player", "fixtures"]);
 /// ```
-pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isolation) -> Result<()> {
+pub fn spawn_child(
+    state: &mut Compositor,
+    command: &[String],
+    isolation: &Isolation,
+    session_bus_address: Option<&str>,
+) -> Result<()> {
     // What:     `let program = &command[0];`. Borrow the first token (the executable).
     //           `parse_args` guarantees `command` is non-empty, so index 0 is safe.
     // Why:      Names the program to launch and to report in messages.
@@ -90,18 +118,12 @@ pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isola
     //           set the Wayland environment on it next.
     let mut cmd = crate::systemd::build_child_command(program, &command[1..], isolation);
 
-    // What:     `cmd.env("WAYLAND_DISPLAY", &state.socket_name);`. Set the child's
-    //           `WAYLAND_DISPLAY` to our listening socket. This sets it ONLY for the
-    //           child, not our own process, so our winit window keeps talking to the
-    //           parent compositor.
-    // Why:      Make the client connect to us instead of the host session.
-    cmd.env("WAYLAND_DISPLAY", &state.socket_name);
-
-    // What:     `cmd.env_remove("WAYLAND_SOCKET");`. Drop any inherited `WAYLAND_SOCKET`
-    //           (an fd-based connection override).
-    // Why:      If the parent passed a socket fd, it would override `WAYLAND_DISPLAY` and
-    //           send the child to the wrong compositor.
-    cmd.env_remove("WAYLAND_SOCKET");
+    // Point child at nested Wayland and optional private appearance portal only.
+    configure_child_environment(
+        &mut cmd,
+        state.socket_name.as_os_str(),
+        session_bus_address,
+    );
 
     // What:     `let child = cmd.spawn().with_context(|| format!("failed to spawn {program}"))?;`.
     //           `spawn()` starts the process, returning `io::Result<Child>`;
@@ -121,9 +143,32 @@ pub fn spawn_child(state: &mut Compositor, command: &[String], isolation: &Isola
     // Why:      The exit-poll timer needs the handle to `try_wait` on.
     state.child = Some(child);
 
-    // What:     `Ok(())`. Success with the unit value; tail expression.
+    // What:     `return Ok(());`. Success with unit value.
     // Why:      Signal the spawn succeeded.
-    Ok(())
+    return Ok(());
+}
+
+/// Requests graceful xdg-toplevel close and schedules force-stop fallback.
+pub fn request_hosted_client_shutdown(state: &mut Compositor) {
+    let toplevels = state
+        .space
+        .elements()
+        .filter_map(|window| return window.toplevel().cloned())
+        .collect::<Vec<_>>();
+    state.shutdown_deadline = Some(Instant::now() + SHUTDOWN_GRACE);
+    if toplevels.is_empty() {
+        warn!("no hosted toplevel available for graceful close; scheduling forced shutdown");
+        return;
+    }
+    for toplevel in toplevels {
+        toplevel.send_close();
+    }
+    info!("requested graceful close from hosted client");
+}
+
+/// Returns whether pending graceful shutdown passed its fallback deadline.
+fn shutdown_expired(deadline: Option<Instant>, now: Instant) -> bool {
+    return deadline.is_some_and(|value| return now >= value);
 }
 
 /// Register the periodic child-exit poll on the event loop.
@@ -153,7 +198,7 @@ pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>) {
             //           reschedule the timer for another `POLL_INTERVAL` from now (tail
             //           expression of the closure).
             // Why:      Keep polling until the loop stops.
-            TimeoutAction::ToDuration(POLL_INTERVAL)
+            return TimeoutAction::ToDuration(POLL_INTERVAL)
         })
         .expect("failed to register the child-exit poll timer");
 }
@@ -168,6 +213,8 @@ pub fn register_exit_poll(loop_handle: &LoopHandle<Compositor>) {
 /// function pollChild(state) { ... }
 /// ```
 fn poll_child(state: &mut Compositor) {
+    let force_shutdown = shutdown_expired(state.shutdown_deadline, Instant::now());
+
     // What:     `let Some(child) = state.child.as_mut() else { return; };`. `as_mut()`
     //           borrows the `Option<Child>` as `Option<&mut Child>`; the `let ... else`
     //           binds the child mutably when present or returns when it is already gone.
@@ -196,6 +243,7 @@ fn poll_child(state: &mut Compositor) {
             // What:     `state.child_exit_code = Some(code);`. Record it for `main`.
             // Why:      `run` returns this as the program's exit code.
             state.child_exit_code = Some(code);
+            state.shutdown_deadline = None;
 
             // What:     `state.child = None;`. Clear the handle so we stop polling.
             // Why:      The child is reaped; nothing left to wait on.
@@ -206,8 +254,13 @@ fn poll_child(state: &mut Compositor) {
             state.loop_signal.stop();
         }
         Ok(None) => {
-            // What:     Empty arm: the child is still running.
-            // Why:      Keep waiting; the timer will poll again.
+            if force_shutdown {
+                warn!("hosted client ignored close request; forcing shutdown");
+                if let Err(error) = child.kill() {
+                    warn!(%error, "failed to force-stop hosted client");
+                }
+                state.shutdown_deadline = None;
+            }
         }
         Err(err) => {
             // What:     `warn!(...)`. Log the wait error.
@@ -217,6 +270,7 @@ fn poll_child(state: &mut Compositor) {
             // What:     `state.child = None;`. Stop polling a child we cannot wait on.
             // Why:      Avoid looping on a permanent error.
             state.child = None;
+            state.shutdown_deadline = None;
 
             // What:     `state.loop_signal.stop();`. End the loop; without a hostable
             //           child there is nothing to do.
@@ -225,3 +279,8 @@ fn poll_child(state: &mut Compositor) {
         }
     }
 }
+
+/// Verifies hosted-child environment isolation.
+#[cfg(test)]
+#[path = "child_tests.rs"]
+mod tests;

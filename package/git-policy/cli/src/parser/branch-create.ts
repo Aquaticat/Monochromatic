@@ -32,39 +32,39 @@ export {
 //region Branch-creation scan helpers
 
 /**
- * Accumulator mutated inside one linear argv scan.
+ Accumulator mutated inside one linear argv scan.
  */
 type BranchCreationScan = {
   /**
-   * Whether argv explicitly creates, resets, or copies a branch.
+   Whether argv explicitly creates, resets, or copies a branch.
    */
   createsBranch: boolean;
   /**
-   * Whether wrapper escape hatch appears in flag position.
+   Whether wrapper escape hatch appears in flag position.
    */
   hasEscapeHatch: boolean;
   /**
-   * Whether git-branch is listing or inspecting refs.
+   Whether git-branch is listing or inspecting refs.
    */
   isBranchListMode: boolean;
   /**
-   * Whether git-branch selected a non-create mutation mode.
+   Whether git-branch selected a non-create mutation mode.
    */
   isBranchNonCreateMode: boolean;
   /**
-   * Whether checkout/switch cannot do implicit remote branch guessing.
+   Whether checkout/switch cannot do implicit remote branch guessing.
    */
   disablesImplicitGuess: boolean;
   /**
-   * Positional tokens observed before a pathspec separator.
+   Positional tokens observed before a pathspec separator.
    */
   positionals: string[];
 };
 
 /**
- * Creates empty branch-creation scan accumulator.
- *
- * @returns Empty scan state.
+ Creates empty branch-creation scan accumulator.
+ 
+ @returns Empty scan state.
  */
 function createScan(): BranchCreationScan {
   return {
@@ -82,28 +82,28 @@ function createScan(): BranchCreationScan {
 //region Branch-creation parser
 
 /**
- * Parses guarded subcommand argv for explicit and implicit branch creation.
- * Recognises the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag and stops scanning
- * options at {@link PATHSPEC_SEPARATOR}; per subcommand, delegates to the
- * branch-mode predicates ({@link isBranchCopyModeOption},
- * {@link isBranchListModeOption}, {@link isBranchNonCreateModeOption}), the
- * checkout-mode predicates ({@link isCheckoutCreateOption},
- * {@link isCheckoutNonGuessOption}), or the switch-mode predicates
- * ({@link isSwitchCreateOption}, {@link isSwitchNonGuessOption}); skips
- * value-consuming tokens via {@link consumesNextValue} and collects the rest
- * with {@link isPositionalToken}.
- *
- * @param subcommand - Guarded git subcommand.
- *
- * @param postSubcommandArgs - Arguments strictly after subcommand.
- *
- * @returns Branch-creation facts for policy enforcement.
- *
- * @example
- * ```ts
- * parseBranchCreationRegion({ subcommand: 'switch', postSubcommandArgs: ['-c', 'topic'] });
- * // createsBranch = true
- * ```
+ Parses guarded subcommand argv for explicit and implicit branch creation.
+ Recognises the {@link BRANCH_WORKTREE_ESCAPE_HATCH} flag and stops scanning
+ options at {@link PATHSPEC_SEPARATOR}; per subcommand, delegates to the
+ branch-mode predicates ({@link isBranchCopyModeOption},
+ {@link isBranchListModeOption}, {@link isBranchNonCreateModeOption}), the
+ checkout-mode predicates ({@link isCheckoutCreateOption},
+ {@link isCheckoutNonGuessOption}), or the switch-mode predicates
+ ({@link isSwitchCreateOption}, {@link isSwitchNonGuessOption}); skips
+ value-consuming tokens via {@link consumesNextValue} and collects the rest
+ with {@link isPositionalToken}.
+ 
+ @param subcommand - Guarded git subcommand.
+ 
+ @param postSubcommandArgs - Arguments strictly after subcommand.
+ 
+ @returns Branch-creation facts for policy enforcement.
+ 
+ @example
+ ```ts
+ parseBranchCreationRegion({ subcommand: 'switch', postSubcommandArgs: ['-c', 'topic'] });
+ // createsBranch = true
+ ```
  */
 export function parseBranchCreationRegion({
   subcommand,
@@ -113,13 +113,13 @@ export function parseBranchCreationRegion({
   readonly postSubcommandArgs: readonly string[];
 },): BranchCreationRegion {
   /**
-   * Accumulated facts from one linear pass over argv.
+   Accumulated facts from one linear pass over argv.
    */
   const scan = createScan();
 
   for (let index = 0; index < postSubcommandArgs.length; index += 1) {
     /**
-     * Current argv token under inspection.
+     Current argv token under inspection.
      */
     const arg = postSubcommandArgs[index];
 
@@ -165,15 +165,15 @@ export function parseBranchCreationRegion({
 
   if (subcommand === 'branch') {
     /**
-     * Positional arguments after branch-mode options consumed their values.
+     Positional arguments after branch-mode options consumed their values.
      */
     const { positionals, } = scan;
     /**
-     * Number of positional arguments after branch-mode options consumed their values.
+     Number of positional arguments after branch-mode options consumed their values.
      */
     const positionalCount = positionals.length;
     /**
-     * Whether git-branch positional arguments name new branches rather than list patterns or existing refs.
+     Whether git-branch positional arguments name new branches rather than list patterns or existing refs.
      */
     const positionalsCreateBranch = (positionalCount > 0)
       && (!scan.isBranchListMode)
@@ -187,12 +187,12 @@ export function parseBranchCreationRegion({
   }
 
   /**
-   * Positional branch name that switch/checkout may turn into a local branch by guessing one remote.
+   Positional branch name that switch/checkout may turn into a local branch by guessing one remote.
    */
   const [candidateTarget, secondTarget,] = scan.positionals;
 
   /**
-   * Whether no implicit branch creation target remains to check against remotes.
+   Whether no implicit branch creation target remains to check against remotes.
    */
   const hasNoImplicitTarget = scan.createsBranch
     || scan.disablesImplicitGuess

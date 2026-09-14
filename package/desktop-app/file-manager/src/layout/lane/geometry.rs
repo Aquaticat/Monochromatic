@@ -42,7 +42,7 @@ pub(super) fn direct_child_groups(
             groups.entry(parent).or_default().push(*placement);
         }
     }
-    groups
+    return groups
 }
 
 /// What: look up a placement by id.
@@ -51,23 +51,23 @@ pub(super) fn placement_by_id(
     placements: &[PanePlacement],
     id: PaneId,
 ) -> Option<PanePlacement> {
-    placements
+    return placements
         .iter()
-        .find(|placement| placement.id == id)
+        .find(|placement| return placement.id == id)
         .copied()
 }
 
 /// What: base-coordinate bottom edge for a parent-plus-direct-children lane.
 /// Why: the lane rectangle includes the parent pane and the deepest direct child pane.
 pub(super) fn lane_base_bottom(parent: PanePlacement, children: &[PanePlacement]) -> f64 {
-    children.iter().fold(
+    return children.iter().fold(
         scroll::row_y(parent.row) + f64::from(PANE_HEIGHT),
-        |current, child| current.max(scroll::row_y(child.row) + f64::from(PANE_HEIGHT)),
+        |current, child| return current.max(scroll::row_y(child.row) + f64::from(PANE_HEIGHT)),
     )
 }
 
 /// What: compute width for a lane spanning `column_span` columns.
 /// Why: debug lane boxes must include pane columns and the gaps between them.
 pub(super) fn lane_width(column_span: usize) -> f64 {
-    f64::from(column_span as i32 * PANE_WIDTH + (column_span - 1) as i32 * PANE_GAP)
+    return f64::from(column_span as i32 * PANE_WIDTH + (column_span - 1) as i32 * PANE_GAP)
 }

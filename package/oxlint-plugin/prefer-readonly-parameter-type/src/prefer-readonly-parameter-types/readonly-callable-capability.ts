@@ -1,7 +1,7 @@
 /**
- * Direct callable and constructable capability classification.
- *
- * @module
+ Direct callable and constructable capability classification.
+ 
+ @module
  */
 
 import {
@@ -11,7 +11,7 @@ import {
 } from 'typescript/unstable/sync';
 
 /**
- * Classification for direct callable and constructable inputs.
+ Classification for direct callable and constructable inputs.
  */
 export const CALLABLE_CAPABILITY = {
   kind: 'opaque-capability',
@@ -19,18 +19,18 @@ export const CALLABLE_CAPABILITY = {
 } as const;
 
 /**
- * Tests whether type directly exposes call or construct signatures.
- *
- * @param checker - TypeScript checker resolving signatures.
- *
- * @param type - Semantic type under classification.
- *
- * @returns whether type carries direct callable capability.
- *
- * @example
- * ```ts
- * typeHasCallableCapability({ checker, type });
- * ```
+ Tests whether type directly exposes call or construct signatures.
+ 
+ @param checker - TypeScript checker resolving signatures.
+ 
+ @param type - Semantic type under classification.
+ 
+ @returns whether type carries direct callable capability.
+ 
+ @example
+ ```ts
+ typeHasCallableCapability({ checker, type });
+ ```
  */
 export function typeHasCallableCapability({
   checker,
@@ -40,7 +40,7 @@ export function typeHasCallableCapability({
   readonly type: Type;
 }): boolean {
   /**
-   * Call signatures directly exposed by type.
+   Call signatures directly exposed by type.
    */
   const callSignatures = checker.getSignaturesOfType(
     type,
@@ -49,7 +49,7 @@ export function typeHasCallableCapability({
   if (callSignatures.length > 0)
     return true;
   /**
-   * Construct signatures directly exposed by type.
+   Construct signatures directly exposed by type.
    */
   const constructSignatures = checker.getSignaturesOfType(
     type,

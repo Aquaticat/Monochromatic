@@ -1,11 +1,11 @@
 /**
- * Search page handler.
- *
- * Unlike inbox/settings/in-progress, this page renders its own HTML inline
- * instead of calling `renderPage()`, because it replaces the `<top-nav>` with
- * a `<search-bar>` component at the top of the shell.
- *
- * Client entry: `/dist/client/search.js` (src/client/search.ts)
+ Search page handler.
+ 
+ Unlike inbox/settings/in-progress, this page renders its own HTML inline
+ instead of calling `renderPage()`, because it replaces the `<top-nav>` with
+ a `<search-bar>` component at the top of the shell.
+ 
+ Client entry: `/dist/client/search.js` (src/client/search.ts)
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -15,37 +15,37 @@ import {
 import { serializePageData, } from './layout.ts';
 
 /**
- * Renders the search page with FTS results from {@link searchTasks} when a
- * query is present, plus quick-pick tags from {@link listAllTags}, serialized
- * for the client via {@link serializePageData}.
- *
- * @param url - Request URL (the `q` search param contains the query)
- *
- * @returns HTML response for the search page
- *
- * @example
- * ```ts
- * const response = await searchPage(new URL('http://localhost/search?q=groceries'));
- * ```
+ Renders the search page with FTS results from {@link searchTasks} when a
+ query is present, plus quick-pick tags from {@link listAllTags}, serialized
+ for the client via {@link serializePageData}.
+ 
+ @param url - Request URL (the `q` search param contains the query)
+ 
+ @returns HTML response for the search page
+ 
+ @example
+ ```ts
+ const response = await searchPage(new URL('http://localhost/search?q=groceries'));
+ ```
  */
 export async function searchPage(url: URL,): Promise<Response> {
   /**
-   * URL search-param query text; empty string when omitted.
+   URL search-param query text; empty string when omitted.
    */
   const query = url.searchParams
     .get('q',)
     ?? '';
   /**
-   * FTS results for the query; empty when the query is blank.
+   FTS results for the query; empty when the query is blank.
    */
   const results = await searchTasks(query,);
   /**
-   * All known tags surfaced as quick-pick chips on the empty-query screen.
+   All known tags surfaced as quick-pick chips on the empty-query screen.
    */
   const availableTags = await listAllTags();
 
   /**
-   * Bundled payload serialised into the embedded `#page-data` script.
+   Bundled payload serialised into the embedded `#page-data` script.
    */
   const pageData = {
     query,
@@ -54,7 +54,7 @@ export async function searchPage(url: URL,): Promise<Response> {
   };
 
   /**
-   * Full HTML document string; returned wrapped in a Response below.
+   Full HTML document string; returned wrapped in a Response below.
    */
   const html = `<!DOCTYPE html>
 ${

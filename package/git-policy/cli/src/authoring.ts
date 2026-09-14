@@ -1,7 +1,7 @@
 /**
- * Side-effect-free cli-git policy authoring source entry.
- *
- * @module
+ Side-effect-free cli-git policy authoring source entry.
+ 
+ @module
  */
 
 export {
@@ -35,6 +35,21 @@ export {
 export type {
   ForbiddenStringsPolicyOptions,
 } from './optional/forbidden-strings/index.ts';
+export {
+  AUTOFIX_CODE as MARKDOWN_AUTOFIX_CODE,
+  createFullContentPatch,
+  isMarkdownPath,
+  MarkdownLintPluginError,
+  markdownLintPlugin,
+  markdownLintPolicy,
+  rewriteCandidates as rewriteMarkdownCandidates,
+  VIOLATION_CODE as MARKDOWN_VIOLATION_CODE,
+} from './optional/markdown-lint/index.ts';
+export type {
+  CreateFullContentPatchParams,
+  MarkdownLintPolicyOptions,
+  RewriteCandidatesParams as RewriteMarkdownCandidatesParams,
+} from './optional/markdown-lint/index.ts';
 export {
   finalNewlinePolicy,
 } from './policy-engine/final-newline-policy.ts';

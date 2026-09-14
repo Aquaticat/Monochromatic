@@ -1,7 +1,7 @@
 /**
- * Chinese adverbial renderer factory.
- *
- * @module
+ Chinese adverbial renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -11,11 +11,11 @@ import type {
 } from '../../ast.ts';
 
 /**
- * Locative coverb chosen for a Chinese `adverbial.location` relation.
- *
- * @param relation - location relation from the AST
- *
- * @returns surface coverb string
+ Locative coverb chosen for a Chinese `adverbial.location` relation.
+ 
+ @param relation - location relation from the AST
+ 
+ @returns surface coverb string
  */
 function locativeCoverb(relation: 'at' | 'in' | 'to' | 'from',): string {
   if (relation === 'to')
@@ -26,16 +26,16 @@ function locativeCoverb(relation: 'at' | 'in' | 'to' | 'from',): string {
 }
 
 /**
- * Builds a Chinese adverbial renderer that consumes already-built noun-phrase rendering.
- *
- * @param renderNounPhrase - noun-phrase render function
- *
- * @returns render function for adverbial clusters; returns empty string for empty input
- *
- * @example
- * ```ts
- * const renderAdverbials = makeChineseAdverbialRenderer({ renderNounPhrase });
- * ```
+ Builds a Chinese adverbial renderer that consumes already-built noun-phrase rendering.
+ 
+ @param renderNounPhrase - noun-phrase render function
+ 
+ @returns render function for adverbial clusters; returns empty string for empty input
+ 
+ @example
+ ```ts
+ const renderAdverbials = makeChineseAdverbialRenderer({ renderNounPhrase });
+ ```
  */
 export function makeChineseAdverbialRenderer<S extends string, N extends string,>(
   {
@@ -45,11 +45,11 @@ export function makeChineseAdverbialRenderer<S extends string, N extends string,
   },
 ): (advs?: readonly Adverbial<S, N>[],) => string {
   /**
-   * Renders a time operand handling both noun-phrase and external-text variants.
-   *
-   * @param operand - operand AST node
-   *
-   * @returns rendered surface
+   Renders a time operand handling both noun-phrase and external-text variants.
+   
+   @param operand - operand AST node
+   
+   @returns rendered surface
    */
   function renderTimeOperand(operand: NounPhrase<S, N> | ExternalText,): string {
     return operand.kind
@@ -57,11 +57,11 @@ export function makeChineseAdverbialRenderer<S extends string, N extends string,
   }
 
   /**
-   * Renders a single adverbial node using Chinese coverbs/particles.
-   *
-   * @param adv - adverbial AST node
-   *
-   * @returns rendered surface
+   Renders a single adverbial node using Chinese coverbs/particles.
+   
+   @param adv - adverbial AST node
+   
+   @returns rendered surface
    */
   function renderAdverbial(adv: Adverbial<S, N>,): string {
     if (adv.kind
@@ -77,11 +77,11 @@ export function makeChineseAdverbialRenderer<S extends string, N extends string,
   }
 
   /**
-   * Renders an adverbial cluster as a single joined string.
-   *
-   * @param advs - optional adverbial list
-   *
-   * @returns concatenated surface, or empty string for empty input
+   Renders an adverbial cluster as a single joined string.
+   
+   @param advs - optional adverbial list
+   
+   @returns concatenated surface, or empty string for empty input
    */
   function renderAdverbials(
     advs?: readonly Adverbial<S, N>[],

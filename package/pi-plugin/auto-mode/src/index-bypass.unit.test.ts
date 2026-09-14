@@ -1,10 +1,10 @@
 /**
- * Tests for auto-mode bypass shortcut behavior.
- *
- * Covers shortcut registration, visible toggle feedback, session restoration,
- * and tool-call short-circuiting while bypass mode is enabled.
- *
- * @module
+ Tests for auto-mode bypass shortcut behavior.
+ 
+ Covers shortcut registration, visible toggle feedback, session restoration,
+ and tool-call short-circuiting while bypass mode is enabled.
+ 
+ @module
  */
 
 import type {
@@ -17,7 +17,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
+import autoMode, {
   BYPASS_ALLOW_KIND,
   BYPASS_ALLOW_REASON,
   BYPASS_ENTRY_TYPE,
@@ -26,7 +26,8 @@ import {
   BYPASS_STATUS_KEY,
   BYPASS_STATUS_TEXT,
   BYPASS_TOGGLE_KIND,
-} from './bypass.ts';
+  CALLER_SCOPED_YDOTOOL_REASON,
+} from '@monochromatic-dev/pi-plugin-auto-mode';
 
 //region Mock infrastructure
 
@@ -82,14 +83,14 @@ type MockContextFixture = {
 };
 
 /**
- * Create mock ExtensionAPI that records registrations and custom entries.
- *
- * @returns mock API and captured registration state
- *
- * @example
- * ```typescript
- * const { api, shortcuts } = createMockApi();
- * ```
+ Create mock ExtensionAPI that records registrations and custom entries.
+ 
+ @returns mock API and captured registration state
+ 
+ @example
+ ```typescript
+ const { api, shortcuts } = createMockApi();
+ ```
  */
 function createMockApi(): {
   readonly api: ExtensionAPI;
@@ -143,16 +144,16 @@ function createMockApi(): {
 }
 
 /**
- * Create mock ExtensionContext with captured status and notification calls.
- *
- * @param branch - active session branch exposed by `sessionManager.getBranch`
- *
- * @returns mock context fixture
- *
- * @example
- * ```typescript
- * const { ctx, statuses } = createMockContext({ branch: [] });
- * ```
+ Create mock ExtensionContext with captured status and notification calls.
+ 
+ @param branch - active session branch exposed by `sessionManager.getBranch`
+ 
+ @returns mock context fixture
+ 
+ @example
+ ```typescript
+ const { ctx, statuses } = createMockContext({ branch: [] });
+ ```
  */
 function createMockContext(
   {
@@ -206,19 +207,19 @@ function createMockContext(
 }
 
 /**
- * Retrieve a registered event handler.
- *
- * @param registrations - event handler registry from {@link createMockApi}
- * @param event - event name to retrieve
- *
- * @returns registered handler
- *
- * @throws when event was not registered
- *
- * @example
- * ```typescript
- * const handler = getHandler({ registrations, event: 'tool_call' });
- * ```
+ Retrieve a registered event handler.
+ 
+ @param registrations - event handler registry from {@link createMockApi}
+ @param event - event name to retrieve
+ 
+ @returns registered handler
+ 
+ @throws when event was not registered
+ 
+ @example
+ ```typescript
+ const handler = getHandler({ registrations, event: 'tool_call' });
+ ```
  */
 function getHandler(
   {
@@ -241,18 +242,18 @@ function getHandler(
 }
 
 /**
- * Retrieve registered bypass shortcut handler.
- *
- * @param shortcuts - shortcut registry from {@link createMockApi}
- *
- * @returns Shift+Tab bypass shortcut handler
- *
- * @throws when shortcut was not registered
- *
- * @example
- * ```typescript
- * const shortcut = getBypassShortcut({ shortcuts });
- * ```
+ Retrieve registered bypass shortcut handler.
+ 
+ @param shortcuts - shortcut registry from {@link createMockApi}
+ 
+ @returns Shift+Tab bypass shortcut handler
+ 
+ @throws when shortcut was not registered
+ 
+ @example
+ ```typescript
+ const shortcut = getBypassShortcut({ shortcuts });
+ ```
  */
 function getBypassShortcut(
   {
@@ -269,9 +270,6 @@ function getBypassShortcut(
 }
 
 //endregion Mock infrastructure
-
-/** Auto-mode entry point under test. */
-const { default: autoMode, } = await import('./index.ts');
 
 await describe({
   name: 'auto-mode bypass',
@@ -440,6 +438,43 @@ await describe({
             reason: BYPASS_ALLOW_REASON,
           },
         },);
+      },
+    },),
+
+    it({
+      name: 'keeps virtual-input hard guard active while bypass is enabled',
+      fn: async function keepsVirtualInputHardGuardActiveWhileBypassIsEnabled() {
+        const {
+          api,
+          registrations,
+          shortcuts,
+          entries,
+        } = createMockApi();
+        await autoMode(api,);
+        const shortcut = getBypassShortcut({ shortcuts, },);
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+        const { ctx, } = createMockContext({ branch: [], },);
+        const event = {
+          type: 'tool_call',
+          toolName: 'bash',
+          toolCallId: 'direct-ydotool',
+          input: {
+            command: 'ydotool key 1:1 1:0',
+          },
+        } as unknown as ToolCallEvent;
+
+        await shortcut(ctx,);
+        const result = await toolCallHandler(event, ctx,);
+
+        expect(result,).toEqual({
+          block: true,
+          reason: CALLER_SCOPED_YDOTOOL_REASON,
+        },);
+        expect(entries,).toHaveLength(1,);
+        expect(entries[0],).toHaveProperty('data.kind', BYPASS_TOGGLE_KIND,);
       },
     },),
   ],

@@ -1,29 +1,29 @@
 /**
- * Property-based tests for `formatErrorDeep` and `formatFailure` from
- * `./format-error.ts`, driven by fast-check.
- *
- * Example-based tests in `format-error.unit.test.ts` cover specific
- * fixtures; these properties fuzz the wide-input surfaces where the
- * harness must behave in every situation:
- *
- * - no-throw and shape: the formatter resolves to a non-empty array of
- *   string lines for arbitrary thrown values without throwing, including
- *   hostile error objects whose `.message`/`.name`/`.cause`/`.stack`/
- *   `.errors` getter throws. `format-error.ts` reads every error
- *   property defensively, so such a getter degrades to a fallback
- *   instead of propagating the throw mid-walk.
- * - cycle safety: self-referential and ring-shaped `.cause` chains
- *   terminate and emit the `... (cycle)` marker exactly once
- * - aggregate membership: every `AggregateError.errors` member is
- *   rendered on its own `[N/M]`-prefixed line
- * - stack-frame filtering: harness/chai/sinon frames are dropped while
- *   user frames survive, regardless of interleaving
- * - summary fusion: `formatFailure` always preserves the summary prefix
- *
- * fast-check is an internal dev tool for this self-test only; it is not
- * a dependency of the published harness and never reaches consumers.
- *
- * @module
+ Property-based tests for `formatErrorDeep` and `formatFailure` from
+ `./format-error.ts`, driven by fast-check.
+ 
+ Example-based tests in `format-error.unit.test.ts` cover specific
+ fixtures; these properties fuzz the wide-input surfaces where the
+ harness must behave in every situation:
+ 
+ - no-throw and shape: the formatter resolves to a non-empty array of
+   string lines for arbitrary thrown values without throwing, including
+   hostile error objects whose `.message`/`.name`/`.cause`/`.stack`/
+   `.errors` getter throws. `format-error.ts` reads every error
+   property defensively, so such a getter degrades to a fallback
+   instead of propagating the throw mid-walk.
+ - cycle safety: self-referential and ring-shaped `.cause` chains
+   terminate and emit the `... (cycle)` marker exactly once
+ - aggregate membership: every `AggregateError.errors` member is
+   rendered on its own `[N/M]`-prefixed line
+ - stack-frame filtering: harness/chai/sinon frames are dropped while
+   user frames survive, regardless of interleaving
+ - summary fusion: `formatFailure` always preserves the summary prefix
+ 
+ fast-check is an internal dev tool for this self-test only; it is not
+ a dependency of the published harness and never reaches consumers.
+ 
+ @module
  */
 
 import {
@@ -52,16 +52,16 @@ import {
 //region Constants
 
 /**
- * Property runs per `assert`. High enough to explore the branch space,
- * low enough that five properties times this count stay well under the
- * per-test timeout.
+ Property runs per `assert`. High enough to explore the branch space,
+ low enough that five properties times this count stay well under the
+ per-test timeout.
  */
 const NUM_RUNS = 100;
 
 /**
- * Per-property timeout. The default `it` timeout is tuned for a single
- * assertion; a property runs the body `NUM_RUNS` times, so it needs a
- * wider budget even though each run is sub-millisecond.
+ Per-property timeout. The default `it` timeout is tuned for a single
+ assertion; a property runs the body `NUM_RUNS` times, so it needs a
+ wider budget even though each run is sub-millisecond.
  */
 const PROPERTY_TIMEOUT_MS = 30_000;
 
@@ -81,10 +81,10 @@ const MAX_USER_FRAMES = 5;
 const MAX_HARNESS_FRAMES = 6;
 
 /**
- * Mirror of `HARNESS_INTERNAL_FRAGMENTS` in `./format-error.ts`. The
- * source list is not exported (it is module-private), so it is copied
- * here. If the source list changes, update this mirror; the
- * stack-frame-filter property asserts none of these survive the format.
+ Mirror of `HARNESS_INTERNAL_FRAGMENTS` in `./format-error.ts`. The
+ source list is not exported (it is module-private), so it is copied
+ here. If the source list changes, update this mirror; the
+ stack-frame-filter property asserts none of these survive the format.
  */
 const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'package/module/test/dist/',
@@ -96,10 +96,10 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
 ];
 
 /**
- * Error properties `formatErrorDeep` reads. A hostile error object can
- * make any of these throw on access; the no-throw property generates
- * such objects to prove the formatter's defensive reads degrade rather
- * than propagate.
+ Error properties `formatErrorDeep` reads. A hostile error object can
+ make any of these throw on access; the no-throw property generates
+ such objects to prove the formatter's defensive reads degrade rather
+ than propagate.
  */
 const TRAPPED_KEYS: readonly string[] = [
   'message',
@@ -114,8 +114,8 @@ const TRAPPED_KEYS: readonly string[] = [
 //region Arbitraries
 
 /**
- * Single identifier token of {@link ASCII_LOWERCASE_ALPHANUMERIC_CHARS}
- * characters; the unit of generated messages, names, and frame tokens.
+ Single identifier token of {@link ASCII_LOWERCASE_ALPHANUMERIC_CHARS}
+ characters; the unit of generated messages, names, and frame tokens.
  */
 const safeWordArbitrary = string({
   minLength: 1,
@@ -124,14 +124,14 @@ const safeWordArbitrary = string({
 },);
 
 /**
- * Recursively-shaped error-like value arbitrary. Each node optionally
- * carries `name`, `message`, `stack`, a recursive `cause`, and a
- * recursive `errors` array, so the generated values drive the
- * message/label fallbacks, the cause-chain walk, and the aggregate
- * expansion. `letrec` bounds the recursion depth; `anything()` leaves
- * mix in non-error shapes (primitives, plain objects, arrays).
- *
- * @returns arbitrary producing error-like values of unknown shape
+ Recursively-shaped error-like value arbitrary. Each node optionally
+ carries `name`, `message`, `stack`, a recursive `cause`, and a
+ recursive `errors` array, so the generated values drive the
+ message/label fallbacks, the cause-chain walk, and the aggregate
+ expansion. `letrec` bounds the recursion depth; `anything()` leaves
+ mix in non-error shapes (primitives, plain objects, arrays).
+ 
+ @returns arbitrary producing error-like values of unknown shape
  */
 function buildErrorLikeArbitrary(): Arbitrary<unknown> {
   const { node, } = letrec(function defineErrorLike(tie,) {
@@ -155,9 +155,9 @@ function buildErrorLikeArbitrary(): Arbitrary<unknown> {
 const errorLikeArbitrary = buildErrorLikeArbitrary();
 
 /**
- * Arbitrary producing an object with a single throwing accessor on one
- * of {@link TRAPPED_KEYS}. Models a hostile error value whose getter
- * throws when `formatErrorDeep` reads it.
+ Arbitrary producing an object with a single throwing accessor on one
+ of {@link TRAPPED_KEYS}. Models a hostile error value whose getter
+ throws when `formatErrorDeep` reads it.
  */
 const throwingGetterArbitrary = constantFrom(...TRAPPED_KEYS,).map(function toTrappedValue(key,): unknown {
   return Object.defineProperty({}, key, {
@@ -174,16 +174,16 @@ const throwingGetterArbitrary = constantFrom(...TRAPPED_KEYS,).map(function toTr
 //region Fixture builders
 
 /**
- * Builds `depth` distinct `Error` nodes linked into a ring through
- * `.cause`: node `i` points at node `i + 1`, and the last points back
- * at node `0`. Returned as the node array so callers pass the root
- * (`nodes[0]`) without a non-null assertion; the formatter accepts an
- * unknown value.
- *
- * @param depth - number of distinct nodes in the ring (at least 1; a
- *   depth of 1 yields a self-referential node)
- *
- * @returns ring of error nodes, root first
+ Builds `depth` distinct `Error` nodes linked into a ring through
+ `.cause`: node `i` points at node `i + 1`, and the last points back
+ at node `0`. Returned as the node array so callers pass the root
+ (`nodes[0]`) without a non-null assertion; the formatter accepts an
+ unknown value.
+ 
+ @param depth - number of distinct nodes in the ring (at least 1; a
+   depth of 1 yields a self-referential node)
+ 
+ @returns ring of error nodes, root first
  */
 function buildCyclicCauseChain({ depth, }: { readonly depth: number; },): readonly Error[] {
   const nodes = Array.from({ length: depth, }, function makeNode(_unused, index,) {
@@ -196,13 +196,13 @@ function buildCyclicCauseChain({ depth, }: { readonly depth: number; },): readon
 }
 
 /**
- * Builds an aggregate-shaped plain object whose `.errors` are distinct
- * stack-less member objects, so the rendered line count is exactly one
- * (root) plus the member count.
- *
- * @param memberMessages - one message per aggregate member
- *
- * @returns aggregate-shaped value of unknown type
+ Builds an aggregate-shaped plain object whose `.errors` are distinct
+ stack-less member objects, so the rendered line count is exactly one
+ (root) plus the member count.
+ 
+ @param memberMessages - one message per aggregate member
+ 
+ @returns aggregate-shaped value of unknown type
  */
 function buildAggregate({ memberMessages, }: { readonly memberMessages: readonly string[]; },): unknown {
   const members = memberMessages.map(function toMember(message,) {
@@ -219,15 +219,15 @@ function buildAggregate({ memberMessages, }: { readonly memberMessages: readonly
 }
 
 /**
- * Interleaves two frame lists element by element, dropping the
- * trailing tail of the longer list's missing counterpart. Tests that
- * harness-frame filtering is position-independent.
- *
- * @param a - first frame list
- *
- * @param b - second frame list
- *
- * @returns interleaved frames in `a[0], b[0], a[1], b[1], ...` order
+ Interleaves two frame lists element by element, dropping the
+ trailing tail of the longer list's missing counterpart. Tests that
+ harness-frame filtering is position-independent.
+ 
+ @param a - first frame list
+ 
+ @param b - second frame list
+ 
+ @returns interleaved frames in `a[0], b[0], a[1], b[1], ...` order
  */
 function interleaveFrames({
   a,
@@ -247,19 +247,19 @@ function interleaveFrames({
 }
 
 /**
- * Builds an error-like object whose synthetic `.stack` interleaves
- * generated user frames (under `package/app/src/`, which matches no
- * harness fragment) with harness frames built from the supplied
- * fragments. A header line (`Error: <message>`) is prepended so the
- * formatter's first-line-duplicate-skip branch fires.
- *
- * @param message - error message, also used in the synthetic header
- *
- * @param userTokens - identifier tokens for user-frame filenames
- *
- * @param fragments - harness path fragments to embed in harness frames
- *
- * @returns error-like value of unknown type carrying the synthetic stack
+ Builds an error-like object whose synthetic `.stack` interleaves
+ generated user frames (under `package/app/src/`, which matches no
+ harness fragment) with harness frames built from the supplied
+ fragments. A header line (`Error: <message>`) is prepended so the
+ formatter's first-line-duplicate-skip branch fires.
+ 
+ @param message - error message, also used in the synthetic header
+ 
+ @param userTokens - identifier tokens for user-frame filenames
+ 
+ @param fragments - harness path fragments to embed in harness frames
+ 
+ @returns error-like value of unknown type carrying the synthetic stack
  */
 function buildErrorWithMixedStack({
   message,

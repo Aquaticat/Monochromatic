@@ -9,30 +9,30 @@ import type {
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
 /**
- * Object-pattern node shape carrying destructured properties for this rule.
+ Object-pattern node shape carrying destructured properties for this rule.
  */
 type ObjectPatternListNode = Span & {
   /**
-   * Destructured properties in source order.
+   Destructured properties in source order.
    */
   readonly properties?: readonly Span[];
 };
 
 /**
- * Enforces one property per line in object destructuring patterns
- * with 2 or more properties.
- *
- * @example
- * ```ts
- * // Bad
- * const { name, age } = person;
- *
- * // Good
- * const {
- *   name,
- *   age,
- * } = person;
- * ```
+ Enforces one property per line in object destructuring patterns
+ with 2 or more properties.
+ 
+ @example
+ ```ts
+ // Bad
+ const { name, age } = person;
+ 
+ // Good
+ const {
+   name,
+   age,
+ } = person;
+ ```
  */
 export const destructurePerLine: CreateOnceRule = {
   meta: {
@@ -48,26 +48,26 @@ export const destructurePerLine: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
       ObjectPattern(node: ForeignBorrowed<Span>,): void {
         /**
-         * Narrowed object-pattern visitor node used for property access.
+         Narrowed object-pattern visitor node used for property access.
          */
         const patternNode = node as ObjectPatternListNode;
         /**
-         * Extract properties from the object pattern.
+         Extract properties from the object pattern.
          */
         const { properties, } = patternNode;
         if (properties === undefined)

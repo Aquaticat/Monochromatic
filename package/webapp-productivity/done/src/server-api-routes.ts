@@ -1,8 +1,8 @@
 /**
- * API route registration for the h3 application.
- *
- * Wires up all JSON API endpoints (CRUD, timers, AI autofill)
- * to their respective handler functions.
+ API route registration for the h3 application.
+ 
+ Wires up all JSON API endpoints (CRUD, timers, AI autofill)
+ to their respective handler functions.
  */
 import {
   defineHandler,
@@ -26,20 +26,20 @@ import {
 import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const/ts';
 
 /**
- * Extracts a required route parameter, throwing 400 if missing.
- *
- * @param event - h3 event
- *
- * @param name - Parameter name from the route pattern
- *
- * @returns Parameter value
- *
- * @throws {@link HTTPError} 400 when parameter is missing
- *
- * @example
- * ```ts
- * const id = requireParam({ event, name: 'id', });
- * ```
+ Extracts a required route parameter, throwing 400 if missing.
+ 
+ @param event - h3 event
+ 
+ @param name - Parameter name from the route pattern
+ 
+ @returns Parameter value
+ 
+ @throws {@link HTTPError} 400 when parameter is missing
+ 
+ @example
+ ```ts
+ const id = requireParam({ event, name: 'id', });
+ ```
  */
 function requireParam({
   event,
@@ -49,7 +49,7 @@ function requireParam({
   readonly name: string;
 },): string {
   /**
-   * Route value as returned by h3; converted to a thrown 400 below when absent.
+   Route value as returned by h3; converted to a thrown 400 below when absent.
    */
   const value = getRouterParam(
     event,
@@ -65,16 +65,16 @@ function requireParam({
 }
 
 /**
- * Registers all API routes on the given h3 application.
- *
- * @param app - h3 application instance to attach routes to
- *
- * @mutates app - `app.delete`, `app.post`, and `app.put` register and retain route handlers.
- *
- * @example
- * ```ts
- * registerApiRoutes(app);
- * ```
+ Registers all API routes on the given h3 application.
+ 
+ @param app - h3 application instance to attach routes to
+ 
+ @mutates app - `app.delete`, `app.post`, and `app.put` register and retain route handlers.
+ 
+ @example
+ ```ts
+ registerApiRoutes(app);
+ ```
  */
 export function registerApiRoutes(app: H3,): void {
   app.post(
@@ -88,7 +88,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by {@link requireParam} when absent.
+       Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -105,7 +105,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by {@link requireParam} when absent.
+       Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -119,7 +119,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by {@link requireParam} when absent.
+       Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -133,7 +133,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by {@link requireParam} when absent.
+       Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,
@@ -147,7 +147,7 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/complete',
     defineHandler(function handleCompleteTaskRoute(event,) {
       /**
-       * Required route slug; thrown as 400 by {@link requireParam} when absent.
+       Required route slug; thrown as 400 by {@link requireParam} when absent.
        */
       const id = requireParam({
         event,

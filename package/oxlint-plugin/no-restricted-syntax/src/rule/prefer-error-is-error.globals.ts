@@ -19,22 +19,22 @@ import {
 //region Global constructor detection
 
 /**
- * Checks whether expression is global `Error` or `globalThis.Error`: matches
- * the {@link ERROR_CONSTRUCTOR_NAME} and {@link GLOBAL_THIS_NAME} identifiers
- * via {@link getIdentifierNamed} and {@link getStaticMemberName} (after
- * unwrapping via {@link unwrapParentheses}), and confirms each via
- * {@link isUnshadowedGlobalIdentifier}.
- *
- * @param context - Oxlint rule context.
- *
- * @param expression - Expression to inspect.
- *
- * @returns Whether expression names the global Error constructor.
- *
- * @example
- * ```ts
- * isGlobalErrorConstructor({ context, expression: node.right });
- * ```
+ Checks whether expression is global `Error` or `globalThis.Error`: matches
+ the {@link ERROR_CONSTRUCTOR_NAME} and {@link GLOBAL_THIS_NAME} identifiers
+ via {@link getIdentifierNamed} and {@link getStaticMemberName} (after
+ unwrapping via {@link unwrapParentheses}), and confirms each via
+ {@link isUnshadowedGlobalIdentifier}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param expression - Expression to inspect.
+ 
+ @returns Whether expression names the global Error constructor.
+ 
+ @example
+ ```ts
+ isGlobalErrorConstructor({ context, expression: node.right });
+ ```
  */
 export function isGlobalErrorConstructor(
   {
@@ -46,7 +46,7 @@ export function isGlobalErrorConstructor(
   }>,
 ): boolean {
   /**
-   * Direct global Error identifier, if present.
+   Direct global Error identifier, if present.
    */
   const errorIdentifier = getIdentifierNamed({
     expression,
@@ -58,7 +58,7 @@ export function isGlobalErrorConstructor(
       identifier: errorIdentifier,
     },);
   /**
-   * Expression without redundant parentheses.
+   Expression without redundant parentheses.
    */
   const unwrapped = unwrapParentheses({ expression, },);
   if (unwrapped.type !== 'MemberExpression')
@@ -66,13 +66,13 @@ export function isGlobalErrorConstructor(
   if (unwrapped.optional)
     return false;
   /**
-   * Static property read from the member expression.
+   Static property read from the member expression.
    */
   const propertyName = getStaticMemberName({ member: unwrapped, },);
   if (propertyName !== ERROR_CONSTRUCTOR_NAME)
     return false;
   /**
-   * globalThis identifier backing the member expression.
+   globalThis identifier backing the member expression.
    */
   const globalThisIdentifier = getIdentifierNamed({
     expression: unwrapped.object,
@@ -87,20 +87,20 @@ export function isGlobalErrorConstructor(
 }
 
 /**
- * Checks whether expression is the global `Object` constructor: matches
- * {@link OBJECT_CONSTRUCTOR_NAME} via {@link getIdentifierNamed} and
- * confirms it via {@link isUnshadowedGlobalIdentifier}.
- *
- * @param context - Oxlint rule context.
- *
- * @param expression - Expression to inspect.
- *
- * @returns Whether expression names the unshadowed global Object constructor.
- *
- * @example
- * ```ts
- * isGlobalObjectConstructor({ context, expression: node.object });
- * ```
+ Checks whether expression is the global `Object` constructor: matches
+ {@link OBJECT_CONSTRUCTOR_NAME} via {@link getIdentifierNamed} and
+ confirms it via {@link isUnshadowedGlobalIdentifier}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param expression - Expression to inspect.
+ 
+ @returns Whether expression names the unshadowed global Object constructor.
+ 
+ @example
+ ```ts
+ isGlobalObjectConstructor({ context, expression: node.object });
+ ```
  */
 export function isGlobalObjectConstructor(
   {
@@ -112,7 +112,7 @@ export function isGlobalObjectConstructor(
   }>,
 ): boolean {
   /**
-   * Direct global Object identifier, if present.
+   Direct global Object identifier, if present.
    */
   const objectIdentifier = getIdentifierNamed({
     expression,

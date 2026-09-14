@@ -1,76 +1,76 @@
 /**
- * DOM building helpers for the `<task-detail>` render method.
+ DOM building helpers for the `<task-detail>` render method.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 
 /**
- * Options for building the task detail DOM tree.
+ Options for building the task detail DOM tree.
  */
 type RenderOptions = {
   /**
-   * Task being displayed.
+   Task being displayed.
    */
   readonly task: Task;
   /**
-   * Whether the component is in create mode.
+   Whether the component is in create mode.
    */
   readonly isCreate: boolean;
   /**
-   * Compiled CSS string for styles.
+   Compiled CSS string for styles.
    */
   readonly styles: string;
 };
 
 /**
- * References to dynamic elements within the rendered tree.
+ References to dynamic elements within the rendered tree.
  */
 export type RenderRefs = {
   /**
-   * Title text input.
+   Title text input.
    */
   titleInput: HTMLInputElement;
   /**
-   * Description textarea.
+   Description textarea.
    */
   descInput: HTMLTextAreaElement;
   /**
-   * Container for metadata pill elements.
+   Container for metadata pill elements.
    */
   pillsContainer: HTMLElement;
   /**
-   * Action button row (start/stop/complete/delete).
+   Action button row (start/stop/complete/delete).
    */
   btnRow: HTMLElement;
 };
 
 /**
- * Result of building the task detail DOM tree.
+ Result of building the task detail DOM tree.
  */
 type RenderResult = {
   /**
-   * Top-level elements to insert into the shadow root.
+   Top-level elements to insert into the shadow root.
    */
   elements: (HTMLElement | HTMLStyleElement)[];
   /**
-   * References to elements that need post-render interaction.
+   References to elements that need post-render interaction.
    */
   refs: RenderRefs;
 };
 
 /**
- * Builds the complete `<task-detail>` Shadow DOM tree.
- *
- * Returns both the element list and refs to interactive elements
- * so the caller can wire up event listeners without querying the DOM.
- *
- * @returns Elements and refs
- *
- * @example
- * ```ts
- * const { elements, refs } = buildTaskDetailTree({ task, isCreate: false, styles: [] });
- * shadow.replaceChildren(...elements);
- * ```
+ Builds the complete `<task-detail>` Shadow DOM tree.
+ 
+ Returns both the element list and refs to interactive elements
+ so the caller can wire up event listeners without querying the DOM.
+ 
+ @returns Elements and refs
+ 
+ @example
+ ```ts
+ const { elements, refs } = buildTaskDetailTree({ task, isCreate: false, styles: [] });
+ shadow.replaceChildren(...elements);
+ ```
  */
 export function buildTaskDetailTree(
   {
@@ -82,7 +82,7 @@ export function buildTaskDetailTree(
   // Close button uses innerHTML for SVG because h() creates HTML-namespace
   // elements: SVG requires the SVG namespace.
   /**
-   * Reusable close button shell; the inline SVG glyph is injected on the next line.
+   Reusable close button shell; the inline SVG glyph is injected on the next line.
    */
   const closeButton = h({
     tag: 'button',
@@ -96,7 +96,7 @@ export function buildTaskDetailTree(
     `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
 
   /**
-   * Exposed in refs so the host component can read live title edits.
+   Exposed in refs so the host component can read live title edits.
    */
   const titleInput = h({
     tag: 'input',
@@ -110,7 +110,7 @@ export function buildTaskDetailTree(
   },);
 
   /**
-   * Exposed in refs so the host component can read live description edits.
+   Exposed in refs so the host component can read live description edits.
    */
   const descInput = h({
     tag: 'textarea',
@@ -122,21 +122,21 @@ export function buildTaskDetailTree(
     descInput.textContent = task.description;
 
   /**
-   * Mutable attribute map so a `disabled` flag can be appended conditionally below.
+   Mutable attribute map so a `disabled` flag can be appended conditionally below.
    */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt
     !== undefined)
     startAttrs.disabled = '';
   /**
-   * Mutable attribute map mirroring `startAttrs`; disabled when no timer is running.
+   Mutable attribute map mirroring `startAttrs`; disabled when no timer is running.
    */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt
     === undefined)
     stopAttrs.disabled = '';
   /**
-   * Mutable attribute map disabled while any blocker remains unresolved.
+   Mutable attribute map disabled while any blocker remains unresolved.
    */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
   if (task.blockedBy
@@ -145,7 +145,7 @@ export function buildTaskDetailTree(
     completeAttrs.disabled = '';
 
   /**
-   * Exposed in refs so the host component can toggle button visibility per mode.
+   Exposed in refs so the host component can toggle button visibility per mode.
    */
   const btnRow = h({
     tag: 'div',
@@ -182,7 +182,7 @@ export function buildTaskDetailTree(
       .hidden = '';
 
   /**
-   * Exposed in refs so the pill manager can replace its children without re-rendering the tree.
+   Exposed in refs so the pill manager can replace its children without re-rendering the tree.
    */
   const pillsContainer = h({
     tag: 'div',
@@ -190,7 +190,7 @@ export function buildTaskDetailTree(
   },);
 
   /**
-   * Ordered child list returned to the caller for `shadow.replaceChildren`.
+   Ordered child list returned to the caller for `shadow.replaceChildren`.
    */
   const elements = [
     h({

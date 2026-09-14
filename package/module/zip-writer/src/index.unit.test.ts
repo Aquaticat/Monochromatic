@@ -27,11 +27,11 @@ type DisposableTempDir = {
 };
 
 /**
- * Create a fresh temp directory with an async-dispose cleanup attached.
- * Use with `await using` so the directory is removed when the enclosing
- * scope exits, regardless of how it exits.
- *
- * @returns Async-disposable temp directory handle
+ Create a fresh temp directory with an async-dispose cleanup attached.
+ Use with `await using` so the directory is removed when the enclosing
+ scope exits, regardless of how it exits.
+ 
+ @returns Async-disposable temp directory handle
  */
 async function makeTempDir(): Promise<DisposableTempDir> {
   const path = await mkdtemp(join(tmpdir(), 'zip-writer-test-',),);
@@ -44,11 +44,11 @@ async function makeTempDir(): Promise<DisposableTempDir> {
 }
 
 /**
- * Verify a ZIP buffer with system `unzip -tq` (integrity test).
- *
- * @param bytes - Archive bytes to verify
- *
- * @returns Stdout/stderr from the `unzip` invocation
+ Verify a ZIP buffer with system `unzip -tq` (integrity test).
+ 
+ @param bytes - Archive bytes to verify
+ 
+ @returns Stdout/stderr from the `unzip` invocation
  */
 async function verifyZipIntegrity(
   bytes: Uint8Array,
@@ -61,11 +61,11 @@ async function verifyZipIntegrity(
 }
 
 /**
- * List entries inside a ZIP buffer using `unzip -Z1`.
- *
- * @param bytes - Archive bytes to list
- *
- * @returns One entry path per element
+ List entries inside a ZIP buffer using `unzip -Z1`.
+ 
+ @param bytes - Archive bytes to list
+ 
+ @returns One entry path per element
  */
 async function listZipEntries(bytes: Uint8Array,): Promise<string[]> {
   await using tempDir = await makeTempDir();
@@ -76,16 +76,16 @@ async function listZipEntries(bytes: Uint8Array,): Promise<string[]> {
 }
 
 /**
- * Extract a single file from a ZIP buffer.
- *
- * Extracts the archive to a temp directory and reads the entry as bytes,
- * since `nano-spawn` returns string-only stdout (no `encoding: 'buffer'`).
- *
- * @param bytes - Archive bytes to extract from
- *
- * @param path - Entry path inside the archive
- *
- * @returns Raw bytes of the extracted entry
+ Extract a single file from a ZIP buffer.
+ 
+ Extracts the archive to a temp directory and reads the entry as bytes,
+ since `nano-spawn` returns string-only stdout (no `encoding: 'buffer'`).
+ 
+ @param bytes - Archive bytes to extract from
+ 
+ @param path - Entry path inside the archive
+ 
+ @returns Raw bytes of the extracted entry
  */
 async function extractFromZip(
   {
@@ -298,11 +298,11 @@ await describe({
             zip.add('retained.bin', data,);
             data[0] = 9;
             /**
-             * Fixed local-file-header byte length before encoded entry name.
+             Fixed local-file-header byte length before encoded entry name.
              */
             const localFileHeaderLength = 30;
             /**
-             * Archive content offset after fixed header and encoded path.
+             Archive content offset after fixed header and encoded path.
              */
             const contentOffset = localFileHeaderLength
               + new TextEncoder()

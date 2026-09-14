@@ -1,7 +1,7 @@
 /**
- * Global Pi Search Fetch configuration loading.
- *
- * @module
+ Global Pi Search Fetch configuration loading.
+ 
+ @module
  */
 
 import { homedir, } from 'node:os';
@@ -32,17 +32,17 @@ import type {
 } from './config-types.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ ```
  */
 const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'config',
@@ -52,53 +52,53 @@ const l = tagged({
 //region Public API
 
 /**
- * Load Pi Search Fetch global config.
- *
- * @param options - optional environment and home overrides for tests
- *
- * @returns loaded config with normalized blocklist and API key precedence
- *
- * @throws when config file has invalid JSON, schema, or blocklist entries
- *
- * @example
- * ```ts
- * loadLinkupConfig();
- * ```
+ Load Pi Search Fetch global config.
+ 
+ @param options - optional environment and home overrides for tests
+ 
+ @returns loaded config with normalized blocklist and API key precedence
+ 
+ @throws when config file has invalid JSON, schema, or blocklist entries
+ 
+ @example
+ ```ts
+ loadLinkupConfig();
+ ```
  */
 async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise<LinkupConfig> {
   /**
-   * Logger tagged for config loading.
+   Logger tagged for config loading.
    */
   const innerL = tagged({
     tag: loadLinkupConfig.name,
     l,
   },);
   /**
-   * Local value for processHome.
+   Local value for processHome.
    */
   const processHome = process.env
     .HOME;
   /**
-   * Local value for home.
+   Local value for home.
    */
   const home = options.home
     ?? processHome
     ?? homedir();
   /**
-   * Local value for env.
+   Local value for env.
    */
   const env = options.env
     ?? process.env;
   /**
-   * Local value for configPath.
+   Local value for configPath.
    */
   const configPath = configPathForHome({ home, },);
   /**
-   * Local value for initialReadResult.
+   Local value for initialReadResult.
    */
   const initialReadResult = await readOptionalConfigJson({ configPath, },);
   /**
-   * Local value for migration.
+   Local value for migration.
    */
   const migration = initialReadResult.loaded
     ? { migrated: false, } as const
@@ -107,7 +107,7 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
       configPath,
     },);
   /**
-   * Local value for readResult.
+   Local value for readResult.
    */
   const readResult: ConfigJsonReadResult = migration.migrated
     ? {
@@ -116,7 +116,7 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     }
     : initialReadResult;
   /**
-   * Local value for configFile.
+   Local value for configFile.
    */
   const configFile = readResult.loaded
     ? validateConfigShape({
@@ -125,14 +125,14 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     },)
     : {};
   /**
-   * Local value for blocklist.
+   Local value for blocklist.
    */
   const blocklist = normalizeConfigBlocklist({
     entries: configFile.blocklist ?? [],
     configPath,
   },);
   /**
-   * Local value for exaApiKey.
+   Local value for exaApiKey.
    */
   const exaApiKey = resolveApiKey({
     env,
@@ -140,7 +140,7 @@ async function loadLinkupConfig(options: LoadLinkupConfigOptions = {},): Promise
     ...(configFile.exaApiKey === undefined ? {} : { configApiKey: configFile.exaApiKey, }),
   },);
   /**
-   * Local value for linkupApiKey.
+   Local value for linkupApiKey.
    */
   const linkupApiKey = resolveApiKey({
     env,

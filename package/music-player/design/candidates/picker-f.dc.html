@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#000;color:#e9e9ea;font-family:'Noto Sans',system-ui,sans-serif;height:100vh;display:flex;flex-direction:column">
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #282828;font-size:13px;color:#8e8e93">
+    <span style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;background:#1e1e1e;border:1px solid #3a3a42;border-radius:8px;padding:0 14px;color:#e9e9ea;font-size:14px">Camellia</span>
+    <span style="font-variant-numeric:tabular-nums">{{ total }} folders · showing {{ shownCount }}</span>
+  </div>
+  <div style="flex:0 0 auto;display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid #1a1a1c">
+    <sc-for list="{{ subBuckets }}" as="b" hint-placeholder-count="6">
+      <button onClick="{{ b.pick }}" style="min-height:48px;min-width:64px;padding:0 14px;border:1px solid #282828;border-radius:8px;background:{{ b.bg }};color:{{ b.fg }};font:inherit;font-size:14px;cursor:pointer">{{ b.label }}</button>
+    </sc-for>
+  </div>
+  <div style="flex:1 1 auto;min-height:0;display:flex">
+    <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:1px 0 20px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px">
+        <sc-for list="{{ shown }}" as="n" hint-placeholder-count="12">
+          <div style="display:flex;align-items:center;height:48px;padding:0 14px;background:#101011;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="flex:0 0 auto;width:40px;border-left:1px solid #1a1a1c;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;padding:6px 0;font-size:11px;text-align:center">
+      <sc-for list="{{ letterCells }}" as="l" hint-placeholder-count="27">
+        <span onClick="{{ l.pick }}" style="padding:1px 0;cursor:pointer;color:{{ l.fg }}">{{ l.label }}</span>
+      </sc-for>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:9px 14px;border-top:1px solid #282828;color:#55555c;font-size:12px;font-family:ui-monospace,monospace">F — two-level index. Letter on the strip, then a second row narrows to Ca/Ch/Co… Never more than one screen of names. Click around it.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:860,&quot;height&quot;:520}}">
+class Component extends DCLogic {
+  state = { data: null, letter: "C", sub: null };
+
+  componentDidMount() {
+    import("./artists.js").then((m) => this.setState({ data: m }));
+  }
+
+  namesFor(letter) {
+    const d = this.state.data;
+    if (!d) return [];
+    return d.ARTISTS.filter((n) => d.bucketOf(n) === letter);
+  }
+
+  // Split a letter's names into 2-character buckets, merging small ones so no
+  // bucket is a single chip and none overflows one screen.
+  bucketsFor(letter) {
+    const names = this.namesFor(letter);
+    const byPair = new Map();
+    names.forEach((n) => {
+      const key = (n.slice(0, 2).toUpperCase().trim() || letter);
+      if (!byPair.has(key)) byPair.set(key, []);
+      byPair.get(key).push(n);
+    });
+    const keys = Array.from(byPair.keys()).sort();
+    const out = [];
+    keys.forEach((k) => {
+      const last = out[out.length - 1];
+      if (last && last.names.length + byPair.get(k).length <= 14) {
+        last.names = last.names.concat(byPair.get(k));
+        last.to = k;
+      } else {
+        out.push({ from: k, to: k, names: byPair.get(k).slice() });
+      }
+    });
+    return out.map((b) => ({
+      label: b.from === b.to ? b.from : b.from + "–" + b.to,
+      names: b.names
+    }));
+  }
+
+  renderVals() {
+    const d = this.state.data;
+    const letters = d ? d.LETTERS : [];
+    const buckets = d ? this.bucketsFor(this.state.letter) : [];
+    const active = this.state.sub === null ? 0 : Math.min(this.state.sub, buckets.length - 1);
+    const shown = buckets.length ? buckets[active].names : [];
+    return {
+      total: d ? d.ARTISTS.length : 0,
+      shown: shown,
+      shownCount: shown.length,
+      subBuckets: buckets.map((b, i) => ({
+        label: b.label,
+        bg: i === active ? "#b3a8f5" : "transparent",
+        fg: i === active ? "#14112a" : "#e9e9ea",
+        pick: () => this.setState({ sub: i })
+      })),
+      letterCells: letters.map((l) => ({
+        label: l,
+        fg: l === this.state.letter ? "#b3a8f5" : "#8e8e93",
+        pick: () => this.setState({ letter: l, sub: null })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

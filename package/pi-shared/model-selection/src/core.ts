@@ -1,7 +1,7 @@
 /**
- * Dependency-free core model-selection helpers and structural types.
- *
- * @module
+ Dependency-free core model-selection helpers and structural types.
+ 
+ @module
  */
 
 export type * from './types.ts';

@@ -1,8 +1,8 @@
 /**
- * Tests for signal flagging.
- *
- * Covers path signals (with the isSystemPath fix), bash signals,
- * content signals, and text signals.
+ Tests for signal flagging.
+ 
+ Covers path signals (with the isSystemPath fix), bash signals,
+ content signals, and text signals.
  */
 
 import {

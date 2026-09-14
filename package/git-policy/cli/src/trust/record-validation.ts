@@ -1,7 +1,7 @@
 /**
- * Trust record schema and permission validation.
- *
- * @module
+ Trust record schema and permission validation.
+ 
+ @module
  */
 import {
   constants,
@@ -21,18 +21,18 @@ import type {
 } from './types.ts';
 
 /**
- * Group and other permission mask.
+ Group and other permission mask.
  */
 const NON_OWNER_PERMISSION_MASK = 0o077;
 
 /**
- * Corrupt or unsafe trust record.
+ Corrupt or unsafe trust record.
  */
 export class TrustRecordError extends Error {
   /**
-   * Creates record validation failure.
-   *
-   * @param message - safe failure explanation
+   Creates record validation failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -41,11 +41,11 @@ export class TrustRecordError extends Error {
 }
 
 /**
- * Asserts ordinary object record.
- *
- * @param value - unknown candidate
- *
- * @returns Nothing after narrowing candidate
+ Asserts ordinary object record.
+ 
+ @param value - unknown candidate
+ 
+ @returns Nothing after narrowing candidate
  */
 function assertRecord(value: unknown,): asserts value is Record<string, unknown> {
   if (((typeof value) !== 'object') || (value === null)
@@ -54,11 +54,11 @@ function assertRecord(value: unknown,): asserts value is Record<string, unknown>
 }
 
 /**
- * Checks non-empty decimal string.
- *
- * @param value - unknown numeric metadata
- *
- * @returns whether value contains only ASCII decimal digits
+ Checks non-empty decimal string.
+ 
+ @param value - unknown numeric metadata
+ 
+ @returns whether value contains only ASCII decimal digits
  */
 function isDecimalString(value: unknown,): value is string {
   if (((typeof value) !== 'string') || (value.length === 0))
@@ -71,11 +71,11 @@ function isDecimalString(value: unknown,): value is string {
 }
 
 /**
- * Validates complete trust identity.
- *
- * @param value - unknown identity
- *
- * @returns copied identity
+ Validates complete trust identity.
+ 
+ @param value - unknown identity
+ 
+ @returns copied identity
  */
 function validateIdentity(value: unknown,): TrustIdentity {
   assertRecord(value,);
@@ -97,11 +97,11 @@ function validateIdentity(value: unknown,): TrustIdentity {
 }
 
 /**
- * Validates one source metadata entry.
- *
- * @param value - unknown source record
- *
- * @returns copied source metadata
+ Validates one source metadata entry.
+ 
+ @param value - unknown source record
+ 
+ @returns copied source metadata
  */
 function validateSource(value: unknown,): TrustSourceRecord {
   assertRecord(value,);
@@ -120,16 +120,16 @@ function validateSource(value: unknown,): TrustSourceRecord {
 }
 
 /**
- * Parses and validates schema-version-one trust record.
- *
- * @param value - unknown JSON value
- *
- * @returns copied validated record
- *
- * @example
- * ```ts
- * validateTrustRecord(JSON.parse(recordJson));
- * ```
+ Parses and validates schema-version-one trust record.
+ 
+ @param value - unknown JSON value
+ 
+ @returns copied validated record
+ 
+ @example
+ ```ts
+ validateTrustRecord(JSON.parse(recordJson));
+ ```
  */
 export function validateTrustRecord(value: unknown,): TrustRecord {
   assertRecord(value,);
@@ -150,21 +150,21 @@ export function validateTrustRecord(value: unknown,): TrustRecord {
     || Number.isNaN(Date.parse(value.recordedAt,)))
     throw new TrustRecordError('Trust record metadata is invalid.',);
   /**
-   * Complete validated record identity.
+   Complete validated record identity.
    */
   const identity = validateIdentity(value.identity,);
   /**
-   * Canonically ordered source metadata.
+   Canonically ordered source metadata.
    */
   const sources = value.sources
     .map(validateSource,);
   /**
-   * Recursive trust provenance identities.
+   Recursive trust provenance identities.
    */
   const authorizingRoots = value.authorizingRoots
     .map(validateIdentity,);
   /**
-   * Duplicate-detection keys for provenance identities.
+   Duplicate-detection keys for provenance identities.
    */
   const provenanceKeys = authorizingRoots.map(function identityKey(authorizer,) {
     return `${authorizer.filesystemId}:${authorizer.canonicalConfigPath}`;
@@ -186,11 +186,11 @@ export function validateTrustRecord(value: unknown,): TrustRecord {
 }
 
 /**
- * Asserts restrictive POSIX mode when platform exposes permission bits.
- *
- * @param mode - stat mode
- *
- * @param label - path diagnostic label
+ Asserts restrictive POSIX mode when platform exposes permission bits.
+ 
+ @param mode - stat mode
+ 
+ @param label - path diagnostic label
  */
 function assertPrivateMode({
   mode,
@@ -204,16 +204,16 @@ function assertPrivateMode({
 }
 
 /**
- * Reads one file without following final symbolic link.
- *
- * @param path - absolute file path
- *
- * @returns exact file bytes
- *
- * @example
- * ```ts
- * await readPrivateFile('/private/record.json');
- * ```
+ Reads one file without following final symbolic link.
+ 
+ @param path - absolute file path
+ 
+ @returns exact file bytes
+ 
+ @example
+ ```ts
+ await readPrivateFile('/private/record.json');
+ ```
  */
 export async function readPrivateFile(path: string,): Promise<Uint8Array> {
   await assertPrivatePathProtection({
@@ -221,18 +221,18 @@ export async function readPrivateFile(path: string,): Promise<Uint8Array> {
     directory: false,
   },);
   /**
-   * No-follow handle for exact private file.
+   No-follow handle for exact private file.
    */
   const handle = await open(
     path,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Automatically closed private file handle.
+   Automatically closed private file handle.
    */
   await using disposableHandle = handle;
   /**
-   * Same-handle metadata used for type and mode checks.
+   Same-handle metadata used for type and mode checks.
    */
   const metadata = await handle.stat();
   if (!metadata.isFile())
@@ -247,18 +247,18 @@ export async function readPrivateFile(path: string,): Promise<Uint8Array> {
 }
 
 /**
- * Reads and validates record plus identity/path agreement.
- *
- * @param registryRoot - complete registry root
- *
- * @param directory - expected record directory
- *
- * @returns validated trust record
- *
- * @example
- * ```ts
- * await readRecord({ registryRoot: '/r', directory: '/r/records/key' });
- * ```
+ Reads and validates record plus identity/path agreement.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param directory - expected record directory
+ 
+ @returns validated trust record
+ 
+ @example
+ ```ts
+ await readRecord({ registryRoot: '/r', directory: '/r/records/key' });
+ ```
  */
 export async function readRecord({
   registryRoot,
@@ -268,7 +268,7 @@ export async function readRecord({
   directory: string;
 }>,): Promise<TrustRecord> {
   /**
-   * Final record directory metadata, read before ACL verification so absence retains ENOENT classification.
+   Final record directory metadata, read before ACL verification so absence retains ENOENT classification.
    */
   const directoryMetadata = await lstat(directory,);
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
@@ -282,19 +282,19 @@ export async function readRecord({
     label: directory,
   },);
   /**
-   * Exact record JSON bytes.
+   Exact record JSON bytes.
    */
   const recordBytes = await readPrivateFile(join(
     directory,
     'record.json',
   ),);
   /**
-   * Parsed JSON retained as unknown until schema validation.
+   Parsed JSON retained as unknown until schema validation.
    */
   const parsed: unknown = (function parseRecordJson() {
     try {
       /**
-       * JSON parser output held as unknown.
+       JSON parser output held as unknown.
        */
       const jsonValue: unknown = JSON.parse(new TextDecoder(
         'utf-8',
@@ -307,7 +307,7 @@ export async function readRecord({
     }
   })();
   /**
-   * Runtime-authoritative record.
+   Runtime-authoritative record.
    */
   const record = validateTrustRecord(parsed,);
   assertRecordDirectoryIdentity({

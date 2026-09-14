@@ -1,9 +1,9 @@
 /**
- * Typed wrapper around the `qemu-img` command-line tool.
- * Provides functions for image inspection, conversion, overlay management,
- * and block map retrieval needed for incremental sync.
- *
- * @module
+ Typed wrapper around the `qemu-img` command-line tool.
+ Provides functions for image inspection, conversion, overlay management,
+ and block map retrieval needed for incremental sync.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -16,33 +16,33 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for vmsync after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for vmsync after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Retrieves format and geometry information for a disk image.
- *
- * @param imagePath - Absolute path to the disk image
- *
- * @returns Parsed {@link QemuImgInfo} from `qemu-img info`
- *
- * @throws Error when the image is unreadable or format is unsupported
- *
- * @example
- * ```ts
- * const info = await imageInfo('/path/to/disk.qcow2');
- * console.log(info.format, info['virtual-size']);
- * ```
+ Retrieves format and geometry information for a disk image.
+ 
+ @param imagePath - Absolute path to the disk image
+ 
+ @returns Parsed {@link QemuImgInfo} from `qemu-img info`
+ 
+ @throws Error when the image is unreadable or format is unsupported
+ 
+ @example
+ ```ts
+ const info = await imageInfo('/path/to/disk.qcow2');
+ console.log(info.format, info['virtual-size']);
+ ```
  */
 export async function imageInfo(imagePath: string,): Promise<QemuImgInfo> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: imageInfo.name,
@@ -51,7 +51,7 @@ export async function imageInfo(imagePath: string,): Promise<QemuImgInfo> {
   rl.info(`inspecting ${imagePath}`,);
 
   /**
-   * Raw JSON string from qemu-img.
+   Raw JSON string from qemu-img.
    */
   const raw = await spawn({
     command: 'qemu-img',
@@ -67,27 +67,27 @@ export async function imageInfo(imagePath: string,): Promise<QemuImgInfo> {
 }
 
 /**
- * Converts a disk image between formats.
- *
- * @param sourcePath - Path to the source image
- *
- * @param sourceFormat - Format of the source image (e.g. 'qcow2', 'raw', 'vhdx')
- *
- * @param targetPath - Path for the output image
- *
- * @param targetFormat - Desired output format
- *
- * @throws Error when conversion fails (e.g. unsupported format, disk full)
- *
- * @example
- * ```ts
- * await convert({
- *   sourcePath: '/tmp/disk.raw',
- *   sourceFormat: 'raw',
- *   targetPath: '/data/disk.qcow2',
- *   targetFormat: 'qcow2',
- * });
- * ```
+ Converts a disk image between formats.
+ 
+ @param sourcePath - Path to the source image
+ 
+ @param sourceFormat - Format of the source image (e.g. 'qcow2', 'raw', 'vhdx')
+ 
+ @param targetPath - Path for the output image
+ 
+ @param targetFormat - Desired output format
+ 
+ @throws Error when conversion fails (e.g. unsupported format, disk full)
+ 
+ @example
+ ```ts
+ await convert({
+   sourcePath: '/tmp/disk.raw',
+   sourceFormat: 'raw',
+   targetPath: '/data/disk.qcow2',
+   targetFormat: 'qcow2',
+ });
+ ```
  */
 export async function convert(
   {
@@ -103,7 +103,7 @@ export async function convert(
   },
 ): Promise<void> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: convert.name,
@@ -129,23 +129,23 @@ export async function convert(
 }
 
 /**
- * Creates a qcow2 overlay backed by an existing base image.
- * The overlay stores only blocks that differ from the base,
- * enabling cheap change detection after a boot session.
- *
- * @param overlayPath - Path for the new overlay file
- *
- * @param backingPath - Absolute path to the base qcow2 image
- *
- * @throws Error when overlay creation fails
- *
- * @example
- * ```ts
- * await createOverlay({
- *   overlayPath: '/data/alpine/overlay.qcow2',
- *   backingPath: '/data/alpine/base.qcow2',
- * });
- * ```
+ Creates a qcow2 overlay backed by an existing base image.
+ The overlay stores only blocks that differ from the base,
+ enabling cheap change detection after a boot session.
+ 
+ @param overlayPath - Path for the new overlay file
+ 
+ @param backingPath - Absolute path to the base qcow2 image
+ 
+ @throws Error when overlay creation fails
+ 
+ @example
+ ```ts
+ await createOverlay({
+   overlayPath: '/data/alpine/overlay.qcow2',
+   backingPath: '/data/alpine/base.qcow2',
+ });
+ ```
  */
 export async function createOverlay(
   {
@@ -157,7 +157,7 @@ export async function createOverlay(
   },
 ): Promise<void> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: createOverlay.name,
@@ -183,23 +183,23 @@ export async function createOverlay(
 }
 
 /**
- * Returns the block allocation map for an image, showing which regions
- * are allocated at each depth in the backing chain.
- * Regions with `depth === 0` are data written to the topmost overlay.
- *
- * @param imagePath - Path to a qcow2 overlay (must have a backing file for meaningful depth info)
- *
- * @returns array of {@link QemuMapRegion} descriptors
- *
- * @example
- * ```ts
- * const regions = await blockMap('/data/alpine/overlay.qcow2');
- * const changed = regions.filter(r => r.depth === 0 && r.data);
- * ```
+ Returns the block allocation map for an image, showing which regions
+ are allocated at each depth in the backing chain.
+ Regions with `depth === 0` are data written to the topmost overlay.
+ 
+ @param imagePath - Path to a qcow2 overlay (must have a backing file for meaningful depth info)
+ 
+ @returns array of {@link QemuMapRegion} descriptors
+ 
+ @example
+ ```ts
+ const regions = await blockMap('/data/alpine/overlay.qcow2');
+ const changed = regions.filter(r => r.depth === 0 && r.data);
+ ```
  */
 export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegion[]> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: blockMap.name,
@@ -208,7 +208,7 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
   rl.info(`reading block map for ${imagePath}`,);
 
   /**
-   * Raw JSON array string from qemu-img map.
+   Raw JSON array string from qemu-img map.
    */
   const raw = await spawn({
     command: 'qemu-img',
@@ -220,12 +220,12 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
   },);
 
   /**
-   * Parsed region array.
+   Parsed region array.
    */
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- trusted qemu-img JSON output
   const regions = JSON.parse(raw,) as readonly QemuMapRegion[];
   /**
-   * Count of overlay-level (depth 0) regions containing data.
+   Count of overlay-level (depth 0) regions containing data.
    */
   const changedCount = regions
     .filter(
@@ -246,22 +246,22 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
 }
 
 /**
- * Commits (merges) an overlay's changes into its backing file.
- * After commit, the overlay's changes are part of the base image
- * and the overlay file is no longer needed.
- *
- * @param overlayPath - Path to the qcow2 overlay to commit
- *
- * @throws Error when commit fails (e.g. backing file is read-only)
- *
- * @example
- * ```ts
- * await commitOverlay('/data/alpine/overlay.qcow2');
- * ```
+ Commits (merges) an overlay's changes into its backing file.
+ After commit, the overlay's changes are part of the base image
+ and the overlay file is no longer needed.
+ 
+ @param overlayPath - Path to the qcow2 overlay to commit
+ 
+ @throws Error when commit fails (e.g. backing file is read-only)
+ 
+ @example
+ ```ts
+ await commitOverlay('/data/alpine/overlay.qcow2');
+ ```
  */
 export async function commitOverlay(overlayPath: string,): Promise<void> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: commitOverlay.name,
@@ -281,31 +281,31 @@ export async function commitOverlay(overlayPath: string,): Promise<void> {
 }
 
 /**
- * Locates the exclusive end of the leading non-whitespace run in `text`.
- *
- * Scans once from offset 0, stopping at the first space, tab, newline, or
- * carriage return; returns `text.length` when no whitespace is present.
- * Single linear pass, stack-safe on arbitrarily long input.
- *
- * @param text - string to scan from offset 0
- *
- * @returns index of first whitespace character, or `text.length`
- *
- * @example
- * ```ts
- * firstWhitespaceIndex('abcdef  file'); // 6
- * firstWhitespaceIndex('nowhitespace'); // 12
- * ```
+ Locates the exclusive end of the leading non-whitespace run in `text`.
+ 
+ Scans once from offset 0, stopping at the first space, tab, newline, or
+ carriage return; returns `text.length` when no whitespace is present.
+ Single linear pass, stack-safe on arbitrarily long input.
+ 
+ @param text - string to scan from offset 0
+ 
+ @returns index of first whitespace character, or `text.length`
+ 
+ @example
+ ```ts
+ firstWhitespaceIndex('abcdef  file'); // 6
+ firstWhitespaceIndex('nowhitespace'); // 12
+ ```
  */
 export function firstWhitespaceIndex(text: string,): number {
   /**
-   * Scan cursor; advances past each leading non-whitespace character in one linear pass.
+   Scan cursor; advances past each leading non-whitespace character in one linear pass.
    */
   let cursor = 0;
   while (cursor < text
     .length) {
     /**
-     * Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return).
+     Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return).
      */
     const c = text.charAt(cursor,);
     if (' \t\n\r'.includes(c,))
@@ -316,22 +316,22 @@ export function firstWhitespaceIndex(text: string,): number {
 }
 
 /**
- * Computes the SHA-256 checksum of a disk image file.
- * Uses `sha256sum` on Linux and `certutil` on Windows.
- *
- * @param imagePath - Absolute path to the image file
- *
- * @returns Hex-encoded SHA-256 hash prefixed with `sha256:`
- *
- * @example
- * ```ts
- * const hash = await checksum('/data/alpine/base.qcow2');
- * // "sha256:abcdef1234..."
- * ```
+ Computes the SHA-256 checksum of a disk image file.
+ Uses `sha256sum` on Linux and `certutil` on Windows.
+ 
+ @param imagePath - Absolute path to the image file
+ 
+ @returns Hex-encoded SHA-256 hash prefixed with `sha256:`
+ 
+ @example
+ ```ts
+ const hash = await checksum('/data/alpine/base.qcow2');
+ // "sha256:abcdef1234..."
+ ```
  */
 export async function checksum(imagePath: string,): Promise<string> {
   /**
-   * Function-tagged logger so traces show which qemu-img call produced each line.
+   Function-tagged logger so traces show which qemu-img call produced each line.
    */
   const rl = tagged({
     tag: checksum.name,
@@ -342,7 +342,7 @@ export async function checksum(imagePath: string,): Promise<string> {
   if (process.platform
     === 'win32') {
     /**
-     * certutil output includes the hash on its own line.
+     certutil output includes the hash on its own line.
      */
     const raw = await spawn({
       command: 'certutil',
@@ -353,7 +353,7 @@ export async function checksum(imagePath: string,): Promise<string> {
       ],
     },);
     /**
-     * Second line of certutil output is the hex hash.
+     Second line of certutil output is the hex hash.
      */
     const hash = nonNullishOrThrow(
       raw.split('\n',)[1],
@@ -363,14 +363,14 @@ export async function checksum(imagePath: string,): Promise<string> {
   }
 
   /**
-   * sha256sum output: "<hash>  <filename>".
+   sha256sum output: "<hash>  <filename>".
    */
   const raw = await spawn({
     command: 'sha256sum',
     args: [imagePath,],
   },);
   /**
-   * Hash portion before the filename separator.
+   Hash portion before the filename separator.
    */
   const hash = raw.slice(
     0,

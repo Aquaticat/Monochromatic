@@ -1,7 +1,7 @@
 /**
- * Auto-mode registry adapters for shared budget-model selection.
- *
- * @module
+ Auto-mode registry adapters for shared budget-model selection.
+ 
+ @module
  */
 
 import type {
@@ -21,17 +21,17 @@ import type {
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for auto-mode after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for budget-model auth adapters.
+ Tagged logger for budget-model auth adapters.
  */
 const l = tagged({
   tag: 'budget-model-auth',
@@ -41,24 +41,24 @@ const l = tagged({
 //region Registry auth adapters
 
 /**
- * Resolve auth for a model via auto-mode's pi model registry.
- *
- * Uses `getApiKeyAndHeaders` instead of upstream's broken `getApiKey`.
- *
- * @param ctx - pi extension context exposing model registry
- *
- * @param model - model to authenticate
- *
- * @returns auth details, or {@link NO_AUTH} when resolution failed
- *
- * @mutates ctx - `ctx.modelRegistry.getApiKeyAndHeaders` can run command-backed auth
- *
- * @mutates model - registry auth reads can invoke caller-owned model accessors or proxy traps
- *
- * @example
- * ```typescript
- * const auth = await resolveBudgetAuth({ ctx, model });
- * ```
+ Resolve auth for a model via auto-mode's pi model registry.
+ 
+ Uses `getApiKeyAndHeaders` instead of upstream's broken `getApiKey`.
+ 
+ @param ctx - pi extension context exposing model registry
+ 
+ @param model - model to authenticate
+ 
+ @returns auth details, or {@link NO_AUTH} when resolution failed
+ 
+ @mutates ctx - `ctx.modelRegistry.getApiKeyAndHeaders` can run command-backed auth
+ 
+ @mutates model - registry auth reads can invoke caller-owned model accessors or proxy traps
+ 
+ @example
+ ```typescript
+ const auth = await resolveBudgetAuth({ ctx, model });
+ ```
  */
 async function resolveBudgetAuth(
   {
@@ -71,14 +71,14 @@ async function resolveBudgetAuth(
 ): Promise<BudgetModelAuth | typeof NO_AUTH> {
   try {
     /**
-     * Registry response carrying `ok` plus optional `apiKey` and `headers`.
+     Registry response carrying `ok` plus optional `apiKey` and `headers`.
      */
     const result = await ctx.modelRegistry
       .getApiKeyAndHeaders(model,);
     if (!result.ok)
       return NO_AUTH;
     /**
-     * Output auth object assembled field-by-field so omitted keys stay absent.
+     Output auth object assembled field-by-field so omitted keys stay absent.
      */
     const auth: BudgetModelAuth = {};
     if (result.apiKey
@@ -96,7 +96,7 @@ async function resolveBudgetAuth(
   }
   catch (error) {
     /**
-     * Per-call sub-logger so lines from this entry point carry function name.
+     Per-call sub-logger so lines from this entry point carry function name.
      */
     const innerL = tagged({
       tag: resolveBudgetAuth.name,

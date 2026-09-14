@@ -37,13 +37,13 @@ pub(crate) fn install_strip_keys(inner: &Rc<StripInner>) {
             return glib::Propagation::Proceed;
         };
         match key {
-            Key::Left => focus_relative_column(&inner, -1),
-            Key::Right => focus_relative_column(&inner, 1),
+            Key::Left => return focus_relative_column(&inner, -1),
+            Key::Right => return focus_relative_column(&inner, 1),
             Key::BackSpace => {
                 close_active(&inner);
-                glib::Propagation::Stop
+                return glib::Propagation::Stop
             }
-            _ => glib::Propagation::Proceed,
+            _ => return glib::Propagation::Proceed,
         }
     });
     inner.layout.add_column_key_controller(keys);
@@ -67,5 +67,5 @@ fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagatio
     }
     inner.layout.set_focused_column(target);
     focus_pane(inner, id);
-    glib::Propagation::Stop
+    return glib::Propagation::Stop
 }

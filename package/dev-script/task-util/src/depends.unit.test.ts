@@ -14,20 +14,20 @@ import {
 import { join, } from 'node:path';
 
 /**
- * Runs a shell command and resolves with its captured output.
- *
- * Wraps `nano-spawn` with `shell: true` to mirror the previous `promisify(exec)`
- * contract: resolves `{ stdout, stderr }` on success and rejects with a
- * `SubprocessError` (carrying `stdout`, `stderr`) on non-zero exit.
- *
- * @param command - Full shell command line to execute
- *
- * @returns Captured `stdout` and `stderr`
- *
- * @example
- * ```ts
- * const { stdout } = await execAsync('echo hi'); // stdout === 'hi'
- * ```
+ Runs a shell command and resolves with its captured output.
+ 
+ Wraps `nano-spawn` with `shell: true` to mirror the previous `promisify(exec)`
+ contract: resolves `{ stdout, stderr }` on success and rejects with a
+ `SubprocessError` (carrying `stdout`, `stderr`) on non-zero exit.
+ 
+ @param command - Full shell command line to execute
+ 
+ @returns Captured `stdout` and `stderr`
+ 
+ @example
+ ```ts
+ const { stdout } = await execAsync('echo hi'); // stdout === 'hi'
+ ```
  */
 function execAsync(command: string,): Promise<{ readonly stdout: string; readonly stderr: string; }> {
   return spawn(command, { shell: true, },);
@@ -64,15 +64,15 @@ function teardown({ testDir, }: { testDir: string; },) {
 //region Helpers
 
 /**
- * Options for {@link touch}.
- *
- * @example
- * ```ts
- * const options: TouchOptions = {
- *   path: join(srcDir, 'a.ts'),
- *   ageMs: 5000,
- * };
- * ```
+ Options for {@link touch}.
+ 
+ @example
+ ```ts
+ const options: TouchOptions = {
+   path: join(srcDir, 'a.ts'),
+   ageMs: 5000,
+ };
+ ```
  */
 type TouchOptions = {
   /** Absolute file path */
@@ -82,16 +82,16 @@ type TouchOptions = {
 };
 
 /**
- * Creates a file and optionally sets its mtime to the past.
- *
- * @param path - Absolute file path
- *
- * @param ageMs - How many milliseconds in the past to set mtime (0 = now)
- *
- * @example
- * ```ts
- * touch({ path: join(srcDir, 'a.ts'), ageMs: 5000 }); // 5 seconds old
- * ```
+ Creates a file and optionally sets its mtime to the past.
+ 
+ @param path - Absolute file path
+ 
+ @param ageMs - How many milliseconds in the past to set mtime (0 = now)
+ 
+ @example
+ ```ts
+ touch({ path: join(srcDir, 'a.ts'), ageMs: 5000 }); // 5 seconds old
+ ```
  */
 function touch({
   path,
@@ -105,18 +105,18 @@ function touch({
 }
 
 /**
- * Builds the command string that writes a marker file to prove execution.
- *
- * Output is collapsed, so we verify execution via side effects (file creation)
- * rather than stdout content.
- *
- * @param markerPath - Absolute path to the marker file
- * @returns Shell command string that creates the marker file
- *
- * @example
- * ```ts
- * const cmd = writeMarkerCmd(markerPath);
- * ```
+ Builds the command string that writes a marker file to prove execution.
+ 
+ Output is collapsed, so we verify execution via side effects (file creation)
+ rather than stdout content.
+ 
+ @param markerPath - Absolute path to the marker file
+ @returns Shell command string that creates the marker file
+ 
+ @example
+ ```ts
+ const cmd = writeMarkerCmd(markerPath);
+ ```
  */
 function writeMarkerCmd(markerPath: string,): string {
   return `node -e "require('fs').writeFileSync('${markerPath}', 'ran')"`;

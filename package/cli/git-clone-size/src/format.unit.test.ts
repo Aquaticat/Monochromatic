@@ -1,7 +1,7 @@
 /**
- * Tests for size/ratio/savings formatting and clamping.
- *
- * @module
+ Tests for size/ratio/savings formatting and clamping.
+ 
+ @module
  */
 
 import {

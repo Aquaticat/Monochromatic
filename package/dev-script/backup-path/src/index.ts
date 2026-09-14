@@ -14,13 +14,13 @@ import {
 } from 'node:path';
 
 /**
- * TODO: deprecate Optique
- * Parsed positional path argument from process.argv.
- *
- * @example
- * ```sh
- * backup-path ./some/file-or-dir
- * ```
+ TODO: deprecate Optique
+ Parsed positional path argument from process.argv.
+ 
+ @example
+ ```sh
+ backup-path ./some/file-or-dir
+ ```
  */
 const path = runSync(
   argument(string(),),
@@ -32,7 +32,7 @@ const path = runSync(
 
 console.log(`Backing up ${path}`,);
 /**
- * Current ISO timestamp with colons removed, used as the backup subdirectory name
+ Current ISO timestamp with colons removed, used as the backup subdirectory name
  */
 const now = new Date().toISOString()
   .replaceAll(

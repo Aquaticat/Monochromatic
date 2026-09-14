@@ -186,7 +186,7 @@ pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes {
     // ```ts
     // return attributes.withName(APP_ID, APP_ID);
     // ```
-    attributes.with_name(APP_ID, APP_ID)
+    return attributes.with_name(APP_ID, APP_ID)
 }
 
 /// What:     `pub fn set_window_app_id(attributes: WindowAttributes) -> WindowAttributes`
@@ -293,7 +293,7 @@ impl Launcher {
         // ```ts
         // return { connection, appUri: `application://${APP_ID}.desktop` };
         // ```
-        Launcher {
+        return Launcher {
             connection,
             app_uri: format!("application://{APP_ID}.desktop"),
         }
@@ -446,6 +446,6 @@ impl Default for Launcher {
     /// static default() { return Launcher.connect(); }
     /// ```
     fn default() -> Self {
-        Self::new()
+        return Self::new()
     }
 }

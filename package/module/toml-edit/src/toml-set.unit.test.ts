@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlSet` and its splice-mode behaviour.
- *
- * @module
+ Tests for `tomlSet` and its splice-mode behaviour.
+ 
+ @module
  */
 
 import {

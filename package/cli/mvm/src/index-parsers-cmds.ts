@@ -1,10 +1,10 @@
 /**
- * Subcommand parser definitions for the mvm CLI.
- *
- * Defines individual subcommand parsers that are combined into
- * the top-level parser in `index-parsers.ts`.
- *
- * @module
+ Subcommand parser definitions for the mvm CLI.
+ 
+ Defines individual subcommand parsers that are combined into
+ the top-level parser in `index-parsers.ts`.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -35,10 +35,10 @@ import { string, } from '@optique/core/valueparser';
 import type { MvmArgs, } from './index-parsers.ts';
 
 /**
- * TODO: deprecate Optique
- * Subcommand parser producing {@link MvmArgs}.
- * Uses `any` for TState because Parser is invariant in TState
- * and the deeply-nested state types are opaque implementation details.
+ TODO: deprecate Optique
+ Subcommand parser producing {@link MvmArgs}.
+ Uses `any` for TState because Parser is invariant in TState
+ and the deeply-nested state types are opaque implementation details.
  */
 // oxlint-disable-next-line typescript/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown
 type SubcommandParser = Parser<'sync', MvmArgs, any>;
@@ -46,14 +46,14 @@ type SubcommandParser = Parser<'sync', MvmArgs, any>;
 //region Shared value parsers: reusable metavar-labeled string parsers
 
 /**
- * TODO: deprecate Optique
- * Value parser for VM name arguments, displayed as NAME in help
+ TODO: deprecate Optique
+ Value parser for VM name arguments, displayed as NAME in help
  */
 const name = string({ metavar: 'NAME', },);
 
 /**
- * TODO: deprecate Optique
- * Shared option parser for `--from SOURCE` cloning flag
+ TODO: deprecate Optique
+ Shared option parser for `--from SOURCE` cloning flag
  */
 const fromOption = optional(
   option(
@@ -66,8 +66,8 @@ const fromOption = optional(
 );
 
 /**
- * TODO: deprecate Optique
- * Option parser for `--image IMAGE` to select a distro
+ TODO: deprecate Optique
+ Option parser for `--image IMAGE` to select a distro
  */
 const imageOption = optional(
   option(
@@ -81,8 +81,8 @@ const imageOption = optional(
 );
 
 /**
- * TODO: deprecate Optique
- * Option parser for `--server-type TYPE`, used by cloud backends (Hetzner).
+ TODO: deprecate Optique
+ Option parser for `--server-type TYPE`, used by cloud backends (Hetzner).
  */
 const serverTypeOption = optional(
   option(
@@ -96,9 +96,9 @@ const serverTypeOption = optional(
 );
 
 /**
- * TODO: deprecate Optique
- * Option parser for `--location LOCATION`, used by cloud backends (Hetzner).
- * Accepts a single location or a comma-separated fallback series.
+ TODO: deprecate Optique
+ Option parser for `--location LOCATION`, used by cloud backends (Hetzner).
+ Accepts a single location or a comma-separated fallback series.
  */
 const locationOption = optional(
   option(
@@ -112,8 +112,8 @@ const locationOption = optional(
 );
 
 /**
- * TODO: deprecate Optique
- * Value parser for individual command tokens after `--`, displayed as COMMAND in help
+ TODO: deprecate Optique
+ Value parser for individual command tokens after `--`, displayed as COMMAND in help
  */
 const commandToken = string({ metavar: 'COMMAND', },);
 
@@ -122,8 +122,8 @@ const commandToken = string({ metavar: 'COMMAND', },);
 //region Subcommand parsers
 
 /**
- * TODO: deprecate Optique
- * Parser for `create <name> [--from SOURCE] [--image IMAGE]`
+ TODO: deprecate Optique
+ Parser for `create <name> [--from SOURCE] [--image IMAGE]`
  */
 export const createCmd: SubcommandParser = command(
   'create',
@@ -150,8 +150,8 @@ export const createCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `shell <name>`
+ TODO: deprecate Optique
+ Parser for `shell <name>`
  */
 export const shellCmd: SubcommandParser = command(
   'shell',
@@ -168,8 +168,8 @@ export const shellCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `list` (alias `ls`)
+ TODO: deprecate Optique
+ Parser for `list` (alias `ls`)
  */
 export const listCmd: SubcommandParser = command(
   'list',
@@ -183,8 +183,8 @@ export const listCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `ls` (hidden alias of `list`)
+ TODO: deprecate Optique
+ Parser for `ls` (hidden alias of `list`)
  */
 export const lsCmd: SubcommandParser = command(
   'ls',
@@ -198,8 +198,8 @@ export const lsCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `destroy --all` -- destroys every managed VM
+ TODO: deprecate Optique
+ Parser for `destroy --all` -- destroys every managed VM
  */
 const destroyAllParser = map(
   object({ all: flag(
@@ -215,8 +215,8 @@ const destroyAllParser = map(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `destroy <name>` -- destroys a single VM by name
+ TODO: deprecate Optique
+ Parser for `destroy <name>` -- destroys a single VM by name
  */
 const destroyNameParser = map(
   object({ name: argument(name,), },),
@@ -230,8 +230,8 @@ const destroyNameParser = map(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `destroy`
+ TODO: deprecate Optique
+ Parser for `destroy`
  */
 export const destroyCmd: SubcommandParser = command(
   'destroy',
@@ -243,8 +243,8 @@ export const destroyCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `rm` (hidden alias of `destroy`)
+ TODO: deprecate Optique
+ Parser for `rm` (hidden alias of `destroy`)
  */
 export const rmCmd: SubcommandParser = command(
   'rm',
@@ -256,8 +256,8 @@ export const rmCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `exec <name> -- <command...>` -- run a command in an existing VM
+ TODO: deprecate Optique
+ Parser for `exec <name> -- <command...>` -- run a command in an existing VM
  */
 export const execCmd: SubcommandParser = command(
   'exec',
@@ -282,8 +282,8 @@ export const execCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM
+ TODO: deprecate Optique
+ Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM
  */
 export const runCmd: SubcommandParser = command(
   'run',
@@ -305,8 +305,8 @@ export const runCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `update` -- re-downloads and rebuilds all template images
+ TODO: deprecate Optique
+ Parser for `update` -- re-downloads and rebuilds all template images
  */
 export const updateCmd: SubcommandParser = command(
   'update',
@@ -320,14 +320,14 @@ export const updateCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Value parser for file path arguments, displayed as PATH in help.
+ TODO: deprecate Optique
+ Value parser for file path arguments, displayed as PATH in help.
  */
 const path = string({ metavar: 'PATH', },);
 
 /**
- * TODO: deprecate Optique
- * Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM.
+ TODO: deprecate Optique
+ Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM.
  */
 export const pushCmd: SubcommandParser = command(
   'push',
@@ -356,8 +356,8 @@ export const pushCmd: SubcommandParser = command(
 );
 
 /**
- * TODO: deprecate Optique
- * Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host.
+ TODO: deprecate Optique
+ Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host.
  */
 export const pullCmd: SubcommandParser = command(
   'pull',

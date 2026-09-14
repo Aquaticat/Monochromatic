@@ -47,8 +47,8 @@ const DATA = resolve(
 );
 
 /**
- * Fixture-specific oxlint config with all no-restricted-syntax rules enabled
- * and no ignorePatterns that would skip test-fixture or invalid paths.
+ Fixture-specific oxlint config with all no-restricted-syntax rules enabled
+ and no ignorePatterns that would skip test-fixture or invalid paths.
  */
 const FIXTURE_CONFIG = fixtureConfigPath({
   fixturePackageName: 'oxlint-no-restricted-syntax',
@@ -56,13 +56,13 @@ const FIXTURE_CONFIG = fixtureConfigPath({
 },);
 
 /**
- * Runs oxlint with the fixture config against a fixture path and returns
- * parsed diagnostics filtered to the no-restricted-syntax plugin.
- *
- * @example
- * ```ts
- * const diags = await lint('invalid/no-switch.ts');
- * ```
+ Runs oxlint with the fixture config against a fixture path and returns
+ parsed diagnostics filtered to the no-restricted-syntax plugin.
+ 
+ @example
+ ```ts
+ const diags = await lint('invalid/no-switch.ts');
+ ```
  */
 async function runOxlint(target: string,): Promise<readonly OxlintDiagnostic[]> {
   return runOxlintFixture({
@@ -74,12 +74,12 @@ async function runOxlint(target: string,): Promise<readonly OxlintDiagnostic[]> 
 }
 
 /**
- * Runs oxlint against a fixture file under the fixture `src/` root.
- *
- * @example
- * ```ts
- * const diags = await lint('invalid/no-switch.ts');
- * ```
+ Runs oxlint against a fixture file under the fixture `src/` root.
+ 
+ @example
+ ```ts
+ const diags = await lint('invalid/no-switch.ts');
+ ```
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
   return runOxlint(resolveFixtureTarget({
@@ -106,13 +106,13 @@ type GeneratedSource = {
 };
 
 /**
- * Reads non-empty rows from a calibration `.txt` data file, preserving exact
- * description text.
- *
- * @example
- * ```ts
- * readDataRows({ fileName: 'no-low-information-symbol-description.pass.txt' });
- * ```
+ Reads non-empty rows from a calibration `.txt` data file, preserving exact
+ description text.
+ 
+ @example
+ ```ts
+ readDataRows({ fileName: 'no-low-information-symbol-description.pass.txt' });
+ ```
  */
 function readDataRows({ fileName, }: { readonly fileName: string; },): readonly string[] {
   return readFileSync(
@@ -129,13 +129,13 @@ function readDataRows({ fileName, }: { readonly fileName: string; },): readonly 
 }
 
 /**
- * Builds TypeScript source with one `Symbol(<json string>)` statement per row,
- * so each row maps to exactly one Symbol call the rule can classify.
- *
- * @example
- * ```ts
- * symbolCallsSource({ rows: ['meow'] }); // 'Symbol("meow");\n'
- * ```
+ Builds TypeScript source with one `Symbol(<json string>)` statement per row,
+ so each row maps to exactly one Symbol call the rule can classify.
+ 
+ @example
+ ```ts
+ symbolCallsSource({ rows: ['meow'] }); // 'Symbol("meow");\n'
+ ```
  */
 function symbolCallsSource({ rows, }: { readonly rows: readonly string[]; },): string {
   return `${rows
@@ -146,13 +146,13 @@ function symbolCallsSource({ rows, }: { readonly rows: readonly string[]; },): s
 }
 
 /**
- * Writes generated source into a unique temp directory with disposal-backed
- * cleanup, so the file is linted in isolation from the fixture tree.
- *
- * @example
- * ```ts
- * using fixture = createGeneratedSource({ fileName: 'pass.ts', source });
- * ```
+ Writes generated source into a unique temp directory with disposal-backed
+ cleanup, so the file is linted in isolation from the fixture tree.
+ 
+ @example
+ ```ts
+ using fixture = createGeneratedSource({ fileName: 'pass.ts', source });
+ ```
  */
 function createGeneratedSource(
   { fileName, source, }: { readonly fileName: string; readonly source: string; },
@@ -181,18 +181,18 @@ function createGeneratedSource(
 }
 
 /**
- * Runs oxlint --fix against disposable generated source and returns fixed text.
- *
- * @param source - Source text to write to a temp fixture.
- *
- * @param fixSuggestions - Whether to also apply suggestion-level fixes.
- *
- * @returns Source text after oxlint fixers run.
- *
- * @example
- * ```ts
- * const fixed = await fixGeneratedSource({ source: 'value instanceof Error;' });
- * ```
+ Runs oxlint --fix against disposable generated source and returns fixed text.
+ 
+ @param source - Source text to write to a temp fixture.
+ 
+ @param fixSuggestions - Whether to also apply suggestion-level fixes.
+ 
+ @returns Source text after oxlint fixers run.
+ 
+ @example
+ ```ts
+ const fixed = await fixGeneratedSource({ source: 'value instanceof Error;' });
+ ```
  */
 async function fixGeneratedSource(
   {
@@ -208,7 +208,7 @@ async function fixGeneratedSource(
     source,
   },);
   /**
-   * Fix flags passed to oxlint.
+   Fix flags passed to oxlint.
    */
   const fixFlags = fixSuggestions ? [
     '--fix',
@@ -239,8 +239,8 @@ async function fixGeneratedSource(
 }
 
 /**
- * Names of the substantive syntax rules; each has a fixture in `invalid/`
- * that triggers the rule.
+ Names of the substantive syntax rules; each has a fixture in `invalid/`
+ that triggers the rule.
  */
 const SUBSTANTIVE_RULES = [
   'no-arrow-function',
@@ -273,8 +273,8 @@ const SUBSTANTIVE_RULES = [
 ] as const;
 
 /**
- * Names of the ban-disable rules; each has a fixture in `invalid/`
- * containing an `oxlint-disable` comment for the targeted rule.
+ Names of the ban-disable rules; each has a fixture in `invalid/`
+ containing an `oxlint-disable` comment for the targeted rule.
  */
 const BAN_DISABLE_RULES = [
   'no-disable-max-lines',
@@ -817,7 +817,7 @@ await describe({
             },);
             expect(missing,).toEqual([],);
             /**
-             * Messages emitted by a failure branch without the reader-context hint.
+             Messages emitted by a failure branch without the reader-context hint.
              */
             const missingHint = messages.filter(function lacksHint(message,): boolean {
               return !message.includes(LOW_INFO_IMMEDIATE_UNDERSTANDABILITY_HINT,);

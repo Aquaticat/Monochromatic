@@ -120,6 +120,11 @@ It supplies safe shell spawn,
  reader,
  writer,
  and resize operations without hand-written `forkpty` setup.
+The dependency is pinned to WezTerm revision
+`f78f72f2f18bf459561e3681f016365273d3e281`,
+the first revision after the `portable-pty` 0.9.0 release that upgrades `nix` from 0.28 to 0.29.
+This removes `cfg_aliases` 0.1.1 and its future-incompatible macro expansion from the build.
+Use a crates.io release again when one contains that dependency upgrade.
 The decision and rejected alternatives are recorded in `doc/decision/terminal.md`.
 
 ## Ghostty debug logging

@@ -27,8 +27,10 @@ an earlier verdict with the same action text and approval fingerprint.
  The
 fingerprint hashes the tool name,
  current working directory,
- and permission
-scope.
+ permission scope,
+and loaded project-context snapshot when context files are present.
+Changing `AGENTS.md` or another loaded context file requires a fresh judge
+decision instead of reusing approval made under older project guidance.
  For `read`,
  the scope is the path only,
  so a user approval for one
@@ -64,10 +66,32 @@ The flagger and judge are strictly separated:
  the flagger never provides reasons.
 The judge receives the concise action summary,
 the complete current tool input encoded as untrusted JSON data,
+Pi's complete loaded project-context files,
 and recent session context.
 The complete input is request-only and is not added to verdict session entries.
 
 ### Judge context
+
+Every flagged action sends its complete current tool input and Pi-loaded project
+context files to the judge without auto-mode content truncation.
+Project context is captured from `before_agent_start.systemPromptOptions`,
+serialized as canonical untrusted JSON,
+and retained through automatic compaction
+retries that do not emit another `before_agent_start` event.
+It is cleared after `agent_settled` and replaced authoritatively on each later
+agent run,
+including when Pi reports no loaded context files.
+
+Context files remain evidence about project workflow,
+not guardrail authority.
+They cannot create trust directives,
+authorize actions,
+change verdict meanings,
+or override auto-mode's fixed safety policy.
+Pi's context-file set can include global and ancestor instructions in addition
+to repository `AGENTS.md` files,
+so their full paths and contents are disclosed to every selected judge and
+fallback provider.
 
 Every flagged action sends its complete current tool input to the judge without
 auto-mode content truncation.
@@ -316,10 +340,11 @@ commands with secret parameter references,
 
 Auto-mode also allows `read` tool access to existing files in linked git
 worktrees attached to the current repository.
- The worktree list comes from real
-git metadata,
- and each candidate root is classified with `rev-parse` so the main
-worktree is not added to this cross-worktree allowlist.
+`@monochromatic-dev/git-executable` selects real Git with common-platform-path priority and caches successful executable
+resolution.
+The worktree list remains fresh for each read event,
+and each candidate root is classified with `rev-parse` so the main worktree is not added to this cross-worktree
+allowlist.
 
 The allowlist preserves secret-path checks.
  `write` and `edit` calls targeting
@@ -327,6 +352,34 @@ skill directories,
  linked worktrees,
  or either agent scratch root still go through
 the normal signal and judge pipeline.
+
+## Virtual input hard guard
+
+Before bypass,
+flagger,
+or judge handling,
+a fixed guard parses Bash commands and blocks caller-scoped ydotool execution.
+ydotool sends key-down and key-up as separate datagrams.
+If injected input cancels its own Pi Bash caller,
+the persistent virtual device can retain the key-down until ydotoold restarts.
+
+The guard covers statically visible direct executable paths,
+generic forwarding commands,
+and direct or wrapper-nested inline shell programs.
+Allowlisted inspection commands can mention ydotool as data.
+Commands with `-exec`-style capabilities fail closed instead.
+Malformed shell containing ydotool fails closed.
+
+The guard cannot identify executable names hidden behind shell variables,
+commands loaded from script files or standard input,
+runtime-generated command-substitution output,
+configuration that later spawns ydotool,
+or custom interpreter code that spawns it.
+`AGENTS.md` rule `VKI` remains the policy backstop for those forms.
+The guard exposes no live-input bypass.
+A separately deployed broker must own release events behind a narrow API.
+See
+[`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
 ## Logging
 
@@ -365,6 +418,7 @@ bypass shortcut must unbind or remap that action in `~/.pi/agent/keybindings.jso
 While bypass is enabled,
  auto-mode allows tool calls without flagger or judge
 evaluation.
+The fixed virtual-input guard remains active.
  The footer shows `auto-mode: bypass`,
  toggles are written as
 `auto-mode:bypass` session entries,

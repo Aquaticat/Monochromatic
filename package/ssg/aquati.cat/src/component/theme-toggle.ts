@@ -1,15 +1,15 @@
 /**
- * Theme toggle component.
- *
- * A checkbox styled as a button that inverts the site color scheme.
- * The real checkbox is visually hidden but remains focusable.
- * The adjacent label acts as the visible toggle, displaying
- * a Material Symbols `invert_colors` icon.
- *
- * **Cross-component dependency**: the checkbox uses `id="theme-toggle"`,
- * which `tokens.ts` references via `:root:has(#theme-toggle:checked)`
- * to flip light/dark tokens. Changing this ID requires updating
- * `tokens.ts` as well.
+ Theme toggle component.
+ 
+ A checkbox styled as a button that inverts the site color scheme.
+ The real checkbox is visually hidden but remains focusable.
+ The adjacent label acts as the visible toggle, displaying
+ a Material Symbols `invert_colors` icon.
+ 
+ **Cross-component dependency**: the checkbox uses `id="theme-toggle"`,
+ which `tokens.ts` references via `:root:has(#theme-toggle:checked)`
+ to flip light/dark tokens. Changing this ID requires updating
+ `tokens.ts` as well.
  */
 import {
   cssCalc,
@@ -26,26 +26,26 @@ import { icon, } from '../lib/icon/icon.ts';
 import { BORDER_WIDTH_REM, } from '../style/constants.ts';
 
 /**
- * Material Symbols PUA codepoint for the theme toggle icon.
- *
- * Uses `invert_colors`: a single icon that represents both light
- * and dark modes, replacing the previous sun/moon SVG pair. The
- * literal icon name is kept in the `icon('...')` call so the
- * subset-fonts source scan can pick it up.
+ Material Symbols PUA codepoint for the theme toggle icon.
+ 
+ Uses `invert_colors`: a single icon that represents both light
+ and dark modes, replacing the previous sun/moon SVG pair. The
+ literal icon name is kept in the `icon('...')` call so the
+ subset-fonts source scan can pick it up.
  */
 const THEME_ICON = icon('invert_colors',);
 
 //region CSS
 
 /**
- * Theme toggle checkbox-as-button styles.
- *
- * @returns CSS string for the `<theme-toggle>` element
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Theme toggle checkbox-as-button styles.
+ 
+ @returns CSS string for the `<theme-toggle>` element
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -89,16 +89,16 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders the theme toggle as a `<theme-toggle>` custom element.
- *
- * @param lang - locale code resolving the aria-label
- *
- * @returns HTML string for the theme toggle
- *
- * @example
- * ```ts
- * const markup = html('en');
- * ```
+ Renders the theme toggle as a `<theme-toggle>` custom element.
+ 
+ @param lang - locale code resolving the aria-label
+ 
+ @returns HTML string for the theme toggle
+ 
+ @example
+ ```ts
+ const markup = html('en');
+ ```
  */
 export function html(lang: Locale,): string {
   return h({

@@ -1,7 +1,7 @@
 /**
- * Local source-level policy authoring entry for trusted configuration bundling.
- *
- * @module
+ Local source-level policy authoring entry for trusted configuration bundling.
+ 
+ @module
  */
 
 export {

@@ -1,7 +1,7 @@
 /**
- * Immutable goal controller transitions and semantic effects.
- *
- * @module
+ Immutable goal controller transitions and semantic effects.
+ 
+ @module
  */
 
 import { formatGoalFooter, } from './footer.ts';
@@ -24,16 +24,16 @@ import type {
 } from './types.ts';
 
 /**
- * Create fresh controller for one extension runtime epoch.
- *
- * @param runtimeEpoch - runtime-instance identity
- *
- * @returns absent live controller
- *
- * @example
- * ```ts
- * const controller = createGoalController('runtime-1');
- * ```
+ Create fresh controller for one extension runtime epoch.
+ 
+ @param runtimeEpoch - runtime-instance identity
+ 
+ @returns absent live controller
+ 
+ @example
+ ```ts
+ const controller = createGoalController('runtime-1');
+ ```
  */
 function createGoalController(runtimeEpoch: GoalRuntimeEpoch,): GoalControllerState {
   return {
@@ -45,18 +45,18 @@ function createGoalController(runtimeEpoch: GoalRuntimeEpoch,): GoalControllerSt
 }
 
 /**
- * Restore exact selected-branch state without triggering a model turn.
- *
- * @param controller - current runtime controller
- *
- * @param goal - reduced selected-branch state
- *
- * @returns restored controller and footer effects
- *
- * @example
- * ```ts
- * restoreGoalController({ controller, goal });
- * ```
+ Restore exact selected-branch state without triggering a model turn.
+ 
+ @param controller - current runtime controller
+ 
+ @param goal - reduced selected-branch state
+ 
+ @returns restored controller and footer effects
+ 
+ @example
+ ```ts
+ restoreGoalController({ controller, goal });
+ ```
  */
 function restoreGoalController(
   {
@@ -84,32 +84,32 @@ function restoreGoalController(
 }
 
 /**
- * Start new run or atomically supersede active or terminal record.
- *
- * @param controller - current controller
- *
- * @param objective - exact normalized objective
- *
- * @param runId - fresh run identity
- *
- * @param generationId - fresh generation identity
- *
- * @param startBoundary - stable reviewer start marker
- *
- * @param marker - unique kickoff message marker
- *
- * @param timestamp - ISO transition timestamp
- *
- * @param isIdle - whether Pi can start turn now
- *
- * @param hasPendingMessages - whether human input already owns next turn
- *
- * @returns next controller with persist, footer, and kickoff effects
- *
- * @example
- * ```ts
- * startGoal({ controller, objective, runId, generationId, startBoundary, marker, timestamp, isIdle: true, hasPendingMessages: false });
- * ```
+ Start new run or atomically supersede active or terminal record.
+ 
+ @param controller - current controller
+ 
+ @param objective - exact normalized objective
+ 
+ @param runId - fresh run identity
+ 
+ @param generationId - fresh generation identity
+ 
+ @param startBoundary - stable reviewer start marker
+ 
+ @param marker - unique kickoff message marker
+ 
+ @param timestamp - ISO transition timestamp
+ 
+ @param isIdle - whether Pi can start turn now
+ 
+ @param hasPendingMessages - whether human input already owns next turn
+ 
+ @returns next controller with persist, footer, and kickoff effects
+ 
+ @example
+ ```ts
+ startGoal({ controller, objective, runId, generationId, startBoundary, marker, timestamp, isIdle: true, hasPendingMessages: false });
+ ```
  */
 function startGoal(
   {
@@ -135,7 +135,7 @@ function startGoal(
   },
 ): GoalControllerTransition {
   /**
-   * Existing run superseded atomically by start event.
+   Existing run superseded atomically by start event.
    */
   const supersededRunId = controller.goal
     .phase
@@ -144,7 +144,7 @@ function startGoal(
     : controller.goal
       .runId;
   /**
-   * Persisted atomic start event.
+   Persisted atomic start event.
    */
   const event = {
     kind: 'run_started',
@@ -158,7 +158,7 @@ function startGoal(
     ...(supersededRunId === undefined ? {} : { supersededRunId, }),
   } as const;
   /**
-   * Active state derived through same reducer used during reconstruction.
+   Active state derived through same reducer used during reconstruction.
    */
   const goal = reduceGoalEvent({
     state: controller.goal,
@@ -167,7 +167,7 @@ function startGoal(
   if (goal.phase !== 'active')
     throw new Error('Goal start event did not reduce to active state',);
   /**
-   * Visible kickoff custom message.
+   Visible kickoff custom message.
    */
   const message = buildGoalMessage({
     goal,
@@ -176,7 +176,7 @@ function startGoal(
     marker,
   },);
   /**
-   * Whether kickoff may enter Pi immediately.
+   Whether kickoff may enter Pi immediately.
    */
   const sendImmediately = isIdle && (!hasPendingMessages);
   return {
@@ -229,22 +229,22 @@ function startGoal(
 }
 
 /**
- * Rotate active generation during runtime restoration or tree navigation.
- *
- * @param controller - controller restored from selected branch
- *
- * @param generationId - fresh generation identity
- *
- * @param timestamp - ISO rotation timestamp
- *
- * @param cause - lifecycle reason requiring stale-callback invalidation
- *
- * @returns rotation persistence and footer effects, or terminal no-op
- *
- * @example
- * ```ts
- * rotateGoalGeneration({ controller, generationId, timestamp, cause: 'runtime_restore' });
- * ```
+ Rotate active generation during runtime restoration or tree navigation.
+ 
+ @param controller - controller restored from selected branch
+ 
+ @param generationId - fresh generation identity
+ 
+ @param timestamp - ISO rotation timestamp
+ 
+ @param cause - lifecycle reason requiring stale-callback invalidation
+ 
+ @returns rotation persistence and footer effects, or terminal no-op
+ 
+ @example
+ ```ts
+ rotateGoalGeneration({ controller, generationId, timestamp, cause: 'runtime_restore' });
+ ```
  */
 function rotateGoalGeneration(
   {
@@ -268,11 +268,11 @@ function rotateGoalGeneration(
     };
   }
   /**
-   * Current active state before rotation.
+   Current active state before rotation.
    */
   const previous = controller.goal;
   /**
-   * Persisted generation rotation.
+   Persisted generation rotation.
    */
   const event: GoalGenerationRotatedEvent = {
     kind: 'generation_rotated',
@@ -284,7 +284,7 @@ function rotateGoalGeneration(
     cause,
   };
   /**
-   * Active state with fresh generation.
+   Active state with fresh generation.
    */
   const goal = reduceGoalEvent({
     state: previous,
@@ -316,18 +316,18 @@ function rotateGoalGeneration(
 }
 
 /**
- * Clear current active or terminal record without aborting Pi turn.
- *
- * @param controller - current controller
- *
- * @param timestamp - ISO clear timestamp
- *
- * @returns clear tombstone or idempotent informational no-op
- *
- * @example
- * ```ts
- * clearGoal({ controller, timestamp });
- * ```
+ Clear current active or terminal record without aborting Pi turn.
+ 
+ @param controller - current controller
+ 
+ @param timestamp - ISO clear timestamp
+ 
+ @returns clear tombstone or idempotent informational no-op
+ 
+ @example
+ ```ts
+ clearGoal({ controller, timestamp });
+ ```
  */
 function clearGoal(
   {
@@ -356,11 +356,11 @@ function clearGoal(
     };
   }
   /**
-   * Current record cleared by matching tombstone.
+   Current record cleared by matching tombstone.
    */
   const current = controller.goal;
   /**
-   * Persisted clear tombstone.
+   Persisted clear tombstone.
    */
   const event = {
     kind: 'run_cleared',

@@ -11,13 +11,13 @@ import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 const ENCODER = new TextEncoder();
 
 /**
- * Creates fixture policy patch.
- *
- * @param path - declared target path
- *
- * @param text - exact patch grammar
- *
- * @returns policy patch fixture
+ Creates fixture policy patch.
+ 
+ @param path - declared target path
+ 
+ @param text - exact patch grammar
+ 
+ @returns policy patch fixture
  */
 function createPatch({ path = 'file.txt', text, }: Readonly<{
   path?: string;

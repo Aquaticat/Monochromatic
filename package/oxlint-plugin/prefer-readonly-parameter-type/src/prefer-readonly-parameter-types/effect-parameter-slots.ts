@@ -1,18 +1,18 @@
 /**
- * Slot allocation for one callable's parameters.
- *
- * A slot is what an effect is attributed to. Slots below the parameter count are the whole
- * parameters; the rest are one per statically canonical top-level property an object pattern
- * reads. Allocation depends on the declaration and on nothing else, which is what lets a
- * caller index a callee's slots without re-analyzing the callee's body: `addOwnedCallEdge`
- * holds the callee declaration and computes the same table the callee's own summary did.
- *
- * The unit is the property key rather than the binding. `{ a: { b } }` gives property `a` one
- * slot that `b` registers against, because a write through `b` is a write through `a`. Making
- * the binding the unit would leave `a` with no slot there, which is the direction that loses
- * writes. `{ a: x, a: y }` reads one property twice and likewise gets one slot.
- *
- * @module
+ Slot allocation for one callable's parameters.
+ 
+ A slot is what an effect is attributed to. Slots below the parameter count are the whole
+ parameters; the rest are one per statically canonical top-level property an object pattern
+ reads. Allocation depends on the declaration and on nothing else, which is what lets a
+ caller index a callee's slots without re-analyzing the callee's body: `addOwnedCallEdge`
+ holds the callee declaration and computes the same table the callee's own summary did.
+ 
+ The unit is the property key rather than the binding. `{ a: { b } }` gives property `a` one
+ slot that `b` registers against, because a write through `b` is a write through `a`. Making
+ the binding the unit would leave `a` with no slot there, which is the direction that loses
+ writes. `{ a: x, a: y }` reads one property twice and likewise gets one slot.
+ 
+ @module
  */
 
 import type {
@@ -39,7 +39,7 @@ import {
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 
 /**
- * Slots of one callable, and how they map back to its parameters.
+ Slots of one callable, and how they map back to its parameters.
  */
 export type ParameterSlotTable = {
   readonly parameterCount: number;
@@ -50,7 +50,7 @@ export type ParameterSlotTable = {
 };
 
 /**
- * One binding name a parameter introduces, and the slot its state attributes to.
+ One binding name a parameter introduces, and the slot its state attributes to.
  */
 export type ParameterBindingSlot = {
   readonly name: Node;
@@ -58,21 +58,21 @@ export type ParameterBindingSlot = {
 };
 
 /**
- * Tests whether a node destructures rather than naming one binding.
- *
- * Asks the kind predicates rather than probing for an `elements` field. This AST exposes
- * every field name on the prototype, so `'elements' in node` answers true for a numeric
- * literal, and `{ 1: one }` was classified as a nested pattern and given no property slot at
- * all. `numericKeySlots` in the shape fixture is what measured it.
- *
- * @param node - Binding name to classify.
- *
- * @returns whether node is a destructuring pattern.
- *
- * @example
- * ```ts
- * isBindingPatternNode(parameter.name);
- * ```
+ Tests whether a node destructures rather than naming one binding.
+ 
+ Asks the kind predicates rather than probing for an `elements` field. This AST exposes
+ every field name on the prototype, so `'elements' in node` answers true for a numeric
+ literal, and `{ 1: one }` was classified as a nested pattern and given no property slot at
+ all. `numericKeySlots` in the shape fixture is what measured it.
+ 
+ @param node - Binding name to classify.
+ 
+ @returns whether node is a destructuring pattern.
+ 
+ @example
+ ```ts
+ isBindingPatternNode(parameter.name);
+ ```
  */
 function isBindingPatternNode(node: Node,): node is BindingPattern {
   return isObjectBindingPattern(node,)
@@ -80,19 +80,19 @@ function isBindingPatternNode(node: Node,): node is BindingPattern {
 }
 
 /**
- * Reads the property key one binding element names, when it names a static one.
- *
- * A rest element names a complement set rather than a property, and a shorthand element whose
- * name destructures further names no property either.
- *
- * @param element - Binding element from an object pattern.
- *
- * @returns canonical key, or sentinel when the element names no static property.
- *
- * @example
- * ```ts
- * elementPropertyKey({ element });
- * ```
+ Reads the property key one binding element names, when it names a static one.
+ 
+ A rest element names a complement set rather than a property, and a shorthand element whose
+ name destructures further names no property either.
+ 
+ @param element - Binding element from an object pattern.
+ 
+ @returns canonical key, or sentinel when the element names no static property.
+ 
+ @example
+ ```ts
+ elementPropertyKey({ element });
+ ```
  */
 function elementPropertyKey(
   { element, }: { readonly element: Node; },
@@ -100,7 +100,7 @@ function elementPropertyKey(
   if ((!isBindingElement(element,)) || (element.dotDotDotToken !== undefined))
     return NOT_A_STATIC_KEY;
   /**
-   * Property name this element reads, which is its own name when shorthand.
+   Property name this element reads, which is its own name when shorthand.
    */
   const name = element.propertyName ?? element.name;
   if ((name === undefined) || isBindingPatternNode(name,))
@@ -109,25 +109,25 @@ function elementPropertyKey(
 }
 
 /**
- * Canonical top-level property keys one parameter's pattern reads, without duplicates.
- *
- * An array pattern contributes none: positional element keys are not modelled, and a caller's
- * array literal is not matched against them.
- *
- * @param parameter - Parameter whose pattern is inspected.
- *
- * @returns distinct property keys, empty for an identifier or array pattern.
- *
- * @example
- * ```ts
- * parameterPropertyKeys({ parameter });
- * ```
+ Canonical top-level property keys one parameter's pattern reads, without duplicates.
+ 
+ An array pattern contributes none: positional element keys are not modelled, and a caller's
+ array literal is not matched against them.
+ 
+ @param parameter - Parameter whose pattern is inspected.
+ 
+ @returns distinct property keys, empty for an identifier or array pattern.
+ 
+ @example
+ ```ts
+ parameterPropertyKeys({ parameter });
+ ```
  */
 function parameterPropertyKeys(
   { parameter, }: { readonly parameter: ParameterDeclaration; },
 ): readonly string[] {
   /**
-   * Pattern binding this parameter, when it destructures one.
+   Pattern binding this parameter, when it destructures one.
    */
   const pattern = parameter.name;
   if (!isObjectBindingPattern(pattern,))
@@ -136,7 +136,7 @@ function parameterPropertyKeys(
     ...new Set(pattern.elements
       .flatMap(function keyOf(element,): readonly string[] {
         /**
-         * Key this element reads, absent when it names no static property.
+         Key this element reads, absent when it names no static property.
          */
         const key = elementPropertyKey({ element, },);
         return key === NOT_A_STATIC_KEY ? [] : [key,];
@@ -145,26 +145,26 @@ function parameterPropertyKeys(
 }
 
 /**
- * Allocates every slot one callable declaration owns.
- *
- * @param declaration - Callable whose parameters are being slotted.
- *
- * @returns slots, ownership and property keys for that declaration.
- *
- * @example
- * ```ts
- * parameterSlotTable({ declaration });
- * ```
+ Allocates every slot one callable declaration owns.
+ 
+ @param declaration - Callable whose parameters are being slotted.
+ 
+ @returns slots, ownership and property keys for that declaration.
+ 
+ @example
+ ```ts
+ parameterSlotTable({ declaration });
+ ```
  */
 export function parameterSlotTable(
   { declaration, }: { readonly declaration: EffectCallableDeclaration; },
 ): ParameterSlotTable {
   /**
-   * Declared parameters receiving whole-parameter slots first.
+   Declared parameters receiving whole-parameter slots first.
    */
   const { parameters, } = declaration;
   /**
-   * Owning parameter of every slot, whole parameters first and properties appended.
+   Owning parameter of every slot, whole parameters first and properties appended.
    */
   const parameterOfSlot: ParameterIndex[] = parameters.map(
     function wholeOwner(
@@ -175,7 +175,7 @@ export function parameterSlotTable(
     },
   );
   /**
-   * Property key to slot, per parameter, filled as property slots are appended.
+   Property key to slot, per parameter, filled as property slots are appended.
    */
   const propertySlotsByParameter = parameters.map(
     function propertySlotsFor(
@@ -188,7 +188,7 @@ export function parameterSlotTable(
           EffectSlot,
         ] {
           /**
-           * Next free slot, appended as this key is assigned one.
+           Next free slot, appended as this key is assigned one.
            */
           const slot = asEffectSlot(parameterOfSlot.length,);
           parameterOfSlot.push(asParameterIndex(parameterIndex,),);
@@ -209,25 +209,25 @@ export function parameterSlotTable(
 }
 
 /**
- * Groups slots by the parameter that owns them.
- *
- * Separate from the allocator because a summary restored from the persistent cache has its
- * ownership but not its declaration, and the projection back to parameters needs only this.
- *
- * @param parameterOfSlot - Owning parameter of every slot.
- *
- * @returns slots owned by each parameter, whole-parameter slot first.
- *
- * @example
- * ```ts
- * slotsByParameterFrom({ parameterOfSlot });
- * ```
+ Groups slots by the parameter that owns them.
+ 
+ Separate from the allocator because a summary restored from the persistent cache has its
+ ownership but not its declaration, and the projection back to parameters needs only this.
+ 
+ @param parameterOfSlot - Owning parameter of every slot.
+ 
+ @returns slots owned by each parameter, whole-parameter slot first.
+ 
+ @example
+ ```ts
+ slotsByParameterFrom({ parameterOfSlot });
+ ```
  */
 export function slotsByParameterFrom(
   { parameterOfSlot, }: { readonly parameterOfSlot: readonly ParameterIndex[]; },
 ): readonly (readonly EffectSlot[])[] {
   /**
-   * Slots accumulated per owning parameter.
+   Slots accumulated per owning parameter.
    */
   const grouped: EffectSlot[][] = [];
   parameterOfSlot.forEach(function group(
@@ -235,7 +235,7 @@ export function slotsByParameterFrom(
     slot,
   ): void {
     /**
-     * Slots already owned by this parameter, created on first sight.
+     Slots already owned by this parameter, created on first sight.
      */
     const owned = grouped[parameterIndex] ?? [];
     owned.push(asEffectSlot(slot,),);
@@ -245,31 +245,31 @@ export function slotsByParameterFrom(
 }
 
 /**
- * Collects every identifier one binding name introduces, however deeply nested.
- *
- * @param name - Binding name or pattern to flatten.
- *
- * @returns identifiers bound, in declaration order.
- *
- * @example
- * ```ts
- * bindingNamesUnder({ name: element.name });
- * ```
+ Collects every identifier one binding name introduces, however deeply nested.
+ 
+ @param name - Binding name or pattern to flatten.
+ 
+ @returns identifiers bound, in declaration order.
+ 
+ @example
+ ```ts
+ bindingNamesUnder({ name: element.name });
+ ```
  */
 function bindingNamesUnder(
   { name, }: { readonly name: BindingName; },
 ): readonly Node[] {
   /**
-   * Identifiers found so far.
+   Identifiers found so far.
    */
   const found: Node[] = [];
   /**
-   * Patterns still to flatten, each a descendant of one already seen.
+   Patterns still to flatten, each a descendant of one already seen.
    */
   const pending: Node[] = [name,];
   while (pending.length > 0) {
     /**
-     * Next binding name, absent only when the stack changed unexpectedly.
+     Next binding name, absent only when the stack changed unexpectedly.
      */
     const current = pending.pop();
     if (current === undefined)
@@ -281,7 +281,7 @@ function bindingNamesUnder(
     if (!isBindingPatternNode(current,))
       continue;
     /**
-     * Names bound directly by this pattern, in declaration order.
+     Names bound directly by this pattern, in declaration order.
      */
     const nested: Node[] = [];
     current.forEachChild(function queueElement(child,): undefined {
@@ -300,24 +300,24 @@ function bindingNamesUnder(
 }
 
 /**
- * Pairs every binding name one parameter introduces with the slot it attributes to.
- *
- * A binding under a rest element, under an array pattern, or under a computed key attributes
- * to the whole parameter, since no caller property key names it. A binding nested inside a
- * property attributes to that property's slot.
- *
- * @param parameter - Parameter whose bindings are wanted.
- *
- * @param parameterIndex - Declared position of that parameter.
- *
- * @param table - Slot table the parameter belongs to.
- *
- * @returns every binding name paired with its slot.
- *
- * @example
- * ```ts
- * parameterBindingSlots({ parameter, parameterIndex, table });
- * ```
+ Pairs every binding name one parameter introduces with the slot it attributes to.
+ 
+ A binding under a rest element, under an array pattern, or under a computed key attributes
+ to the whole parameter, since no caller property key names it. A binding nested inside a
+ property attributes to that property's slot.
+ 
+ @param parameter - Parameter whose bindings are wanted.
+ 
+ @param parameterIndex - Declared position of that parameter.
+ 
+ @param table - Slot table the parameter belongs to.
+ 
+ @returns every binding name paired with its slot.
+ 
+ @example
+ ```ts
+ parameterBindingSlots({ parameter, parameterIndex, table });
+ ```
  */
 export function parameterBindingSlots({
   parameter,
@@ -329,11 +329,11 @@ export function parameterBindingSlots({
   readonly table: ParameterSlotTable;
 },): readonly ParameterBindingSlot[] {
   /**
-   * Slot standing for the whole parameter, which every unattributable binding takes.
+   Slot standing for the whole parameter, which every unattributable binding takes.
    */
   const wholeSlot = asEffectSlot(parameterIndex,);
   /**
-   * Property keys this parameter's pattern reads, mapped to their slots.
+   Property keys this parameter's pattern reads, mapped to their slots.
    */
   const propertySlots = table.propertySlotsByParameter[parameterIndex]
     ?? new Map<string, EffectSlot>();
@@ -354,11 +354,11 @@ export function parameterBindingSlots({
       if ((!isBindingElement(element,)) || (element.name === undefined))
         return [];
       /**
-       * Key this element reads, absent for a rest element or a computed name.
+       Key this element reads, absent for a rest element or a computed name.
        */
       const key = elementPropertyKey({ element, },);
       /**
-       * Slot every binding under this element attributes to.
+       Slot every binding under this element attributes to.
        */
       const slot = key === NOT_A_STATIC_KEY
         ? wholeSlot

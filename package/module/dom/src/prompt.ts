@@ -1,39 +1,39 @@
 // Prompt Dialog Polyfill: Drop-in replacement for globalThis.prompt using dialog element
 
 /**
- * Per-call class-name overrides for the dialog, cancel button, and OK button.
- *
- * Any field left undefined falls back to the corresponding entry in
- * {@link DEFAULT_PROMPT_CLASSES}, so existing stylesheets keyed on the
- * default names continue to work without changes.
- *
- * @example
- * ```ts
- * await prompt({
- *   message: 'Rename file',
- *   classes: { dialog: 'rename-dialog', ok: 'rename-ok', },
- * },);
- * ```
+ Per-call class-name overrides for the dialog, cancel button, and OK button.
+ 
+ Any field left undefined falls back to the corresponding entry in
+ {@link DEFAULT_PROMPT_CLASSES}, so existing stylesheets keyed on the
+ default names continue to work without changes.
+ 
+ @example
+ ```ts
+ await prompt({
+   message: 'Rename file',
+   classes: { dialog: 'rename-dialog', ok: 'rename-ok', },
+ },);
+ ```
  */
 export type PromptClassNames = {
   /**
-   * Class applied to the `<dialog>` element.
+   Class applied to the `<dialog>` element.
    */
   readonly dialog?: string;
   /**
-   * Class applied to the Cancel button.
+   Class applied to the Cancel button.
    */
   readonly cancel?: string;
   /**
-   * Class applied to the OK (submit) button.
+   Class applied to the OK (submit) button.
    */
   readonly ok?: string;
 };
 
 /**
- * Default class names applied to the dialog parts when no per-call
- * {@link PromptClassNames} are supplied. Exported so consumers can
- * target the same names in their stylesheet without duplicating literals.
+ Default class names applied to the dialog parts when no per-call
+ {@link PromptClassNames} are supplied. Exported so consumers can
+ target the same names in their stylesheet without duplicating literals.
  */
 export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
   dialog: 'prompt-polyfill-dialog',
@@ -43,30 +43,30 @@ export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
 
 /* oxlint-disable require-await, no-restricted-syntax/no-nullish-union -- exposed as async so callers can `await` even though the work is event-driven; the `string | null` return mirrors the native `globalThis.prompt` DOM API this polyfill replaces, which returns the entered string (including `''`) on OK or `null` on every cancel path */
 /**
- * Creates a modern prompt dialog using the HTML dialog element.
- * This serves as a polyfill for globalThis.prompt with enhanced styling capabilities.
- *
- * @param message - Message to display to the user
- *
- * @param defaultValue - Default value for the input field
- *
- * @param classes - Optional per-call class-name overrides; unset fields fall
- *   back to {@link DEFAULT_PROMPT_CLASSES}. Use when two prompts on the same
- *   page need distinct styling, since a global stylesheet keyed on the
- *   defaults cannot differentiate them.
- *
- * @returns Promise that resolves to the entered string when OK is clicked
- *   (including `''` for an empty field), or `null` when the user cancels
- *   via the Cancel button, the Esc key, or a backdrop click. Mirrors the
- *   distinction native `globalThis.prompt` makes between empty-OK and cancel.
- *
- * @example
- * ```ts
- * const name = await prompt({ message: 'What is your name?', },);
- * if (name !== null) {
- *   console.log(`Hello, ${name}!`,);
- * }
- * ```
+ Creates a modern prompt dialog using the HTML dialog element.
+ This serves as a polyfill for globalThis.prompt with enhanced styling capabilities.
+ 
+ @param message - Message to display to the user
+ 
+ @param defaultValue - Default value for the input field
+ 
+ @param classes - Optional per-call class-name overrides; unset fields fall
+   back to {@link DEFAULT_PROMPT_CLASSES}. Use when two prompts on the same
+   page need distinct styling, since a global stylesheet keyed on the
+   defaults cannot differentiate them.
+ 
+ @returns Promise that resolves to the entered string when OK is clicked
+   (including `''` for an empty field), or `null` when the user cancels
+   via the Cancel button, the Esc key, or a backdrop click. Mirrors the
+   distinction native `globalThis.prompt` makes between empty-OK and cancel.
+ 
+ @example
+ ```ts
+ const name = await prompt({ message: 'What is your name?', },);
+ if (name !== null) {
+   console.log(`Hello, ${name}!`,);
+ }
+ ```
  */
 export async function prompt(
   {
@@ -80,7 +80,7 @@ export async function prompt(
   }>,
 ): Promise<string | null> {
   /**
-   * Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted.
+   Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted.
    */
   const resolvedClasses = {
     ...DEFAULT_PROMPT_CLASSES,
@@ -90,33 +90,33 @@ export async function prompt(
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
   return new Promise(function promptExecutor(resolve,) {
     /**
-     * Tracks whether the dialog was closed via OK (false) or any cancel path (true).
-     *
-     * Initialised to `true` so Esc, backdrop click, and any other dialog close
-     * default to "cancelled"; only the submit handler flips it.
+     Tracks whether the dialog was closed via OK (false) or any cancel path (true).
+     
+     Initialised to `true` so Esc, backdrop click, and any other dialog close
+     default to "cancelled"; only the submit handler flips it.
      */
     const state = { cancelled: true, };
 
     /**
-     * Modal element that hosts the prompt form.
+     Modal element that hosts the prompt form.
      */
     const dialog = document.createElement('dialog',);
     dialog.className = resolvedClasses.dialog;
 
     /**
-     * Inner form; uses method="dialog" so submit closes the dialog natively.
+     Inner form; uses method="dialog" so submit closes the dialog natively.
      */
     const form = document.createElement('form',);
     form.method = 'dialog';
 
     /**
-     * Heading element carrying the prompt message.
+     Heading element carrying the prompt message.
      */
     const titleElement = document.createElement('h2',);
     titleElement.textContent = message;
 
     /**
-     * Text input that captures the user's response.
+     Text input that captures the user's response.
      */
     const input = document.createElement('input',);
     input.type = 'text';
@@ -124,12 +124,12 @@ export async function prompt(
     input.autofocus = true;
 
     /**
-     * Wrapper that lays out the Cancel and OK buttons side by side.
+     Wrapper that lays out the Cancel and OK buttons side by side.
      */
     const buttonContainer = document.createElement('div',);
 
     /**
-     * Cancel button; leaves `state.cancelled = true` and closes the dialog.
+     Cancel button; leaves `state.cancelled = true` and closes the dialog.
      */
     const cancelButton = document.createElement('button',);
     cancelButton.type = 'button';
@@ -137,7 +137,7 @@ export async function prompt(
     cancelButton.textContent = 'Cancel';
 
     /**
-     * OK button; submits the form to flip `state.cancelled` and close.
+     OK button; submits the form to flip `state.cancelled` and close.
      */
     const okButton = document.createElement('button',);
     okButton.type = 'submit';
@@ -160,11 +160,11 @@ export async function prompt(
     form.addEventListener(
       'submit',
       /**
-       * Accepts submitted value and prevents browser navigation.
-       *
-       * @param event - Form submission event owned by browser.
-       *
-       * @mutates event - `event.preventDefault` marks submission as canceled.
+       Accepts submitted value and prevents browser navigation.
+       
+       @param event - Form submission event owned by browser.
+       
+       @mutates event - `event.preventDefault` marks submission as canceled.
        */
       function onSubmit(event,): void {
         event.preventDefault();
@@ -188,7 +188,7 @@ export async function prompt(
       'close',
       function onClose() {
         /**
-         * Final value handed to the caller: `null` on every cancel path, entered string on OK.
+         Final value handed to the caller: `null` on every cancel path, entered string on OK.
          */
         const result = state.cancelled ? null : input.value;
 
@@ -206,11 +206,11 @@ export async function prompt(
         if (event.target
           === dialog) {
           /**
-           * Dialog box rectangle used to distinguish backdrop clicks from content clicks.
+           Dialog box rectangle used to distinguish backdrop clicks from content clicks.
            */
           const rect = dialog.getBoundingClientRect();
           /**
-           * True when the pointer was inside the visible dialog box, not on the backdrop.
+           True when the pointer was inside the visible dialog box, not on the backdrop.
            */
           const clickedInDialog = (event.clientX
             >= rect

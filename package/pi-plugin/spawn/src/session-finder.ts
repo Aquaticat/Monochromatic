@@ -1,7 +1,7 @@
 /**
- * Parent Pi session resolution for spawn-pi CLI.
- *
- * @module
+ Parent Pi session resolution for spawn-pi CLI.
+ 
+ @module
  */
 
 import {
@@ -23,12 +23,12 @@ import {
 //region Sentinels
 
 /**
- * Sentinel returned when no parent Pi session mapping can be resolved.
- *
- * @example
- * ```typescript
- * if (identity === SESSION_NOT_FOUND) throw new Error('missing parent');
- * ```
+ Sentinel returned when no parent Pi session mapping can be resolved.
+ 
+ @example
+ ```typescript
+ if (identity === SESSION_NOT_FOUND) throw new Error('missing parent');
+ ```
  */
 const SESSION_NOT_FOUND: typeof SHARED_SESSION_NOT_FOUND = SHARED_SESSION_NOT_FOUND;
 
@@ -37,30 +37,30 @@ const SESSION_NOT_FOUND: typeof SHARED_SESSION_NOT_FOUND = SHARED_SESSION_NOT_FO
 //region Host mapping parser
 
 /**
- * Shared discovery options specialized for Pi spawn PID mapping files.
+ Shared discovery options specialized for Pi spawn PID mapping files.
  */
 type PiDiscoveryOptions = {
   /**
-   * Directory containing Pi spawn PID mapping files.
+   Directory containing Pi spawn PID mapping files.
    */
   readonly byPidDir: string;
   /**
-   * Parser for Pi spawn PID mapping JSON.
+   Parser for Pi spawn PID mapping JSON.
    */
   readonly parseMapping: typeof parsePidMapping;
 };
 
 /**
- * Builds shared discovery options for a Pi spawn environment.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns shared discovery options for Pi spawn
- *
- * @example
- * ```typescript
- * piDiscoveryOptions({ PI_CODING_AGENT_DIR: '/tmp/pi' });
- * ```
+ Builds shared discovery options for a Pi spawn environment.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns shared discovery options for Pi spawn
+ 
+ @example
+ ```typescript
+ piDiscoveryOptions({ PI_CODING_AGENT_DIR: '/tmp/pi' });
+ ```
  */
 function piDiscoveryOptions(env: Environment = process.env,): PiDiscoveryOptions {
   return {
@@ -70,16 +70,16 @@ function piDiscoveryOptions(env: Environment = process.env,): PiDiscoveryOptions
 }
 
 /**
- * Parses Pi spawn PID mapping JSON.
- *
- * @param raw - PID mapping JSON text
- *
- * @returns parsed Pi spawn PID mapping
- *
- * @example
- * ```typescript
- * parsePidMapping('{"sessionId":"s","sessionFile":"/tmp/s.jsonl","cwd":"/repo","extensionPath":"/pkg/index.mjs"}');
- * ```
+ Parses Pi spawn PID mapping JSON.
+ 
+ @param raw - PID mapping JSON text
+ 
+ @returns parsed Pi spawn PID mapping
+ 
+ @example
+ ```typescript
+ parsePidMapping('{"sessionId":"s","sessionFile":"/tmp/s.jsonl","cwd":"/repo","extensionPath":"/pkg/index.mjs"}');
+ ```
  */
 function parsePidMapping(raw: string,): PidMapping {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON file written by spawn-pi extension.
@@ -91,34 +91,34 @@ function parsePidMapping(raw: string,): PidMapping {
 //region Session discovery adapter
 
 /**
- * Reads parent PID from Linux `/proc/{pid}/status`.
- *
- * @param pid - process identifier to inspect.
- *
- * @returns parent PID, or {@link SESSION_NOT_FOUND} when unavailable.
- *
- * @example
- * ```typescript
- * readParentPid(process.pid);
- * ```
+ Reads parent PID from Linux `/proc/{pid}/status`.
+ 
+ @param pid - process identifier to inspect.
+ 
+ @returns parent PID, or {@link SESSION_NOT_FOUND} when unavailable.
+ 
+ @example
+ ```typescript
+ readParentPid(process.pid);
+ ```
  */
 function readParentPid(pid: number,): Promise<number | typeof SESSION_NOT_FOUND> {
   return readSharedParentPid({ pid, },);
 }
 
 /**
- * Reads PID-to-session mapping for one process id.
- *
- * @param pid - process identifier to map.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns {@link PidMapping}, or {@link SESSION_NOT_FOUND} when absent.
- *
- * @example
- * ```typescript
- * await readPidMapping({ pid: process.pid });
- * ```
+ Reads PID-to-session mapping for one process id.
+ 
+ @param pid - process identifier to map.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns {@link PidMapping}, or {@link SESSION_NOT_FOUND} when absent.
+ 
+ @example
+ ```typescript
+ await readPidMapping({ pid: process.pid });
+ ```
  */
 function readPidMapping(
   {
@@ -136,18 +136,18 @@ function readPidMapping(
 }
 
 /**
- * Walks ancestors from a start PID to locate nearest Pi session mapping.
- *
- * @param pid - process identifier where search starts.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns nearest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
- *
- * @example
- * ```typescript
- * await walkProcessTreeFrom({ pid: process.ppid });
- * ```
+ Walks ancestors from a start PID to locate nearest Pi session mapping.
+ 
+ @param pid - process identifier where search starts.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns nearest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
+ 
+ @example
+ ```typescript
+ await walkProcessTreeFrom({ pid: process.ppid });
+ ```
  */
 function walkProcessTreeFrom(
   {
@@ -165,16 +165,16 @@ function walkProcessTreeFrom(
 }
 
 /**
- * Reads PID mapping directory entries.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns filenames, or {@link SESSION_NOT_FOUND} when directory is absent.
- *
- * @example
- * ```typescript
- * readByPidDir();
- * ```
+ Reads PID mapping directory entries.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns filenames, or {@link SESSION_NOT_FOUND} when directory is absent.
+ 
+ @example
+ ```typescript
+ readByPidDir();
+ ```
  */
 function readByPidDir(
   env: Environment = process.env,
@@ -183,32 +183,32 @@ function readByPidDir(
 }
 
 /**
- * Finds newest mapping as fallback for sandboxed process trees.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns newest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
- *
- * @example
- * ```typescript
- * await findByMostRecent();
- * ```
+ Finds newest mapping as fallback for sandboxed process trees.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns newest {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
+ 
+ @example
+ ```typescript
+ await findByMostRecent();
+ ```
  */
 function findByMostRecent(env: Environment = process.env,): Promise<PidMapping | typeof SESSION_NOT_FOUND> {
   return findSharedByMostRecent(piDiscoveryOptions(env,),);
 }
 
 /**
- * Finds parent Pi session by process ancestry, then newest mapping fallback.
- *
- * @param env - {@link Environment} values controlling mapping directory.
- *
- * @returns parent {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
- *
- * @example
- * ```typescript
- * await findCallingSession();
- * ```
+ Finds parent Pi session by process ancestry, then newest mapping fallback.
+ 
+ @param env - {@link Environment} values controlling mapping directory.
+ 
+ @returns parent {@link PidMapping}, or {@link SESSION_NOT_FOUND}.
+ 
+ @example
+ ```typescript
+ await findCallingSession();
+ ```
  */
 function findCallingSession(
   env: Environment = process.env,

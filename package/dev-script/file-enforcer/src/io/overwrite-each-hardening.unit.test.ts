@@ -18,14 +18,14 @@ import {
 //region Temporary fixture helpers
 
 /**
- * Creates isolated temporary directory for overwrite-each hardening tests.
- *
- * @returns Absolute temporary directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temporary directory for overwrite-each hardening tests.
+ 
+ @returns Absolute temporary directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return mkdtemp(join(
@@ -35,14 +35,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temporary directory after overwrite-each hardening tests.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temporary directory after overwrite-each hardening tests.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(

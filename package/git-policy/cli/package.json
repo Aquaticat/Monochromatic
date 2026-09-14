@@ -29,7 +29,7 @@
     "README.md"
   ],
   "engines": {
-    "node": "^22.18.0 || >=24.11.0"
+    "node": "^24.11.0"
   },
   "publishConfig": {
     "access": "public"
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/git-executable": "workspace:*",
     "@monochromatic-dev/git-policy-repository": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
@@ -48,6 +49,7 @@
     "@types/node": "catalog:"
   },
   "dependencies": {
+    "ignore": "catalog:",
     "nano-spawn": "catalog:",
     "rolldown": "catalog:",
     "type-fest": "catalog:",

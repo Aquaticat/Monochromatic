@@ -1,15 +1,15 @@
 /**
- * Equivalence tests for `skipSpacesAndTabs` and its consumer `parseVerdict`.
- *
- * Capture the pre-refactor behavior of the whitespace-skip cursor so the
- * linear single-pass rewrite stays behavior-identical: a cursor at or past
- * the end, no leading blank, runs of spaces and tabs, the deliberate
- * exclusion of newline / carriage-return / form-feed / vertical-tab (only
- * space and tab are skipped), and a long blank run that the prior recursive
- * scan would overflow the stack on under engines without tail-call
- * elimination. `parseVerdict` covers the same path at the public boundary.
- *
- * @module
+ Equivalence tests for `skipSpacesAndTabs` and its consumer `parseVerdict`.
+ 
+ Capture the pre-refactor behavior of the whitespace-skip cursor so the
+ linear single-pass rewrite stays behavior-identical: a cursor at or past
+ the end, no leading blank, runs of spaces and tabs, the deliberate
+ exclusion of newline / carriage-return / form-feed / vertical-tab (only
+ space and tab are skipped), and a long blank run that the prior recursive
+ scan would overflow the stack on under engines without tail-call
+ elimination. `parseVerdict` covers the same path at the public boundary.
+ 
+ @module
  */
 
 import {

@@ -17,33 +17,33 @@ import {
 } from './voyage.api.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * Default Voyage model; latest and highest quality.
+ Default Voyage model; latest and highest quality.
  */
 const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
 
 /**
- * Compute a single image embedding via the Voyage AI API.
- *
- * @param input - image to embed, in any supported format
- *
- * @param config - client configuration
- *
- * @returns embedding vector and usage metadata
- *
- * @example
- * ```ts
- * const { embedding } = await voyageEmbed({ input: { path: './photo.png' }, config: {} });
- * ```
+ Compute a single image embedding via the Voyage AI API.
+ 
+ @param input - image to embed, in any supported format
+ 
+ @param config - client configuration
+ 
+ @returns embedding vector and usage metadata
+ 
+ @example
+ ```ts
+ const { embedding } = await voyageEmbed({ input: { path: './photo.png' }, config: {} });
+ ```
  */
 async function voyageEmbed({
   input,
@@ -53,7 +53,7 @@ async function voyageEmbed({
   readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: voyageEmbed.name,
@@ -62,21 +62,21 @@ async function voyageEmbed({
   rl.debug('computing single image embedding via Voyage',);
 
   /**
-   * Resolved Voyage credential; pulled here once and forwarded into the API call.
+   Resolved Voyage credential; pulled here once and forwarded into the API call.
    */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
   /**
-   * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
+   Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
   /**
-   * Voyage-shaped content payload converted from the caller's image input.
+   Voyage-shaped content payload converted from the caller's image input.
    */
   const contentItem = await toVoyageContentItem(input,);
 
   /**
-   * Single-input request body wrapping the content item in Voyage's nested `inputs[].content[]` shape.
+   Single-input request body wrapping the content item in Voyage's nested `inputs[].content[]` shape.
    */
   const request: VoyageApiRequest = {
     inputs: [{ content: [contentItem,], },],
@@ -86,14 +86,14 @@ async function voyageEmbed({
   };
 
   /**
-   * Voyage API response; contains the embedding plus usage counters.
+   Voyage API response; contains the embedding plus usage counters.
    */
   const response = await callVoyageApi({
     requestBody: request,
     apiKey,
   },);
   /**
-   * First (and only) data entry; guarded by the empty-array check below before use.
+   First (and only) data entry; guarded by the empty-array check below before use.
    */
   const firstData = response.data[0];
   if (firstData === undefined)
@@ -113,21 +113,21 @@ async function voyageEmbed({
 }
 
 /**
- * Compute embeddings for multiple images in a single batch via the Voyage AI API.
- *
- * @param inputs - array of images to embed
- *
- * @param config - client configuration
- *
- * @returns embedding vectors (in input order) and aggregate usage metadata
- *
- * @example
- * ```ts
- * const { embeddings } = await voyageEmbedBatch({
- *   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
- *   config: {},
- * });
- * ```
+ Compute embeddings for multiple images in a single batch via the Voyage AI API.
+ 
+ @param inputs - array of images to embed
+ 
+ @param config - client configuration
+ 
+ @returns embedding vectors (in input order) and aggregate usage metadata
+ 
+ @example
+ ```ts
+ const { embeddings } = await voyageEmbedBatch({
+   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
+   config: {},
+ });
+ ```
  */
 async function voyageEmbedBatch({
   inputs,
@@ -137,7 +137,7 @@ async function voyageEmbedBatch({
   readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: voyageEmbedBatch.name,
@@ -148,17 +148,17 @@ async function voyageEmbedBatch({
   );
 
   /**
-   * Resolved Voyage credential; pulled here once and forwarded into the API call.
+   Resolved Voyage credential; pulled here once and forwarded into the API call.
    */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
   /**
-   * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
+   Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
 
   /**
-   * Voyage-shaped content payloads converted from each caller image, in input order.
+   Voyage-shaped content payloads converted from each caller image, in input order.
    */
   const contentItems = await Promise.all(
     inputs.map(function convertInput(input,) {
@@ -167,7 +167,7 @@ async function voyageEmbedBatch({
   );
 
   /**
-   * Batched request body wrapping each content item in its own `inputs[]` entry.
+   Batched request body wrapping each content item in its own `inputs[]` entry.
    */
   const request: VoyageApiRequest = {
     inputs: contentItems.map(function wrapContent(item,) {
@@ -179,7 +179,7 @@ async function voyageEmbedBatch({
   };
 
   /**
-   * Voyage API response; data entries may arrive out of order and need re-sorting below.
+   Voyage API response; data entries may arrive out of order and need re-sorting below.
    */
   const response = await callVoyageApi({
     requestBody: request,
@@ -187,7 +187,7 @@ async function voyageEmbedBatch({
   },);
 
   /**
-   * Sort by index to guarantee input order.
+   Sort by index to guarantee input order.
    */
   const sorted = [...response.data,].toSorted(function byIndex(
     a,
@@ -214,13 +214,13 @@ async function voyageEmbedBatch({
 }
 
 /**
- * Voyage AI embedding provider.
- * Implements the {@link EmbeddingProvider} interface for the Voyage multimodal API.
- *
- * @example
- * ```ts
- * const result = await voyageProvider.embed({ path: 'photo.png' }, {});
- * ```
+ Voyage AI embedding provider.
+ Implements the {@link EmbeddingProvider} interface for the Voyage multimodal API.
+ 
+ @example
+ ```ts
+ const result = await voyageProvider.embed({ path: 'photo.png' }, {});
+ ```
  */
 export const voyageProvider: EmbeddingProvider = {
   embed: voyageEmbed,

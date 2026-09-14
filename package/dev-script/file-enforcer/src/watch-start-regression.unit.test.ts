@@ -18,26 +18,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Maximum time allowed for bounded startWatching restart failures to surface.
+ Maximum time allowed for bounded startWatching restart failures to surface.
  */
 const WATCH_RESTART_FAILURE_WAIT_MS = 1_000;
 
 /**
- * Sentinel returned when startWatching does not fail within the regression window.
+ Sentinel returned when startWatching does not fail within the regression window.
  */
 const START_WATCHING_STILL_PENDING = Symbol('startWatching still pending');
 
 //region Fixture helpers
 
 /**
- * Creates isolated temp directory for startWatching regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temp directory for startWatching regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -47,14 +47,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -71,16 +71,16 @@ async function teardown(tempDir: string,): Promise<void> {
 //region Error capture helpers
 
 /**
- * Captures startWatching rejection for assertions.
- *
- * @param configPath - Config path passed to startWatching.
- *
- * @returns Caught error, or undefined if startWatching unexpectedly resolves.
- *
- * @example
- * ```ts
- * const caught = await captureStartWatchingFailure('/tmp/missing/config.ts');
- * ```
+ Captures startWatching rejection for assertions.
+ 
+ @param configPath - Config path passed to startWatching.
+ 
+ @returns Caught error, or undefined if startWatching unexpectedly resolves.
+ 
+ @example
+ ```ts
+ const caught = await captureStartWatchingFailure('/tmp/missing/config.ts');
+ ```
  */
 async function captureStartWatchingFailure(configPath: string,): Promise<unknown> {
   try {
@@ -94,14 +94,14 @@ async function captureStartWatchingFailure(configPath: string,): Promise<unknown
 }
 
 /**
- * Returns a sentinel after the bounded watch restart failure window.
- *
- * @returns Pending sentinel.
- *
- * @example
- * ```ts
- * const result = await pendingStartWatchingSentinel();
- * ```
+ Returns a sentinel after the bounded watch restart failure window.
+ 
+ @returns Pending sentinel.
+ 
+ @example
+ ```ts
+ const result = await pendingStartWatchingSentinel();
+ ```
  */
 async function pendingStartWatchingSentinel(): Promise<typeof START_WATCHING_STILL_PENDING> {
   await wait(WATCH_RESTART_FAILURE_WAIT_MS,);

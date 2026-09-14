@@ -1,8 +1,8 @@
 /**
- * Client entry script for the In-Progress page.
- *
- * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
- * Additionally runs a 1-second interval to live-update tracked-time chip text.
+ Client entry script for the In-Progress page.
+ 
+ Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
+ Additionally runs a 1-second interval to live-update tracked-time chip text.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
@@ -20,19 +20,19 @@ import './component/side-drawer.ts';
 import './component/top-nav.ts';
 
 /**
- * Shape of the JSON blob embedded in the in-progress page by the server.
+ Shape of the JSON blob embedded in the in-progress page by the server.
  */
 type InProgressPageData = {
   /**
-   * Active in-progress tasks with running timers.
+   Active in-progress tasks with running timers.
    */
   tasks: Task[];
 };
 
 /**
- * Navigates to the task detail page.
- *
- * @param taskId - UUID of the task to open
+ Navigates to the task detail page.
+ 
+ @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
   globalThis.location
@@ -40,9 +40,9 @@ function openTask(taskId: string,): void {
 }
 
 /**
- * Stops a running timer on a task, then reloads to reflect the new state.
- *
- * @param taskId - UUID of the task whose timer to stop
+ Stops a running timer on a task, then reloads to reflect the new state.
+ 
+ @param taskId - UUID of the task whose timer to stop
  */
 async function stopTimer(taskId: string,): Promise<void> {
   await api({
@@ -56,19 +56,19 @@ async function stopTimer(taskId: string,): Promise<void> {
 injectCSS(styles,);
 
 /**
- * Deserialized page data from the server-rendered JSON blob.
+ Deserialized page data from the server-rendered JSON blob.
  */
 const pageData = readPageData<InProgressPageData>();
 
 /**
- * Root app container element.
+ Root app container element.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Typed reference to the app container.
+ Typed reference to the app container.
  */
 const app = appElement;
 
@@ -83,7 +83,7 @@ if (pageData.tasks
 }
 
 /**
- * Task card list for in-progress tasks.
+ Task card list for in-progress tasks.
  */
 const list = h({
   tag: 'ul',
@@ -108,7 +108,7 @@ if (pageData.tasks
   app.append(list,);
 
 /**
- * Timer update interval in milliseconds.
+ Timer update interval in milliseconds.
  */
 const TIMER_UPDATE_MS = 1_000;
 
@@ -116,7 +116,7 @@ const TIMER_UPDATE_MS = 1_000;
 setInterval(
   function updateTimers() {
     /**
-     * Current set of task-card elements; recomputed each tick in case the list mutates.
+     Current set of task-card elements; recomputed each tick in case the list mutates.
      */
     const cards = list.querySelectorAll<HTMLElement>('task-card',);
     cards.forEach(function updateCard(
@@ -124,14 +124,14 @@ setInterval(
       cardIndex,
     ) {
       /**
-       * Task data aligned to the card by DOM order; `undefined` triggers an early return.
+       Task data aligned to the card by DOM order; `undefined` triggers an early return.
        */
       const task = pageData.tasks[cardIndex];
       if (task === undefined)
         return;
       /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element has getChipElement method */
       /**
-       * Tracked-time chip on the task-card; narrowed via `instanceof` below since the card may not have rendered chips.
+       Tracked-time chip on the task-card; narrowed via `instanceof` below since the card may not have rendered chips.
        */
       const chipEl: unknown = (card as unknown as {
         getChipElement?: (prefix: string,) => unknown;

@@ -1,29 +1,29 @@
 /**
- * Stable policy-result fix summaries.
- *
- * @module
+ Stable policy-result fix summaries.
+ 
+ @module
  */
 import { Buffer, } from 'node:buffer';
 import { createFixSummaryEvent, } from './events.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
- * Appends one aggregate fix summary to stable policy result.
- *
- * @param result - final stable policy result
- *
- * @param trigger - fixable lifecycle point
- *
- * @param passes - changed candidate passes
- *
- * @param changedPaths - unique Git-byte-ordered paths
- *
- * @returns policy result with summary event
- *
- * @example
- * ```ts
- * withFixSummary({ result, trigger: 'direct-fix', passes: 1, changedPaths: ['a.txt'] });
- * ```
+ Appends one aggregate fix summary to stable policy result.
+ 
+ @param result - final stable policy result
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @param passes - changed candidate passes
+ 
+ @param changedPaths - unique Git-byte-ordered paths
+ 
+ @returns policy result with summary event
+ 
+ @example
+ ```ts
+ withFixSummary({ result, trigger: 'direct-fix', passes: 1, changedPaths: ['a.txt'] });
+ ```
  */
 export function withFixSummary({
   result,

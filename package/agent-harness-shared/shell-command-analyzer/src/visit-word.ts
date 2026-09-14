@@ -1,7 +1,7 @@
 /**
- * Word visitors for `unbash` shell command analysis.
- *
- * @module
+ Word visitors for `unbash` shell command analysis.
+ 
+ @module
  */
 
 import type {
@@ -19,18 +19,18 @@ import type { ShellCommandContext, } from './types.ts';
 import { parameterWordItems, } from './work-items.ts';
 
 /**
- * Build child work from one word.
- *
- * @param word - word whose parts should be visited
- *
- * @param context - execution context inherited by nested expansions
- *
- * @returns work items for word parts
- *
- * @example
- * ```ts
- * visitWord({ word, context });
- * ```
+ Build child work from one word.
+ 
+ @param word - word whose parts should be visited
+ 
+ @param context - execution context inherited by nested expansions
+ 
+ @returns work items for word parts
+ 
+ @example
+ ```ts
+ visitWord({ word, context });
+ ```
  */
 function visitWord(
   {
@@ -52,18 +52,18 @@ function visitWord(
 }
 
 /**
- * Build child work from one word part.
- *
- * @param part - word part to inspect
- *
- * @param context - execution context inherited by nested expansions
- *
- * @returns child work and nested parse diagnostics
- *
- * @example
- * ```ts
- * visitPart({ part, context });
- * ```
+ Build child work from one word part.
+ 
+ @param part - word part to inspect
+ 
+ @param context - execution context inherited by nested expansions
+ 
+ @returns child work and nested parse diagnostics
+ 
+ @example
+ ```ts
+ visitPart({ part, context });
+ ```
  */
 function visitPart(
   {
@@ -113,18 +113,18 @@ function visitPart(
 }
 
 /**
- * Build child work from word parts.
- *
- * @param parts - parts to inspect
- *
- * @param context - execution context inherited by nested expansions
- *
- * @returns child work and nested parse diagnostics
- *
- * @example
- * ```ts
- * visitParts({ parts, context });
- * ```
+ Build child work from word parts.
+ 
+ @param parts - parts to inspect
+ 
+ @param context - execution context inherited by nested expansions
+ 
+ @returns child work and nested parse diagnostics
+ 
+ @example
+ ```ts
+ visitParts({ parts, context });
+ ```
  */
 function visitParts(
   {
@@ -138,7 +138,7 @@ function visitParts(
   },
 ): VisitResult {
   /**
-   * Visit result for each word part.
+   Visit result for each word part.
    */
   const results = parts.map(function visitWordPart(
     part: ForeignBorrowed<UnbashWordPart | UnbashDoubleQuotedChild>,

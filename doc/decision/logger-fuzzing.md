@@ -1,386 +1,401 @@
-# module-logger bulletproofing and fuzzing
+# module-logger verification campaign
 
 ## Status
 
-Accepted,
- Phase 0 design only.
- Implementation pending.
-Plan:
+Campaign in progress.
+The Node orchestration layer,
+ the Node sink boundary layer,
+ the coverage-reachability gate,
+ and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz` and `.github/workflows/logger-fuzz.yml`.
+The toml-edit campaign moved into `package/module/toml-edit.fuzz` on 2026-09-06 (`doc/decision/toml-edit-fuzzing.md`,
+ "Sidecar package").
+The Playwright browser layer landed the same day,
+ so every deliverable of the campaign is on main.
+Plan,
+ grill records,
+ and landed commits:
  `package/module/logger/bulletproofing.plan.md`.
+Per-contract design rationale:
+ `package/module/logger/DECISIONS.md`.
 
-This doc records the owner decisions resolved during a design grilling.
- The plan
-holds the phased work;
- this doc holds why each contract is what it is,
- the
-options considered,
- and the rejected alternatives.
+This document is the decision record for how `@monochromatic-dev/module-logger` is verified,
+rewritten on 2026-09-06 from the June design-only record.
+The June contracts that the shipped code reversed are listed under "Superseded decisions" so the history stays readable.
 
 ## Context
 
-An assessment asked whether `@monochromatic-dev/module-logger` is bulletproof.
- It
-is robust (clean orchestration,
- isolated sink factories,
- a passing unit suite)
-but not bulletproof.
- Two findings stood out:
- `flush()` can hang forever on a
-write that never settles,
- and a log call can throw when no backend is available.
-The goal is to reach the verification bar already set by
-`package/module/toml-edit` (a budgeted property campaign,
- a strong model oracle,
-a committed coverage-reachability gate,
- CI wiring,
- and this decision doc),
-adapted for an async sink orchestrator rather than a pure transform.
-
-The logger differs from toml-edit in one structural way that drives the whole
-design:
- its bugs are timing and interleaving bugs,
+The goal is the verification bar `package/module/toml-edit` already meets:
+a budgeted property campaign,
+ a reference-model oracle,
+ a committed coverage-reachability gate,
+a path-filtered CI workflow,
+ and a decision record.
+The logger differs from a parser in one structural way that drives the whole design:
+its bugs are timing and interleaving bugs,
  not input bugs.
- So the
-toml-edit quality product gains a fourth factor,
- `scheduled(interleaving)`,
- and
-`fast-check`'s `scheduler()` becomes the analog of toml-edit's grammar
-arbitraries.
+So the generator is a scheduler over sink hook settlements,
+ not a grammar,
+and every oracle is a reference model of the orchestration contract.
 
-Two facts were measured during the grilling and ground the decisions below:
+Two facts measured before the campaign shaped it:
+the logger is imported at 102 sites in this repository and no site guards a log call,
+and no colour or escape sequence flows through the logger today.
 
-- The logger is imported at 102 sites across CLIs,
-   servers,
-   statusline,
-   advisor,
-  and stress tools,
-   and no site guards a log call in `try`/`catch`.
-   A throwing
-  log line would crash unguarded callers.
-- No color or escape sequences flow through the logger today.
-   The color
-  libraries in the repo (picocolors and similar) are used through raw `console`
-  in `watch-restart` and `morph-compact`,
-   which the `TLG` rule permits.
+## Decision: sidecar package
 
-## Decision: failure stance
+The campaign lives in `package/module/logger.fuzz`,
+ a private workspace package,
+the convention `jsonc-edit.fuzz` and `css-edit.fuzz` set.
+The runtime package's `src` stays pure production code and ships in the tarball;
+`fast-check`,
+ the scripted fake sinks,
+ the reference model,
+ the properties,
+the run-budget tooling,
+ and the coverage gate never publish.
+Every property file imports the built runtime artifact through the package name,
+never the runtime package's source,
+ so the suite crosses the consumer boundary.
+The sidecar's `fuzz` task rebuilds the runtime package first for that reason.
 
-The logger is fail-safe with one breadcrumb.
- Log calls never throw.
- `flush()`
-always resolves,
- never rejects and never hangs.
- Buffer overflow drops rather than
-errors.
- A logger that finishes initialization with no available backend emits one
-guarded raw-`console` warning at end of init,
- then discards.
+The toml-edit campaign,
+ which still lives inside its runtime package under `src/fuzz/`,
+migrates into `package/module/toml-edit.fuzz` after the logger campaign,
+ copying this layout.
 
-This is the root decision;
- it sets the direction for the flush,
- no-backend,
- and
-overflow contracts at once.
- The principle is to write the loud signal once,
- at a
-boundary,
- never at a log call.
+## Decision: scheduler, not grammar
 
-Options considered:
+Interleavings come from fast-check's `scheduler()`.
+Every fake-sink hook settlement (verify,
+ write,
+ flush) is a scheduled task,
+so the scheduler decides the order in which outcomes reach the logger,
+and a shrunk counterexample names the exact release order.
+Never-settling work is a promise the scheduler never releases.
 
-- Fail-safe with a breadcrumb (chosen).
-   Never crashes a caller,
-   and a
-  misconfigured logger still surfaces once,
-   near its cause.
-- Fail-safe and fully silent.
-   Rejected:
-   a dead logger would be diagnosed only by
-  the absence of logs,
-   which wastes real debugging time.
-   The breadcrumb costs
-  almost nothing.
-- Keep the fail-loud throw.
-   Rejected:
-   it throws at 102 unguarded sites,
-  repeatedly,
-   and far from the cause (a startup verify that found no backend).
-  This is the exact non-bulletproof property the assessment flagged.
+The logger's own timers stay real.
+Deadline properties therefore use short real deadlines and bounded run counts
+(`src/harness.ts`:
+ verify timeout 25 ms,
+ flush deadline 300 ms,
+ a 60 ms tolerance below the deadline for the "settled within" verdict).
+Faking timers was rejected:
+ `withTimeout` and the sinks share the same clock,
+and a faked clock would prove nothing about the real deadline path.
 
-## Decision: flush deadline
+## Decision: scripted fake sinks
 
-One global deadline wraps the entire `flush()` body,
- the `await initPromise`,
- the
-pending-write drain,
- and the flush-hook drain,
- using `withTimeout` from
-`@monochromatic-dev/module-async-time` with its rejection swallowed so flush
-resolves.
- Default 1000ms,
- overridable via a `createLogger` option.
+A fake sink (`src/fake-sink.ts`) is driven by one script per hook.
+Each script is a per-call outcome sequence with a repeating tail:
+verify outcomes are resolve-true,
+ resolve-false,
+ reject,
+ throw synchronously,
+ or never;
+write and flush outcomes are resolve,
+ reject,
+ throw synchronously,
+ or never;
+flush may be absent.
+Every sink carries a stable index,
+ so a shrunk counterexample reads as
+`sink 2: verify [resolve-true*] write [reject, resolve*] flush absent`.
+Every scripted rejection gets its own rejection handler at creation,
+because the scheduler holds rejected promises until released and an unhandled rejection would otherwise kill the test-file process.
+A trace records every hook call and settlement with its call index,
+ so the model can fold the observed order.
 
-`pendingWrites` holds bounded wrapper promises,
- never raw sink promises.
- Each
-abandoned raw promise gets a rejection handler so a late settlement after the
-deadline cannot become an unhandled rejection or corrupt sink availability.
-Abandoned writes are dropped from the logger's view,
- not cancelled (the sinks
-expose no `AbortSignal`).
+## Decision: reference model scope
 
-Options considered:
+`src/model.ts` predicts,
+ per sink,
+ the exact records attempted and delivered,
+ in order,
+ and the final availability;
+whether each `flush()` settled within its deadline;
+the dropped-count marker record after startup overflow;
+and the count of `console.warn` breadcrumbs.
+The "loud signal once,
+ at a boundary" contract is therefore a checked invariant,
+ not a comment.
+Properties that stub `console.warn` retain the sidecar's sequential setting.
+This originally matched the runtime package's breadcrumb suites.
+Issue #481 gives the runtime suites context-owned method replacements;
+those suites now run concurrently without changing this campaign's scheduling decision.
 
-- One global deadline (chosen).
-   Tightest,
-   simplest shutdown guarantee;
-   `flush()`
-  provably returns within one deadline;
-   `withTimeout` implements it by wrapping
-  the whole drain in one line;
-   a hung verify cannot wedge flush either.
-- Two-stage global deadline (writes under one deadline,
-   hooks under another).
-  Rejected:
-   a looser 2x total bound for a fairness benefit that does not matter
-  when both drains are best-effort.
-- Per-write deadline.
-   Rejected outright:
-   N timers and a worst case of
-  `timeout x writes` sequential accumulation.
+## Decision: two run layers
 
-The deadline bites only when work is actually stuck;
- normal writes settle in
-single-digit milliseconds,
- so ordinary CLI shutdown is not delayed.
- `withTimeout`
-clears its timer on settle,
- so a flush timer never keeps the process alive past
-its window.
+The same `*.property.unit.test.ts` files run bounded in `test:unit`
+(60 runs per property under a 60 s harness timeout)
+and as a time-budgeted campaign through the sidecar `fuzz --budget <ms>` task,
+keyed on `LOGGER_FUZZ_BUDGET_MS` (`src/fuzz-budget.ts`).
+Campaign mode uses `interruptAfterTimeLimit` with an unbounded run count and a harness timeout of budget plus 30 s,
+so fast-check owns the stop and still has room to shrink.
 
-## Decision: verify liveness
+`interruptAfterTimeLimit` abandons the in-flight run rather than awaiting it.
+An abandoned run's logger keeps firing timers into the next property's `console.warn` stub,
+which surfaced as one extra verify-timeout breadcrumb that appeared only in campaign mode.
+The harness tracks every in-flight run and `settleRuns()` is awaited after each `assert`,
+so no run outlives its property.
 
-`initialize()` runs verifiers concurrently with `Promise.all`,
- each bounded by a
-per-verify timeout (default 1000ms,
- overridable).
- A timed-out verify counts as
-unavailable.
+## Landed: scheduled orchestration property
 
-The current code awaits verifiers sequentially,
- so one sink whose `verify()`
-never resolves head-of-line blocks every later sink and `initialized` never
-flips.
- The documented sequential order does not affect replay correctness (every
-verified sink replays the full startup buffer),
- so concurrency is safe and
-removes the blocking.
+`src/orchestration.property.unit.test.ts` runs a random program of `log`,
+ `release`,
+ and `flush` steps
+(weighted three to two to one,
+ at most eight steps)
+against a logger over one to four scripted sinks.
+Two properties:
 
-Options considered:
+- The real sinks and the model agree on attempts,
+   deliveries,
+   flush verdicts,
+   breadcrumb count,
+   and whether a log call threw
+  (exactly-once delivery,
+   startup replay,
+   dropout on failed verify,
+   write resilience,
+   flush totality,
+   and the no-backend throw,
+   in one oracle).
+- Over always-available sinks,
+   every record reaches every sink exactly once regardless of release order.
 
-- Concurrent and bounded (chosen).
-   One hung verify cannot starve the others;
-   init
-  completes within one bound;
-   more interleaving for the scheduler to fuzz.
-- Sequential and bounded.
-   Rejected:
-   a hung verify still delays every later sink
-  by up to the bound;
-   worst case is the sum of the per-verify bounds.
-- Leave verify unbounded.
-   Rejected:
-   a single hung verify permanently stalls init,
-  so steady-state logging reaches only the sinks that verified before it.
+Guard-failure proof on 2026-09-06:
+with the startup replay removed from `create-logger.ts` and the artifact rebuilt,
+both properties fail and shrink to one sink and one log call;
+restored and rebuilt,
+ both pass.
 
-## Decision: stall and failure policy
+Model defects the property found before the logger was ever wrong:
 
-A write or flush-hook timeout,
- a flush-hook rejection,
- and a write rejection are
-all transient;
- the sink stays available and `flush()` resolves.
- A per-sink
-counter of consecutive sink-level failures retires the sink once it reaches a
-threshold (default 10,
- overridable);
- any successful write or hook resets the
-counter to zero.
- A threshold retire is permanent for the run and emits a
-breadcrumb,
- matching a verify-failure retire.
+- A write that never settles keeps `flush()` in its write drain until the deadline,
+   so no flush hook runs;
+  the model had run the hooks anyway.
+- A rejecting flush hook retires the sink (the shipped contract),
+   so the always-available property restricts flush outcomes to resolve and never.
 
-This removes the current inconsistency where a rejecting flush hook retires a
-sink but a rejecting write does not,
- and it honors the documented "transient
-errors stay transient" policy while still removing a backend that is persistently
-broken.
+No logger defect has been found by this layer yet.
+That is consistent with the three robustness changes having been built test-first the week before;
+the campaign's value so far is that the contract is now executable.
 
-Options considered:
+## Landed: sink boundary properties under Node
 
-- Transient with a retire threshold (chosen).
-   Consistent with "only verify
-  failure retires a sink,
-  " but a backend that fails 10 times in a row without a
-  single success is removed so flush stops paying for it.
-- Pure transient (never retire on write or flush failures).
-   The base of the
-  chosen option;
-   the threshold adds the only safeguard it lacked.
-- Fatal (retire on the first flush failure).
-   Rejected:
-   contradicts the
-  write-failure policy;
-   a one-off `ENOSPC`,
-   quota,
-   or lock hiccup during flush
-  would permanently kill a backend,
-   the footgun `DECISIONS.md` warns against.
-- Re-verify to decide.
-   Rejected:
-   verify has side effects (the file sink writes a
-  probe and re-resolves its path;
-   OPFS reopens a stream),
-   so re-running it from
-  inside flush is risky and could itself hang.
+`src/sink-boundary.property.unit.test.ts` feeds adversarial records through each Node-reachable sink built from the artifact and inspects what came out.
+The corpus (`src/boundary-corpus.ts`) holds JSON delimiters and record-forging text,
+ terminal escape sequences (well-formed,
+ unterminated,
+ nested,
+ and 8-bit C1),
+ lone and paired surrogates,
+ and astral text;
+the arbitrary (`src/adversarial-message.ts`) interleaves those tokens with binary text and with control characters drawn uniformly across C0,
+ DEL,
+ and C1,
+because the default binary string arbitrary reaches DEL and C1 about once per million code units.
+Four properties:
 
-## Decision: startup overflow
+- The console neutralizer agrees with an independent code-unit-indexed reference and leaves no forbidden control in its output.
+- The console sink emits exactly the reference prediction of its grouped output:
+  one text per contiguous same-level run,
+   every message neutralized,
+   debug runs on process stderr with the trailing newline the sink adds.
+- The sessionStorage sink's persisted batches reparse to the exact records.
+- The file sink's appended lines,
+   under a throwaway package directory per run,
+   reparse to the exact records after its verify probe.
 
-A bounded ring buffer (default cap roughly 10,000 records,
- overridable) drops the
-oldest record on overflow.
- When init completes and any were dropped,
- it emits one
-synthetic record,
- `N startup records dropped before a backend verified`,
- so the
-loss is never silent.
+Guard-failure proof on 2026-09-06:
+with the neutralizer made identity and the file sink interpolating the message raw into its JSON line,
+ and the artifact rebuilt,
+the neutralizer,
+ console sink,
+ and file sink properties fail on their first run;
+restored and rebuilt,
+ all four pass.
 
-With verify now bounded,
- the pre-init window is roughly one second,
- so this is
-mainly insurance against a high-rate burst in that window.
+Finding,
+ in the campaign rather than the logger:
+every boundary body settles through microtasks alone,
+ so a campaign held the event loop for its whole budget;
+the test harness's own logger,
+ still verifying its file sink when the first property started,
+saw its verify timer fire before the filesystem answered and wrote a breadcrumb.
+Each run now yields once through `setImmediate` (`yieldToEventLoop` in `src/sink-boundary-harness.ts`).
 
-Options considered:
+## Landed: coverage-reachability gate
 
-- Ring,
-   drop oldest,
-   plus a marker (chosen).
-   Bounded memory,
-   keeps the
-  most-recent (usually most diagnostic) context,
-   loss never silent.
-- Drop newest,
-   plus a marker.
-   Rejected:
-   loses the recent context right before
-  backends came up,
-   which is usually what explains a startup problem.
-- Unbounded buffer.
-   Rejected:
-   a flood during the init window still grows memory
-  with no ceiling,
-   the one remaining unbounded path.
+The campaign measures its own reach with the deterministic V8 line-coverage gate toml-edit established
+(`doc/decision/toml-edit-fuzzing.md`,
+ "Coverage gate"),
+ copied into the sidecar as
+`src/coverage-v8.ts`,
+ `src/coverage-aggregate.ts`,
+ and `src/coverage-report.ts`
+and pointed at the runtime package's `src` through the `/ts` subpath it resolves.
+The driver (`src/coverage-driver.ts` and the `src/coverage-*.ts` scenario modules) imports the runtime source the same way
+and replays fixed inputs through every orchestration branch (scripted fake sinks with the identity gate)
+and every Node-reachable sink branch:
+the console sink under silent,
+ verbose,
+ and browser-window modes and under hosts whose `env`,
+ `argv`,
+ or `stderr` throw;
+the file sink with a present,
+ absent,
+ blocked,
+ and vanished log directory;
+the sessionStorage and localStorage sinks over Node's real backends and over quota-limited,
+ flaky,
+ and refusing stand-ins;
+the record buffer's every trigger including page-lifecycle events fired through a page stand-in;
+the key,
+ quota,
+ and quota-error helpers under staged Deno and Bun markers.
+The `fuzz:coverage` task runs the driver under `--localstorage-file` so the localStorage sink elects instead of taking the flagless short-circuit;
+`--write` refreezes `coverage-baseline.json`.
 
-## Decision: console terminal-escape boundary
-
-A linear-scan escape classifier (its own module,
- since `console.ts` is already
-near the max-lines budget) allows only well-formed CSI SGR color sequences (`ESC
-[` parameters,
- final byte `m`) and `\n` and `\t`,
- and neutralizes `ESC`,
- the C1
-range,
- `DEL`,
- and other C0 controls as `\uXXXX`.
- The text is passed as
-`console.x('%s', text)` so `util.format` cannot interpret `%`-specifiers in the
-message.
- The classifier is a single linear pass,
- not a regex,
- per the `ITR` and
-`RG2` rules.
-
-The JSONL sinks (file,
+First baseline,
+ 2026-09-06:
+ 3376 of 3623 code lines across the 27 runtime source files.
+Every Node-reachable file sits between 97 and 100 percent;
+the remaining lines there are unreachable under Node by construction
+(the console verify guard for a missing `console`,
+ the browser and unknown runtime branches,
+ a timer without `unref`)
+or internal invariants (a missing sink entry,
+ a second `initialize` call).
+The browser-only IndexedDB,
  OPFS,
- sessionStorage) need no change here:
- `JSON.stringify`
-already escapes control characters and newlines,
- which phase 4 proves with
-adversarial inputs.
+ and IndexedDB utility files sit at 47 to 69 percent and wait for the Playwright layer.
+The driver's adequacy was checked against the uncovered-line list,
+ not assumed:
+each scenario added after the first freeze targeted a named uncovered line,
+and one apparent gap (the store's oldest-first sort) turned out to need two prior-run entries before the comparator runs at all.
 
-Options considered:
+## Landed: CI workflow
 
-- Preserve SGR color,
-   neutralize the rest (chosen).
-   Keeps colored logs possible
-  if any are ever routed through the logger,
-   while blocking the dangerous escapes
-  (clear screen,
-   set title,
-   write clipboard,
-   spoof hyperlinks).
-   Costs a correct
-  escape-sequence classifier,
-   tested against malformed and partial sequences.
-- Neutralize everything (keep `\n` and `\t`).
-   Simpler and no allowlist gaps,
-   and
-  loses nothing today since no color flows through the logger.
-   The runner-up;
-   the
-  owner chose to keep the door open for colored logs.
-- Pass raw with only the `%s` fix.
-   Rejected:
-   leaves the terminal-escape injection
-  open;
-   does not satisfy the `SYB` boundary rule at the sink.
+`.github/workflows/logger-fuzz.yml` mirrors `toml-edit-fuzz.yml`:
+path-filtered to `package/module/logger/**`,
+ `package/module/logger.fuzz/**`,
+ this document,
+ and itself,
+with the merge-queue scope step,
+ `MISE_AUTO_INSTALL` off,
+ and only node and pnpm installed.
+Its steps build the runtime package,
+ type-check the sidecar,
+ run the sidecar unit suite (bounded property runs plus the fake-sink and model tests),
+run the fuzz smoke at 3000 ms per property,
+ and run the coverage gate.
+Every step was run locally in that order before the workflow was committed;
+the smoke takes about 25 seconds and the gate about 20 seconds on the development machine.
 
-Newlines stay literal in console output because multi-line logs (stack traces)
-are core,
- and the persistent JSONL record is already forge-proof through
-`JSON.stringify`,
- so newline-based log forging is a cosmetic console-only residue
-rather than a record-integrity issue.
+## Landed: Playwright browser property layer
 
-## Dependencies
+The browser-only backends are checked in real browsers rather than through stand-ins.
+`src/browser/properties.ts` is bundled by the sidecar's `bundle:browser-properties` task
+(rolldown's client flavor under the browser platform,
+ so `@monochromatic-dev/module-logger` resolves to the neutral artifact and fast-check is inlined)
+and served to the Playwright harness page from `/dist/module-logger.fuzz/client/properties.js`.
+The bundle installs a runner on the page;
+ `src/browser/properties.browser.test.ts` loads it,
+ runs every property,
+ prints each browser's outcomes,
+ and fails on any falsified property.
+Three properties over the adversarial record arbitrary:
 
-- `fast-check`,
-   already in the catalog at `>=4.8.0` and the established
-  property-test tool for TypeScript packages in this repo.
-   See
-  `doc/decision/fast-check.md`.
-- `@monochromatic-dev/module-async-time` is promoted from a logger devDependency
-  to a runtime dependency for `withTimeout` and `wait`.
-   Both are thin
-  `setTimeout` wrappers that work in node and browser.
-   `withTimeout` clears its
-  timer on settle,
-   so a flush or verify timer never keeps the process alive past
-  its window.
-   No new third-party dependency is added.
+- The localStorage sink's run-scoped batches,
+   read back through the key helpers the artifact exports,
+   reparse to the exact records.
+- The IndexedDB sink's batches in the `monochromatic.log` database reparse to the exact records;
+  each run prefixes its messages with a nonce because the store outlives the run.
+- The OPFS sink accepts every record and its flush settles with no breadcrumb.
+  This oracle is weaker by construction:
+  the sink keeps its writable open for the session and the platform commits a file's bytes only on close,
+  so the page cannot read the content back.
+
+Measured on 2026-09-06 inside the `monochromatic-playwright` podman image:
+Chromium 153 and Firefox 155 run all three properties;
+WebKit 26.6 runs the two storage properties and reports OPFS skipped,
+because headless WebKit refuses the origin-private file system with `UnknownError`
+(the probe turns that refusal into the skip reason rather than letting it escape the run).
+Guard-failure proof:
+with the shared record buffer dropping the first record of every batch and both the artifact and the bundle rebuilt,
+the localStorage and IndexedDB properties fail on their first run and shrink to one debug record;
+restored and rebuilt,
+ all three pass.
+
+The task is named `bundle:browser-properties`,
+ not `build`:
+the sidecar ships nothing,
+ and the `require-eventual-artifact` lint treats a package with a build task as one whose tests must import built output,
+which would reject every relative helper import in the sidecar's test files.
+No workflow runs the browser suite today;
+the layer is a local podman run (`mise run test:browser -- package/module/logger.fuzz/src/browser/properties.browser.test.ts`) until a browser CI job exists.
+
+## Superseded decisions
+
+The June record fixed several contracts at design time;
+ the shipped code reversed them.
+Each is recorded in `package/module/logger/DECISIONS.md`.
+
+- Failure stance:
+   log calls never throw.
+  Shipped:
+   a log call throws `No logging backends available` once initialization has proven that no sink is available.
+  The startup-buffer section of `DECISIONS.md` records why a marker with nowhere to go has no consumer;
+  the no-backend throw is a property the campaign checks,
+   not a bug it hunts.
+- Flush deadline default 1000 ms and verify timeout default 1000 ms.
+  Shipped:
+   `DEFAULT_FLUSH_DEADLINE_MS` and `DEFAULT_VERIFY_TIMEOUT_MS` are 5000,
+   each with a measured local settle time of a few milliseconds.
+- Retire threshold of ten consecutive sink failures.
+  Not shipped:
+   a write rejection stays transient with one breadcrumb and a rejecting flush hook retires the sink,
+  per "Write failures do not disable a sink;
+   only verify failure does".
+- Console boundary preserving well-formed SGR colour sequences.
+  Shipped:
+   every C0 control except newline and tab,
+   DEL,
+   and every C1 control is rendered as `\uXXXX`;
+  the allowlist classifier was rejected because no in-repo call site passes colour through the logger.
+- Startup buffer cap as a `createLogger` option.
+  Shipped:
+   `STARTUP_BUFFER_CAP` is an exported constant (10000),
+   dropping oldest with a marker record.
+- `@monochromatic-dev/module-async-time` promoted to a runtime dependency.
+  Shipped:
+   it stays a devDependency imported through its `/ts` subpath and inlined by the build;
+  the published `dependencies` map is empty.
+
+## Pending deliverables
+
+None.
+ The browser layer runs locally only until a browser CI job exists;
+ see "Deferred follow-up" for the rest.
 
 ## Rejected alternatives
 
-- A differential oracle comparing the logger against `pino` or `winston`.
-   Their
-  formats differ by design,
-   so a disagreement would be noise,
-   not signal.
-   The
-  conformance layer is the package's own output contract asserted exhaustively,
-  plus a committed adversarial-message corpus.
-- A hostile-`toString` message family.
-   The log API is string-only;
-   callers own
-  serialization and no object reaches a sink.
+- A differential oracle comparing the logger against `pino` or `winston`:
+  their formats differ by design,
+   so a disagreement would be noise.
+- A hostile `toString` message family:
+   the log API is string-only,
+   so no object reaches a sink.
+- Fake timers:
+   see "Decision:
+   scheduler,
+   not grammar".
 
 ## Reusable fuzz-target checklist
 
 For the logger and any future async target,
- all six must hold before a campaign
-is called strong:
+ all six must hold before a campaign is called strong:
 
 - Is the tested layer where the logic and bugs live?
 - Are all entry points,
@@ -392,16 +407,13 @@ is called strong:
 - Are real corpus seeds,
    counterexamples,
    and coverage feedback wired in?
-- Does the schedule generator explore the async interleavings where timing bugs
-  live,
-   including never-settling work?
+- Does the schedule generator explore the async interleavings where timing bugs live,
+  including never-settling work?
 
 ## Deferred follow-up
 
 Mutation testing,
  to measure oracle strength more directly,
- is deferred to a
-separate plan,
- the same follow-up toml-edit recorded.
- File or update an issue for
-it when the logger campaign lands.
+ is deferred to a separate plan,
+the same follow-up toml-edit recorded.
+File or update an issue for it when the logger campaign lands.

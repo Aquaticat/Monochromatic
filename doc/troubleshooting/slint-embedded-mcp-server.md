@@ -194,6 +194,38 @@ What works after the fix (verified end to end):
  Both the music player (port 9315) and the terminal (port 9316)
 bind and drive headless.
 
+### Settle a headless frame before reading timer-driven Flickable geometry
+
+Issue #457 added a timer-delayed horizontal reveal.
+A direct selected-page write set `selected=25`,
+but an immediate `get_element_tree` still returned `Alpha` through `Golf`,
+`viewport-x = 0`,
+and reveal generation `0`.
+Calling `take_screenshot` once as a settlement probe,
+then reading the tree,
+returned `Tango` through selected `Zulu`,
+`viewport-x = -1110`,
+and settled generation `5`.
+
+Slint 1.17.0 source tag `v1.17.0` at commit
+`fdde7a535305d2ab2d4072dee637bad186a49723` explains the operation boundary:
+
+- `internal/backends/testing/search_api.rs:348-383` walks the current item tree and filters by current visibility;
+- `internal/backends/testing/search_api.rs:859-866` reports the current geometry through `map_to_window`;
+- `internal/backends/testing/introspection/mod.rs:249-279` makes `take_screenshot` call
+  `window.take_snapshot()` and encode the rendered buffer.
+
+Tree/property reads inspect current state but do not request a rendered snapshot.
+A headless verification whose result depends on a timer or deferred layout must therefore:
+
+1. call `take_screenshot` as a frame-settlement probe;
+2. read the element tree and verify intended geometry;
+3. call `take_screenshot` again only if a retained evidence image is needed.
+
+Tradeoff:
+the first PNG is a probe and may show a transitional frame,
+so it must not be presented as final visual evidence.
+
 What fails (each is its own trap):
 
 - `set_platform` present and no gate:
@@ -287,6 +319,11 @@ behavior for a reproducible test.
    The terminal
   `mcp` task stages `libghostty-vt` inline (glob plus copy) instead of shelling out to
   `mise run ...:stage:runtime-libs:debug` for that reason.
+- Treating an immediate `get_element_tree` response as proof of final timer-driven placement:
+   it can describe the pre-frame Flickable viewport.
+   Trigger a snapshot frame,
+  verify through a fresh tree read,
+  then retain a second screenshot if needed.
 
 ## Upstream filing decision
 

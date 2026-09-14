@@ -1,7 +1,7 @@
 /**
- * Statistical helpers for repository-scale manual-push latency measurements.
- *
- * @module
+ Statistical helpers for repository-scale manual-push latency measurements.
+ 
+ @module
  */
 
 import {
@@ -14,16 +14,16 @@ import {
 } from './manual-push-latency-contracts.ts';
 
 /**
- * Copy numeric values in ascending order.
- *
- * @param values - Numeric values to order without mutation.
- *
- * @returns Ascending copy of numeric values.
- *
- * @example
- * ```ts
- * sortNumbers([2, 1]);
- * ```
+ Copy numeric values in ascending order.
+ 
+ @param values - Numeric values to order without mutation.
+ 
+ @returns Ascending copy of numeric values.
+ 
+ @example
+ ```ts
+ sortNumbers([2, 1]);
+ ```
  */
 function sortNumbers(values: readonly number[]): readonly number[] {
   return values.toSorted(function compareNumbers(
@@ -35,20 +35,20 @@ function sortNumbers(values: readonly number[]): readonly number[] {
 }
 
 /**
- * Read required numeric array element.
- *
- * @param values - Sequence containing required element.
- *
- * @param index - Position expected to exist.
- *
- * @returns Numeric element at requested position.
- *
- * @throws {@link BenchmarkError} when position is absent.
- *
- * @example
- * ```ts
- * requiredNumberAt({ values: [5], index: 0 });
- * ```
+ Read required numeric array element.
+ 
+ @param values - Sequence containing required element.
+ 
+ @param index - Position expected to exist.
+ 
+ @returns Numeric element at requested position.
+ 
+ @throws {@link BenchmarkError} when position is absent.
+ 
+ @example
+ ```ts
+ requiredNumberAt({ values: [5], index: 0 });
+ ```
  */
 function requiredNumberAt({
   values,
@@ -58,7 +58,7 @@ function requiredNumberAt({
   index: number;
 }>): number {
   /**
-   * Element whose presence is required by non-empty statistical input.
+   Element whose presence is required by non-empty statistical input.
    */
   const value = values.at(index);
   if (value === undefined) {
@@ -68,29 +68,29 @@ function requiredNumberAt({
 }
 
 /**
- * Calculate median of non-empty numeric samples.
- *
- * @param values - Samples whose midpoint represents central latency.
- *
- * @returns Median sample value.
- *
- * @throws {@link BenchmarkError} when no samples are supplied.
- *
- * @example
- * ```ts
- * median([1, 3, 2]);
- * ```
+ Calculate median of non-empty numeric samples.
+ 
+ @param values - Samples whose midpoint represents central latency.
+ 
+ @returns Median sample value.
+ 
+ @throws {@link BenchmarkError} when no samples are supplied.
+ 
+ @example
+ ```ts
+ median([1, 3, 2]);
+ ```
  */
 export function median(values: readonly number[]): number {
   if (values.length === 0) {
     throw new BenchmarkError('Cannot calculate median of empty samples.');
   }
   /**
-   * Ordered copy used to locate sample midpoint.
+   Ordered copy used to locate sample midpoint.
    */
   const sorted = sortNumbers(values);
   /**
-   * Integer midpoint index in ordered samples.
+   Integer midpoint index in ordered samples.
    */
   const middle = Math.floor(sorted.length / 2);
   if ((sorted.length % 2) !== 0) {
@@ -100,14 +100,14 @@ export function median(values: readonly number[]): number {
     });
   }
   /**
-   * Lower midpoint for even sample counts.
+   Lower midpoint for even sample counts.
    */
   const lower = requiredNumberAt({
     values: sorted,
     index: middle - 1
   });
   /**
-   * Upper midpoint for even sample counts.
+   Upper midpoint for even sample counts.
    */
   const upper = requiredNumberAt({
     values: sorted,
@@ -117,29 +117,29 @@ export function median(values: readonly number[]): number {
 }
 
 /**
- * Calculate nearest-rank ninety-fifth percentile of non-empty samples.
- *
- * @param values - Samples whose upper-tail latency is required.
- *
- * @returns Ninety-fifth percentile sample value.
- *
- * @throws {@link BenchmarkError} when no samples are supplied.
- *
- * @example
- * ```ts
- * p95([1, 2, 3]);
- * ```
+ Calculate nearest-rank ninety-fifth percentile of non-empty samples.
+ 
+ @param values - Samples whose upper-tail latency is required.
+ 
+ @returns Ninety-fifth percentile sample value.
+ 
+ @throws {@link BenchmarkError} when no samples are supplied.
+ 
+ @example
+ ```ts
+ p95([1, 2, 3]);
+ ```
  */
 export function p95(values: readonly number[]): number {
   if (values.length === 0) {
     throw new BenchmarkError('Cannot calculate percentile of empty samples.');
   }
   /**
-   * Ordered copy used for nearest-rank lookup.
+   Ordered copy used for nearest-rank lookup.
    */
   const sorted = sortNumbers(values);
   /**
-   * Zero-based nearest-rank percentile position.
+   Zero-based nearest-rank percentile position.
    */
   const rank = Math.ceil(sorted.length * NINETY_FIFTH_PERCENTILE) - 1;
   return requiredNumberAt({
@@ -149,22 +149,22 @@ export function p95(values: readonly number[]): number {
 }
 
 /**
- * Calculate median absolute deviation of non-empty samples.
- *
- * @param values - Samples whose robust spread is required.
- *
- * @returns Median distance from sample median.
- *
- * @throws {@link BenchmarkError} when no samples are supplied.
- *
- * @example
- * ```ts
- * medianAbsoluteDeviation([1, 2, 3]);
- * ```
+ Calculate median absolute deviation of non-empty samples.
+ 
+ @param values - Samples whose robust spread is required.
+ 
+ @returns Median distance from sample median.
+ 
+ @throws {@link BenchmarkError} when no samples are supplied.
+ 
+ @example
+ ```ts
+ medianAbsoluteDeviation([1, 2, 3]);
+ ```
  */
 export function medianAbsoluteDeviation(values: readonly number[]): number {
   /**
-   * Median used as robust distribution center.
+   Median used as robust distribution center.
    */
   const center = median(values);
   return median(values.map(function distanceFromCenter(value: number): number {
@@ -173,16 +173,16 @@ export function medianAbsoluteDeviation(values: readonly number[]): number {
 }
 
 /**
- * Extract direct Git latencies from paired samples.
- *
- * @param samples - Paired measurements.
- *
- * @returns Direct Git latency values in sample order.
- *
- * @example
- * ```ts
- * directValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
- * ```
+ Extract direct Git latencies from paired samples.
+ 
+ @param samples - Paired measurements.
+ 
+ @returns Direct Git latency values in sample order.
+ 
+ @example
+ ```ts
+ directValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
+ ```
  */
 export function directValues(samples: readonly Sample[]): readonly number[] {
   return samples.map(function selectDirect(sample: Sample): number {
@@ -191,16 +191,16 @@ export function directValues(samples: readonly Sample[]): readonly number[] {
 }
 
 /**
- * Extract wrapper latencies from paired samples.
- *
- * @param samples - Paired measurements.
- *
- * @returns Wrapper latency values in sample order.
- *
- * @example
- * ```ts
- * wrapperValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
- * ```
+ Extract wrapper latencies from paired samples.
+ 
+ @param samples - Paired measurements.
+ 
+ @returns Wrapper latency values in sample order.
+ 
+ @example
+ ```ts
+ wrapperValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
+ ```
  */
 export function wrapperValues(samples: readonly Sample[]): readonly number[] {
   return samples.map(function selectWrapper(sample: Sample): number {
@@ -209,16 +209,16 @@ export function wrapperValues(samples: readonly Sample[]): readonly number[] {
 }
 
 /**
- * Extract wrapper-added latencies from paired samples.
- *
- * @param samples - Paired measurements.
- *
- * @returns Wrapper-added latency values in sample order.
- *
- * @example
- * ```ts
- * addedValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
- * ```
+ Extract wrapper-added latencies from paired samples.
+ 
+ @param samples - Paired measurements.
+ 
+ @returns Wrapper-added latency values in sample order.
+ 
+ @example
+ ```ts
+ addedValues([{ directMs: 1, wrapperMs: 2, addedMs: 1 }]);
+ ```
  */
 export function addedValues(samples: readonly Sample[]): readonly number[] {
   return samples.map(function selectAdded(sample: Sample): number {
@@ -227,46 +227,46 @@ export function addedValues(samples: readonly Sample[]): readonly number[] {
 }
 
 /**
- * Determine whether recent warm-up windows have stable direct and wrapper medians.
- *
- * @param samples - Warm-up pairs accumulated in execution order.
- *
- * @returns Whether both measurements remain within stability ratio.
- *
- * @example
- * ```ts
- * warmupsAreStable([]);
- * ```
+ Determine whether recent warm-up windows have stable direct and wrapper medians.
+ 
+ @param samples - Warm-up pairs accumulated in execution order.
+ 
+ @returns Whether both measurements remain within stability ratio.
+ 
+ @example
+ ```ts
+ warmupsAreStable([]);
+ ```
  */
 export function warmupsAreStable(samples: readonly Sample[]): boolean {
   if (samples.length < MINIMUM_WARMUPS) {
     return false;
   }
   /**
-   * Warm-up window immediately preceding current window.
+   Warm-up window immediately preceding current window.
    */
   const previous = samples.slice(
     -(2 * WARMUP_WINDOW),
     -WARMUP_WINDOW
   );
   /**
-   * Most recently recorded warm-up window.
+   Most recently recorded warm-up window.
    */
   const current = samples.slice(-WARMUP_WINDOW);
   /**
-   * Previous direct Git median used as drift denominator.
+   Previous direct Git median used as drift denominator.
    */
   const previousDirect = median(directValues(previous));
   /**
-   * Previous wrapper median used as drift denominator.
+   Previous wrapper median used as drift denominator.
    */
   const previousWrapper = median(wrapperValues(previous));
   /**
-   * Relative direct Git median drift between adjacent windows.
+   Relative direct Git median drift between adjacent windows.
    */
   const directDrift = Math.abs(median(directValues(current)) - previousDirect) / previousDirect;
   /**
-   * Relative wrapper median drift between adjacent windows.
+   Relative wrapper median drift between adjacent windows.
    */
   const wrapperDrift = Math.abs(median(wrapperValues(current)) - previousWrapper) / previousWrapper;
   return (directDrift <= STABILITY_RATIO) && (wrapperDrift <= STABILITY_RATIO);

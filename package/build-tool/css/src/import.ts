@@ -1,11 +1,11 @@
 /**
- * Monorepo-aware `\@import` inlining over the css-edit CST.
- *
- * Resolution strategy (mirrors CSS conventions):
- * 1. Relative paths (`./foo.css`, `../bar.css`): resolved against the importer
- * 2. Bare specifiers (`mixin.css`): tried as relative first (CSS treats these as relative)
- * 3. Package specifiers (`\@scope/pkg/path.css`, `pkg/path.css`): resolved via
- *    `node_modules` traversal, checking `exports` then `style`/`main` fields
+ Monorepo-aware `\@import` inlining over the css-edit CST.
+ 
+ Resolution strategy (mirrors CSS conventions):
+ 1. Relative paths (`./foo.css`, `../bar.css`): resolved against the importer
+ 2. Bare specifiers (`mixin.css`): tried as relative first (CSS treats these as relative)
+ 3. Package specifiers (`\@scope/pkg/path.css`, `pkg/path.css`): resolved via
+    `node_modules` traversal, checking `exports` then `style`/`main` fields
  */
 import {
   dirname,
@@ -34,16 +34,16 @@ import { isPackageSpecifier, } from './specifier.ts';
 //region Specifier extraction
 
 /**
- * Extracts the import target from an `\@import` prelude using parsed token
- * data: the first string token (covers `'x.css'` and `url("x.css")`) or URL
- * token (covers unquoted `url(x.css)`) wins, so trailing conditions such as
- * `layer(base)` or media queries never corrupt the specifier.
- *
- * @param node - Import at-rule.
- *
- * @returns Unescaped, unquoted specifier text.
- *
- * @throws When the prelude carries no string or url() target.
+ Extracts the import target from an `\@import` prelude using parsed token
+ data: the first string token (covers `'x.css'` and `url("x.css")`) or URL
+ token (covers unquoted `url(x.css)`) wins, so trailing conditions such as
+ `layer(base)` or media queries never corrupt the specifier.
+ 
+ @param node - Import at-rule.
+ 
+ @returns Unescaped, unquoted specifier text.
+ 
+ @throws When the prelude carries no string or url() target.
  */
 function importSpecifier(node: CssAtRule,): string {
   for (const token of node.preludeTokens) {
@@ -64,24 +64,24 @@ function importSpecifier(node: CssAtRule,): string {
 //region Import resolution
 
 /**
- * Resolves a CSS \@import specifier to an absolute file path, falling back to
- * {@link resolvePackage} for package specifiers.
- *
- * @param specifier - Bare import specifier (quotes/url() already stripped)
- *
- * @param fromFile - Absolute path of the importing file
- *
- * @returns Absolute path to the resolved CSS file
- *
- * @throws When the specifier cannot be resolved
- *
- * @example
- * ```ts
- * resolveSpecifier({
- *   specifier: './tokens.css',
- *   fromFile: '/project/src/main.css',
- * }); // → '/project/src/tokens.css'
- * ```
+ Resolves a CSS \@import specifier to an absolute file path, falling back to
+ {@link resolvePackage} for package specifiers.
+ 
+ @param specifier - Bare import specifier (quotes/url() already stripped)
+ 
+ @param fromFile - Absolute path of the importing file
+ 
+ @returns Absolute path to the resolved CSS file
+ 
+ @throws When the specifier cannot be resolved
+ 
+ @example
+ ```ts
+ resolveSpecifier({
+   specifier: './tokens.css',
+   fromFile: '/project/src/main.css',
+ }); // → '/project/src/tokens.css'
+ ```
  */
 function resolveSpecifier({
   specifier,
@@ -91,7 +91,7 @@ function resolveSpecifier({
   readonly fromFile: string;
 },): string {
   /**
-   * Directory containing the importing file
+   Directory containing the importing file
    */
   const fromDir = dirname(fromFile,);
 
@@ -105,7 +105,7 @@ function resolveSpecifier({
   // Explicit relative path
   if (specifier.startsWith('.',)) {
     /**
-     * Resolved absolute path from relative specifier
+     Resolved absolute path from relative specifier
      */
     const resolved = resolve(
       [
@@ -126,7 +126,7 @@ function resolveSpecifier({
     || ((!specifier.includes('/',)) && (!specifier.startsWith('@',))))
   {
     /**
-     * Attempt to resolve as relative path
+     Attempt to resolve as relative path
      */
     const asRelative = resolve(
       [
@@ -150,28 +150,28 @@ function resolveSpecifier({
 //region Inlining
 
 /**
- * Recursively inlines `\@import` rules: each specifier resolves via
- * {@link resolveSpecifier}, the file is read synchronously (in-memory registry
- * first, `node:fs` fallback), parsed, recursively inlined, and spliced in
- * place of the `\@import` node. Already-imported files (tracked in `imported`)
- * splice to nothing, preventing cycles and duplicates.
- *
- * @param root - Parsed stylesheet to process.
- *
- * @param fromFile - Absolute path of the file the stylesheet came from.
- *
- * @param imported - Absolute paths already inlined; mutated as files inline.
- *
- * @returns Stylesheet with every import replaced by its file's contents.
- *
- * @example
- * ```ts
- * inlineCssImports({
- *   root: parsed.root,
- *   fromFile: '/project/src/main.css',
- *   imported: new Set(['/project/src/main.css']),
- * });
- * ```
+ Recursively inlines `\@import` rules: each specifier resolves via
+ {@link resolveSpecifier}, the file is read synchronously (in-memory registry
+ first, `node:fs` fallback), parsed, recursively inlined, and spliced in
+ place of the `\@import` node. Already-imported files (tracked in `imported`)
+ splice to nothing, preventing cycles and duplicates.
+ 
+ @param root - Parsed stylesheet to process.
+ 
+ @param fromFile - Absolute path of the file the stylesheet came from.
+ 
+ @param imported - Absolute paths already inlined; mutated as files inline.
+ 
+ @returns Stylesheet with every import replaced by its file's contents.
+ 
+ @example
+ ```ts
+ inlineCssImports({
+   root: parsed.root,
+   fromFile: '/project/src/main.css',
+   imported: new Set(['/project/src/main.css']),
+ });
+ ```
  */
 export function inlineCssImports({
   root,
@@ -189,7 +189,7 @@ export function inlineCssImports({
         return node;
 
       /**
-       * Absolute path of the imported file.
+       Absolute path of the imported file.
        */
       const resolvedPath = resolveSpecifier({
         specifier: importSpecifier(node,),
@@ -203,7 +203,7 @@ export function inlineCssImports({
       imported.add(resolvedPath,);
 
       /**
-       * Imported file parsed and recursively inlined.
+       Imported file parsed and recursively inlined.
        */
       const importedRoot = inlineCssImports({
         root: parseCss({

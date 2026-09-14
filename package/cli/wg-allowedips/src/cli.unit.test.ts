@@ -21,11 +21,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Allowed input fixture path.
+         Allowed input fixture path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Disallowed input fixture path.
+         Disallowed input fixture path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -36,7 +36,7 @@ await describe({
           ),
         ],);
         /**
-         * Successful built command result.
+         Successful built command result.
          */
         const result = await runCli({
           args: [
@@ -58,11 +58,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Allowed input fixture path.
+         Allowed input fixture path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Partially loopback-covering disallowed input fixture path.
+         Partially loopback-covering disallowed input fixture path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -70,7 +70,7 @@ await describe({
           writeFile(disallowedPath, '127.0.0.0/9\n::1/128\n',),
         ],);
         /**
-         * Successful built command result with loopback coverage warning.
+         Successful built command result with loopback coverage warning.
          */
         const result = await runCli({
           args: [
@@ -95,11 +95,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Allowed input containing one route and independently missing domains.
+         Allowed input containing one route and independently missing domains.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Empty disallowed input fixture path.
+         Empty disallowed input fixture path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -107,7 +107,7 @@ await describe({
           writeFile(disallowedPath, 'second.invalid\n127.0.0.0/8\n::1/128\n',),
         ],);
         /**
-         * Successful built command result with warning-only DNS failures.
+         Successful built command result with warning-only DNS failures.
          */
         const result = await runCli({
           args: [
@@ -133,11 +133,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Allowed input fixture path.
+         Allowed input fixture path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Disallowed input fixture path.
+         Disallowed input fixture path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -145,7 +145,7 @@ await describe({
           writeFile(disallowedPath, '0.0.0.0/0\n::/0\n',),
         ],);
         /**
-         * Empty-result built command response.
+         Empty-result built command response.
          */
         const result = await runCli({
           args: [
@@ -169,7 +169,7 @@ await describe({
       name: 'fails when allowed option is missing',
       fn: async () => {
         /**
-         * Missing-allowed process result.
+         Missing-allowed process result.
          */
         const result = await runCli({
           args: [
@@ -187,7 +187,7 @@ await describe({
       name: 'fails when disallowed option is missing',
       fn: async () => {
         /**
-         * Missing-disallowed process result.
+         Missing-disallowed process result.
          */
         const result = await runCli({
           args: [
@@ -205,7 +205,7 @@ await describe({
       name: 'lets unknown-option failure propagate',
       fn: async () => {
         /**
-         * Strict parser process result.
+         Strict parser process result.
          */
         const result = await runCli({ args: ['--other',], },);
         expect(result.exitCode,).not.toBe(0,);
@@ -218,7 +218,7 @@ await describe({
       name: 'rejects positional input',
       fn: async () => {
         /**
-         * No-positionals parser result.
+         No-positionals parser result.
          */
         const result = await runCli({ args: ['allowed.txt',], },);
         expect(result.exitCode,).not.toBe(0,);
@@ -232,16 +232,16 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Existing allowed input path.
+         Existing allowed input path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Missing disallowed input path.
+         Missing disallowed input path.
          */
         const missingPath = `${directory.path}/missing.txt`;
         await writeFile(allowedPath, '192.0.2.1\n',);
         /**
-         * Missing-file process result.
+         Missing-file process result.
          */
         const result = await runCli({
           args: [

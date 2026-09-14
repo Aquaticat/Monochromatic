@@ -168,7 +168,7 @@ pub fn init_backend(
     // Why:      dmabuf v4 feedback needs the render node's device id so the client
     //           allocates buffers on the right GPU.
     let render_node = EGLDevice::device_for_display(backend.renderer().egl_context().display())
-        .and_then(|device| device.try_get_render_node());
+        .and_then(|device| return device.try_get_render_node());
 
     // What:     `let mut dmabuf_state = DmabufState::new();`. Fresh dmabuf state; `mut`
     //           because creating the global borrows it mutably.
@@ -250,7 +250,7 @@ pub fn init_backend(
     //           winit event source; tail expression.
     // Why:      Hand everything back to `run` for state construction and source
     //           registration.
-    Ok((
+    return Ok((
         BackendPieces {
             backend,
             output,

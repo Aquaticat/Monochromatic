@@ -1,7 +1,7 @@
 /**
- * Verifies built terminal-title extension behavior at the package output boundary.
- *
- * @module
+ Verifies built terminal-title extension behavior at the package output boundary.
+ 
+ @module
  */
 
 import type {
@@ -12,32 +12,32 @@ import type {
 //region Constants
 
 /**
- * Built extension path consumed by Pi package loading.
+ Built extension path consumed by Pi package loading.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Tool-start event name used by Pi extension hooks.
+ Tool-start event name used by Pi extension hooks.
  */
 const TOOL_START_EVENT = 'tool_execution_start';
 
 /**
- * Tool-end event name used by Pi extension hooks.
+ Tool-end event name used by Pi extension hooks.
  */
 const TOOL_END_EVENT = 'tool_execution_end';
 
 /**
- * Tool call id shared between start and end events in this verification.
+ Tool call id shared between start and end events in this verification.
  */
 const TOOL_CALL_ID = 'verify-call-1';
 
 /**
- * Command whose details must survive into the completion title.
+ Command whose details must survive into the completion title.
  */
 const VERIFY_COMMAND = 'ls -l';
 
 /**
- * Expected terminal title after command completion.
+ Expected terminal title after command completion.
  */
 const EXPECTED_TITLE = 'π Ran ls -l';
 
@@ -46,7 +46,7 @@ const EXPECTED_TITLE = 'π Ran ls -l';
 //region Types
 
 /**
- * Minimal handler signature registered through Pi's extension API.
+ Minimal handler signature registered through Pi's extension API.
  */
 type HandlerFn = (
   event: unknown,
@@ -54,12 +54,12 @@ type HandlerFn = (
 ) => unknown;
 
 /**
- * Map of extension event names to registered handlers.
+ Map of extension event names to registered handlers.
  */
 type RegistrationMap = Map<string, HandlerFn[]>;
 
 /**
- * Minimal context shape needed to capture title writes.
+ Minimal context shape needed to capture title writes.
  */
 type TitleContext = {
   readonly ui: {
@@ -68,11 +68,11 @@ type TitleContext = {
 };
 
 /**
- * Built terminal-title extension module shape.
+ Built terminal-title extension module shape.
  */
 type TerminalTitleExtensionModule = {
   /**
-   * Pi extension factory exported by the built package.
+   Pi extension factory exported by the built package.
    */
   default: ExtensionFactory;
 };
@@ -82,27 +82,27 @@ type TerminalTitleExtensionModule = {
 //region Harness
 
 /**
- * Creates fake Pi API that records extension event registrations.
- *
- * @returns fake API and registration map for verification
- *
- * @example
- * ```ts
- * const harness = createFakePiApi();
- * ```
+ Creates fake Pi API that records extension event registrations.
+ 
+ @returns fake API and registration map for verification
+ 
+ @example
+ ```ts
+ const harness = createFakePiApi();
+ ```
  */
 function createFakePiApi(): Readonly<{
   api: ExtensionAPI;
   registrations: RegistrationMap;
 }> {
   /**
-   * Mutable registration map populated by the fake `on()` implementation.
+   Mutable registration map populated by the fake `on()` implementation.
    */
   const registrations: RegistrationMap = new Map();
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- verification harness implements the `on()` surface this extension uses */
   /**
-   * Fake Pi API passed to the built extension factory.
+   Fake Pi API passed to the built extension factory.
    */
   const api = {
     on(
@@ -110,7 +110,7 @@ function createFakePiApi(): Readonly<{
       handler: HandlerFn,
     ): void {
       /**
-       * Existing handlers for this event, if any.
+       Existing handlers for this event, if any.
        */
       const existing = registrations.get(event,)
         ?? [];
@@ -132,21 +132,21 @@ function createFakePiApi(): Readonly<{
 }
 
 /**
- * Creates title-capturing context for built extension handlers.
- *
- * @returns fake context and captured title list
- *
- * @example
- * ```ts
- * const { ctx, titles } = createTitleContext();
- * ```
+ Creates title-capturing context for built extension handlers.
+ 
+ @returns fake context and captured title list
+ 
+ @example
+ ```ts
+ const { ctx, titles } = createTitleContext();
+ ```
  */
 function createTitleContext(): Readonly<{
   ctx: TitleContext;
   titles: string[];
 }> {
   /**
-   * Titles written by the extension under verification.
+   Titles written by the extension under verification.
    */
   const titles: string[] = [];
 
@@ -163,20 +163,20 @@ function createTitleContext(): Readonly<{
 }
 
 /**
- * Retrieves first handler registered for an event.
- *
- * @param handlers - because built extension registers handlers through fake API
- *
- * @param event - because verification needs specific tool lifecycle hooks
- *
- * @returns registered handler
- *
- * @throws when no handler exists for event
- *
- * @example
- * ```ts
- * getHandler({ handlers: [], event: TOOL_START_EVENT });
- * ```
+ Retrieves first handler registered for an event.
+ 
+ @param handlers - because built extension registers handlers through fake API
+ 
+ @param event - because verification needs specific tool lifecycle hooks
+ 
+ @returns registered handler
+ 
+ @throws when no handler exists for event
+ 
+ @example
+ ```ts
+ getHandler({ handlers: [], event: TOOL_START_EVENT });
+ ```
  */
 function getHandler(
   {
@@ -188,7 +188,7 @@ function getHandler(
   }>,
 ): HandlerFn {
   /**
-   * First registered handler. This extension registers one handler per event.
+   First registered handler. This extension registers one handler per event.
    */
   const [
     handler,
@@ -203,16 +203,16 @@ function getHandler(
 //region Verification
 
 /**
- * Detects built terminal-title extension module shape.
- *
- * @param value - imported module namespace from built package output
- *
- * @returns whether module matches {@link TerminalTitleExtensionModule}, exporting a Pi extension factory
- *
- * @example
- * ```ts
- * isTerminalTitleExtensionModule(await import('../dist/final/node/index.mjs'));
- * ```
+ Detects built terminal-title extension module shape.
+ 
+ @param value - imported module namespace from built package output
+ 
+ @returns whether module matches {@link TerminalTitleExtensionModule}, exporting a Pi extension factory
+ 
+ @example
+ ```ts
+ isTerminalTitleExtensionModule(await import('../dist/final/node/index.mjs'));
+ ```
  */
 function isTerminalTitleExtensionModule(
   value: unknown,
@@ -226,24 +226,24 @@ function isTerminalTitleExtensionModule(
 }
 
 /**
- * Verifies built extension preserves command details from start to end titles.
- *
- * Confirms the import via {@link isTerminalTitleExtensionModule}, registers
- * handlers through {@link createFakePiApi}, captures titles with
- * {@link createTitleContext}, and looks up handlers with {@link getHandler}.
- *
- * @returns verification result text
- *
- * @throws when built import, registration, or title behavior fails
- *
- * @example
- * ```ts
- * console.log(await verifyBuiltExtension());
- * ```
+ Verifies built extension preserves command details from start to end titles.
+ 
+ Confirms the import via {@link isTerminalTitleExtensionModule}, registers
+ handlers through {@link createFakePiApi}, captures titles with
+ {@link createTitleContext}, and looks up handlers with {@link getHandler}.
+ 
+ @returns verification result text
+ 
+ @throws when built import, registration, or title behavior fails
+ 
+ @example
+ ```ts
+ console.log(await verifyBuiltExtension());
+ ```
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isTerminalTitleExtensionModule(mod,)) {
@@ -253,20 +253,20 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API capturing built extension registrations.
+   Fake Pi API capturing built extension registrations.
    */
   const harness = createFakePiApi();
   await mod.default(harness.api,);
 
   /**
-   * Capturing context passed to built extension handlers.
+   Capturing context passed to built extension handlers.
    */
   const {
     ctx,
     titles,
   } = createTitleContext();
   /**
-   * Registered built start handlers.
+   Registered built start handlers.
    */
   const startHandlers = harness
     .registrations
@@ -274,14 +274,14 @@ async function verifyBuiltExtension(): Promise<string> {
   if (startHandlers === undefined)
     throw new Error(`missing event registration: ${TOOL_START_EVENT}`,);
   /**
-   * Built start handler registered through Pi API.
+   Built start handler registered through Pi API.
    */
   const startHandler = getHandler({
     handlers: startHandlers,
     event: TOOL_START_EVENT,
   },);
   /**
-   * Registered built end handlers.
+   Registered built end handlers.
    */
   const endHandlers = harness
     .registrations
@@ -289,7 +289,7 @@ async function verifyBuiltExtension(): Promise<string> {
   if (endHandlers === undefined)
     throw new Error(`missing event registration: ${TOOL_END_EVENT}`,);
   /**
-   * Built end handler registered through Pi API.
+   Built end handler registered through Pi API.
    */
   const endHandler = getHandler({
     handlers: endHandlers,
@@ -317,7 +317,7 @@ async function verifyBuiltExtension(): Promise<string> {
   );
 
   /**
-   * Completion title emitted by the built extension.
+   Completion title emitted by the built extension.
    */
   const actualTitle = titles.at(-1,);
   if (actualTitle !== EXPECTED_TITLE) {

@@ -1,7 +1,7 @@
 /**
- * Unit tests for Linkup HTTP client request shaping and errors.
- *
- * @module
+ Unit tests for Linkup HTTP client request shaping and errors.
+ 
+ @module
  */
 
 import {
@@ -19,27 +19,27 @@ import {
 //region Fixtures
 
 /**
- * API key fixture that must never appear in errors.
+ API key fixture that must never appear in errors.
  */
 const SECRET_API_KEY = 'super-secret-linkup-key';
 
 /**
- * Search response fixture.
+ Search response fixture.
  */
 const SEARCH_RESPONSE = { results: [], };
 
 /**
- * Fetch response fixture.
+ Fetch response fixture.
  */
 const FETCH_RESPONSE = { markdown: 'hello', };
 
 /**
- * Blocklist fixture.
+ Blocklist fixture.
  */
 const BLOCKLIST = ['badwikipedia.invalid',] as const;
 
 /**
- * Base URL fixture.
+ Base URL fixture.
  */
 const BASE_URL = 'https://linkup.test/v1';
 
@@ -52,11 +52,11 @@ await describe({
       name: 'search sends q, fixed standard depth, fixed searchResults output, and global excludeDomains',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -65,7 +65,7 @@ await describe({
         },);
 
         /**
-         * Local value for requestBody.
+         Local value for requestBody.
          */
         const requestBody = requestJsonBody(firstFetchCall(mock,),) as LinkupSearchRequestBody;
         expect(requestBody.q,).toBe('What is Linkup?',);
@@ -78,11 +78,11 @@ await describe({
       name: 'search includes fromDate includeDomains and toDate when provided',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -96,7 +96,7 @@ await describe({
         },);
 
         /**
-         * Local value for requestBody.
+         Local value for requestBody.
          */
         const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect(requestBody,).toHaveProperty('fromDate', '2025-01-01',);
@@ -108,11 +108,11 @@ await describe({
       name: 'search does not send extension-unsupported per-call options',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -126,7 +126,7 @@ await describe({
         },);
 
         /**
-         * Local value for requestBody.
+         Local value for requestBody.
          */
         const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect('maxResults' in requestBody,).toBe(false,);
@@ -138,11 +138,11 @@ await describe({
       name: 'fetch sends fixed renderJs extractImages and includeRawHtml flags',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({ body: FETCH_RESPONSE, },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -151,7 +151,7 @@ await describe({
         },);
 
         /**
-         * Local value for requestBody.
+         Local value for requestBody.
          */
         const requestBody = requestJsonBody(firstFetchCall(mock,),);
         expect(requestBody,).toEqual({
@@ -166,7 +166,7 @@ await describe({
       name: 'non-2xx response throws without leaking API key',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({
           body: { error: { message: 'forbidden', }, },
@@ -174,7 +174,7 @@ await describe({
           statusText: 'Forbidden',
         },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -198,11 +198,11 @@ await describe({
       name: 'missing API key throws clear endpoint error',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetch({ body: SEARCH_RESPONSE, },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = createLinkupClient({
           blocklist: [],
@@ -229,11 +229,11 @@ await describe({
       name: 'invalid JSON response throws endpoint error',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockFetchText({ text: 'not json', },);
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -256,11 +256,11 @@ await describe({
       name: 'aborted request throws endpoint abort error',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockAbortFetch();
         /**
-         * Local value for client.
+         Local value for client.
          */
         const client = clientWithMock(mock.fetchImpl,);
 
@@ -284,39 +284,39 @@ await describe({
 //region Helpers
 
 /**
- * Recorded fetch call.
+ Recorded fetch call.
  */
 type FetchCall = {
   /**
-   * Request URL.
+   Request URL.
    */
   readonly input: RequestInfo | URL;
   /**
-   * Request init.
+   Request init.
    */
   readonly init: RequestInit;
 };
 
 /**
- * Mock fetch harness.
+ Mock fetch harness.
  */
 type FetchMock = {
   /**
-   * Fetch implementation passed to client.
+   Fetch implementation passed to client.
    */
   readonly fetchImpl: FetchLike;
   /**
-   * Recorded fetch calls.
+   Recorded fetch calls.
    */
   readonly calls: FetchCall[];
 };
 
 /**
- * Create client with common fixtures.
- *
- * @param fetchImpl - mocked fetch implementation
- *
- * @returns Linkup client
+ Create client with common fixtures.
+ 
+ @param fetchImpl - mocked fetch implementation
+ 
+ @returns Linkup client
  */
 function clientWithMock(fetchImpl: FetchLike,): LinkupClient {
   return createLinkupClient({
@@ -328,15 +328,15 @@ function clientWithMock(fetchImpl: FetchLike,): LinkupClient {
 }
 
 /**
- * Create JSON response fetch mock.
- *
- * @param body - response JSON body
- *
- * @param status - HTTP status
- *
- * @param statusText - HTTP status text
- *
- * @returns mock fetch harness
+ Create JSON response fetch mock.
+ 
+ @param body - response JSON body
+ 
+ @param status - HTTP status
+ 
+ @param statusText - HTTP status text
+ 
+ @returns mock fetch harness
  */
 function mockFetch(
   {
@@ -357,15 +357,15 @@ function mockFetch(
 }
 
 /**
- * Create text response fetch mock.
- *
- * @param text - response body text
- *
- * @param status - HTTP status
- *
- * @param statusText - HTTP status text
- *
- * @returns mock fetch harness
+ Create text response fetch mock.
+ 
+ @param text - response body text
+ 
+ @param status - HTTP status
+ 
+ @param statusText - HTTP status text
+ 
+ @returns mock fetch harness
  */
 function mockFetchText(
   {
@@ -379,17 +379,17 @@ function mockFetchText(
   },
 ): FetchMock {
   /**
-   * Local value for calls.
+   Local value for calls.
    */
   const calls: FetchCall[] = [];
   /**
-   * Fetch implementation returning configured response text.
-   *
-   * @param input - fetch input recorded for assertions
-   *
-   * @param init - fetch init recorded for assertions
-   *
-   * @returns configured response
+   Fetch implementation returning configured response text.
+   
+   @param input - fetch input recorded for assertions
+   
+   @param init - fetch init recorded for assertions
+   
+   @returns configured response
    */
   async function fetchImpl(
     input: Parameters<FetchLike>[0],
@@ -411,23 +411,23 @@ function mockFetchText(
 }
 
 /**
- * Create fetch mock that throws AbortError.
- *
- * @returns mock fetch harness
+ Create fetch mock that throws AbortError.
+ 
+ @returns mock fetch harness
  */
 function mockAbortFetch(): FetchMock {
   /**
-   * Local value for calls.
+   Local value for calls.
    */
   const calls: FetchCall[] = [];
   /**
-   * Fetch implementation throwing AbortError after recording input.
-   *
-   * @param input - fetch input recorded for assertions
-   *
-   * @param init - fetch init recorded for assertions
-   *
-   * @returns never resolves because it throws AbortError
+   Fetch implementation throwing AbortError after recording input.
+   
+   @param input - fetch input recorded for assertions
+   
+   @param init - fetch init recorded for assertions
+   
+   @returns never resolves because it throws AbortError
    */
   async function fetchImpl(
     input: Parameters<FetchLike>[0],
@@ -438,7 +438,7 @@ function mockAbortFetch(): FetchMock {
       init: init ?? {},
     },);
     /**
-     * Local value for error.
+     Local value for error.
      */
     const error = new Error('aborted by test');
     error.name = 'AbortError';
@@ -451,15 +451,15 @@ function mockAbortFetch(): FetchMock {
 }
 
 /**
- * Return first recorded fetch call.
- *
- * @param mock - fetch mock harness
- *
- * @returns first recorded fetch call
+ Return first recorded fetch call.
+ 
+ @param mock - fetch mock harness
+ 
+ @returns first recorded fetch call
  */
 function firstFetchCall(mock: FetchMock,): FetchCall {
   /**
-   * First recorded fetch call.
+   First recorded fetch call.
    */
   const [call,] = mock.calls;
   if (call === undefined)
@@ -468,17 +468,17 @@ function firstFetchCall(mock: FetchMock,): FetchCall {
 }
 
 /**
- * Parse JSON request body from recorded fetch call.
- *
- * @param call - recorded fetch call
- *
- * @returns parsed body record
+ Parse JSON request body from recorded fetch call.
+ 
+ @param call - recorded fetch call
+ 
+ @returns parsed body record
  */
 function requestJsonBody(call: FetchCall,): Record<string, unknown> {
   if ((typeof call.init.body) !== 'string')
     throw new Error('fetch body was not a string',);
   /**
-   * Local value for parsed.
+   Local value for parsed.
    */
   const parsed = JSON.parse(call.init.body,) as unknown;
   if ((parsed === null) || ((typeof parsed) !== 'object') || Array.isArray(parsed,))

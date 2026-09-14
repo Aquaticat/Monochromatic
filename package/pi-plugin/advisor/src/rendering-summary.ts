@@ -1,7 +1,7 @@
 /**
- * Plain-text rendering helpers for Advisor output.
- *
- * @module
+ Plain-text rendering helpers for Advisor output.
+ 
+ @module
  */
 
 import type { Theme, } from '@earendil-works/pi-coding-agent';
@@ -10,41 +10,41 @@ import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 
 /**
- * Milliseconds in one second for duration formatting.
+ Milliseconds in one second for duration formatting.
  */
 const MILLISECONDS_PER_SECOND = 1_000;
 
 /**
- * Markdown heading marker character.
+ Markdown heading marker character.
  */
 const MARKDOWN_HEADING_MARKER = '#';
 
 /**
- * Character separating Markdown heading marker from heading text.
+ Character separating Markdown heading marker from heading text.
  */
 const MARKDOWN_HEADING_SEPARATOR = ' ';
 
 //region Public helpers
 
 /**
- * Render Advisor result into a plain string for TUI Text components and tests.
- *
- * @param text - full Advisor text
- *
- * @param details - structured Advisor details
- *
- * @param expanded - whether full text should be shown
- *
- * @param theme - current pi theme
- *
- * @returns rendered text
- *
- * @mutates theme - theme methods can update Pi host styling caches
- *
- * @example
- * ```typescript
- * renderAdvisorSummary({ text, details, expanded: false, theme });
- * ```
+ Render Advisor result into a plain string for TUI Text components and tests.
+ 
+ @param text - full Advisor text
+ 
+ @param details - structured Advisor details
+ 
+ @param expanded - whether full text should be shown
+ 
+ @param theme - current pi theme
+ 
+ @returns rendered text
+ 
+ @mutates theme - theme methods can update Pi host styling caches
+ 
+ @example
+ ```typescript
+ renderAdvisorSummary({ text, details, expanded: false, theme });
+ ```
  */
 export function renderAdvisorSummary(
   {
@@ -60,7 +60,7 @@ export function renderAdvisorSummary(
   },
 ): string {
   /**
-   * Header line with model and duration metadata.
+   Header line with model and duration metadata.
    */
   const header = formatHeader({
     details,
@@ -70,11 +70,11 @@ export function renderAdvisorSummary(
     return `${header}\n\n${text}`;
 
   /**
-   * First advisory line for collapsed rendering.
+   First advisory line for collapsed rendering.
    */
   const firstLine = firstAdvisoryLine(text,);
   /**
-   * Styled first advisory line.
+   Styled first advisory line.
    */
   const styledFirstLine = theme.fg(
     'toolOutput',
@@ -84,22 +84,22 @@ export function renderAdvisorSummary(
 }
 
 /**
- * Extract first non-empty Advisor text line.
- *
- * @param text - full Advisor text
- *
- * @returns first non-empty line or fallback
- *
- * @example
- * ```typescript
- * firstAdvisoryLine('\nLooks good');
- * ```
+ Extract first non-empty Advisor text line.
+ 
+ @param text - full Advisor text
+ 
+ @returns first non-empty line or fallback
+ 
+ @example
+ ```typescript
+ firstAdvisoryLine('\nLooks good');
+ ```
  */
 export function firstAdvisoryLine(
   text: string,
 ): string {
   /**
-   * Non-empty response lines after whitespace normalization.
+   Non-empty response lines after whitespace normalization.
    */
   const nonEmptyLines = text
     .split('\n',)
@@ -118,16 +118,16 @@ export function firstAdvisoryLine(
 }
 
 /**
- * Runtime guard for Advisor details.
- *
- * @param value - value to inspect
- *
- * @returns whether value is Advisor details
- *
- * @example
- * ```typescript
- * isAdvisorDetails({ selectedSlug: 'p/m' });
- * ```
+ Runtime guard for Advisor details.
+ 
+ @param value - value to inspect
+ 
+ @returns whether value is Advisor details
+ 
+ @example
+ ```typescript
+ isAdvisorDetails({ selectedSlug: 'p/m' });
+ ```
  */
 export function isAdvisorDetails(
   value: unknown,
@@ -158,14 +158,14 @@ export function isAdvisorDetails(
 }
 
 /**
- * Build fallback details for malformed custom messages.
- *
- * @returns fallback Advisor details
- *
- * @example
- * ```typescript
- * fallbackDetails();
- * ```
+ Build fallback details for malformed custom messages.
+ 
+ @returns fallback Advisor details
+ 
+ @example
+ ```typescript
+ fallbackDetails();
+ ```
  */
 export function fallbackDetails(): AdvisorDetails {
   return {
@@ -187,24 +187,24 @@ export function fallbackDetails(): AdvisorDetails {
 //region Internal helpers
 
 /**
- * Detect Markdown ATX heading lines.
- *
- * @param line - trimmed Advisor response line
- *
- * @returns whether line starts with one or more hash markers followed by a space
+ Detect Markdown ATX heading lines.
+ 
+ @param line - trimmed Advisor response line
+ 
+ @returns whether line starts with one or more hash markers followed by a space
  */
 function isMarkdownHeadingLine(
   line: string,
 ): boolean {
   /**
-   * Line without leading indentation.
+   Line without leading indentation.
    */
   const trimmedLine = line.trimStart();
   if (!trimmedLine.startsWith(MARKDOWN_HEADING_MARKER,))
     return false;
 
   /**
-   * Index of first non-heading-marker character.
+   Index of first non-heading-marker character.
    */
   const firstNonMarkerIndex = firstNonHeadingMarkerIndex(trimmedLine,);
   return (firstNonMarkerIndex > 0)
@@ -212,17 +212,17 @@ function isMarkdownHeadingLine(
 }
 
 /**
- * Find first character index after leading Markdown heading markers.
- *
- * @param line - line starting with at least one heading marker
- *
- * @returns index after leading heading markers
+ Find first character index after leading Markdown heading markers.
+ 
+ @param line - line starting with at least one heading marker
+ 
+ @returns index after leading heading markers
  */
 function firstNonHeadingMarkerIndex(
   line: string,
 ): number {
   /**
-   * Cursor pointing at first non-heading-marker character.
+   Cursor pointing at first non-heading-marker character.
    */
   let cursor = 0;
   while (line.at(cursor,) === MARKDOWN_HEADING_MARKER) {
@@ -232,15 +232,15 @@ function firstNonHeadingMarkerIndex(
 }
 
 /**
- * Format Advisor result header.
- *
- * @param details - Advisor result details
- *
- * @param theme - current pi theme
- *
- * @returns styled header text
- *
- * @mutates theme - theme methods can update Pi host styling caches
+ Format Advisor result header.
+ 
+ @param details - Advisor result details
+ 
+ @param theme - current pi theme
+ 
+ @returns styled header text
+ 
+ @mutates theme - theme methods can update Pi host styling caches
  */
 function formatHeader(
   {
@@ -252,21 +252,21 @@ function formatHeader(
   },
 ): string {
   /**
-   * Styled tool name.
+   Styled tool name.
    */
   const title = theme.fg(
     'toolTitle',
     theme.bold(ADVISOR_TOOL_NAME,),
   );
   /**
-   * Styled selected model.
+   Styled selected model.
    */
   const model = theme.fg(
     'accent',
     details.selectedSlug,
   );
   /**
-   * Styled metadata.
+   Styled metadata.
    */
   const metadata = theme.fg(
     'dim',
@@ -276,11 +276,11 @@ function formatHeader(
 }
 
 /**
- * Format elapsed milliseconds.
- *
- * @param durationMs - elapsed milliseconds
- *
- * @returns human-readable duration
+ Format elapsed milliseconds.
+ 
+ @param durationMs - elapsed milliseconds
+ 
+ @returns human-readable duration
  */
 function formatDuration(
   durationMs: number,
@@ -291,17 +291,17 @@ function formatDuration(
 }
 
 /**
- * Format context metadata.
- *
- * @param details - Advisor result details
- *
- * @returns context metadata summary
+ Format context metadata.
+ 
+ @param details - Advisor result details
+ 
+ @returns context metadata summary
  */
 function formatContext(
   details: AdvisorDetails,
 ): string {
   /**
-   * Truncation marker for concise output.
+   Truncation marker for concise output.
    */
   const truncated = details.truncated ? 'truncated' : 'full';
   return [

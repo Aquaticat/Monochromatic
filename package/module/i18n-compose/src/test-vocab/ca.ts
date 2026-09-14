@@ -1,7 +1,7 @@
 /**
- * Test-only Catalan vocabulary tables.
- *
- * @module
+ Test-only Catalan vocabulary tables.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 
 /**
- * Catalan label table for tests.
+ Catalan label table for tests.
  */
 export const caLabels: Record<TestLabel, string> = {
   siteName: 'Aquaticat',
@@ -31,7 +31,7 @@ export const caLabels: Record<TestLabel, string> = {
 };
 
 /**
- * Catalan subject table for tests.
+ Catalan subject table for tests.
  */
 export const caSubjects: Record<TestSubject, SubjectEntry> = {
   I: {
@@ -61,7 +61,7 @@ export const caSubjects: Record<TestSubject, SubjectEntry> = {
 };
 
 /**
- * Catalan noun table for tests.
+ Catalan noun table for tests.
  */
 export const caNouns: Record<TestNoun, NounEntry> = {
   cat: {
@@ -112,29 +112,29 @@ export const caNouns: Record<TestNoun, NounEntry> = {
 };
 
 /**
- * Builds a {@link ReadonlyMap} from a record literal while preserving the
- * record's literal key type. Lets the finite inflection tables stay readable
- * object literals at the call site while the stored shape is a `Map`, which
- * models the sparse tense level directly instead of a `Partial<Record>` escape.
- *
- * @param record - source key/value pairs
- *
- * @returns map mirroring `record` with its literal key type intact
- *
- * @mutates record - `Object.entries` can invoke caller-owned accessors and proxy traps while collecting values.
- *
- * @example
- * ```ts
- * const present = toReadonlyMap<PersonNumberKey, string>({ '1s': 'tinc', },);
- * present.get('1s',); // 'tinc'
- * ```
+ Builds a {@link ReadonlyMap} from a record literal while preserving the
+ record's literal key type. Lets the finite inflection tables stay readable
+ object literals at the call site while the stored shape is a `Map`, which
+ models the sparse tense level directly instead of a `Partial<Record>` escape.
+ 
+ @param record - source key/value pairs
+ 
+ @returns map mirroring `record` with its literal key type intact
+ 
+ @mutates record - `Object.entries` can invoke caller-owned accessors and proxy traps while collecting values.
+ 
+ @example
+ ```ts
+ const present = toReadonlyMap<PersonNumberKey, string>({ '1s': 'tinc', },);
+ present.get('1s',); // 'tinc'
+ ```
  */
 function toReadonlyMap<const K extends string, V,>(
   record: ForeignBorrowed<Record<K, V>>,
 ): ReadonlyMap<K, V> {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() widens keys to string; the record's own `K` is the source of truth, so the cast restores it, routed through `unknown` because the generic key blocks a direct narrowing assertion. */
   /**
-   * Record entries retyped so the resulting Map keeps `K` instead of `string`.
+   Record entries retyped so the resulting Map keeps `K` instead of `string`.
    */
   const entries = Object.entries(record,) as unknown as readonly (readonly [
     K,
@@ -145,7 +145,7 @@ function toReadonlyMap<const K extends string, V,>(
 }
 
 /**
- * Catalan verb table for tests.
+ Catalan verb table for tests.
  */
 export const caVerbs: Record<TestVerb, CatalanVerbEntry> = {
   have: {

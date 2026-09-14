@@ -51,7 +51,7 @@ fn main() -> Result<ExitCode> {
     //           `info` if it is unset/invalid. `.unwrap_or_else(closure)` supplies the
     //           fallback lazily.
     // Why:      Sensible default verbosity, overridable via the environment.
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info"));
 
     // What:     `tracing_subscriber::fmt().with_env_filter(filter).with_writer(
     //           std::io::stderr).init();`. Install the global log subscriber writing to
@@ -91,5 +91,5 @@ fn main() -> Result<ExitCode> {
     // ```ts
     // return code & 0xff;
     // ```
-    Ok(ExitCode::from(code as u8))
+    return Ok(ExitCode::from(code as u8))
 }

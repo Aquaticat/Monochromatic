@@ -169,6 +169,13 @@ Notifications,
  don't poll.
 Stop only at completion or genuine blocker.
 
+MWK:
+ Monitors,
+ wakeups and the like must rarely wake the main agent.
+Emit only terminal states and lines you would act on,
+ never routine progress;
+ prefer one completion notification over a stream.
+
 PXQ:
  "Completion" in PX1 means the queue,
  not the task.
@@ -253,12 +260,19 @@ CKA:
  genuine handoff -> invoke `runbook` skill.
 
 CKB:
- User corrected a claim?
- Prior verification was insufficient:
- re-read primary sources,
- run commands,
- or use separate reviewer.
-Never same-session self-review (`doc/agent/self-review.md`).
+ Correction?
+ Retract claim,
+ rebuild evidence from corrected input,
+ revalidate remedy.
+Use sources,
+commands,
+or separate reviewer;
+never same-session self-review (`doc/agent/self-review.md`).
+
+XIC:
+ Similar or concurrent symptoms stay separate incidents until user-visible boundaries match.
+Removing a present component proves removal,
+not causation or remediation.
 
 ### Measure-vs-ask
 
@@ -283,6 +297,11 @@ QJ1:
 Agent has tools;
  using them is its job,
  not user's.
+
+DVP:
+ Target device available:
+ probe its current settings and limits directly before web research.
+Use external sources only to explain direct evidence or when the device probe cannot answer.
 
 QAB:
  Before-state reading isn't after-state evidence.
@@ -370,6 +389,62 @@ Mechanism choices with data to measure:
  record.
 Ask only for values or authority.
 
+QVE:
+ Visual review starts from the accepted design,
+then names consequential concerns the user did not raise.
+Explore them with built variants;
+never substitute a vague approval question.
+
+CXD:
+ **Cross-cue distinction:**
+ Use two visible channels (color,
+ weight,
+ icon,
+ label,
+ boundary,
+ position) for states and action prominence.
+Preserve content space;
+never rely on color or shape alone.
+
+PFG:
+ Minimum padding or spacing is a hard floor.
+Test fit at that floor;
+reflow or truncate permitted content when it fails.
+Never introduce a below-minimum compact fallback.
+
+QVM:
+ Design matrix includes pros,
+cons,
+analysis,
+full ranking,
+recommended additions.
+End with separable questions whose answers select among visible new variants.
+
+MXQ:
+ Matrix size follows consequential independent dimensions and meaningful variants.
+Never cap cells to a number mentioned only as an example.
+
+QCS:
+ A quality-over-cost guideline makes cost a non-constraint.
+Options differing only in price aren't user questions:
+ pick the one buying more evidence or better output,
+ record it,
+ invite veto.
+
+QSP:
+ Never bundle separable decisions into one option set,
+ nor offer complements as alternatives.
+Split by what each actually decides;
+ answering both "yes,
+ in this order" must be reachable.
+
+QPM:
+ Every option set asserts a shared premise.
+Before asking which mechanism,
+ try dissolving the constraint that demands one;
+ offer the menu only if it survives.
+Dissolving beats choosing.
+
 ### Present options with pros, cons, and a personal ranking
 
 OPT:
@@ -394,6 +469,69 @@ OPI:
 
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
+
+HFM:
+ Visual-design questions:
+ render one self-contained HTML form
+ and verify it.
+Include built options,
+ pros/cons,
+ ranking,
+ and final free text.
+
+HDM:
+ HTML visual-review artifacts follow the viewer's system color scheme.
+Build and verify light and dark review chrome;
+open the artifact in current system mode.
+
+ZDV:
+ Device mockups:
+ capture at cited physical px;
+display 100% at cited dp;
+show px,
+dp,
+current scale + reset.
+Never upscale a dp-sized bitmap.
+
+BZF:
+ Device visuals use measured target frame:
+ opaque chassis,
+bezels,
+hinge + corners.
+Place screenshot inside screen opening;
+never clip it to reveal page.
+
+ANB:
+ Android device mocks show status + navigation bars with current target geometry.
+Keep app controls out of cutouts and system insets;
+screen dimensions include these bars.
+
+AVP:
+ Android screen comparisons:
+build a nonfunctional Compose prototype,
+install on target emulator,
+and capture each candidate at panel px before HTML presentation.
+
+HUP:
+ Ongoing design sessions:
+ update current handover after each correction,
+ answer,
+ decision,
+ candidate,
+ and verification;
+never wait for session end.
+
+VHI:
+ Visual handoffs state purpose,
+ changed details,
+ what to inspect,
+ and exact response path in the artifact.
+Never make unexplained internal labels the user's task.
+
+RVC:
+ Post-decision visual review shows the active design only.
+Keep rejected evidence in durable docs;
+compare discarded candidates only when user explicitly asks.
 
 OCG:
  Output cardinality never determines option occurrence grammar.
@@ -462,10 +600,17 @@ Before refusing,
  bridge:
  shell utils;
  web via `agent-browser`;
- GUI via `xdotool`/`wtype`/`ydotool`,
+ GUI via nested compositor,
  HTTP/IPC;
  auth via `expect`/tokens;
  hardware via CLI.
+
+VKI:
+ Synthetic key input:
+ use nested compositor or caller-independent broker.
+Never invoke `ydotool` from agent command;
+ its key-down can cancel caller before key-up,
+ wedging desktop input.
 
 BR2:
  Refuse/hand off only after attempting bridges + confirming no path exists;
@@ -659,6 +804,14 @@ HLT:
 List matches first;
  kill only intended PIDs.
 
+1CB:
+ At most three `&&`-chained steps per Bash call;
+ never `;` chains or loops:
+ uninspectable for user and auto mode.
+Longer multi-step work:
+ write a scratch `.ts` (`node:child_process`),
+ run that file.
+
 RGP:
  Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
@@ -705,6 +858,13 @@ Alternate-worktree writes:
  verify `pwd` + `git rev-parse --show-toplevel` first.
 
 ### Long-form flags
+
+CLH:
+ Before automating CLI prompts with pipes,
+ PTYs,
+ or drivers,
+ run `--help` and inspect current docs/source for native noninteractive flags.
+ Prefer flags over terminal emulation.
 
 LFF:
  Use long-form (`--flag`) CLI options,
@@ -1089,8 +1249,10 @@ ST2:
 
 ST3:
  Cross-package workspace imports use the package's `/ts` subpath,
- which must resolve to TypeScript source,
+ which resolves to TypeScript source,
  never built output.
+Rationale + accepted costs:
+ `doc/decision/workspace-ts-source-imports.md`.
 
 ST5:
  Prefer named imports,
@@ -1292,6 +1454,20 @@ LFW:
  inspect generated diffs,
  report unrelated drift separately.
 
+RCO:
+ Incumbent removal:
+ build coverage ledger of every consumed responsibility,
+ owner,
+ selection status,
+ parity test,
+ and retired behavior.
+Recommend removal only after every entry has a viable owner.
+
+RCI:
+ Replacement design:
+ inspect existing repo-owned generators and managers before proposing a new owner.
+Extend a present boundary when it already owns the responsibility.
+
 ### Adding new packages
 
 AP1:
@@ -1406,6 +1582,18 @@ Rewritten JS paths:
 VB6:
  Verification must cross artifact-consumer integration boundary;
  "it compiled"/"it installed" alone isn't verification.
+
+ATS:
+ Android custom interactive elements:
+ explicit minimum 48dp layout width + height.
+Never rely on Compose expanding touch beyond bounds where adjacent targets can overlap.
+
+SCF:
+ Screenshot after scripted input:
+ verify intended rendered state first,
+ then capture.
+Input command completion isn't frame completion;
+ recapture stale or transitional frames.
 
 ABR:
  `agent-browser` sessions outlive verification:
@@ -1530,6 +1718,7 @@ Root keeps only `README.md`,
  `SECURITY.md`,
  `AGENTS.md`,
  `CLAUDE.md`,
+ `LICENSE`,
  `LICENSES/`,
  tidy subdirs;
  `CONTEXT.md` forbidden.

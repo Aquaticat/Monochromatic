@@ -1,10 +1,10 @@
 /**
- * Package-level enumeration: mutants and tests per source file.
- *
- * @example
- * ```ts
- * const { groups, ignored } = await enumeratePackage(options);
- * ```
+ Package-level enumeration: mutants and tests per source file.
+ 
+ @example
+ ```ts
+ const { groups, ignored } = await enumeratePackage(options);
+ ```
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -21,7 +21,7 @@ import {
 import type { MutantGroup, } from './shards.ts';
 
 /**
- * Inputs shared with the orchestrator for one run.
+ Inputs shared with the orchestrator for one run.
  */
 export type EnumerationInputs = {
   repoRoot: string;
@@ -31,30 +31,30 @@ export type EnumerationInputs = {
 };
 
 /**
- * Enumerates mutants for every selected source file.
- *
- * @param options - Repository root, package path, and selection toggles.
- *
- * @returns Per-file groups plus suppression-ignored mutants.
- *
- * @example
- * ```ts
- * const { groups, ignored } = await enumeratePackage(options);
- * ```
+ Enumerates mutants for every selected source file.
+ 
+ @param options - Repository root, package path, and selection toggles.
+ 
+ @returns Per-file groups plus suppression-ignored mutants.
+ 
+ @example
+ ```ts
+ const { groups, ignored } = await enumeratePackage(options);
+ ```
  */
 export async function enumeratePackage(options: Readonly<EnumerationInputs>,): Promise<{
   readonly groups: readonly MutantGroup[];
   readonly ignored: readonly IgnoredMutant[];
 }> {
   /**
-   * Absolute package root on the host.
+   Absolute package root on the host.
    */
   const packageRoot = join(
     options.repoRoot,
     options.packagePath,
   );
   /**
-   * Source files under mutation.
+   Source files under mutation.
    */
   const sources = options.sourceFiles
     .length
@@ -62,7 +62,7 @@ export async function enumeratePackage(options: Readonly<EnumerationInputs>,): P
     ? options.sourceFiles
     : (await selectSources({ packageRoot, },)).files;
   /**
-   * Per-file enumeration joined with test selection.
+   Per-file enumeration joined with test selection.
    */
   const groups = await Promise.all(sources.map(
     async function toGroup(file,): Promise<{
@@ -70,7 +70,7 @@ export async function enumeratePackage(options: Readonly<EnumerationInputs>,): P
       readonly ignored: readonly IgnoredMutant[];
     }> {
       /**
-       * Enumeration for this source file.
+       Enumeration for this source file.
        */
       const enumeration = enumerateMutants({
         file,

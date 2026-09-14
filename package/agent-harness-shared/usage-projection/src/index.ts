@@ -1,7 +1,7 @@
 /**
- * Shared usage projection and rate-limit status formatting.
- *
- * @module
+ Shared usage projection and rate-limit status formatting.
+ 
+ @module
  */
 
 export {

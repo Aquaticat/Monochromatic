@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { discoverConfig, CONFIG_ABSENT, type DiscoveredConfig, } from './config-discovery.ts';
 import { TrustedConfigError, } from './config-loader.ts';
 import { listTrustRecords, trustIdentityKey, } from './registry-catalog.ts';
@@ -34,7 +34,10 @@ import {
   untrustConfig,
   untrustRepository,
 } from './trust-service.ts';
-import type { TrustConsentAdapters, } from './types.ts';
+import type {
+  TrustConsentAdapters,
+  TrustConsentOutcome,
+} from './types.ts';
 
 /** Real Git binary for nested disposable repositories. */
 const REAL_GIT = await resolveGit();
@@ -59,10 +62,10 @@ type RecursiveFixture = Readonly<{
 }>;
 
 /**
- * Initializes one real repository with config.
- *
- * @param path - repository path
- * @param source - config source
+ Initializes one real repository with config.
+ 
+ @param path - repository path
+ @param source - config source
  */
 async function initializeRepository({
   path,
@@ -77,9 +80,9 @@ async function initializeRepository({
 }
 
 /**
- * Creates nested disposable repositories.
- *
- * @returns recursive trust fixture
+ Creates nested disposable repositories.
+ 
+ @returns recursive trust fixture
  */
 async function createFixture(): Promise<RecursiveFixture> {
   /** Canonical disposable root. */
@@ -108,10 +111,10 @@ async function createFixture(): Promise<RecursiveFixture> {
 }
 
 /**
- * Discovers required fixture config.
- *
- * @param repository - repository root
- * @returns discovered MJS config
+ Discovers required fixture config.
+ 
+ @param repository - repository root
+ @returns discovered MJS config
  */
 async function discoverFixture(repository: string,): Promise<DiscoveredConfig> {
   /** Required discovered config. */
@@ -122,17 +125,17 @@ async function discoverFixture(repository: string,): Promise<DiscoveredConfig> {
 }
 
 /**
- * Creates deterministic queued consent adapters.
- *
- * @param answers - interactive answers in prompt order
- * @param disclosures - captured disclosure text
- * @returns deterministic consent adapters
+ Creates deterministic queued consent adapters.
+ 
+ @param answers - interactive answers in prompt order
+ @param disclosures - captured disclosure text
+ @returns deterministic consent adapters
  */
 function consentAdapters({
   answers,
   disclosures,
 }: Readonly<{
-  answers: readonly boolean[];
+  answers: readonly TrustConsentOutcome[];
   disclosures: string[];
 }>,): TrustConsentAdapters {
   /** Prompt cursor isolated to adapter fixture. */
@@ -143,7 +146,7 @@ function consentAdapters({
     },
     prompt: function nextConsent() {
       /** Next explicit answer. */
-      const answer = answers[state.index] ?? false;
+      const answer = answers[state.index] ?? 'declined';
       state.index += 1;
       return Promise.resolve(answer,);
     },
@@ -168,7 +171,7 @@ await describe({
           discovered: outer,
           registryRoot: fixture.registryRoot,
           yes: false,
-          adapters: consentAdapters({ answers: [true, true,], disclosures, },),
+          adapters: consentAdapters({ answers: ['approved', 'approved',], disclosures, },),
         },);
         expect(disclosures,).toHaveLength(2,);
         expect(disclosures[1],).toContain(fixture.outer,);
@@ -206,7 +209,7 @@ await describe({
           discovered: outer,
           registryRoot: fixture.registryRoot,
           yes: false,
-          adapters: consentAdapters({ answers: [true, false,], disclosures: [], },),
+          adapters: consentAdapters({ answers: ['approved', 'declined',], disclosures: [], },),
         },);
         expect(trusted.record.recursiveChildren,).toBe(false,);
         /** Descendant remains untrusted without recursive authority. */
@@ -220,6 +223,77 @@ await describe({
           }
         })();
         expect(failure,).toBeInstanceOf(TrustedConfigError,);
+      },
+    },),
+    it({
+      name: 'unavailable recursive consent leaves root untrusted',
+      fn: async function testUnavailableRecursiveConsent() {
+        await using fixture = await createFixture();
+        /** Recursive root config. */
+        const outer = await discoverFixture(fixture.outer,);
+        /** Failure from unavailable second consent stage. */
+        const failure = await (async function captureUnavailableConsent(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered: outer,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: consentAdapters({
+                answers: ['approved', 'unavailable',],
+                disclosures: [],
+              },),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await inspectTrust({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+        },)).reason,).toBe('untrusted',);
+      },
+    },),
+    it({
+      name: 'unavailable recursive re-trust preserves previous MJS record',
+      fn: async function testUnavailableRecursiveRetrust() {
+        await using fixture = await createFixture();
+        /** Recursive root config. */
+        const outer = await discoverFixture(fixture.outer,);
+        /** Previously installed recursive record. */
+        const initial = await trustMjs({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: consentAdapters({ answers: [], disclosures: [], },),
+        },);
+        /** Failure from unavailable second-stage re-trust consent. */
+        const failure = await (async function captureUnavailableRetrust(): Promise<unknown> {
+          try {
+            return await trustMjs({
+              discovered: outer,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: consentAdapters({
+                answers: ['approved', 'unavailable',],
+                disclosures: [],
+              },),
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await loadTrustedConfig({
+          discovered: outer,
+          registryRoot: fixture.registryRoot,
+        },)).record,).toEqual(initial.record,);
       },
     },),
     it({

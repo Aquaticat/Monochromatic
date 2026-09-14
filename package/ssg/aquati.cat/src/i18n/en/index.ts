@@ -1,7 +1,7 @@
 import type { Label, } from '../labels-types.ts';
 
 /**
- * English (base locale) label table.
+ English (base locale) label table.
  */
 const en = {
   siteName: 'Aquaticat',

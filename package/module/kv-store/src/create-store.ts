@@ -28,70 +28,70 @@ import type {
 } from './types.ts';
 
 /**
- * Creates a {@link Store} instance, using platform-specific default backends
- * when none are provided in the config.
- *
- * Falls back to a single in-memory `Map` when no backends are configured
- * and no platform builder has been registered.
- *
- * When {@link StoreConfig.eviction} is set, the store tracks access order
- * and evicts entries according to the configured policy.
- *
- * @param config - store configuration
- *
- * @returns initialized Store
- *
- * @example
- * ```ts
- * const store = await createStore({ storeId: 'my-cache' });
- * await store.set('key', [1, 2, 3]);
- * const arr = await store.get<number[]>('key');
- * ```
- *
- * @example
- * LRU-bounded store:
- * ```ts
- * const store = await createStore({
- *   storeId: 'bounded',
- *   eviction: [{ policy: 'lru', maxSize: 256 }],
- * });
- * ```
- *
- * @example
- * Custom backends:
- * ```ts
- * const memoryBackend = new Map<string, string>();
- * const store = await createStore({
- *   backends: [memoryBackend],
- *   storeId: 'custom',
- * });
- * ```
+ Creates a {@link Store} instance, using platform-specific default backends
+ when none are provided in the config.
+ 
+ Falls back to a single in-memory `Map` when no backends are configured
+ and no platform builder has been registered.
+ 
+ When {@link StoreConfig.eviction} is set, the store tracks access order
+ and evicts entries according to the configured policy.
+ 
+ @param config - store configuration
+ 
+ @returns initialized Store
+ 
+ @example
+ ```ts
+ const store = await createStore({ storeId: 'my-cache' });
+ await store.set('key', [1, 2, 3]);
+ const arr = await store.get<number[]>('key');
+ ```
+ 
+ @example
+ LRU-bounded store:
+ ```ts
+ const store = await createStore({
+   storeId: 'bounded',
+   eviction: [{ policy: 'lru', maxSize: 256 }],
+ });
+ ```
+ 
+ @example
+ Custom backends:
+ ```ts
+ const memoryBackend = new Map<string, string>();
+ const store = await createStore({
+   backends: [memoryBackend],
+   storeId: 'custom',
+ });
+ ```
  */
 export async function createStore(config: StoreConfig = {},): Promise<Store> {
   /**
-   * Caller-supplied identifier or freshly minted UUID; used in debug logs and passed to the platform backends builder.
+   Caller-supplied identifier or freshly minted UUID; used in debug logs and passed to the platform backends builder.
    */
   const storeId = config.storeId
     ?? crypto
     .randomUUID();
   /**
-   * Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends.
+   Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends.
    */
   const serializer: Serializer = config.serializer
     ?? superjsonStringify;
   /**
-   * Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly.
+   Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly.
    */
   const deserializer: Deserializer = config.deserializer
     ?? superjsonParse;
   /**
-   * When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values.
+   When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values.
    */
   const lossyForCircular = config.lossyForCircular
     ?? true;
 
   /**
-   * Non-empty list of storage backends; user-supplied, else the platform builder's output, else a single in-memory Map.
+   Non-empty list of storage backends; user-supplied, else the platform builder's output, else a single in-memory Map.
    */
   const backends: readonly [
     StorageBackend,
@@ -100,19 +100,19 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
     ?? await buildDefaultBackends({ storeId, },);
 
   /**
-   * Configured eviction policies; empty array means unbounded growth.
+   Configured eviction policies; empty array means unbounded growth.
    */
   const policies = config.eviction
     ?? [];
   /**
-   * First LRU policy in the list, or undefined when LRU is not configured.
+   First LRU policy in the list, or undefined when LRU is not configured.
    */
   const lruPolicy = policies.find(function isLru(p,) {
     return p.policy
       === 'lru';
   },);
   /**
-   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or a no-op tracker when LRU is not configured.
+   LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or a no-op tracker when LRU is not configured.
    */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
@@ -123,7 +123,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
   );
 
   /**
-   * Exposed Store instance; declared as a binding so member methods can self-reference for chaining.
+   Exposed Store instance; declared as a binding so member methods can self-reference for chaining.
    */
   const store: Store = {
     storeId,
@@ -138,7 +138,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
     ): Promise<Store> {
       defaultLogger.debug(`store.set: "${key}"`,);
       /**
-       * Serialized form written to every backend; computed once so all backends agree on byte-identical content.
+       Serialized form written to every backend; computed once so all backends agree on byte-identical content.
        */
       const serialized = serializeValue({
         value,
@@ -146,7 +146,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
         lossyForCircular,
       },);
       /**
-       * Effective storage key: the caller's key when non-empty, else a hash of the serialized value so empty keys still address something stable.
+       Effective storage key: the caller's key when non-empty, else a hash of the serialized value so empty keys still address something stable.
        */
       const resolvedKey = key.length
         === 0 ? await hashString(serialized,) : key;
@@ -173,14 +173,14 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
     async get<const T = unknown,>(key: string,): Promise<T | typeof ABSENT> {
       defaultLogger.debug(`store.get: "${key}"`,);
       /**
-       * Per-backend lookup results; feeds both consensus resolution and the healing pass.
+       Per-backend lookup results; feeds both consensus resolution and the healing pass.
        */
       const results = await queryAllBackends({
         backends,
         key,
       },);
       /**
-       * Consensus value across backends, or `ABSENT` when no backend held the key.
+       Consensus value across backends, or `ABSENT` when no backend held the key.
        */
       const canonicalSerialized = resolveConsensus({
         results,

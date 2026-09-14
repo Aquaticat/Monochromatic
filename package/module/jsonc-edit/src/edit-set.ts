@@ -10,37 +10,34 @@ import {
   JsoncPathNotFoundError,
   JsoncTypeError,
 } from './errors.ts';
-import type {
-  JsoncRecordEntry,
-  JsoncValue,
-} from './value.ts';
+import type { JsoncValue, } from './value.ts';
 
 //region Set
 
 /**
- * Rebuilds `node` with the value at the remaining path replaced by `newNode`,
- * descending the tree structurally one segment per level. A missing final key is
- * appended; a missing final array index equal to the length appends; any other
- * gap throws. The replaced value keeps its existing comment.
- *
- * @param node - Current node being descended.
- *
- * @param path - Full path being set.
- *
- * @param pathIndex - Index of the segment to resolve at this level.
- *
- * @param newNode - Replacement node for the path target.
- *
- * @returns Rebuilt node.
- *
- * @throws JsoncPathNotFoundError when an intermediate segment is missing.
- *
- * @throws JsoncTypeError when a segment cannot index the node's kind.
- *
- * @example
- * ```ts
- * setAtPath({ node, path: ['a'], pathIndex: 0, newNode });
- * ```
+ Rebuilds `node` with the value at the remaining path replaced by `newNode`,
+ descending the tree structurally one segment per level. A missing final key is
+ appended; a missing final array index equal to the length appends; any other
+ gap throws. The replaced value keeps its existing comment.
+ 
+ @param node - Current node being descended.
+ 
+ @param path - Full path being set.
+ 
+ @param pathIndex - Index of the segment to resolve at this level.
+ 
+ @param newNode - Replacement node for the path target.
+ 
+ @returns Rebuilt node.
+ 
+ @throws JsoncPathNotFoundError when an intermediate segment is missing.
+ 
+ @throws JsoncTypeError when a segment cannot index the node's kind.
+ 
+ @example
+ ```ts
+ setAtPath({ node, path: ['a'], pathIndex: 0, newNode });
+ ```
  */
 function setAtPath({
   node,
@@ -61,12 +58,12 @@ function setAtPath({
         comment: node.comment,
       };
   /**
-   * Segment resolved at this level.
+   Segment resolved at this level.
    */
   const segment = nonNullishOrThrow(path.at(pathIndex,),);
   if ((node.kind === 'record') && ((typeof segment) === 'string')) {
     /**
-     * Index of the last entry matching the key, or -1 when absent.
+     Index of the last entry matching the key, or -1 when absent.
      */
     const matchIndex = node.entries
       .findLastIndex(function matchesKey(entry,): boolean {
@@ -74,16 +71,17 @@ function setAtPath({
         .value
         === segment;
     },);
-    if (matchIndex !== (-1))
+    if (matchIndex !== (-1)) {
+      /**
+       Matched entry retained while its value is rebuilt.
+       */
+      const entry = nonNullishOrThrow(node.entries[matchIndex],);
       return {
         ...node,
         entries: node.entries
-          .map(function rebuildEntry(
-            entry: JsoncRecordEntry,
-            index: number,
-          ): JsoncRecordEntry {
-          return (index === matchIndex)
-            ? {
+          .with(
+            matchIndex,
+            {
               key: entry.key,
               value: setAtPath({
                 node: entry.value,
@@ -91,10 +89,10 @@ function setAtPath({
                 pathIndex: pathIndex + 1,
                 newNode,
               },),
-            }
-            : entry;
-        },),
+            },
+          ),
       };
+    }
     if (pathIndex === (path.length - 1))
       return {
         ...node,
@@ -109,26 +107,29 @@ function setAtPath({
     throw new JsoncPathNotFoundError({ path, },);
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
+    if (!Number.isInteger(segment,))
+      throw new JsoncPathNotFoundError({ path, },);
     if ((segment >= 0) && (segment
       < node.elements
-      .length))
+      .length)) {
+      /**
+       Matched element rebuilt while siblings retain identity.
+       */
+      const element = nonNullishOrThrow(node.elements[segment],);
       return {
         ...node,
         elements: node.elements
-          .map(function rebuildElement(
-            element: JsoncValue,
-            index: number,
-          ): JsoncValue {
-          return (index === segment)
-            ? setAtPath({
+          .with(
+            segment,
+            setAtPath({
               node: element,
               path,
               pathIndex: pathIndex + 1,
               newNode,
-            },)
-            : element;
-        },),
+            },),
+          ),
       };
+    }
     if ((segment
       === node.elements
       .length) && (pathIndex === (path.length - 1)))
@@ -147,26 +148,26 @@ function setAtPath({
 }
 
 /**
- * Sets the value at a path, returning a fresh state. Missing trailing keys (or an
- * array index equal to the length) are created; missing intermediate segments
- * throw. The target's comment is preserved.
- *
- * @param state - Edit state.
- *
- * @param path - Path to set; empty replaces the whole document.
- *
- * @param value - Plain JSON value to set.
- *
- * @returns Fresh state with the value applied.
- *
- * @throws JsoncPathNotFoundError when an intermediate segment is missing.
- *
- * @throws JsoncTypeError when a segment cannot index a node.
- *
- * @example
- * ```ts
- * jsoncSet({ state, path: ['a'], value: 2 });
- * ```
+ Sets the value at a path, returning a fresh state. Missing trailing keys (or an
+ array index equal to the length) are created; missing intermediate segments
+ throw. The target's comment is preserved.
+ 
+ @param state - Edit state.
+ 
+ @param path - Path to set; empty replaces the whole document.
+ 
+ @param value - Plain JSON value to set.
+ 
+ @returns Fresh state with the value applied.
+ 
+ @throws JsoncPathNotFoundError when an intermediate segment is missing.
+ 
+ @throws JsoncTypeError when a segment cannot index a node.
+ 
+ @example
+ ```ts
+ jsoncSet({ state, path: ['a'], value: 2 });
+ ```
  */
 export function jsoncSet({
   state,
@@ -192,26 +193,26 @@ export function jsoncSet({
 //region Delete
 
 /**
- * Rebuilds `node` with the path target removed. At the final segment the matching
- * record entries (all, since duplicates are undefined behavior) or the array
- * element are dropped; earlier segments are descended.
- *
- * @param node - Current node being descended.
- *
- * @param path - Full path being deleted.
- *
- * @param pathIndex - Index of the segment to resolve at this level.
- *
- * @returns Rebuilt node.
- *
- * @throws JsoncPathNotFoundError when an intermediate segment is missing.
- *
- * @throws JsoncTypeError when a segment cannot index the node's kind.
- *
- * @example
- * ```ts
- * deleteAtPath({ node, path: ['a'], pathIndex: 0 });
- * ```
+ Rebuilds `node` with the path target removed. At the final segment the matching
+ record entries (all, since duplicates are undefined behavior) or the array
+ element are dropped; earlier segments are descended.
+ 
+ @param node - Current node being descended.
+ 
+ @param path - Full path being deleted.
+ 
+ @param pathIndex - Index of the segment to resolve at this level.
+ 
+ @returns Rebuilt node.
+ 
+ @throws JsoncPathNotFoundError when an intermediate segment is missing.
+ 
+ @throws JsoncTypeError when a segment cannot index the node's kind.
+ 
+ @example
+ ```ts
+ deleteAtPath({ node, path: ['a'], pathIndex: 0 });
+ ```
  */
 function deleteAtPath({
   node,
@@ -223,11 +224,11 @@ function deleteAtPath({
   readonly pathIndex: number;
 },): JsoncValue {
   /**
-   * Segment resolved at this level.
+   Segment resolved at this level.
    */
   const segment = nonNullishOrThrow(path.at(pathIndex,),);
   /**
-   * Whether this segment addresses the value to remove.
+   Whether this segment addresses the value to remove.
    */
   const isLast = pathIndex === (path.length - 1);
   if ((node.kind === 'record') && ((typeof segment) === 'string')) {
@@ -242,7 +243,7 @@ function deleteAtPath({
         },),
       };
     /**
-     * Index of the last entry matching the key, or -1 when absent.
+     Index of the last entry matching the key, or -1 when absent.
      */
     const matchIndex = node.entries
       .findLastIndex(function matchesKey(entry,): boolean {
@@ -252,27 +253,29 @@ function deleteAtPath({
     },);
     if (matchIndex === (-1))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     Matched entry retained while its value is rebuilt.
+     */
+    const entry = nonNullishOrThrow(node.entries[matchIndex],);
     return {
       ...node,
       entries: node.entries
-        .map(function rebuildEntry(
-          entry: JsoncRecordEntry,
-          index: number,
-        ): JsoncRecordEntry {
-        return (index === matchIndex)
-          ? {
+        .with(
+          matchIndex,
+          {
             key: entry.key,
             value: deleteAtPath({
               node: entry.value,
               path,
               pathIndex: pathIndex + 1,
             },),
-          }
-          : entry;
-      },),
+          },
+        ),
     };
   }
   if ((node.kind === 'array') && ((typeof segment) === 'number')) {
+    if (!Number.isInteger(segment,))
+      throw new JsoncPathNotFoundError({ path, },);
     if (isLast)
       return {
         ...node,
@@ -288,21 +291,21 @@ function deleteAtPath({
       >= node.elements
       .length))
       throw new JsoncPathNotFoundError({ path, },);
+    /**
+     Matched element rebuilt while siblings retain identity.
+     */
+    const element = nonNullishOrThrow(node.elements[segment],);
     return {
       ...node,
       elements: node.elements
-        .map(function rebuildElement(
-          element: JsoncValue,
-          index: number,
-        ): JsoncValue {
-        return (index === segment)
-          ? deleteAtPath({
+        .with(
+          segment,
+          deleteAtPath({
             node: element,
             path,
             pathIndex: pathIndex + 1,
-          },)
-          : element;
-      },),
+          },),
+        ),
     };
   }
   throw new JsoncTypeError({
@@ -311,22 +314,22 @@ function deleteAtPath({
 }
 
 /**
- * Deletes the value at a path, returning a fresh state.
- *
- * @param state - Edit state.
- *
- * @param path - Path to delete; must be non-empty.
- *
- * @returns Fresh state with the value removed.
- *
- * @throws JsoncTypeError when the path is empty or a segment cannot index a node.
- *
- * @throws JsoncPathNotFoundError when an intermediate segment is missing.
- *
- * @example
- * ```ts
- * jsoncDelete({ state, path: ['a'] });
- * ```
+ Deletes the value at a path, returning a fresh state.
+ 
+ @param state - Edit state.
+ 
+ @param path - Path to delete; must be non-empty.
+ 
+ @returns Fresh state with the value removed.
+ 
+ @throws JsoncTypeError when the path is empty or a segment cannot index a node.
+ 
+ @throws JsoncPathNotFoundError when an intermediate segment is missing.
+ 
+ @example
+ ```ts
+ jsoncDelete({ state, path: ['a'] });
+ ```
  */
 export function jsoncDelete({
   state,

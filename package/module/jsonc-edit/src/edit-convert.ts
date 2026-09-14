@@ -7,19 +7,19 @@ import type { JsoncValue, } from './value.ts';
 //region JS value to node
 
 /**
- * Converts a plain JSON value into a structured node tree, with no `raw` tokens
- * and no comments. Used to expand the fast-path `plainJson` leaf for editing and
- * to build nodes for values set through the edit API.
- *
- * @param value - Plain JSON value.
- *
- * @returns Equivalent structured node.
- *
- * @example
- * ```ts
- * jsToNode({ value: { a: 1 } });
- * // => { kind: 'record', entries: [{ key: { value: 'a' }, value: { kind: 'number', value: 1 } }] }
- * ```
+ Converts a plain JSON value into a structured node tree, with no `raw` tokens
+ and no comments. Used to expand the fast-path `plainJson` leaf for editing and
+ to build nodes for values set through the edit API.
+ 
+ @param value - Plain JSON value.
+ 
+ @returns Equivalent structured node.
+ 
+ @example
+ ```ts
+ jsToNode({ value: { a: 1 } });
+ // => { kind: 'record', entries: [{ key: { value: 'a' }, value: { kind: 'number', value: 1 } }] }
+ ```
  */
 export function jsToNode({
   value,
@@ -72,18 +72,18 @@ export function jsToNode({
 //region Node to JS value
 
 /**
- * Converts a structured node back to a plain JSON value, discarding comments and
- * raw tokens. Duplicate record keys are malformed input, so last-wins applies
- * with no preservation guarantee.
- *
- * @param node - Node to flatten.
- *
- * @returns Plain JSON value.
- *
- * @example
- * ```ts
- * toJsValue({ node: { kind: 'number', value: 1 } }); // => 1
- * ```
+ Converts a structured node back to a plain JSON value, discarding comments and
+ raw tokens. Duplicate record keys are malformed input, so last-wins applies
+ with no preservation guarantee.
+ 
+ @param node - Node to flatten.
+ 
+ @returns Plain JSON value.
+ 
+ @example
+ ```ts
+ toJsValue({ node: { kind: 'number', value: 1 } }); // => 1
+ ```
  */
 export function toJsValue({
   node,

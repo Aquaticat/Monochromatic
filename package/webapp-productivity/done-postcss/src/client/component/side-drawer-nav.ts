@@ -1,21 +1,21 @@
 /**
- * Navigation DOM builders for the `\<side-drawer\>` component.
- *
- * Pure functions that construct `\<nav\>`, `\<header\>`, and close-button elements.
- * Used by both the inline sidebar and popover panel trees.
+ Navigation DOM builders for the `\<side-drawer\>` component.
+ 
+ Pure functions that construct `\<nav\>`, `\<header\>`, and close-button elements.
+ Used by both the inline sidebar and popover panel trees.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Builds a nav element with the standard link set.
- *
- * @returns Navigation element with app links
- *
- * @example
- * ```ts
- * const nav = buildNav();
- * sidebar.append(nav);
- * ```
+ Builds a nav element with the standard link set.
+ 
+ @returns Navigation element with app links
+ 
+ @example
+ ```ts
+ const nav = buildNav();
+ sidebar.append(nav);
+ ```
  */
 export function buildNav(): HTMLElement {
   return h({
@@ -46,20 +46,20 @@ export function buildNav(): HTMLElement {
 }
 
 /**
- * Builds a header row with a name label and an optional close button.
- *
- * @param closeButton - Close button element, omitted for the inline sidebar
- *
- * @returns Header element
- *
- * @example
- * ```ts
- * const header = buildHeader(closeButton);
- * ```
+ Builds a header row with a name label and an optional close button.
+ 
+ @param closeButton - Close button element, omitted for the inline sidebar
+ 
+ @returns Header element
+ 
+ @example
+ ```ts
+ const header = buildHeader(closeButton);
+ ```
  */
 export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
   /**
-   * Initial children list; the optional close button is appended only when supplied.
+   Initial children list; the optional close button is appended only when supplied.
    */
   const children: HTMLElement[] = [
     h({
@@ -78,20 +78,20 @@ export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
 }
 
 /**
- * Builds a close button with an X SVG icon.
- *
- * @param label - Accessible label for the button
- *
- * @returns Close button element
- *
- * @example
- * ```ts
- * const button = buildCloseButton('Close menu');
- * ```
+ Builds a close button with an X SVG icon.
+ 
+ @param label - Accessible label for the button
+ 
+ @returns Close button element
+ 
+ @example
+ ```ts
+ const button = buildCloseButton('Close menu');
+ ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
   /**
-   * Button element built first so its innerHTML can be set imperatively below.
+   Button element built first so its innerHTML can be set imperatively below.
    */
   const button = h({
     tag: 'button',

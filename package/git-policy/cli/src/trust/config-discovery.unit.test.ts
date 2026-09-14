@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   ConfigDiscoveryError,
   discoverConfig,
@@ -30,9 +30,9 @@ type DiscoveryFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git repository.
- *
- * @returns disposable discovery fixture
+ Creates disposable real Git repository.
+ 
+ @returns disposable discovery fixture
  */
 async function createFixture(): Promise<DiscoveryFixture> {
   /** Disposable fixture root. */

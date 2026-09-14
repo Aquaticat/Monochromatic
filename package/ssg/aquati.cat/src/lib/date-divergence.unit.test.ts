@@ -1,7 +1,7 @@
 /**
- * Tests for frontmatter date divergence warnings.
- *
- * @module
+ Tests for frontmatter date divergence warnings.
+ 
+ @module
  */
 
 import {
@@ -14,51 +14,51 @@ import type { Logger, } from './types.ts';
 import { warnOnAuthoredDateDivergence, } from './date-divergence.ts';
 
 /**
- * Git-derived publication date shared by warning fixtures.
+ Git-derived publication date shared by warning fixtures.
  */
 const GIT_PUBLISHED_DATE = new Date('2026-04-16T10:01:43.000Z',);
 
 /**
- * Git-derived update date shared by warning fixtures.
+ Git-derived update date shared by warning fixtures.
  */
 const GIT_UPDATED_DATE = new Date('2026-05-14T08:31:54.000Z',);
 
 /**
- * MDX path included in divergence warning messages.
+ MDX path included in divergence warning messages.
  */
 const FIXTURE_FILE_PATH = 'src/content/en/about.mdx';
 
 /**
- * Logger capture returned by `createWarningCapture`.
+ Logger capture returned by `createWarningCapture`.
  */
 type WarningCapture = {
   /**
-   * Warning messages emitted through the fake logger.
+   Warning messages emitted through the fake logger.
    */
   readonly warnings: string[];
   /**
-   * Logger subset accepted by the divergence function.
+   Logger subset accepted by the divergence function.
    */
   readonly l: Pick<Logger, 'warn'>;
 };
 
 /**
- * Creates a warning logger that records messages for assertions.
- *
- * @returns captured warning array and logger facade
- *
- * @example
- * ```ts
- * const { warnings, l } = createWarningCapture();
- * ```
+ Creates a warning logger that records messages for assertions.
+ 
+ @returns captured warning array and logger facade
+ 
+ @example
+ ```ts
+ const { warnings, l } = createWarningCapture();
+ ```
  */
 function createWarningCapture(): WarningCapture {
   /**
-   * Mutable capture buffer populated by the fake logger.
+   Mutable capture buffer populated by the fake logger.
    */
   const warnings: string[] = [];
   /**
-   * Logger facade that records warning messages.
+   Logger facade that records warning messages.
    */
   const l: Pick<Logger, 'warn'> = {
     warn: function warn(message,): void {
@@ -79,7 +79,7 @@ await describe({
       name: 'warns when authored dates differ from git calendar dates',
       fn: async function warnsForDivergentDates(): Promise<void> {
         /**
-         * Warning capture for this test case.
+         Warning capture for this test case.
          */
         const capture = createWarningCapture();
 
@@ -109,7 +109,7 @@ await describe({
       name: 'does not warn when authored dates share git calendar dates',
       fn: async function ignoresMatchingCalendarDates(): Promise<void> {
         /**
-         * Warning capture for this test case.
+         Warning capture for this test case.
          */
         const capture = createWarningCapture();
 

@@ -63,7 +63,7 @@ impl StripLayout {
         let active: Vec<PaneId> = groups.keys().copied().collect();
         self.lane_offsets
             .borrow_mut()
-            .retain(|parent, _| active.contains(parent));
+            .retain(|parent, _| return active.contains(parent));
         let mut updates = Vec::new();
         for parent in active {
             if let Some(parent_placement) = placement_by_id(&placements, parent)
@@ -94,7 +94,7 @@ impl StripLayout {
             let y = positions
                 .get(&placement.id)
                 .copied()
-                .unwrap_or_else(|| self.desired_y_for_pane(*placement));
+                .unwrap_or_else(|| return self.desired_y_for_pane(*placement));
             if let Some(view) = self.columns.borrow().get(placement.column) {
                 view.fixed.move_(&widget, 0.0, y);
             }
@@ -147,7 +147,7 @@ impl StripLayout {
         self.sync_lane_offsets_to_app_scroll();
         let settled = adj.value();
         let start = self.visual_y_for_pane(placement);
-        start >= settled && start + f64::from(PANE_HEIGHT) <= settled + page
+        return start >= settled && start + f64::from(PANE_HEIGHT) <= settled + page
     }
 
     /// What: recompute every sibling-group lane offset from the whole-app vertical scroll.
@@ -163,7 +163,7 @@ impl StripLayout {
                 let parent_placement = placement_by_id(&placements, *parent)?;
                 let max = self.lane_max_offset(parent_placement, children);
                 let top = scroll::row_y(parent_placement.row);
-                Some((*parent, (scroll - top).clamp(0.0, max)))
+                return Some((*parent, (scroll - top).clamp(0.0, max)))
             })
             .collect();
         for (parent, next) in updates {
@@ -177,17 +177,17 @@ impl StripLayout {
     /// Why: at max offset the lane's deepest direct child bottom reaches the viewport bottom.
     fn lane_max_offset(&self, parent: PanePlacement, children: &[PanePlacement]) -> f64 {
         let bottom = lane_base_bottom(parent, children);
-        (bottom - self.viewport_height()).max(0.0)
+        return (bottom - self.viewport_height()).max(0.0)
     }
 
     /// What: compute `placement`'s resolved content y-coordinate.
     /// Why: reveal code needs the same non-overlap and rail-bound position used by rendering.
     pub(super) fn visual_y_for_pane(&self, placement: PanePlacement) -> f64 {
         let placements = self.placements.borrow().clone();
-        self.resolved_y_positions(&placements)
+        return self.resolved_y_positions(&placements)
             .get(&placement.id)
             .copied()
-            .unwrap_or_else(|| self.desired_y_for_pane(placement))
+            .unwrap_or_else(|| return self.desired_y_for_pane(placement))
     }
 
     /// What: resolve all pane y positions without overlap inside every green rail.
@@ -201,13 +201,13 @@ impl StripLayout {
         }
         let mut positions = HashMap::new();
         for (_, mut column) in columns {
-            column.sort_by_key(|placement| (placement.row, placement.id.0));
+            column.sort_by_key(|placement| return (placement.row, placement.id.0));
             let resolved = self.resolve_column_positions(&column, placements, &groups);
             for (id, y) in resolved {
                 positions.insert(id, y);
             }
         }
-        positions
+        return positions
     }
 
     /// What: resolve one column's pane positions with forward/backward spacing passes.
@@ -227,7 +227,7 @@ impl StripLayout {
                     .allowed_y_for_pane_in(*placement, placements, groups)
                     .unwrap_or((f64::NEG_INFINITY, f64::INFINITY));
                 let y = self.desired_y_for_pane(*placement).clamp(min_y, max_y);
-                (placement.id, y, min_y, max_y)
+                return (placement.id, y, min_y, max_y)
             })
             .collect();
         for index in 1..rows.len() {
@@ -238,13 +238,13 @@ impl StripLayout {
             let ceiling = rows[index + 1].1 - stride;
             rows[index].1 = rows[index].1.min(ceiling).max(rows[index].2);
         }
-        rows.into_iter().map(|(id, y, _, _)| (id, y)).collect()
+        return rows.into_iter().map(|(id, y, _, _)| return (id, y)).collect()
     }
 
     /// What: compute desired sticky content y before rail and overlap constraints.
     /// Why: resolved layout starts from the sticky target, then constrains it.
     fn desired_y_for_pane(&self, placement: PanePlacement) -> f64 {
-        scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
+        return scroll::row_y(placement.row) + self.effective_offset_for_pane(placement.id)
     }
 
     /// What: compute vertical bounds shared by every green rail containing `placement`.
@@ -259,7 +259,7 @@ impl StripLayout {
         let mut max_y: Option<f64> = None;
         for (parent, children) in groups {
             let contains = *parent == placement.id
-                || children.iter().any(|child| child.id == placement.id);
+                || children.iter().any(|child| return child.id == placement.id);
             if !contains {
                 continue;
             }
@@ -268,11 +268,11 @@ impl StripLayout {
             };
             let top = scroll::row_y(parent_placement.row);
             let bottom = lane_base_bottom(parent_placement, children) - f64::from(PANE_HEIGHT);
-            min_y = Some(min_y.map_or(top, |current| current.max(top)));
-            max_y = Some(max_y.map_or(bottom, |current| current.min(bottom)));
+            min_y = Some(min_y.map_or(top, |current| return current.max(top)));
+            max_y = Some(max_y.map_or(bottom, |current| return current.min(bottom)));
         }
         let (min_y, max_y) = (min_y?, max_y?);
-        Some((min_y, max_y.max(min_y)))
+        return Some((min_y, max_y.max(min_y)))
     }
 
     /// What: compute lane offsets affecting `id`.
@@ -281,7 +281,7 @@ impl StripLayout {
     fn effective_offset_for_pane(&self, id: PaneId) -> f64 {
         let placements = self.placements.borrow();
         let offsets = self.lane_offsets.borrow();
-        let Some(placement) = placements.iter().find(|placement| placement.id == id) else {
+        let Some(placement) = placements.iter().find(|placement| return placement.id == id) else {
             return 0.0;
         };
         let mut total = 0.0;
@@ -290,10 +290,10 @@ impl StripLayout {
             total += offsets.get(&pane_id).copied().unwrap_or(0.0);
             current = placements
                 .iter()
-                .find(|placement| placement.id == pane_id)
-                .and_then(|placement| placement.parent);
+                .find(|placement| return placement.id == pane_id)
+                .and_then(|placement| return placement.parent);
         }
-        total
+        return total
     }
 
     /// What: compute a lane's fixed app-layout rectangle.
@@ -302,7 +302,7 @@ impl StripLayout {
     fn lane_rect(&self, parent: PanePlacement, children: &[PanePlacement]) -> LaneRect {
         let end_column = children
             .iter()
-            .map(|child| child.column)
+            .map(|child| return child.column)
             .max()
             .unwrap_or(parent.column);
         let column_span = end_column - parent.column + 1;
@@ -310,7 +310,7 @@ impl StripLayout {
         let y = scroll::row_y(parent.row);
         let width = lane_width(column_span);
         let height = lane_base_bottom(parent, children) - scroll::row_y(parent.row);
-        LaneRect {
+        return LaneRect {
             x,
             y,
             width,
@@ -325,12 +325,12 @@ impl StripLayout {
         let rect = self.lane_rect(parent, children);
         let max_child_row = children
             .iter()
-            .map(|child| child.row)
+            .map(|child| return child.row)
             .max()
             .unwrap_or(parent.row);
         let end_column = children
             .iter()
-            .map(|child| child.column)
+            .map(|child| return child.column)
             .max()
             .unwrap_or(parent.column);
         let detail = format!(
@@ -365,6 +365,6 @@ impl StripLayout {
         if height > 0 {
             return f64::from(height);
         }
-        f64::from(DEFAULT_HEIGHT)
+        return f64::from(DEFAULT_HEIGHT)
     }
 }

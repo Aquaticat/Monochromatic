@@ -1,11 +1,11 @@
 /**
- * JS-to-TOML value coercion.
- *
- * Produces canonical TOML text for an arbitrary JS value. Optionally
- * preserves style and raw spelling from an existing AST node when the new
- * numeric / string value equals the parse-time value.
- *
- * @module
+ JS-to-TOML value coercion.
+ 
+ Produces canonical TOML text for an arbitrary JS value. Optionally
+ preserves style and raw spelling from an existing AST node when the new
+ numeric / string value equals the parse-time value.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -25,34 +25,34 @@ export { encodeKey, } from './keys.ts';
 export { isPlainObject, } from './value-encoders.ts';
 
 /**
- * Optional existing AST node carrier.
- *
- * Marks parser-owned AST ingress once so observation helpers preserve foreign
- * ownership provenance without repeating markers on descendants.
+ Optional existing AST node carrier.
+ 
+ Marks parser-owned AST ingress once so observation helpers preserve foreign
+ ownership provenance without repeating markers on descendants.
  */
 export type ExistingNode = {
   readonly node: ForeignBorrowed<AST.TOMLNode>;
 };
 
 /**
- * Encode a JS value as TOML text suitable for assignment after `=`.
- *
- * When `existing` is provided and the new value matches its parsed value,
- * `style` / `multiline` / raw `number` / `datetime` spelling are preserved.
- *
- * @returns Computed string.
- *
- * @throws {@link TomlTypeError} for `null`, `undefined`, symbols, functions, or
- *         circular structures.
- *
- * @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
- *
- * @example
- * ```ts
- * jsValueToTomlText({ input: 42, options, },);              // '42'
- * jsValueToTomlText({ input: 'hi', options, },);            // '"hi"'
- * jsValueToTomlText({ input: { a: 1, }, options, },);       // '{ a = 1, }'
- * ```
+ Encode a JS value as TOML text suitable for assignment after `=`.
+ 
+ When `existing` is provided and the new value matches its parsed value,
+ `style` / `multiline` / raw `number` / `datetime` spelling are preserved.
+ 
+ @returns Computed string.
+ 
+ @throws {@link TomlTypeError} for `null`, `undefined`, symbols, functions, or
+         circular structures.
+ 
+ @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
+ 
+ @example
+ ```ts
+ jsValueToTomlText({ input: 42, options, },);              // '42'
+ jsValueToTomlText({ input: 'hi', options, },);            // '"hi"'
+ jsValueToTomlText({ input: { a: 1, }, options, },);       // '{ a = 1, }'
+ ```
  */
 export function jsValueToTomlText(
   {
@@ -66,7 +66,7 @@ export function jsValueToTomlText(
   },
 ): string {
   /**
-   * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
+   Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
    */
   const existingArg = existing === undefined ? {} : { existing, };
   return encodeValue({
@@ -78,15 +78,15 @@ export function jsValueToTomlText(
 }
 
 /**
- * Encode an arbitrary JS value as TOML text, recursively.
- *
- * @returns Computed string.
- *
- * @throws {@link TomlTypeError} for `null`, `undefined`, or any other value
- *         that is not a wrapped input, string, boolean, bigint, number,
- *         `Date`, array, or plain object.
- *
- * @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
+ Encode an arbitrary JS value as TOML text, recursively.
+ 
+ @returns Computed string.
+ 
+ @throws {@link TomlTypeError} for `null`, `undefined`, or any other value
+         that is not a wrapped input, string, boolean, bigint, number,
+         `Date`, array, or plain object.
+ 
+ @mutates input - Recursive encoding can invoke caller-owned proxy, getter, prototype, and serialization hooks.
  */
 function encodeValue(
   {
@@ -108,7 +108,7 @@ function encodeValue(
   }
 
   /**
-   * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
+   Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
    */
   const existingArg = existing === undefined ? {} : { existing, };
 
@@ -159,9 +159,9 @@ function encodeValue(
 }
 
 /**
- * Encode a JS string, preserving existing quote style if equal-valued.
- *
- * @returns Computed string.
+ Encode a JS string, preserving existing quote style if equal-valued.
+ 
+ @returns Computed string.
  */
 function encodeString(
   {
@@ -193,7 +193,7 @@ function encodeString(
     },);
   }
   /**
-   * Multi-line content selects triple-quoted output to avoid splitting.
+   Multi-line content selects triple-quoted output to avoid splitting.
    */
   const hasNewline = value.includes('\n',);
   if (hasNewline) {
@@ -211,9 +211,9 @@ function encodeString(
 }
 
 /**
- * Encode a JS number, preserving existing raw spelling when value is unchanged.
- *
- * @returns Computed string.
+ Encode a JS number, preserving existing raw spelling when value is unchanged.
+ 
+ @returns Computed string.
  */
 function encodeNumber(
   {
@@ -254,9 +254,9 @@ function encodeNumber(
 }
 
 /**
- * Encode a JS array, recursing on elements; inline or multiline per options.
- *
- * @returns Computed string.
+ Encode a JS array, recursing on elements; inline or multiline per options.
+ 
+ @returns Computed string.
  */
 function encodeArray(
   {
@@ -272,7 +272,7 @@ function encodeArray(
   },
 ): string {
   /**
-   * Existing per-element AST so encoder can reuse spelling when value matches.
+   Existing per-element AST so encoder can reuse spelling when value matches.
    */
   const elementExistings = (existing !== undefined) && (existing.node
     .type
@@ -281,18 +281,18 @@ function encodeArray(
       .elements
     : null;
   /**
-   * Encoded element strings so the result can be both inline-tested and multi-line-emitted.
+   Encoded element strings so the result can be both inline-tested and multi-line-emitted.
    */
   const encoded = input.map(function each(
     el,
     i,
   ) {
     /**
-     * Existing element node at this index, if the parent array carried one.
+     Existing element node at this index, if the parent array carried one.
      */
     const elementExisting = elementExistings === null ? undefined : elementExistings[i];
     /**
-     * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot.
+     Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot.
      */
     const elementExistingArg = elementExisting === undefined ? {} : { existing: { node: elementExisting, }, };
     return encodeValue({
@@ -303,7 +303,7 @@ function encodeArray(
     },);
   },);
   /**
-   * Speculative inline form so the column budget check can decide the layout.
+   Speculative inline form so the column budget check can decide the layout.
    */
   const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length
     === 0 ? '' : ', '}]`;
@@ -318,12 +318,12 @@ function encodeArray(
     return inlineCandidate;
   }
   /**
-   * Indent for each element when the array goes multi-line.
+   Indent for each element when the array goes multi-line.
    */
   const indent = ' '.repeat(options.indent
     * (depth + 1),);
   /**
-   * Closing bracket sits at the parent's indent level for legibility.
+   Closing bracket sits at the parent's indent level for legibility.
    */
   const closingIndent = ' '.repeat(options.indent
     * depth,);
@@ -337,11 +337,11 @@ function encodeArray(
 }
 
 /**
- * Encode a JS plain object as a TOML inline table `{ k = v, ... }`.
- *
- * @returns Computed string.
- *
- * @mutates input - `Object.entries` and recursive encoding can invoke caller-owned proxy and accessor hooks.
+ Encode a JS plain object as a TOML inline table `{ k = v, ... }`.
+ 
+ @returns Computed string.
+ 
+ @mutates input - `Object.entries` and recursive encoding can invoke caller-owned proxy and accessor hooks.
  */
 function encodeInlineTable(
   {
@@ -355,11 +355,11 @@ function encodeInlineTable(
   },
 ): string {
   /**
-   * Entries so iteration is keyed and ordering is deterministic.
+   Entries so iteration is keyed and ordering is deterministic.
    */
   const entries = Object.entries(input,);
   /**
-   * Each entry becomes its own `k = v` fragment so the joiner can comma-separate.
+   Each entry becomes its own `k = v` fragment so the joiner can comma-separate.
    */
   const parts = entries.map(function each([k, v,],) {
     return `${encodeKey({ key: k, },)} = ${

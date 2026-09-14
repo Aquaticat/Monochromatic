@@ -1,12 +1,12 @@
 /**
- * HTML document structure for the wc text-stats tool.
- *
- * Uses h-html to produce a self-contained page with inlined CSS and
- * JavaScript: a viewport-filling flex column holding a masthead, an input
- * textarea, six stat tiles (`./page-stats.ts`), and a Frequency section
- * marked up as flex rows with ARIA table roles so per-row
- * `content-visibility: auto` works (`content-visibility` is ignored on
- * internal table boxes like `tr`).
+ HTML document structure for the wc text-stats tool.
+ 
+ Uses h-html to produce a self-contained page with inlined CSS and
+ JavaScript: a viewport-filling flex column holding a masthead, an input
+ textarea, six stat tiles (`./page-stats.ts`), and a Frequency section
+ marked up as flex rows with ARIA table roles so per-row
+ `content-visibility: auto` works (`content-visibility` is ignored on
+ internal table boxes like `tr`).
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -20,19 +20,19 @@ export {
 } from './page-stats.ts';
 
 /**
- * One-line tool description, shared by the masthead paragraph and the
- * `meta name="description"` head tag so the two never drift apart.
+ One-line tool description, shared by the masthead paragraph and the
+ `meta name="description"` head tag so the two never drift apart.
  */
 const PAGE_DESCRIPTION =
   'Byte, character, line, word, sentence, and paragraph statistics, plus word frequency, computed live in the browser as you type.';
 
 /**
- * Renders the input panel: a label wrapping the textarea the client
- * script reads text from, an implicit label/control association that
- * needs no `id`/`for` pair. The textarea flexes to fill the remaining
- * viewport height and auto-grows with content via the client script.
- *
- * @returns HTML string for the input panel
+ Renders the input panel: a label wrapping the textarea the client
+ script reads text from, an implicit label/control association that
+ needs no `id`/`for` pair. The textarea flexes to fill the remaining
+ viewport height and auto-grows with content via the client script.
+ 
+ @returns HTML string for the input panel
  */
 function renderInputPanel(): string {
   return h(
@@ -68,10 +68,10 @@ function renderInputPanel(): string {
 }
 
 /**
- * Column labels of the Frequency table's visually hidden header row, in
- * cell order. The decorative bar column has no header: its cell is
- * `aria-hidden` (see `./client/main.ts`), so assistive tech sees
- * exactly these columns.
+ Column labels of the Frequency table's visually hidden header row, in
+ cell order. The decorative bar column has no header: its cell is
+ `aria-hidden` (see `./client/main.ts`), so assistive tech sees
+ exactly these columns.
  */
 export const FREQUENCY_COLUMN_LABELS: readonly string[] = [
   'Count',
@@ -80,13 +80,13 @@ export const FREQUENCY_COLUMN_LABELS: readonly string[] = [
 ];
 
 /**
- * Renders the Frequency table's header row: visually hidden by design
- * (the numbers and words are self-explanatory to sighted users), but
- * kept in the accessibility tree so screen readers get column context,
- * via the inclusively-hidden pattern (`.visually-hidden` in
- * `./styles-layout.ts`).
- *
- * @returns HTML string for the header row
+ Renders the Frequency table's header row: visually hidden by design
+ (the numbers and words are self-explanatory to sighted users), but
+ kept in the accessibility tree so screen readers get column context,
+ via the inclusively-hidden pattern (`.visually-hidden` in
+ `./styles-layout.ts`).
+ 
+ @returns HTML string for the header row
  */
 function renderFrequencyHeaderRow(): string {
   return h(
@@ -109,13 +109,13 @@ function renderFrequencyHeaderRow(): string {
 }
 
 /**
- * Renders the Frequency section: a heading and an ARIA table (flex rows,
- * not a native `<table>`, so per-row `content-visibility: auto` takes
- * effect) holding a visually hidden header row
- * ({@link renderFrequencyHeaderRow}) and the body rowgroup the client
- * script fills with word-frequency rows.
- *
- * @returns HTML string for the Frequency section
+ Renders the Frequency section: a heading and an ARIA table (flex rows,
+ not a native `<table>`, so per-row `content-visibility: auto` takes
+ effect) holding a visually hidden header row
+ ({@link renderFrequencyHeaderRow}) and the body rowgroup the client
+ script fills with word-frequency rows.
+ 
+ @returns HTML string for the Frequency section
  */
 function renderFrequencySection(): string {
   return h(
@@ -155,9 +155,9 @@ function renderFrequencySection(): string {
 }
 
 /**
- * Renders the masthead: the tool name and a one-line description.
- *
- * @returns HTML string for the masthead
+ Renders the masthead: the tool name and a one-line description.
+ 
+ @returns HTML string for the masthead
  */
 function renderMasthead(): string {
   return h(
@@ -201,32 +201,32 @@ function renderMasthead(): string {
 }
 
 /**
- * Renders the complete HTML document with all content inlined, combining
- * {@link renderMasthead}, {@link renderInputPanel},
- * {@link renderStatsSection} (`./page-stats.ts`), and
- * {@link renderFrequencySection}.
- *
- * @param css - CSS stylesheet string
- *
- * @param js - client-side JavaScript string
- *
- * @param faviconSvgBase64 - base64-encoded SVG favicon markup, inlined
- * as a data URI; engines that take vector icons pick it
- *
- * @param faviconPngBase64 - base64-encoded PNG favicon bytes, inlined
- * as a data URI; raster fallback for engines without SVG icon support
- *
- * @returns complete HTML document string
- *
- * @example
- * ```ts
- * const html = renderPage({
- *   css: 'body {}',
- *   js: 'console.log("ok")',
- *   faviconSvgBase64: 'PHN2Zy…',
- *   faviconPngBase64: 'iVBORw0KGgo…',
- * });
- * ```
+ Renders the complete HTML document with all content inlined, combining
+ {@link renderMasthead}, {@link renderInputPanel},
+ {@link renderStatsSection} (`./page-stats.ts`), and
+ {@link renderFrequencySection}.
+ 
+ @param css - CSS stylesheet string
+ 
+ @param js - client-side JavaScript string
+ 
+ @param faviconSvgBase64 - base64-encoded SVG favicon markup, inlined
+ as a data URI; engines that take vector icons pick it
+ 
+ @param faviconPngBase64 - base64-encoded PNG favicon bytes, inlined
+ as a data URI; raster fallback for engines without SVG icon support
+ 
+ @returns complete HTML document string
+ 
+ @example
+ ```ts
+ const html = renderPage({
+   css: 'body {}',
+   js: 'console.log("ok")',
+   faviconSvgBase64: 'PHN2Zy…',
+   faviconPngBase64: 'iVBORw0KGgo…',
+ });
+ ```
  */
 export function renderPage(
   {

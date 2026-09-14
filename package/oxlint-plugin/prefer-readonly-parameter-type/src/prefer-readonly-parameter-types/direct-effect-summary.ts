@@ -1,7 +1,7 @@
 /**
- * Direct syntax and call-edge extraction for callable effect summaries.
- *
- * @module
+ Direct syntax and call-edge extraction for callable effect summaries.
+ 
+ @module
  */
 
 import {
@@ -81,22 +81,22 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Builds direct syntax facts and call edges for one callable.
- *
- * @param project - TypeScript project owning declaration.
- *
- * @param declaration - Callable declaration to inspect.
- *
- * @param analysisRoot - Optional external implementation root accepted for transitive calls.
- *
- * @param externalEffectResolver - Demand-driven package implementation analyzer.
- *
- * @returns mutable summary seeded with direct effects.
- *
- * @example
- * ```ts
- * const summary = directEffectSummary({ project, declaration });
- * ```
+ Builds direct syntax facts and call edges for one callable.
+ 
+ @param project - TypeScript project owning declaration.
+ 
+ @param declaration - Callable declaration to inspect.
+ 
+ @param analysisRoot - Optional external implementation root accepted for transitive calls.
+ 
+ @param externalEffectResolver - Demand-driven package implementation analyzer.
+ 
+ @returns mutable summary seeded with direct effects.
+ 
+ @example
+ ```ts
+ const summary = directEffectSummary({ project, declaration });
+ ```
  */
 export function directEffectSummary({
   project,
@@ -110,15 +110,15 @@ export function directEffectSummary({
   readonly externalEffectResolver: ExternalCallableEffectResolver;
 },): MutableEffectSummary {
   /**
-   * TypeScript checker for current project.
+   TypeScript checker for current project.
    */
   const { checker, } = project;
   /**
-   * Slots this callable's parameters own, allocated from the declaration alone.
+   Slots this callable's parameters own, allocated from the declaration alone.
    */
   const table = parameterSlotTable({ declaration, },);
   /**
-   * Binding symbol origins seeded by callable parameters.
+   Binding symbol origins seeded by callable parameters.
    */
   const bindingOriginBySymbolId = new Map<number, Set<EffectSlot>>();
   declaration.parameters
@@ -158,11 +158,11 @@ export function directEffectSummary({
       },);
     },);
   /**
-   * Parameter indexes explicitly carrying exact foreign ownership marker.
+   Parameter indexes explicitly carrying exact foreign ownership marker.
    */
   const directForeignBorrowed = new Set<ParameterIndex>();
   /**
-   * Parameter entries paired with declaration indexes.
+   Parameter entries paired with declaration indexes.
    */
   const parameterEntries = declaration.parameters
     .entries();
@@ -174,7 +174,7 @@ export function directEffectSummary({
       directForeignBorrowed.add(asParameterIndex(parameterIndex,),);
   }
   /**
-   * Mutable summary receiving direct and propagated effects.
+   Mutable summary receiving direct and propagated effects.
    */
   const summary: MutableEffectSummary = {
     slots: table,
@@ -195,7 +195,7 @@ export function directEffectSummary({
     calls: [],
   };
   /**
-   * Callable implementation body, absent for source signatures.
+   Callable implementation body, absent for source signatures.
    */
   const body = 'body' in declaration ? declaration.body : undefined;
   if (body === undefined) {
@@ -207,7 +207,7 @@ export function directEffectSummary({
     return summary;
   }
   /**
-   * What every local in this body can be holding, by parameter slot and by call site.
+   What every local in this body can be holding, by parameter slot and by call site.
    */
   const {
     parameterInitializerNodes,
@@ -220,24 +220,24 @@ export function directEffectSummary({
     bindingOriginBySymbolId,
   },);
   /**
-   * Body nodes selected after aliases expose caller-reachable closure storage.
-   *
-   * Parameter initializers join the node universe the closure selection gates rather than the
-   * selected set directly, and the boundary the ancestry walk ascends to is the declaration
-   * rather than the body, because an initializer node's parents reach the parameter and never
-   * the body.
-   *
-   * An initializer expression runs on entry every time the argument is omitted, which is true of
-   * the expression and not of everything inside it. One initializer can package a callable:
-   *
-   * ```ts
-   * function f(config: Config, callback = (): void => { config.row.label = 'x'; },): void {}
-   * ```
-   *
-   * Adding those nodes to the selected set outright attributed that write to `config` although
-   * nothing invokes the closure. Measured `mutated=[0]` then, `mutated=[]` now, with the invoked
-   * form keeping the write it genuinely performs because a call to a parameter resolves through
-   * its default.
+   Body nodes selected after aliases expose caller-reachable closure storage.
+   
+   Parameter initializers join the node universe the closure selection gates rather than the
+   selected set directly, and the boundary the ancestry walk ascends to is the declaration
+   rather than the body, because an initializer node's parents reach the parameter and never
+   the body.
+   
+   An initializer expression runs on entry every time the argument is omitted, which is true of
+   the expression and not of everything inside it. One initializer can package a callable:
+   
+   ```ts
+   function f(config: Config, callback = (): void => { config.row.label = 'x'; },): void {}
+   ```
+   
+   Adding those nodes to the selected set outright attributed that write to `config` although
+   nothing invokes the closure. Measured `mutated=[0]` then, `mutated=[]` now, with the invoked
+   form keeping the write it genuinely performs because a call to a parameter resolves through
+   its default.
    */
   const bodyNodes = activeCallableBodyNodes({
     project,

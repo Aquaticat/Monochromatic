@@ -1,22 +1,22 @@
 /**
- * Safe parsing and discovery for pnpm workspace catalog blocks.
- *
- * @example
- * ```ts
- * import {
- *   flattenCatalogEntries,
- *   readCatalogFile,
- * } from '@monochromatic-dev/module-pnpm-workspace-catalog';
- *
- * const workspace = await readCatalogFile();
- * const entries = flattenCatalogEntries({
- *   document: workspace.catalogs,
- *   includeNamedCatalogs: true,
- * });
- * console.info(entries.length);
- * ```
- *
- * @packageDocumentation
+ Safe parsing and discovery for pnpm workspace catalog blocks.
+ 
+ @example
+ ```ts
+ import {
+   flattenCatalogEntries,
+   readCatalogFile,
+ } from '@monochromatic-dev/module-pnpm-workspace-catalog';
+ 
+ const workspace = await readCatalogFile();
+ const entries = flattenCatalogEntries({
+   document: workspace.catalogs,
+   includeNamedCatalogs: true,
+ });
+ console.info(entries.length);
+ ```
+ 
+ @packageDocumentation
  */
 
 export {

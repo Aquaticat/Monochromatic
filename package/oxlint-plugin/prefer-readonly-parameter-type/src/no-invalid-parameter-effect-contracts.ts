@@ -1,7 +1,7 @@
 /**
- * Parameter effect-contract validation rule.
- *
- * @module
+ Parameter effect-contract validation rule.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -14,12 +14,12 @@ import type {
 import { createReadonlyRuleVisitor, } from './prefer-readonly-parameter-types/readonly-rule-visitor.ts';
 
 /**
- * Reports invalid parameter effect contracts and ownership markers.
- *
- * @example
- * ```ts
- * plugin.rules['no-invalid-parameter-effect-contracts'];
- * ```
+ Reports invalid parameter effect contracts and ownership markers.
+ 
+ @example
+ ```ts
+ plugin.rules['no-invalid-parameter-effect-contracts'];
+ ```
  */
 export const noInvalidParameterEffectContracts: CreateOnceRule = {
   meta: {
@@ -39,18 +39,18 @@ export const noInvalidParameterEffectContracts: CreateOnceRule = {
     },
   },
   /**
-   * Creates effect-contract reporter over shared semantic evidence.
-   *
-   * @param context - Foreign rule context receiving contract diagnostics.
-   *
-   * @returns visitor filtering invalid contracts and markers.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * noInvalidParameterEffectContracts.createOnce(context);
-   * ```
+   Creates effect-contract reporter over shared semantic evidence.
+   
+   @param context - Foreign rule context receiving contract diagnostics.
+   
+   @returns visitor filtering invalid contracts and markers.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   noInvalidParameterEffectContracts.createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createReadonlyRuleVisitor({

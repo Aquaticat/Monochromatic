@@ -1,10 +1,11 @@
 /**
- * Trust management command runtime.
- *
- * @module
+ Trust management command runtime.
+ 
+ @module
  */
 import { createInterface, } from 'node:readline/promises';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   createEngineFailureEvent,
   type EngineFailureCode,
@@ -23,65 +24,76 @@ import {
   untrustRepository,
 } from './trust-service.ts';
 import { TrustedConfigError, } from './config-loader.ts';
+import type { TrustConsentOutcome, } from './types.ts';
 
 /**
- * Trust management action parsed by Optique.
+ Logger root for trust management boundaries.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, });
+ ```
+ */
+const l = tagged({ tag: 'cli-git', },);
+
+/**
+ Trust management action parsed by management argv parser.
  */
 export type TrustManagementAction = Readonly<{
   /**
-   * Action discriminator.
+   Action discriminator.
    */
   command: 'status' | 'trust' | 'untrust';
   /**
-   * Explicit noninteractive consent for trust only.
+   Explicit noninteractive consent for trust only.
    */
   yes?: true;
 }>;
 
 /**
- * Trust management runtime options.
+ Trust management runtime options.
  */
 export type TrustManagementOptions = Readonly<{
   /**
-   * Parsed action.
+   Parsed action.
    */
   action: TrustManagementAction;
   /**
-   * Git global options before `cli-git`.
+   Git global options before `cli-git`.
    */
   gitGlobalArgs: readonly string[];
   /**
-   * Internal complete test registry root.
+   Internal complete test registry root.
    */
   registryRoot?: string;
 }>;
 
 /**
- * Writes trust disclosure to stderr.
- *
- * @param text - complete human-readable disclosure
+ Writes trust disclosure to stderr.
+ 
+ @param text - complete human-readable disclosure
  */
 function discloseTrust(text: string,): void {
   console.error(text,);
 }
 
 /**
- * Supplies current audit time.
- *
- * @returns current Date
+ Supplies current audit time.
+ 
+ @returns current Date
  */
 function currentTime(): Date {
   return new Date();
 }
 
 /**
- * Emits one trust-management failure on stdout JSONL.
- *
- * @param code - stable engine failure code
- *
- * @param message - human-readable failure detail
- *
- * @returns engine failure exit code
+ Emits one trust-management failure on stdout JSONL.
+ 
+ @param code - stable engine failure code
+ 
+ @param message - human-readable failure detail
+ 
+ @returns engine failure exit code
  */
 function emitTrustFailure({
   code,
@@ -100,46 +112,67 @@ function emitTrustFailure({
 }
 
 /**
- * Requests explicit interactive consent without auto-trusting CI.
- *
- * @returns whether user typed exact affirmative `yes`
+ Requests explicit interactive consent without auto-trusting CI.
+ 
+ @returns explicit prompt outcome, including unavailable terminal streams
+ 
+ @throws unexpected readline failure that is not terminal EOF
  */
-async function promptForTrust(): Promise<boolean> {
+async function promptForTrust(): Promise<TrustConsentOutcome> {
+  /**
+   Function-tagged prompt lifecycle logger.
+   */
+  const rl = tagged({
+    tag: promptForTrust.name,
+    l,
+  },);
   if ((!process.stdin
     .isTTY) || (!process.stderr
       .isTTY))
-    return false;
+    return 'unavailable';
   /**
-   * Disposable readline prompt bound to terminal streams.
+   Disposable readline prompt bound to terminal streams.
    */
   using prompt = createInterface({
     input: process.stdin,
     output: process.stderr,
   },);
-  /**
-   * Exact interactive response.
-   */
-  const answer = await prompt.question('Type yes to trust this exact snapshot: ',);
-  return answer.trim()
-    .toLowerCase()
-    === 'yes';
+  try {
+    /**
+     Exact interactive response.
+     */
+    const answer = await prompt.question('Type yes to trust this exact snapshot: ',);
+    return answer === 'yes'
+      ? 'approved'
+      : 'declined';
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,)
+      && (error.name === 'AbortError')
+      && ('code' in error)
+      && (error.code === 'ABORT_ERR')) {
+      rl.debug(`interactive trust prompt ended without input: ${String(error,)}`,);
+      return 'unavailable';
+    }
+    throw error;
+  }
 }
 
 /**
- * Runs trust, untrust, or status without executing live configuration in preflight.
- *
- * @param action - parsed management action
- *
- * @param gitGlobalArgs - Git global options determining effective repository
- *
- * @param registryRoot - internal test override unavailable from environment or config
- *
- * @returns settled cli-git exit code
- *
- * @example
- * ```ts
- * await runTrustManagement({ action: { command: 'status' }, gitGlobalArgs: [], registryRoot });
- * ```
+ Runs trust, untrust, or status without executing live configuration in preflight.
+ 
+ @param action - parsed management action
+ 
+ @param gitGlobalArgs - Git global options determining effective repository
+ 
+ @param registryRoot - internal test override unavailable from environment or config
+ 
+ @returns settled cli-git exit code
+ 
+ @example
+ ```ts
+ await runTrustManagement({ action: { command: 'status' }, gitGlobalArgs: [], registryRoot });
+ ```
  */
 export async function runTrustManagement({
   action,
@@ -148,7 +181,7 @@ export async function runTrustManagement({
 }: TrustManagementOptions,): Promise<0 | 2> {
   try {
     /**
-     * Canonical config discovered without execution.
+     Canonical config discovered without execution.
      */
     const discovered = await discoverConfig(gitGlobalArgs,);
     if (discovered === CONFIG_ABSENT) {
@@ -165,7 +198,7 @@ export async function runTrustManagement({
       }
       if (action.command === 'untrust') {
         /**
-         * Canonical repository root retained after config deletion.
+         Canonical repository root retained after config deletion.
          */
         const repositoryRoot = await resolveConfigRepositoryRoot(gitGlobalArgs,);
         if (repositoryRoot === CONFIG_ABSENT)
@@ -174,11 +207,11 @@ export async function runTrustManagement({
             message: 'No repository was found for trust recovery.',
           },);
         /**
-         * Injected test root or OS-account-derived production root.
+         Injected test root or OS-account-derived production root.
          */
         const recoveredRegistryRoot = registryRoot ?? await resolveAccountRegistryRoot();
         /**
-         * Recovered recursive revocation summary.
+         Recovered recursive revocation summary.
          */
         const result = await untrustRepository({
           repositoryRoot,
@@ -200,7 +233,7 @@ export async function runTrustManagement({
       },);
     }
     /**
-     * Injected test root or OS-account-derived production root.
+     Injected test root or OS-account-derived production root.
      */
     const effectiveRegistryRoot = registryRoot ?? await resolveAccountRegistryRoot();
     if (action.command === 'status') {
@@ -216,7 +249,7 @@ export async function runTrustManagement({
     }
     if (action.command === 'untrust') {
       /**
-       * Recursive revocation summary after pre-mutation disclosure.
+       Recursive revocation summary after pre-mutation disclosure.
        */
       const result = await untrustConfig({
         discovered,

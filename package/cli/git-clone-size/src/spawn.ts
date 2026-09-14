@@ -7,9 +7,9 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Result of a process invocation that did not throw operationally.
- * `exitCode` 0 means success; non-zero means the process ran but failed,
- * which probes tolerate (folding into a wider range) rather than crash on.
+ Result of a process invocation that did not throw operationally.
+ `exitCode` 0 means success; non-zero means the process ran but failed,
+ which probes tolerate (folding into a wider range) rather than crash on.
  */
 export type SpawnResult = {
   readonly stdout: string;
@@ -18,35 +18,35 @@ export type SpawnResult = {
 };
 
 /**
- * Fallback exit code when nano-spawn reports a failure without a numeric code
- * (for example a missing executable).
+ Fallback exit code when nano-spawn reports a failure without a numeric code
+ (for example a missing executable).
  */
 const FAILED_EXIT_CODE = 1;
 
 /**
- * Spawns a command and returns its captured streams plus exit code,
- * NEVER throwing on a non-zero exit. Use this for probes that must tolerate
- * a failed git/gh/glab invocation (unsupported filter, missing API, detached
- * HEAD) by degrading the estimate rather than aborting.
- *
- * @param command - command name or path to execute
- *
- * @param args - argument vector for the command
- *
- * @param cwd - working directory for the child process
- *
- * @param stdin - optional string fed to the child's standard input
- *
- * @param env - optional environment overrides merged over the parent env
- *
- * @param signal - optional abort signal; aborting kills the child (budget kill)
- *
- * @returns captured stdout (trimmed), stderr (trimmed), and numeric exit code
- *
- * @example
- * ```ts
- * const { stdout, exitCode } = await spawnResult({ command: 'git', args: ['rev-list', '--count', 'HEAD'] });
- * ```
+ Spawns a command and returns its captured streams plus exit code,
+ NEVER throwing on a non-zero exit. Use this for probes that must tolerate
+ a failed git/gh/glab invocation (unsupported filter, missing API, detached
+ HEAD) by degrading the estimate rather than aborting.
+ 
+ @param command - command name or path to execute
+ 
+ @param args - argument vector for the command
+ 
+ @param cwd - working directory for the child process
+ 
+ @param stdin - optional string fed to the child's standard input
+ 
+ @param env - optional environment overrides merged over the parent env
+ 
+ @param signal - optional abort signal; aborting kills the child (budget kill)
+ 
+ @returns captured stdout (trimmed), stderr (trimmed), and numeric exit code
+ 
+ @example
+ ```ts
+ const { stdout, exitCode } = await spawnResult({ command: 'git', args: ['rev-list', '--count', 'HEAD'] });
+ ```
  */
 export async function spawnResult(
   {
@@ -66,7 +66,7 @@ export async function spawnResult(
   },
 ): Promise<SpawnResult> {
   /**
-   * Tagged logger so the debug line names the spawn call site.
+   Tagged logger so the debug line names the spawn call site.
    */
   const rl = tagged({
     tag: spawnResult.name,
@@ -76,7 +76,7 @@ export async function spawnResult(
 
   try {
     /**
-     * Subprocess result on success; stdout/stderr captured as strings.
+     Subprocess result on success; stdout/stderr captured as strings.
      */
     const result = await nanoSpawn(
       command,
@@ -99,11 +99,11 @@ export async function spawnResult(
   catch (error: unknown) {
     if (error instanceof SubprocessError) {
       /**
-       * Exit code from the failed subprocess, defaulted when git/gh reports none.
+       Exit code from the failed subprocess, defaulted when git/gh reports none.
        */
       const exitCode = error.exitCode ?? FAILED_EXIT_CODE;
       /**
-       * Diagnostic text: subprocess stderr, falling back to the error message.
+       Diagnostic text: subprocess stderr, falling back to the error message.
        */
       const stderr = (error.stderr === '' ? error.message : error.stderr).trim();
       rl.debug(`exit ${String(exitCode,)}: ${stderr}`,);
@@ -115,8 +115,8 @@ export async function spawnResult(
       };
     }
     /**
-     * Abort or other non-subprocess failure: report as a failed result so the
-     * probe degrades to a wider range rather than crashing.
+     Abort or other non-subprocess failure: report as a failed result so the
+     probe degrades to a wider range rather than crashing.
      */
     const message = caughtValueText(error,);
     rl.debug(`aborted/failed: ${message}`,);

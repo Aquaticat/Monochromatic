@@ -16,6 +16,35 @@
 # engine won the head-to-head), so the tasks below drive the single debug/release
 # variant (assembleDebug, testDebugUnitTest, connectedDebugAndroidTest, lintDebug).
 
+[vars]
+# Shared Clippy dispatcher for the Android-native crate. Clippy must run through
+# cargo-ndk because the crate imports Android-only NDK APIs. opusic-sys also needs
+# ANDROID_NDK_HOME propagated explicitly so its CMake build cross-compiles libopus.
+android_clippy_dispatch = '''
+const { existsSync, readdirSync } = await import("node:fs")
+const { join } = await import("node:path")
+const { execFileSync } = await import("node:child_process")
+const sdk = process.env.ANDROID_HOME
+if (!sdk) {
+  throw new Error("ANDROID_HOME is unset; run `mise install` at the repo root.")
+}
+const ndkDir = join(sdk, "ndk")
+const ndks = existsSync(ndkDir)
+  ? readdirSync(ndkDir).filter((entry) => existsSync(join(ndkDir, entry, "build", "cmake", "android.toolchain.cmake")))
+  : []
+if (ndks.length === 0) {
+  throw new Error(`No NDK under ${ndkDir}; run \`mise run prepare:android\` once to install it.`)
+}
+const ndkHome = join(ndkDir, ndks.sort((left, right) => left.localeCompare(right, undefined, { numeric: true })).at(-1))
+const runAndroidClippy = (cargoArgs) => {
+  execFileSync(
+    "cargo",
+    ["ndk", "--target", "arm64-v8a", "--target", "x86_64", "--platform", "26", ...cargoArgs],
+    { stdio: "inherit", env: { ...process.env, ANDROID_NDK_HOME: ndkHome } },
+  )
+}
+'''
+
 # Tools (java, android-sdk, cargo-ndk) are inherited from the root mise manifest;
 # this package declares no [tools] of its own. The one-time SDK-component install
 # is the root `prepare:android` task (the `prepare` umbrella auto-runs it). See
@@ -222,6 +251,24 @@ run = "../../linter/kotlin/gradlew --project-dir ../../linter/kotlin detektCheck
 # Runs on the HOST (the linter crate has no NDK/opus/clang deps) and walks
 # .gitignore-aware from the crate root, so rust/target is skipped. Picked up by the
 # root `lint:rust` fanout (`mise '//package/...:lint:rust'`).
+[tasks."format:clippy"]
+description = "Apply Clippy's machine-applicable suggestions to every Android-native Rust target"
+dir = "{{config_root}}/rust"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.android_clippy_dispatch}}
+runAndroidClippy(["clippy", "--fix", "--allow-dirty", "--allow-staged", "--allow-no-vcs", "--all-targets"])
+'''
+
+[tasks."lint:clippy"]
+description = "Run Clippy over every Android-native Rust target for both supported ABIs"
+dir = "{{config_root}}/rust"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.android_clippy_dispatch}}
+runAndroidClippy(["clippy", "--release", "--all-targets", "--", "--deny", "warnings"])
+'''
+
 [tasks."lint:rust"]
 description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this app's native .rs"
 dir = "{{config_root}}/rust"

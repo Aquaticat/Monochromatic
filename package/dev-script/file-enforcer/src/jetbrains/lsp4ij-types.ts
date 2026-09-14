@@ -3,7 +3,7 @@ import type { JsonValue, } from '../pipeline/json.ts';
 //region Shapes: declare a data-driven LSP4IJ server settings policy
 
 /**
- * LSP4IJ persistent-state file names holding global and user-defined settings.
+ LSP4IJ persistent-state file names holding global and user-defined settings.
  */
 export type Lsp4ijOptionsFiles = {
   readonly languageSettings: string;
@@ -11,7 +11,7 @@ export type Lsp4ijOptionsFiles = {
 };
 
 /**
- * Predicate data identifying the base user-defined server to derive from.
+ Predicate data identifying the base user-defined server to derive from.
  */
 export type Lsp4ijBaseServerMatch = {
   readonly commandLineIncludes?: string;
@@ -21,7 +21,7 @@ export type Lsp4ijBaseServerMatch = {
 };
 
 /**
- * Flat-JSON patch applied to a server's embedded configuration content.
+ Flat-JSON patch applied to a server's embedded configuration content.
  */
 export type Lsp4ijConfigPatch = {
   readonly arrayUnion?: Readonly<Record<string, readonly string[]>>;
@@ -29,7 +29,7 @@ export type Lsp4ijConfigPatch = {
 };
 
 /**
- * Additional scoped server derived from the base server for specific files.
+ Additional scoped server derived from the base server for specific files.
  */
 export type Lsp4ijScopedServer = {
   readonly config?: Lsp4ijConfigPatch;
@@ -42,7 +42,7 @@ export type Lsp4ijScopedServer = {
 };
 
 /**
- * Declarative policy for syncing one LSP4IJ language server and its scoped variants.
+ Declarative policy for syncing one LSP4IJ language server and its scoped variants.
  */
 export type Lsp4ijServerSettings = {
   readonly baseConfig?: Lsp4ijConfigPatch;

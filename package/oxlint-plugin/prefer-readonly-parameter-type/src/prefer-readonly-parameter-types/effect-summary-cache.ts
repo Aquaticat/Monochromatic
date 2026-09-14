@@ -1,10 +1,13 @@
 /**
- * Process-bounded direct effect-summary cache.
- *
- * @module
+ Process-bounded direct effect-summary cache.
+ 
+ @module
  */
 
-import type { PersistentEffectDependencyState, } from './effect-cache-envelope.ts';
+import type {
+  EffectSummaryOmissionReason,
+  PersistentEffectDependencyState,
+} from './effect-cache-envelope.ts';
 import type { EffectClosureEdges, } from './effect-dependency-closure.ts';
 import type { EffectProjectSurfaces, } from './effect-project-fingerprint.ts';
 import type { EffectSlot, } from './effect-slot-identity.ts';
@@ -17,32 +20,38 @@ import {
 } from './effect-summary-persistent-cache.ts';
 
 /**
- * Sentinel when neither process nor persistent layer proves an exact hit.
+ Sentinel when neither process nor persistent layer proves an exact hit.
  */
 export const LAYERED_SUMMARY_CACHE_MISS: unique symbol = Symbol(
   'layered direct summary cache miss',
 );
 
 /**
- * Cached direct summaries for one exact source text.
+ Cached direct summaries for one exact source text.
  */
 type CachedSourceSummaries = {
   readonly projectDigest: string;
   readonly sourceText: string;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 };
 
 /**
- * Layered hit: cloned summaries plus recorded closure edges.
+ Layered hit: cloned summaries,
+ recorded closure edges,
+ and deliberate direct-summary omissions.
  */
 export type LayeredSummaryCacheHit = {
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 };
 
 /**
- * Shared identity for one source across both cache layers.
+ Shared identity for one source across both cache layers.
  */
 type LayeredSourceIdentity = {
   readonly projectKey: string;
@@ -54,12 +63,12 @@ type LayeredSourceIdentity = {
 };
 
 /**
- * Direct summary cache keyed by configured project and source path.
+ Direct summary cache keyed by configured project and source path.
  */
 const summariesByProject = new Map<string, Map<string, CachedSourceSummaries>>();
 
 /**
- * Mutable counters used by deterministic cache regression tests.
+ Mutable counters used by deterministic cache regression tests.
  */
 const counters = {
   directSummaryBuildCount: 0,
@@ -69,12 +78,12 @@ const counters = {
 };
 
 /**
- * Cache activity counts.
- *
- * @example
- * ```ts
- * const stats: EffectSummaryCacheStats = effectSummaryCacheStats();
- * ```
+ Cache activity counts.
+ 
+ @example
+ ```ts
+ const stats: EffectSummaryCacheStats = effectSummaryCacheStats();
+ ```
  */
 export type EffectSummaryCacheStats = {
   readonly directSummaryBuildCount: number;
@@ -84,11 +93,11 @@ export type EffectSummaryCacheStats = {
 };
 
 /**
- * Clones direct summary before fixed-point propagation mutates it.
- *
- * @param summary - Cached or newly scanned direct summary.
- *
- * @returns independent mutable fixed-point seed.
+ Clones direct summary before fixed-point propagation mutates it.
+ 
+ @param summary - Cached or newly scanned direct summary.
+ 
+ @returns independent mutable fixed-point seed.
  */
 function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
   return {
@@ -141,11 +150,11 @@ function cloneSummary(summary: MutableEffectSummary,): MutableEffectSummary {
 }
 
 /**
- * Clones every summary in one map.
- *
- * @param summaries - Cached or created summaries.
- *
- * @returns independent mutable clones keyed identically.
+ Clones every summary in one map.
+ 
+ @param summaries - Cached or created summaries.
+ 
+ @returns independent mutable clones keyed identically.
  */
 function cloneSummaries(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
@@ -165,25 +174,33 @@ function cloneSummaries(
 }
 
 /**
- * Stores summaries and edges in the process memory layer.
- *
- * @param identity - Shared source identity.
- *
- * @param summaries - Summaries retained as independent clones.
- *
- * @param edges - Closure edges recorded beside summaries.
+ Stores summaries and edges in the process memory layer.
+ 
+ @param identity - Shared source identity.
+ 
+ @param summaries - Summaries retained as independent clones.
+ 
+ @param edges - Closure edges recorded beside summaries.
+ 
+ @param omittedCallableKeys - Deliberately omitted direct summaries for this source.
+ 
+ @param omissionReasons - Bounded reason categories for omission state.
  */
 function storeMemoryLayer({
   identity,
   summaries,
   edges,
+  omittedCallableKeys,
+  omissionReasons,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly edges: EffectClosureEdges;
+  readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   /**
-   * Project-local cache bounded by configured source paths.
+   Project-local cache bounded by configured source paths.
    */
   const projectCache: Map<string, CachedSourceSummaries> = summariesByProject.get(identity.projectKey,)
     ?? new Map<string, CachedSourceSummaries>();
@@ -194,6 +211,8 @@ function storeMemoryLayer({
       sourceText: identity.sourceText,
       summaries: cloneSummaries(summaries,),
       edges,
+      omittedCallableKeys: [...omittedCallableKeys,],
+      omissionReasons: [...omissionReasons,],
     },
   );
   summariesByProject.set(
@@ -203,19 +222,19 @@ function storeMemoryLayer({
 }
 
 /**
- * Reads cloned direct summaries from process or persistent layer.
- *
- * @param identity - Shared source identity.
- *
- * @param state - Current whole-scope surfaces and per-source digests.
- *
- * @returns cloned summaries with closure edges,
- * or layered miss sentinel.
- *
- * @example
- * ```ts
- * readCachedSummariesForSource({ identity, state });
- * ```
+ Reads cloned direct summaries from process or persistent layer.
+ 
+ @param identity - Shared source identity.
+ 
+ @param state - Current whole-scope surfaces and per-source digests.
+ 
+ @returns cloned summaries with closure edges,
+ or layered miss sentinel.
+ 
+ @example
+ ```ts
+ readCachedSummariesForSource({ identity, state });
+ ```
  */
 export function readCachedSummariesForSource({
   identity,
@@ -225,7 +244,7 @@ export function readCachedSummariesForSource({
   readonly state: PersistentEffectDependencyState;
 },): LayeredSummaryCacheHit | typeof LAYERED_SUMMARY_CACHE_MISS {
   /**
-   * Prior direct summaries for exact path.
+   Prior direct summaries for exact path.
    */
   const cached = summariesByProject.get(identity.projectKey,)
     ?.get(identity.fileName,);
@@ -236,10 +255,12 @@ export function readCachedSummariesForSource({
     return {
       summaries: cloneSummaries(cached.summaries,),
       edges: cached.edges,
+      omittedCallableKeys: [...cached.omittedCallableKeys,],
+      omissionReasons: [...cached.omissionReasons,],
     };
   }
   /**
-   * Direct summaries persisted by prior Oxlint process.
+   Direct summaries persisted by prior Oxlint process.
    */
   const persistent = readPersistentEffectSummaries({
     address: {
@@ -256,7 +277,7 @@ export function readCachedSummariesForSource({
     return LAYERED_SUMMARY_CACHE_MISS;
   counters.persistentSourceCacheHitCount++;
   /**
-   * Closure edges recorded at entry creation.
+   Closure edges recorded at entry creation.
    */
   const edges: EffectClosureEdges = {
     resolved: persistent.dependenciesResolved,
@@ -266,39 +287,58 @@ export function readCachedSummariesForSource({
     identity,
     summaries: persistent.summaries,
     edges,
+    omittedCallableKeys: persistent.omittedCallableKeys,
+    omissionReasons: persistent.omissionReasons,
   },);
   return {
     summaries: cloneSummaries(persistent.summaries,),
     edges,
+    omittedCallableKeys: [...persistent.omittedCallableKeys,],
+    omissionReasons: [...persistent.omissionReasons,],
   };
 }
 
 /**
- * Stores created summaries in both cache layers.
- *
- * @param identity - Shared source identity.
- *
- * @param summaries - Freshly created direct summaries.
- *
- * @param surfaces - Whole-scope surface digests at creation time.
- *
- * @param closure - Dependency-closure snapshot for exact source.
- *
- * @example
- * ```ts
- * storeCreatedSummariesForSource({ identity, summaries, surfaces, closure });
- * ```
+ Stores created summaries in both cache layers.
+ 
+ @param identity - Shared source identity.
+ 
+ @param summaries - Freshly created direct summaries.
+ 
+ @param surfaces - Whole-scope surface digests at creation time.
+ 
+ @param closure - Dependency-closure snapshot for exact source.
+ 
+ @param omittedCallableKeys - Direct summaries deliberately omitted for this source.
+ 
+ @param omissionReasons - Bounded reasons encountered while scanning source.
+ 
+ @example
+ ```ts
+ storeCreatedSummariesForSource({
+   identity,
+   summaries,
+   surfaces,
+   closure,
+   omittedCallableKeys,
+   omissionReasons,
+ });
+ ```
  */
 export function storeCreatedSummariesForSource({
   identity,
   summaries,
   surfaces,
   closure,
+  omittedCallableKeys,
+  omissionReasons,
 }: {
   readonly identity: LayeredSourceIdentity;
   readonly summaries: ReadonlyMap<string, MutableEffectSummary>;
   readonly surfaces: EffectProjectSurfaces;
   readonly closure: EffectDependencyClosure;
+  readonly omittedCallableKeys: readonly string[];
+  readonly omissionReasons: readonly EffectSummaryOmissionReason[];
 },): void {
   counters.directSummaryBuildCount += summaries.size;
   storeMemoryLayer({
@@ -308,6 +348,8 @@ export function storeCreatedSummariesForSource({
       resolved: closure.resolved,
       directDependencies: closure.directDependencies,
     },
+    omittedCallableKeys,
+    omissionReasons,
   },);
   writePersistentEffectSummaries({
     address: {
@@ -321,21 +363,23 @@ export function storeCreatedSummariesForSource({
     summaries,
     surfaces,
     closure,
+    omittedCallableKeys,
+    omissionReasons,
   },);
   counters.persistentCacheWriteCount++;
 }
 
 /**
- * Removes cached files no longer present in configured project.
- *
- * @param projectKey - Configured project identity.
- *
- * @param activeFiles - Current non-declaration project source paths.
- *
- * @example
- * ```ts
- * pruneDirectSummaryCache({ projectKey, activeFiles });
- * ```
+ Removes cached files no longer present in configured project.
+ 
+ @param projectKey - Configured project identity.
+ 
+ @param activeFiles - Current non-declaration project source paths.
+ 
+ @example
+ ```ts
+ pruneDirectSummaryCache({ projectKey, activeFiles });
+ ```
  */
 export function pruneDirectSummaryCache({
   projectKey,
@@ -345,7 +389,7 @@ export function pruneDirectSummaryCache({
   readonly activeFiles: ReadonlySet<string>;
 }): void {
   /**
-   * Existing project-local source cache, when initialized.
+   Existing project-local source cache, when initialized.
    */
   const projectCache = summariesByProject.get(projectKey,);
   if (projectCache === undefined)
@@ -357,26 +401,26 @@ export function pruneDirectSummaryCache({
 }
 
 /**
- * Reads cache activity counters.
- *
- * @returns current direct-build and source-hit counts.
- *
- * @example
- * ```ts
- * effectSummaryCacheStats();
- * ```
+ Reads cache activity counters.
+ 
+ @returns current direct-build and source-hit counts.
+ 
+ @example
+ ```ts
+ effectSummaryCacheStats();
+ ```
  */
 export function effectSummaryCacheStats(): EffectSummaryCacheStats {
   return { ...counters, };
 }
 
 /**
- * Clears direct cache and counters for lifecycle tests.
- *
- * @example
- * ```ts
- * clearEffectSummaryCache();
- * ```
+ Clears direct cache and counters for lifecycle tests.
+ 
+ @example
+ ```ts
+ clearEffectSummaryCache();
+ ```
  */
 export function clearEffectSummaryCache(): void {
   summariesByProject.clear();

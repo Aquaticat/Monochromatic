@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  "jsPlugins": [
+    "../../oxlint-plugin/stylistic/dist/final/node/index.mjs"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "stylistic/require-asterisk-prefix": [
+      "error",
+      "always"
+    ]
+  }
+}

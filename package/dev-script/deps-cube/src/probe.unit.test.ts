@@ -1,21 +1,21 @@
 /**
- * Tests for the probe orchestrator and the field-level pure helpers.
- *
- * `probeAll` is exercised against a pre-populated file cache so no
- * `gh`, npm registry, or downloads endpoint is hit. Each fixture
- * covers one of the five `UnknownReason` branches plus the
- * all-known case:
- *
- * - absent (every GH-derived field known)
- * - `'no-repo'` (manifest lacks `repository`)
- * - `'non-github'` (repository.url points at a non-GH host)
- * - `'monorepo'` (`repository.directory` set, Linguist deliberately skipped)
- * - `'private-or-404'` (GH host, Linguist fetch returns null)
- *
- * Pure helpers (`parseRepository`, `classifyLicense`,
- * `resolveVersion`) are tested directly.
- *
- * @module
+ Tests for the probe orchestrator and the field-level pure helpers.
+ 
+ `probeAll` is exercised against a pre-populated file cache so no
+ `gh`, npm registry, or downloads endpoint is hit. Each fixture
+ covers one of the five `UnknownReason` branches plus the
+ all-known case:
+ 
+ - absent (every GH-derived field known)
+ - `'no-repo'` (manifest lacks `repository`)
+ - `'non-github'` (repository.url points at a non-GH host)
+ - `'monorepo'` (`repository.directory` set, Linguist deliberately skipped)
+ - `'private-or-404'` (GH host, Linguist fetch returns null)
+ 
+ Pure helpers (`parseRepository`, `classifyLicense`,
+ `resolveVersion`) are tested directly.
+ 
+ @module
  */
 
 import {
@@ -44,13 +44,13 @@ import {
 import { probeAll, } from './probe.ts';
 
 /**
- * Builds an isolated cache root and pre-populates the JSON files
- * the field probes would normally fetch + cache.
- *
- * @param entries - Map from `<name>/<version>` to the JSON to drop in.
- *   The `_repo` entries use `<owner>/<repo>` instead of `<name>`.
- *
- * @returns Cache root path and an async-disposable cleanup.
+ Builds an isolated cache root and pre-populates the JSON files
+ the field probes would normally fetch + cache.
+ 
+ @param entries - Map from `<name>/<version>` to the JSON to drop in.
+   The `_repo` entries use `<owner>/<repo>` instead of `<name>`.
+ 
+ @returns Cache root path and an async-disposable cleanup.
  */
 async function tempPopulatedCache(
   { entries, }: {

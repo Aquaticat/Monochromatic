@@ -296,14 +296,21 @@ The reshaped rule stops validating at the credential-terminating `@`,
  this is the exact broadening the review doc records
  (interpolated hosts now covered).
 
-The rule-172 gains are a documentation path and a container-run command
- that carry a `-u value:value` option shape without the word `curl` on the line.
-The reshape dropped the leading `\bcurl\b` context and the continuation window,
- so it now flags the credential-pair shape on any single line;
- both gained lines match that broadened form and neither matched the old,
+The rule-172 gains were a documentation path and a container-run command
+ that carried a `-u value:value` option shape without the word `curl` on the line.
+The cutover reshape dropped the leading `\bcurl\b` context and continuation window,
+ so it flagged the credential-pair shape on any single line.
+Both gained lines matched that broadened form and neither matched the old,
  curl-anchored,
  continuation-windowed rule.
-These are the accepted over-matching gains the review doc and the standing preference ratify.
+The cutover accepted those gains and the standing preference originally ratified them.
+
+The later [curl authentication option boundary decision][curl-auth-user-boundary]
+ partially supersedes that acceptance.
+A separate `-u` or `--user` token may still match without `curl`,
+ preserving continuation-line detection.
+A `-u` substring embedded inside a larger word or path no longer matches;
+ the port requires line start or horizontal whitespace before the option.
 
 ## Acceptance
 
@@ -342,3 +349,5 @@ Normalize both to `path` and `line` and source-line rule index
  then take the set difference.
 The old binary rejects the `--` argument separator;
  pass positional files without it.
+
+[curl-auth-user-boundary]: ../decision/forbidden-strings-curl-auth-user-boundary.md

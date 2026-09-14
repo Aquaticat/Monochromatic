@@ -1,7 +1,7 @@
 /**
- * Cross-platform stable and degraded filesystem identity resolution.
- *
- * @module
+ Cross-platform stable and degraded filesystem identity resolution.
+ 
+ @module
  */
 
 export {

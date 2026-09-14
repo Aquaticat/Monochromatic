@@ -1,7 +1,7 @@
 /**
- * Verifies the built pi guardrail extension registers expected Pi events.
- *
- * @module
+ Verifies the built pi guardrail extension registers expected Pi events.
+ 
+ @module
  */
 
 import { mkdtemp, } from 'node:fs/promises';
@@ -17,12 +17,12 @@ import {
 //region Constants
 
 /**
- * Built extension path consumed by pi.
+ Built extension path consumed by pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected event registrations from the extension entry point.
+ Expected event registrations from the extension entry point.
  */
 const EXPECTED_REGISTRATIONS = [
   'event:tool_call',
@@ -33,21 +33,21 @@ const EXPECTED_REGISTRATIONS = [
 //region Types
 
 /**
- * Built pi guardrail extension module shape.
+ Built pi guardrail extension module shape.
  */
 type PiGuardrailExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   readonly default: ExtensionFactory;
 };
 
 /**
- * Disposable environment variable override.
+ Disposable environment variable override.
  */
 type EnvOverride = {
   /**
-   * Restores original environment variable value.
+   Restores original environment variable value.
    */
   readonly [Symbol.dispose]: () => void;
 };
@@ -57,27 +57,27 @@ type EnvOverride = {
 //region Verification
 
 /**
- * Verifies that built extension exports and registers correctly.
- *
- * @returns verification result text
- *
- * @throws when built extension import or registration fails
- *
- * @example
- * ```typescript
- * console.log(await verifyBuiltExtension());
- * ```
+ Verifies that built extension exports and registers correctly.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import or registration fails
+ 
+ @example
+ ```typescript
+ console.log(await verifyBuiltExtension());
+ ```
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Temporary HOME ensuring verification ignores user-global config.
+   Temporary HOME ensuring verification ignores user-global config.
    */
   const home = await mkdtemp(join(
     tmpdir(),
     'pi-guardrail-home-',
   ),);
   /**
-   * Environment override forcing config lookup into the temporary HOME.
+   Environment override forcing config lookup into the temporary HOME.
    */
   using _home = envVar({
     name: 'HOME',
@@ -85,7 +85,7 @@ async function verifyBuiltExtension(): Promise<string> {
   },);
 
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isPiGuardrailExtensionModule(mod,)) {
@@ -95,7 +95,7 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API plus captured registration log.
+   Fake Pi API plus captured registration log.
    */
   const {
     api,
@@ -104,7 +104,7 @@ async function verifyBuiltExtension(): Promise<string> {
   await mod.default(api,);
 
   /**
-   * Expected registrations not observed.
+   Expected registrations not observed.
    */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
@@ -119,11 +119,11 @@ async function verifyBuiltExtension(): Promise<string> {
 }
 
 /**
- * Detects built pi guardrail extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports an extension factory
+ Detects built pi guardrail extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module exports an extension factory
  */
 function isPiGuardrailExtensionModule(value: unknown,): value is PiGuardrailExtensionModule {
   if ((value === null) || ((typeof value) !== 'object'))
@@ -132,20 +132,20 @@ function isPiGuardrailExtensionModule(value: unknown,): value is PiGuardrailExte
 }
 
 /**
- * Builds fake Pi API used to verify extension registration.
- *
- * @returns fake Pi extension API plus captured registration log
+ Builds fake Pi API used to verify extension registration.
+ 
+ @returns fake Pi extension API plus captured registration log
  */
 function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: readonly string[];
 } {
   /**
-   * Mutable registration call log captured by fake API.
+   Mutable registration call log captured by fake API.
    */
   const registrations: string[] = [];
   /**
-   * Fake Pi API recording each registration into captured log.
+   Fake Pi API recording each registration into captured log.
    */
   const api: ExtensionAPI = {
     on(event: string,) {
@@ -244,13 +244,13 @@ function fakePiApi(): {
 }
 
 /**
- * Temporarily sets an environment variable.
- *
- * @param name - environment variable name
- *
- * @param value - replacement value
- *
- * @returns disposable restorer
+ Temporarily sets an environment variable.
+ 
+ @param name - environment variable name
+ 
+ @param value - replacement value
+ 
+ @returns disposable restorer
  */
 function envVar(
   {
@@ -262,7 +262,7 @@ function envVar(
   },
 ): EnvOverride {
   /**
-   * Previous value before override.
+   Previous value before override.
    */
   const previous = process.env[name];
   process.env[name] = value;

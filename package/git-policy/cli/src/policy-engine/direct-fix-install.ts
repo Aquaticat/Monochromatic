@@ -1,7 +1,7 @@
 /**
- * Atomic direct-fix worktree installation.
- *
- * @module
+ Atomic direct-fix worktree installation.
+ 
+ @module
  */
 import { randomUUID, } from 'node:crypto';
 import {
@@ -20,57 +20,57 @@ import type { CandidateFile, } from '../api/policy-types.ts';
 import type { AddPolicyFactsScope, } from './add-policy-facts.ts';
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({ tag: 'cli-git', },);
 /**
- * Ordinary file mode.
+ Ordinary file mode.
  */
 const REGULAR_MODE = 0o644;
 /**
- * Executable file mode.
+ Executable file mode.
  */
 const EXECUTABLE_MODE = 0o755;
 /**
- * Real index absence sentinel.
+ Real index absence sentinel.
  */
 const INDEX_ABSENT: unique symbol = Symbol('real index file absent',);
 
 /**
- * Initial direct-fix worktree bytes by repository path.
+ Initial direct-fix worktree bytes by repository path.
  */
 export type DirectFixOriginalBytes = ReadonlyMap<string, Uint8Array>;
 
 /**
- * Prepared atomic worktree replacement.
+ Prepared atomic worktree replacement.
  */
 type PreparedReplacement = Readonly<{
   /**
-   * Repository-relative path.
+   Repository-relative path.
    */
   path: string;
   /**
-   * Absolute destination path.
+   Absolute destination path.
    */
   destination: string;
   /**
-   * Same-directory replacement path.
+   Same-directory replacement path.
    */
   prepared: string;
   /**
-   * Same-directory rollback copy.
+   Same-directory rollback copy.
    */
   backup: string;
 }>;
 
 /**
- * Compares exact byte arrays.
- *
- * @param left - first byte sequence
- *
- * @param right - second byte sequence
- *
- * @returns whether bytes are identical
+ Compares exact byte arrays.
+ 
+ @param left - first byte sequence
+ 
+ @param right - second byte sequence
+ 
+ @returns whether bytes are identical
  */
 function bytesEqual({
   left,
@@ -90,11 +90,11 @@ function bytesEqual({
 }
 
 /**
- * Reads optional real index bytes.
- *
- * @param path - absolute real index path
- *
- * @returns exact bytes or absence sentinel
+ Reads optional real index bytes.
+ 
+ @param path - absolute real index path
+ 
+ @returns exact bytes or absence sentinel
  */
 async function readIndex(path: string,): Promise<Uint8Array | typeof INDEX_ABSENT> {
   try {
@@ -110,13 +110,13 @@ async function readIndex(path: string,): Promise<Uint8Array | typeof INDEX_ABSEN
 }
 
 /**
- * Tests exact optional index equality.
- *
- * @param left - first index snapshot
- *
- * @param right - second index snapshot
- *
- * @returns whether both are absent or byte-identical
+ Tests exact optional index equality.
+ 
+ @param left - first index snapshot
+ 
+ @param right - second index snapshot
+ 
+ @returns whether both are absent or byte-identical
  */
 function indexesEqual({
   left,
@@ -134,9 +134,9 @@ function indexesEqual({
 }
 
 /**
- * Removes prepared and backup files after success or rollback.
- *
- * @param replacements - prepared replacement records
+ Removes prepared and backup files after success or rollback.
+ 
+ @param replacements - prepared replacement records
  */
 async function cleanup(replacements: readonly PreparedReplacement[],): Promise<void> {
   await Promise.all(replacements.flatMap(function cleanupPaths(replacement,) {
@@ -154,9 +154,9 @@ async function cleanup(replacements: readonly PreparedReplacement[],): Promise<v
 }
 
 /**
- * Rolls installed paths back from same-directory copies.
- *
- * @param installed - replacements already installed
+ Rolls installed paths back from same-directory copies.
+ 
+ @param installed - replacements already installed
  */
 async function rollback(installed: readonly PreparedReplacement[],): Promise<void> {
   for (const replacement of installed.toReversed()) {
@@ -175,22 +175,22 @@ async function rollback(installed: readonly PreparedReplacement[],): Promise<voi
 }
 
 /**
- * Captures exact selected worktree bytes before convergence.
- *
- * @param candidates - initial direct-fix candidates
- *
- * @returns path-to-byte snapshot for ordinary content
- *
- * @example
- * ```ts
- * await captureDirectFixOriginalBytes([]);
- * ```
+ Captures exact selected worktree bytes before convergence.
+ 
+ @param candidates - initial direct-fix candidates
+ 
+ @returns path-to-byte snapshot for ordinary content
+ 
+ @example
+ ```ts
+ await captureDirectFixOriginalBytes([]);
+ ```
  */
 export async function captureDirectFixOriginalBytes(
   candidates: readonly CandidateFile[],
 ): Promise<DirectFixOriginalBytes> {
   /**
-   * Captured ordinary candidate entries.
+   Captured ordinary candidate entries.
    */
   const entries: (readonly [
     string,
@@ -210,20 +210,20 @@ export async function captureDirectFixOriginalBytes(
 }
 
 /**
- * Installs converged private-index bytes without changing real index.
- *
- * @param scope - direct-fix private state
- *
- * @param changedPaths - paths changed by converged policy patches
- *
- * @param originals - exact pre-convergence worktree bytes
- *
- * @throws Error when worktree or index changed concurrently
- *
- * @example
- * ```ts
- * await installDirectFix({ scope, changedPaths: [], originals: new Map() });
- * ```
+ Installs converged private-index bytes without changing real index.
+ 
+ @param scope - direct-fix private state
+ 
+ @param changedPaths - paths changed by converged policy patches
+ 
+ @param originals - exact pre-convergence worktree bytes
+ 
+ @throws Error when worktree or index changed concurrently
+ 
+ @example
+ ```ts
+ await installDirectFix({ scope, changedPaths: [], originals: new Map() });
+ ```
  */
 export async function installDirectFix({
   scope,
@@ -235,42 +235,42 @@ export async function installDirectFix({
   originals: DirectFixOriginalBytes;
 }>,): Promise<void> {
   /**
-   * Real index snapshot proving direct fix remains index-neutral.
+   Real index snapshot proving direct fix remains index-neutral.
    */
   const indexBefore = await readIndex(scope.realIndexPath,);
   /**
-   * Final private candidates containing converged bytes.
+   Final private candidates containing converged bytes.
    */
   const finalCandidates = await scope.gitFacts
     .candidates();
   /**
-   * Prepared replacement records.
+   Prepared replacement records.
    */
   const replacements: PreparedReplacement[] = [];
   /* oxlint-disable no-await-in-loop -- Preparation is sequential to bound filesystem descriptors and preserve deterministic rollback records. */
   for (const path of changedPaths) {
     /**
-     * Final candidate for changed path.
+     Final candidate for changed path.
      */
     const candidate = finalCandidates.find(function candidateAtPath(value,) {
       return value.path === path;
     },);
     /**
-     * Initial expected worktree bytes.
+     Initial expected worktree bytes.
      */
     const original = originals.get(path,);
     if ((candidate === undefined) || (original === undefined)
       || ((candidate.mode !== 'regular') && (candidate.mode !== 'executable')))
       throw new Error(`Direct-fix candidate became unavailable: ${path}`,);
     /**
-     * Absolute worktree destination.
+     Absolute worktree destination.
      */
     const destination = join(
       scope.repositoryRoot,
       path,
     );
     /**
-     * Current bytes immediately before replacement preparation.
+     Current bytes immediately before replacement preparation.
      */
     const current = await readFile(destination,);
     if (!bytesEqual({
@@ -279,14 +279,14 @@ export async function installDirectFix({
     }))
       throw new Error(`Direct-fix worktree path changed concurrently: ${path}`,);
     /**
-     * Unique sibling prefix retaining destination filesystem.
+     Unique sibling prefix retaining destination filesystem.
      */
     const temporaryPrefix = join(
       dirname(destination,),
       `.cli-git-direct-fix-${randomUUID()}`,
     );
     /**
-     * Prepared replacement record.
+     Prepared replacement record.
      */
     const replacement: PreparedReplacement = {
       path,
@@ -307,7 +307,7 @@ export async function installDirectFix({
   }
   /* oxlint-enable no-await-in-loop */
   /**
-   * Replacements already visible in worktree.
+   Replacements already visible in worktree.
    */
   const installed: PreparedReplacement[] = [];
   try {
@@ -321,7 +321,7 @@ export async function installDirectFix({
     }
     /* oxlint-enable no-await-in-loop */
     /**
-     * Real index snapshot after worktree-only installation.
+     Real index snapshot after worktree-only installation.
      */
     const indexAfter = await readIndex(scope.realIndexPath,);
     if (!indexesEqual({

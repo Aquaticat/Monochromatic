@@ -1,5 +1,5 @@
 /**
- * Generic private trust record preparation and validation. @module
+ Generic private trust record preparation and validation. @module
  */
 import type { ReadonlyDeep, } from 'type-fest';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -33,22 +33,22 @@ import {
 import type { TrustRecord, } from './types.ts';
 
 /**
- * Reads and validates private candidate metadata before installation.
- *
- * @param directory - private candidate directory
- *
- * @returns validated candidate record
+ Reads and validates private candidate metadata before installation.
+ 
+ @param directory - private candidate directory
+ 
+ @returns validated candidate record
  */
 async function validateCandidateDirectory(directory: string,): Promise<TrustRecord> {
   /**
-   * Exact candidate record bytes.
+   Exact candidate record bytes.
    */
   const bytes = await readPrivateFile(join(
     directory,
     'record.json',
   ),);
   /**
-   * Parsed unknown JSON held behind runtime validation.
+   Parsed unknown JSON held behind runtime validation.
    */
   const parsed: unknown = (function parseCandidateRecord() {
     try {
@@ -62,11 +62,11 @@ async function validateCandidateDirectory(directory: string,): Promise<TrustReco
     }
   })();
   /**
-   * Runtime-authoritative candidate record.
+   Runtime-authoritative candidate record.
    */
   const record = validateTrustRecord(parsed,);
   /**
-   * Exact executable bytes used for size agreement.
+   Exact executable bytes used for size agreement.
    */
   const executableBytes = await readPrivateFile(join(
     directory,
@@ -80,13 +80,13 @@ async function validateCandidateDirectory(directory: string,): Promise<TrustReco
 }
 
 /**
- * Removes failed private candidate and writer lock.
- *
- * @param temporaryDirectory - candidate path
- *
- * @param lockDirectory - writer lock path
- *
- * @param cause - preparation failure
+ Removes failed private candidate and writer lock.
+ 
+ @param temporaryDirectory - candidate path
+ 
+ @param lockDirectory - writer lock path
+ 
+ @param cause - preparation failure
  */
 async function preparationFailure({
   temporaryDirectory,
@@ -98,7 +98,7 @@ async function preparationFailure({
   cause: unknown;
 }>,): Promise<never> {
   /**
-   * Every pre-return cleanup result.
+   Every pre-return cleanup result.
    */
   const cleanupResults = await Promise.allSettled([
     rm(
@@ -117,7 +117,7 @@ async function preparationFailure({
     ),
   ],);
   /**
-   * Cleanup failures retained in preparation error.
+   Cleanup failures retained in preparation error.
    */
   const cleanupFailures = cleanupResults
     .filter(function isCleanupFailure(
@@ -125,13 +125,13 @@ async function preparationFailure({
     ) { return result.status === 'rejected'; },)
     .map(
       /**
-       * Preserves one cleanup rejection reason.
-       *
-       * @param result - Rejected cleanup result.
-       *
-       * @returns diagnostic reason text.
-       *
-       * @mutates result - `caughtValueText` may invoke hooks on rejection reason.
+       Preserves one cleanup rejection reason.
+       
+       @param result - Rejected cleanup result.
+       
+       @returns diagnostic reason text.
+       
+       @mutates result - `caughtValueText` may invoke hooks on rejection reason.
        */
       function cleanupFailureReason(result,) {
         return caughtValueText(result.reason,);
@@ -146,24 +146,24 @@ async function preparationFailure({
 }
 
 /**
- * Prepares complete private record and exact snapshot files.
- *
- * @param registryRoot - complete registry root
- *
- * @param record - exact persistent metadata
- *
- * @param snapshots - record-relative snapshot bytes
- *
- * @returns disposable candidate with explicit commit operation
- *
- * @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
- *
- * @mutates snapshots through handle.writeFile configured VFS handler or native-boundary access to snapshot bytes
- *
- * @example
- * ```ts
- * await using prepared = await prepareTrustRecord({ registryRoot, record, snapshots });
- * ```
+ Prepares complete private record and exact snapshot files.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param record - exact persistent metadata
+ 
+ @param snapshots - record-relative snapshot bytes
+ 
+ @returns disposable candidate with explicit commit operation
+ 
+ @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ 
+ @mutates snapshots through handle.writeFile configured VFS handler or native-boundary access to snapshot bytes
+ 
+ @example
+ ```ts
+ await using prepared = await prepareTrustRecord({ registryRoot, record, snapshots });
+ ```
  */
 export async function prepareTrustRecord({
   registryRoot,
@@ -176,14 +176,14 @@ export async function prepareTrustRecord({
 },): Promise<PreparedTrustRecord> {
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Permanent exact identity directory.
+   Permanent exact identity directory.
    */
   const finalDirectory = recordDirectory({
     registryRoot,
     identity: record.identity,
   },);
   /**
-   * Existing parent containing lock and candidate sibling.
+   Existing parent containing lock and candidate sibling.
    */
   const parentDirectory = dirname(finalDirectory,);
   await ensurePrivateRegistryDirectory({
@@ -191,7 +191,7 @@ export async function prepareTrustRecord({
     targetDirectory: parentDirectory,
   },);
   /**
-   * Exclusive sibling writer lock.
+   Exclusive sibling writer lock.
    */
   const lockDirectory = `${finalDirectory}.lock`;
   try {
@@ -207,7 +207,7 @@ export async function prepareTrustRecord({
     );
   }
   /**
-   * Private complete candidate sibling.
+   Private complete candidate sibling.
    */
   const temporaryDirectory = `${finalDirectory}.tmp-${randomUUID()}`;
   try {
@@ -216,7 +216,7 @@ export async function prepareTrustRecord({
       directory: true,
     },);
     /**
-     * Flat private snapshot directory.
+     Flat private snapshot directory.
      */
     const snapshotDirectory = join(
       temporaryDirectory,
@@ -239,11 +239,11 @@ export async function prepareTrustRecord({
     },);
     await Promise.all([...snapshots.entries(),].map(
       /**
-       * Writes one generated snapshot.
-       *
-       * @param entry - record-relative path and generated bytes
-       *
-       * @mutates entry through handle.writeFile configured VFS handler or native-boundary access to entry bytes
+       Writes one generated snapshot.
+       
+       @param entry - record-relative path and generated bytes
+       
+       @mutates entry through handle.writeFile configured VFS handler or native-boundary access to entry bytes
        */
       async function writeSnapshot(
         entry: readonly [
@@ -252,7 +252,7 @@ export async function prepareTrustRecord({
         ],
       ): Promise<void> {
         /**
-         * Record-relative path and generated bytes.
+         Record-relative path and generated bytes.
          */
         const [relativePath, bytes,] = entry;
         await writePrivateFile({
@@ -277,7 +277,7 @@ export async function prepareTrustRecord({
     await syncDirectory(snapshotDirectory,);
     await syncDirectory(temporaryDirectory,);
     /**
-     * Reopened and runtime-validated candidate metadata.
+     Reopened and runtime-validated candidate metadata.
      */
     const validatedRecord = await validateCandidateDirectory(temporaryDirectory,);
     return createPreparedTrustRecord({

@@ -11,7 +11,7 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::Command as ProcessCommand;
 
 // What:     `const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");`
 //           uses the compile-time env var Cargo sets for integration
@@ -27,6 +27,29 @@ use std::process::Command;
 // const BIN = process.env.CARGO_BIN_EXE_forbidden_strings!;
 // ```
 const BIN: &str = env!("CARGO_BIN_EXE_forbidden-strings");
+
+/// Test command factory injecting one disposable process-scoped cache root.
+struct Command;
+
+/// Builds subprocess commands without touching developer's real user cache.
+impl Command {
+    /// Creates process command with hermetic cache-root override.
+    fn configured(program: impl AsRef<std::ffi::OsStr>) -> ProcessCommand {
+        static CACHE_ROOT: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+        let cache_root = CACHE_ROOT.get_or_init(|| {
+            let path = std::env::temp_dir().join(format!(
+                "forbidden-strings-integration-cache-{}",
+                std::process::id(),
+            ));
+            let _ = fs::remove_dir_all(&path);
+            fs::create_dir_all(&path).expect("create integration cache root");
+            return path
+        });
+        let mut command = ProcessCommand::new(program);
+        command.env("FORBIDDEN_STRINGS_CACHE_DIR", cache_root);
+        return command
+    }
+}
 
 // What:     `fn unique_tmp(label) -> PathBuf` returns a fresh empty
 //           directory under `std::env::temp_dir()`. Uses PID + label so
@@ -87,7 +110,7 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
     fs::set_permissions(&target, fs::Permissions::from_mode(0o000))
         .expect("chmod 000");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -165,7 +188,7 @@ fn explicit_arg_with_skip_basename_is_still_scanned() {
     let target = sub.join("forbidden-strings.local.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -207,7 +230,7 @@ fn user_regex_rule_matches_bounded_pattern() {
     let target = dir.join("key.txt");
     fs::write(&target, b"prefix AKIA2345 suffix\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -246,7 +269,7 @@ fn output_is_columnless_with_correct_line_number() {
     fs::write(&target, "clean one\nclean two\nNEEDLE_LITERAL_LONG_ENOUGH\n")
         .expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -308,7 +331,7 @@ fn windows_style_path_does_not_basename_skip() {
     let target = dir.join("forbidden-strings.local.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -356,7 +379,7 @@ fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
     fs::write(&content, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write content");
 
     // Run with cwd == dir so the config file sits directly at the cwd root.
-    let skipped = Command::new(BIN)
+    let skipped = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "rules.txt", "forbidden-strings.append.txt"])
         .output()
@@ -369,7 +392,7 @@ fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
         String::from_utf8_lossy(&skipped.stderr),
     );
 
-    let scanned = Command::new(BIN)
+    let scanned = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "rules.txt", "content.txt"])
         .output()
@@ -395,7 +418,7 @@ fn nul_byte_in_file_does_not_skip_scan() {
     fs::write(&target, b"SECRET_NEEDLE_XYZ_LONG_ENOUGH\0and then more")
         .expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -438,7 +461,7 @@ fn large_text_file_secret_after_probe_is_matched() {
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -479,7 +502,7 @@ fn large_binary_file_secret_in_probe_before_nul_is_matched() {
     content.extend(std::iter::repeat_n(b'X', 9000));
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -521,7 +544,7 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&target)
@@ -551,7 +574,7 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
 //           the exit code. Pins both the channel and the exit shape.
 #[test]
 fn help_long_flag_exits_zero_and_lists_usage() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--help")
         .output()
         .expect("spawn binary");
@@ -574,7 +597,7 @@ fn help_long_flag_exits_zero_and_lists_usage() {
 //           "unknown flag" arm and exit 2; this test pins the alias.
 #[test]
 fn help_short_flag_exits_zero_and_lists_usage() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("-h")
         .output()
         .expect("spawn binary");
@@ -597,7 +620,7 @@ fn help_short_flag_exits_zero_and_lists_usage() {
 //           those tools silently.
 #[test]
 fn version_long_flag_exits_zero_and_prints_version_line() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--version")
         .output()
         .expect("spawn binary");
@@ -625,7 +648,7 @@ fn version_long_flag_exits_zero_and_prints_version_line() {
 
 #[test]
 fn version_short_flag_exits_zero_and_prints_version_line() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("-V")
         .output()
         .expect("spawn binary");
@@ -654,7 +677,7 @@ fn version_short_flag_exits_zero_and_prints_version_line() {
 fn missing_rules_file_exits_with_config_error() {
     let dir = unique_tmp("missing-rules");
     let rules = dir.join("does-not-exist.txt");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .output()
@@ -695,7 +718,7 @@ fn rules_flag_wins_over_env_var() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .env("FORBIDDEN_STRINGS_RULES", &env_rules)
         .args(["--rules"])
         .arg(&flag_rules)
@@ -731,7 +754,7 @@ fn repeated_rules_flag_uses_last_value() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&first_rules)
         .args(["--rules"])
@@ -762,7 +785,7 @@ fn rules_flag_accepts_hyphen_prefixed_path_value() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules", "-rules.txt", "target.txt"])
         .output()
@@ -794,7 +817,7 @@ fn env_var_supplies_rules_when_no_flag() {
     let target = dir.join("target.txt");
     fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .env("FORBIDDEN_STRINGS_RULES", &env_rules)
         .arg(&target)
         .output()
@@ -828,7 +851,7 @@ fn short_literal_matches_whole_word_not_substring() {
     // (1) Standalone occurrence: must match (word boundaries on both sides).
     let hit_file = dir.join("hit.txt");
     fs::write(&hit_file, "see ACR here\n").expect("write hit file");
-    let hit_output = Command::new(BIN)
+    let hit_output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&hit_file)
@@ -845,7 +868,7 @@ fn short_literal_matches_whole_word_not_substring() {
     // (2) Glued occurrence: must NOT match (no trailing word boundary).
     let glued_file = dir.join("glued.txt");
     fs::write(&glued_file, "see ACRYLIC here\n").expect("write glued file");
-    let glued_output = Command::new(BIN)
+    let glued_output = Command::configured(BIN)
         .args(["--rules"])
         .arg(&rules)
         .arg(&glued_file)
@@ -890,7 +913,7 @@ fn all_mode_skips_configured_rules_file() {
     } else {
         "git"
     };
-    let init_status = Command::new(git_bin)
+    let init_status = Command::configured(git_bin)
         .args(["init", "-q"])
         .current_dir(&dir)
         .status()
@@ -903,14 +926,14 @@ fn all_mode_skips_configured_rules_file() {
     // threshold.
     let rules_path = dir.join("myrules.txt");
     fs::write(&rules_path, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
-    let add_status = Command::new(git_bin)
+    let add_status = Command::configured(git_bin)
         .args(["add", "myrules.txt"])
         .current_dir(&dir)
         .status()
         .expect("git add");
     assert!(add_status.success(), "git add must succeed");
 
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .current_dir(&dir)
         .args(["--rules"])
         .arg(&rules_path)
@@ -945,7 +968,7 @@ fn all_mode_skips_configured_rules_file() {
 //           the right shape.
 #[test]
 fn unknown_flag_exits_with_usage_error() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--no-such-flag")
         .output()
         .expect("spawn binary");
@@ -978,7 +1001,7 @@ fn unknown_flag_exits_with_usage_error() {
 //           error.
 #[test]
 fn rules_flag_without_value_exits_with_usage_error() {
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("--rules")
         .output()
         .expect("spawn binary");
@@ -1024,6 +1047,102 @@ fn fake_github_oauth_token() -> String {
     return format!("gho_{}", "a".repeat(36))
 }
 
+// What:     The builtin `curl-auth-user` rule accepts short and long user
+//           options at line start or after horizontal whitespace. The
+//           fixtures assemble option and credential fragments at runtime
+//           so the repository scanner does not flag its own test source.
+// Why:      Same-line curl commands, indented or column-zero continuation
+//           lines, and deliberately broad non-curl option lines must retain
+//           credential detection.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test('curl auth user accepts separate option tokens', () => { ... });
+// ```
+#[test]
+fn curl_auth_user_accepts_separate_option_tokens() {
+    let dir = unique_tmp("curl-auth-user-separate-options");
+    let target = dir.join("options.txt");
+    let credential = ["alice", "secret"].join(":");
+    let content = [
+        format!("-u {credential}"),
+        format!("curl -u {credential}"),
+        format!("curl\t--user={credential}"),
+        format!("  -u {credential} \\"),
+        format!("curl \\\n-u {credential}"),
+        format!("other -u {credential}"),
+    ]
+    .join("\n");
+    fs::write(&target, format!("{content}\n")).expect("write option fixtures");
+
+    let output = Command::configured(BIN)
+        .args(["--builtin-rules", "options.txt"])
+        .current_dir(&dir)
+        .env_remove("FORBIDDEN_STRINGS_RULES")
+        .output()
+        .expect("spawn binary");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "separate credential options must produce findings; stderr: {stderr}",
+    );
+    let findings: Vec<&str> = stderr
+        .lines()
+        .filter(|line| return line.contains("rule=curl-auth-user"))
+        .collect();
+    assert_eq!(
+        findings.len(),
+        6,
+        "expected one curl-auth-user finding per option line: {stderr}",
+    );
+    for line in [1, 2, 3, 4, 6, 7] {
+        assert!(
+            findings
+                .iter()
+                .any(|finding| return finding.contains(&format!("options.txt:{line} "))),
+            "missing curl-auth-user finding for line {line}: {stderr}",
+        );
+    }
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     The builtin `curl-auth-user` rule refuses `-u` text embedded
+//           inside a larger word or package-path task selector.
+// Why:      Option-like substrings must not become username-password pairs
+//           merely because a later colon-delimited task name has a valid
+//           credential shape.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test('curl auth user refuses embedded option substrings', () => { ... });
+// ```
+#[test]
+fn curl_auth_user_refuses_embedded_option_substrings() {
+    let dir = unique_tmp("curl-auth-user-embedded-substrings");
+    let target = dir.join("task-paths.txt");
+    let content = [
+        "mise run //package/pi-plugin/ask-user-question:build",
+        "mise run //package/pi-plugin/ask-user-question:lint",
+        "prefix-user-question:build",
+    ]
+    .join("\n");
+    fs::write(&target, format!("{content}\n")).expect("write embedded substring fixtures");
+
+    let output = Command::configured(BIN)
+        .args(["--builtin-rules", "task-paths.txt"])
+        .current_dir(&dir)
+        .env_remove("FORBIDDEN_STRINGS_RULES")
+        .output()
+        .expect("spawn binary");
+    assert!(
+        output.status.success(),
+        "embedded option substrings must scan cleanly; stderr: {}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
 // What:     `--builtin-rules` with NO rules file anywhere (empty cwd, no
 //           env var) must scan with the embedded baseline alone: a file
 //           containing a github-oauth-shaped token exits 1 with a
@@ -1046,7 +1165,7 @@ fn builtin_rules_flag_scans_with_baseline_alone_when_default_absent() {
     // ```ts
     // spawnSync(BIN, ['--builtin-rules', 'leaky.txt'], { cwd: dir, env: cleaned });
     // ```
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "leaky.txt"])
         .current_dir(&dir)
         .env_remove("FORBIDDEN_STRINGS_RULES")
@@ -1087,7 +1206,7 @@ fn builtin_rules_flag_appends_after_user_rules() {
         format!("SECRET_NEEDLE_XYZ_LONG_ENOUGH\n{}\n", fake_github_oauth_token()),
     )
     .expect("write target");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "--rules"])
         .arg(&rules)
         .arg(&target)
@@ -1137,7 +1256,7 @@ fn builtin_rules_flag_appends_after_user_rules() {
 fn builtin_rules_flag_with_explicit_missing_rules_still_errors() {
     let dir = unique_tmp("builtin-explicit-missing");
     let rules = dir.join("does-not-exist.txt");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .args(["--builtin-rules", "--rules"])
         .arg(&rules)
         .env_remove("FORBIDDEN_STRINGS_RULES")
@@ -1169,7 +1288,7 @@ fn no_builtin_flag_and_no_rules_file_errors_unchanged() {
     let dir = unique_tmp("no-builtin-no-rules");
     let target = dir.join("leaky.txt");
     fs::write(&target, format!("{}\n", fake_github_oauth_token())).expect("write target");
-    let output = Command::new(BIN)
+    let output = Command::configured(BIN)
         .arg("leaky.txt")
         .current_dir(&dir)
         .env_remove("FORBIDDEN_STRINGS_RULES")
@@ -1188,4 +1307,319 @@ fn no_builtin_flag_and_no_rules_file_errors_unchanged() {
         stderr,
     );
     let _ = fs::remove_dir_all(&dir);
+}
+
+/// Lists files with requested name under bounded cache hierarchy.
+fn files_named(root: &std::path::Path, wanted: &str) -> Vec<PathBuf> {
+    let mut pending = vec![root.to_path_buf()];
+    let mut matches = Vec::new();
+    while let Some(directory) = pending.pop() {
+        let Ok(entries) = fs::read_dir(directory) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                pending.push(path);
+            } else if path.file_name().and_then(|name| return name.to_str()) == Some(wanted) {
+                matches.push(path);
+            }
+        }
+    }
+    return matches
+}
+
+/// Explicit compile operation creates private artifact and emits no success output.
+#[test]
+fn compile_rules_subcommand_creates_silent_artifact() {
+    let dir = unique_tmp("compile-rules-command");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(
+        output.status.success(),
+        "compile-rules must succeed; stderr: {}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(output.stdout.is_empty(), "compile-rules success stdout must stay empty");
+    assert!(output.stderr.is_empty(), "compile-rules success stderr must stay empty");
+    assert_eq!(files_named(&cache, "rules.bin").len(), 1);
+
+    let repeated = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(repeated.status.success(), "repeated compile-rules must reuse artifact");
+    assert!(repeated.stdout.is_empty());
+    assert!(repeated.stderr.is_empty());
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// First scan warns and repairs; repeated scan reuses cache with identical finding.
+#[test]
+fn scan_repairs_missing_cache_then_reuses_artifact() {
+    let dir = unique_tmp("scan-cache-repair");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let run = || {
+        return ProcessCommand::new(BIN)
+            .args(["--rules"])
+            .arg(&rules)
+            .arg(&target)
+            .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+            .output()
+            .expect("spawn binary")
+    };
+    let first = run();
+    let first_stderr = String::from_utf8_lossy(&first.stderr);
+    assert_eq!(first.status.code(), Some(1));
+    assert!(first_stderr.contains("\"reason\":\"missing\""));
+    assert!(first_stderr.contains("target.txt:1 rule=0"));
+    assert_eq!(files_named(&cache, "rules.bin").len(), 1);
+
+    let second = run();
+    let second_stderr = String::from_utf8_lossy(&second.stderr);
+    assert_eq!(second.status.code(), Some(1));
+    assert!(!second_stderr.contains("cache-warning"));
+    assert!(second_stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Clean first scan still emits missing-cache warning and exits successfully.
+#[test]
+fn clean_first_scan_reports_cache_warning_on_stderr() {
+    let dir = unique_tmp("clean-cache-warning");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "clean\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert!(output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("\"reason\":\"missing\""));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Relative explicit cache override is configuration error rather than cwd path.
+#[test]
+fn relative_cache_override_exits_with_config_error() {
+    let dir = unique_tmp("relative-cache-root");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "clean\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", "relative/cache")
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&output.stderr)
+            .contains("FORBIDDEN_STRINGS_CACHE_DIR must be an absolute path"),
+    );
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Double-dash preserves scan access to positional file named like subcommand.
+#[test]
+fn double_dash_scans_file_named_compile_rules() {
+    let dir = unique_tmp("compile-rules-positional");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(dir.join("compile-rules"), "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules", "rules.txt", "--", "compile-rules"])
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", dir.join("cache"))
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("compile-rules:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Compile operation rejects missing required rules argument as usage error.
+#[test]
+fn compile_rules_subcommand_requires_rules_path() {
+    let output = ProcessCommand::new(BIN)
+        .arg("compile-rules")
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--rules"));
+}
+
+/// Compile operation fails closed on invalid text and publishes no artifact.
+#[test]
+fn compile_rules_subcommand_rejects_invalid_rules() {
+    let dir = unique_tmp("compile-rules-invalid");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "/ALPHA*/\n").expect("write invalid rules");
+    let output = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn binary");
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("rule 0"));
+    assert!(files_named(&cache, "rules.bin").is_empty());
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Corrupt artifact warns, recompiles, replaces cache, and preserves finding.
+#[test]
+fn corrupt_artifact_is_repaired_without_false_clean() {
+    let dir = unique_tmp("corrupt-cache-repair");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let compiled = ProcessCommand::new(BIN)
+        .args(["compile-rules", "--rules"])
+        .arg(&rules)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn compiler");
+    assert!(compiled.status.success());
+    let artifacts = files_named(&cache, "rules.bin");
+    assert_eq!(artifacts.len(), 1);
+    fs::write(&artifacts[0], b"corrupt").expect("corrupt artifact");
+
+    let repaired = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&repaired.stderr);
+    assert_eq!(repaired.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"invalid\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+
+    let hit = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    assert!(!String::from_utf8_lossy(&hit.stderr).contains("cache-warning"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Changed source content selects a second immutable content-addressed slot.
+#[test]
+fn changed_rules_content_selects_new_cache_slot() {
+    let dir = unique_tmp("cache-content-change");
+    let cache = dir.join("cache");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write first rules");
+    fs::write(&target, "BETA_LITERAL_LONG\n").expect("write target");
+    assert!(
+        ProcessCommand::new(BIN)
+            .args(["compile-rules", "--rules"])
+            .arg(&rules)
+            .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+            .status()
+            .expect("spawn compiler")
+            .success(),
+    );
+
+    fs::write(&rules, "BETA_LITERAL_LONG\n").expect("write changed rules");
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"missing\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    assert_eq!(files_named(&cache, "rules.bin").len(), 2);
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Failed publication warns but retains correct compiled in-memory finding.
+#[test]
+fn cache_write_failure_keeps_scan_correct() {
+    let dir = unique_tmp("cache-write-failure");
+    let cache_root_file = dir.join("cache-root-file");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&cache_root_file, "not a directory").expect("write root blocker");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env("FORBIDDEN_STRINGS_CACHE_DIR", &cache_root_file)
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"unreadable\""));
+    assert!(stderr.contains("\"reason\":\"write-failed\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
+}
+
+/// Missing native cache environment warns and scans from authoritative text.
+#[test]
+fn unavailable_native_cache_root_keeps_scan_correct() {
+    let dir = unique_tmp("cache-root-unavailable");
+    let rules = dir.join("rules.txt");
+    let target = dir.join("target.txt");
+    fs::write(&rules, "ALPHA_LITERAL_LONG\n").expect("write rules");
+    fs::write(&target, "ALPHA_LITERAL_LONG\n").expect("write target");
+
+    let output = ProcessCommand::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .env_remove("FORBIDDEN_STRINGS_CACHE_DIR")
+        .env_remove("XDG_CACHE_HOME")
+        .env_remove("HOME")
+        .env_remove("LOCALAPPDATA")
+        .output()
+        .expect("spawn scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(stderr.contains("\"reason\":\"cache-root-unavailable\""));
+    assert!(stderr.contains("target.txt:1 rule=0"));
+    let _ = fs::remove_dir_all(dir);
 }

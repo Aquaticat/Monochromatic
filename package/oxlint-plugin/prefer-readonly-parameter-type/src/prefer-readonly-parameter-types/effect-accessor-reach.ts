@@ -1,30 +1,30 @@
 /**
- * Callables a body reaches by reading a property rather than by calling anything.
- *
- * The reach walk follows calls, so it answers for a closure that calls a sibling and misses one that
- * reads an accessor. Measured, with the configuration offered:
- *
- * ```ts
- * const holder = {
- *   get row(): Row {
- *     return gottenOut.row;
- *   },
- * };
- * registry.keep((): Row => holder.row,);
- * ```
- *
- * The handed closure names `holder` and nothing else. Resolving `holder` finds no parameter origin,
- * because it is a local rather than a parameter, and the call walk finds no call, because a property
- * read is not one. So the reach walk answered empty while reading `holder.row` runs a body that
- * hands back the caller's row.
- *
- * A getter is the sharp case and the walk does not stop there. Any callable a literal declares is
- * collected, accessors and methods alike, because a property read can hand a method onward as a
- * value just as it can run a getter. Which property was read is not tracked, exactly as the
- * aggregate descent elsewhere declines to track keys: narrowing to one member would need a claim
- * this walk cannot support, and taking all of them can only add an origin.
- *
- * @module
+ Callables a body reaches by reading a property rather than by calling anything.
+ 
+ The reach walk follows calls, so it answers for a closure that calls a sibling and misses one that
+ reads an accessor. Measured, with the configuration offered:
+ 
+ ```ts
+ const holder = {
+   get row(): Row {
+     return gottenOut.row;
+   },
+ };
+ registry.keep((): Row => holder.row,);
+ ```
+ 
+ The handed closure names `holder` and nothing else. Resolving `holder` finds no parameter origin,
+ because it is a local rather than a parameter, and the call walk finds no call, because a property
+ read is not one. So the reach walk answered empty while reading `holder.row` runs a body that
+ hands back the caller's row.
+ 
+ A getter is the sharp case and the walk does not stop there. Any callable a literal declares is
+ collected, accessors and methods alike, because a property read can hand a method onward as a
+ value just as it can run a getter. Which property was read is not tracked, exactly as the
+ aggregate descent elsewhere declines to track keys: narrowing to one member would need a claim
+ this walk cannot support, and taking all of them can only add an origin.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -51,21 +51,21 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Collects every callable a body can reach through a property read.
- *
- * @param project - TypeScript project resolving what a receiver holds.
- *
- * @param within - Body scanned for property reads.
- *
- * @param fileName - File a reached callable must share, bounding work rather than deciding an
- * answer, exactly as the call walk's bound does.
- *
- * @returns callables declared by the aggregates those reads name.
- *
- * @example
- * ```ts
- * accessedCallables({ project, within, fileName });
- * ```
+ Collects every callable a body can reach through a property read.
+ 
+ @param project - TypeScript project resolving what a receiver holds.
+ 
+ @param within - Body scanned for property reads.
+ 
+ @param fileName - File a reached callable must share, bounding work rather than deciding an
+ answer, exactly as the call walk's bound does.
+ 
+ @returns callables declared by the aggregates those reads name.
+ 
+ @example
+ ```ts
+ accessedCallables({ project, within, fileName });
+ ```
  */
 export function accessedCallables({
   project,
@@ -94,7 +94,7 @@ export function accessedCallables({
     },)
     .filter(function sameFile(callable,): boolean {
       /**
-       * File the reached callable is written in.
+       File the reached callable is written in.
        */
       const { fileName: reachedFileName, } = callable.getSourceFile();
       return reachedFileName === fileName;
@@ -102,32 +102,32 @@ export function accessedCallables({
 }
 
 /**
- * Names the expressions a node reads a property off, whichever way it spells the read.
- *
- * Plain property access was the only recognised form, and three others run a getter just as surely.
- * Measured, each offering the configuration its getter hands out while the plain form charged it:
- *
- * ```ts
- * registry.keep((): Row => holder['row'],);
- * registry.keep((): Row => { const { row, } = holder; return row; },);
- * ```
- *
- * Both spread kinds are included, though not on identical grounds: an object spread runs every getter,
- * while an array or argument spread runs `Symbol.iterator` instead. What they share is what this walk
- * asks about, reaching a callable the aggregate declares without writing a call.
- *
- * Which property was read is not tracked here, exactly as the aggregate descent declines to track keys,
- * so an element access with a computed key needs no special handling: the receiver is what matters and
- * taking every member can only add an origin.
- *
- * @param node - Node that may read a property off something.
- *
- * @returns receiver expressions whose getters that read can run.
- *
- * @example
- * ```ts
- * readReceivers({ node });
- * ```
+ Names the expressions a node reads a property off, whichever way it spells the read.
+ 
+ Plain property access was the only recognised form, and three others run a getter just as surely.
+ Measured, each offering the configuration its getter hands out while the plain form charged it:
+ 
+ ```ts
+ registry.keep((): Row => holder['row'],);
+ registry.keep((): Row => { const { row, } = holder; return row; },);
+ ```
+ 
+ Both spread kinds are included, though not on identical grounds: an object spread runs every getter,
+ while an array or argument spread runs `Symbol.iterator` instead. What they share is what this walk
+ asks about, reaching a callable the aggregate declares without writing a call.
+ 
+ Which property was read is not tracked here, exactly as the aggregate descent declines to track keys,
+ so an element access with a computed key needs no special handling: the receiver is what matters and
+ taking every member can only add an origin.
+ 
+ @param node - Node that may read a property off something.
+ 
+ @returns receiver expressions whose getters that read can run.
+ 
+ @example
+ ```ts
+ readReceivers({ node });
+ ```
  */
 function readReceivers({ node, }: { readonly node: Node; },): readonly Node[] {
   if (isPropertyAccessExpression(node,) || isElementAccessExpression(node,))
@@ -150,25 +150,25 @@ function readReceivers({ node, }: { readonly node: Node; },): readonly Node[] {
 }
 
 /**
- * Names every callable one authored aggregate declares.
- *
- * Only an authored literal or class answers. A value read out of something else is reached by the
- * layers the normalisation walk already strips, and guessing at the members of anything else would
- * claim a declaration the source never wrote.
- *
- * A class declaration answers beside a class expression. Excluding it was arbitrary rather than
- * principled: a class declared inside the callable being summarised closes over its parameters exactly
- * as an expression form does, and measured, a getter on such a class handed the caller's row out while
- * the offer stood.
- *
- * @param source - Expression that may be an authored aggregate.
- *
- * @returns callables it declares.
- *
- * @example
- * ```ts
- * aggregateCallables({ source });
- * ```
+ Names every callable one authored aggregate declares.
+ 
+ Only an authored literal or class answers. A value read out of something else is reached by the
+ layers the normalisation walk already strips, and guessing at the members of anything else would
+ claim a declaration the source never wrote.
+ 
+ A class declaration answers beside a class expression. Excluding it was arbitrary rather than
+ principled: a class declared inside the callable being summarised closes over its parameters exactly
+ as an expression form does, and measured, a getter on such a class handed the caller's row out while
+ the offer stood.
+ 
+ @param source - Expression that may be an authored aggregate.
+ 
+ @returns callables it declares.
+ 
+ @example
+ ```ts
+ aggregateCallables({ source });
+ ```
  */
 function aggregateCallables({
   project,
@@ -198,18 +198,18 @@ function aggregateCallables({
 }
 
 /**
- * Names every callable the class one construction refers to declares.
- *
- * @param project - TypeScript project resolving the constructed name.
- *
- * @param constructed - Expression naming the class being constructed.
- *
- * @returns callables that class declares, empty when nothing authored answers.
- *
- * @example
- * ```ts
- * constructedClassMembers({ project, constructed });
- * ```
+ Names every callable the class one construction refers to declares.
+ 
+ @param project - TypeScript project resolving the constructed name.
+ 
+ @param constructed - Expression naming the class being constructed.
+ 
+ @returns callables that class declares, empty when nothing authored answers.
+ 
+ @example
+ ```ts
+ constructedClassMembers({ project, constructed });
+ ```
  */
 function constructedClassMembers({
   project,
@@ -219,7 +219,7 @@ function constructedClassMembers({
   readonly constructed: Node;
 },): readonly Node[] {
   /**
-   * Symbol the constructed name resolves to.
+   Symbol the constructed name resolves to.
    */
   const symbol = isIdentifier(constructed,)
     ? project.checker
@@ -227,19 +227,19 @@ function constructedClassMembers({
     : project.checker
       .getSymbolAtLocation(constructed,);
   /**
-   * First declaration that symbol names.
+   First declaration that symbol names.
    */
   const first = symbol
     ?.declarations
     .at(0,);
   /**
-   * Declaration the symbol names, preferring the one carrying its value.
+   Declaration the symbol names, preferring the one carrying its value.
    */
   const declared = symbol
     ?.valueDeclaration
     ?? first;
   /**
-   * Declaration resolved into the project owning it.
+   Declaration resolved into the project owning it.
    */
   const declaration = declared
     ?.resolve(project,);

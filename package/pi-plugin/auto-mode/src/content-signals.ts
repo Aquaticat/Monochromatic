@@ -1,11 +1,11 @@
 /**
- * Content-based and text-based signal detection.
- *
- * Owns the regex panel that flags secrets in payload bodies
- * (`contentSignals`) and dangerous keywords in free text
- * (`textSignals`).
- *
- * @module
+ Content-based and text-based signal detection.
+ 
+ Owns the regex panel that flags secrets in payload bodies
+ (`contentSignals`) and dangerous keywords in free text
+ (`textSignals`).
+ 
+ @module
  */
 
 import {
@@ -14,20 +14,20 @@ import {
   SECRET_FORMAT_PATTERNS,
 } from './constants.ts';
 /**
- * Check if text content contains secret material.
- *
- * Detects {@link PRIVATE_KEY_PATTERN} headers and known
- * {@link SECRET_FORMAT_PATTERNS} token/key formats.
- *
- * @param text - the text content to check
- *
- * @returns `true` if secret material is detected
- *
- * @example
- * ```typescript
- * contentSignals("-----BEGIN RSA PRIVATE KEY-----"); // true
- * contentSignals("Hello, world!"); // false
- * ```
+ Check if text content contains secret material.
+ 
+ Detects {@link PRIVATE_KEY_PATTERN} headers and known
+ {@link SECRET_FORMAT_PATTERNS} token/key formats.
+ 
+ @param text - the text content to check
+ 
+ @returns `true` if secret material is detected
+ 
+ @example
+ ```typescript
+ contentSignals("-----BEGIN RSA PRIVATE KEY-----"); // true
+ contentSignals("Hello, world!"); // false
+ ```
  */
 function contentSignals(
   text: string,
@@ -44,15 +44,15 @@ function contentSignals(
 }
 
 /**
- * Check raw text against {@link BUILTIN_TEXT_PATTERNS}.
- *
- * @returns `true` if any pattern matches
- *
- * @example
- * ```typescript
- * textSignals({ text: "run sudo apt-get install" }); // true
- * textSignals({ text: "run apt-get install" }); // false
- * ```
+ Check raw text against {@link BUILTIN_TEXT_PATTERNS}.
+ 
+ @returns `true` if any pattern matches
+ 
+ @example
+ ```typescript
+ textSignals({ text: "run sudo apt-get install" }); // true
+ textSignals({ text: "run apt-get install" }); // false
+ ```
  */
 function textSignals(
   {

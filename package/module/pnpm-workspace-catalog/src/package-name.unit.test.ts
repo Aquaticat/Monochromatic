@@ -1,7 +1,7 @@
 /**
- * Unit tests for the built npm package-name validator.
- *
- * @module
+ Unit tests for the built npm package-name validator.
+ 
+ @module
  */
 
 import {
@@ -15,7 +15,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Valid package names used by the workspace catalog.
+ Valid package names used by the workspace catalog.
  */
 const VALID_NAMES: readonly string[] = [
   'oxlint',
@@ -27,7 +27,7 @@ const VALID_NAMES: readonly string[] = [
 ];
 
 /**
- * Crafted or malformed names that must never become catalog keys.
+ Crafted or malformed names that must never become catalog keys.
  */
 const INVALID_NAMES: readonly string[] = [
   '__proto__',

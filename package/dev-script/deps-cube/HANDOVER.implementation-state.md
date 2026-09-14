@@ -606,7 +606,7 @@ Done:
      not `process.cwd()`:
      the audit is per-monorepo,
      not per-cwd,
-     and the find-up keeps the path stable in both source mode and built mode (`dist/final/node/cli.mjs`).
+     and the package-root walk keeps the path stable in both source mode and built mode (`dist/final/node/cli.mjs`).
      Each top-level `const` carries its own TSDoc (required at module root).
   - `src/index.ts`:
      re-exports the library surface (`readCatalog`,
@@ -724,7 +724,7 @@ Done (continued):
      `readCatalog` for default + named blocks;
      `npm:` decoding inside catalog entries;
      throw paths for missing yaml and empty catalog blocks.
-     Uses `findUp` constrained to a temp dir so the test doesn't accidentally pick up the real `pnpm-workspace.yaml` higher in the tree.
+     Uses an upward search constrained to a temp dir so the test doesn't accidentally pick up the real `pnpm-workspace.yaml` higher in the tree.
   - **filter**:
      `extractDim` log scaling + null pass-through;
      binary/categorical numeric mapping;

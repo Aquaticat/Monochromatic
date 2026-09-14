@@ -25,9 +25,9 @@ const TOO_LOUD_DB: f64 = 1.0 / 2.0;
 /// Convert a linear peak to dBTP, treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
-        f64::NEG_INFINITY
+        return f64::NEG_INFINITY
     } else {
-        peak_dbtp(peak)
+        return peak_dbtp(peak)
     }
 }
 
@@ -71,7 +71,7 @@ pub fn evaluate_density(
         }
         decoded += threshold;
         let windows = sampled_windows(track, candidate);
-        let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| peak.max(window));
+        let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| return peak.max(window));
         let full_db = db(f64::from(track.full_peak));
         if full_db > policy.ceiling_dbtp {
             max_under_read = max_under_read.max(full_db - db(sampled_max));
@@ -82,7 +82,7 @@ pub fn evaluate_density(
     let worst_quiet_db = -margin_db;
     // Feasible when the margin stays inside the too-quiet bound and the probe cost fits.
     let feasible = worst_quiet_db >= quiet_bound_db && decoded <= target_secs;
-    Feasible {
+    return Feasible {
         candidate,
         margin_db,
         worst_quiet_db,
@@ -127,7 +127,7 @@ pub fn provenance_margin(
             continue;
         }
         let windows = sampled_windows(track, candidate);
-        let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| peak.max(window));
+        let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| return peak.max(window));
         let under_read = full_db - db(sampled_max);
         if safe_paths.contains(&track.path) {
             max_under_read_safe = max_under_read_safe.max(under_read);
@@ -137,7 +137,7 @@ pub fn provenance_margin(
     }
     let margin_safe_db = (max_under_read_safe - TOO_LOUD_DB).max(0.0);
     let margin_unsafe_db = (max_under_read_unsafe - TOO_LOUD_DB).max(0.0);
-    ProvenanceMargin {
+    return ProvenanceMargin {
         margin_safe_db,
         margin_unsafe_db,
         worst_quiet_db: -margin_safe_db.max(margin_unsafe_db),
@@ -170,11 +170,11 @@ pub fn best_feasible(
     }
     // Best feasible first: smallest margin, then smallest decoded cost as a tie-break.
     results.sort_by(|left, right| {
-        right
+        return right
             .feasible
             .cmp(&left.feasible)
             .then(left.margin_db.total_cmp(&right.margin_db))
             .then(left.probe_decoded_secs.total_cmp(&right.probe_decoded_secs))
     });
-    results
+    return results
 }

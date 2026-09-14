@@ -1,7 +1,7 @@
 /**
- * Tests for applying model-aware thinking defaults.
- *
- * @module
+ Tests for applying model-aware thinking defaults.
+ 
+ @module
  */
 
 import {
@@ -25,16 +25,16 @@ type ThinkingHarness = {
 };
 
 /**
- * Creates fake pi thinking accessors backed by a current-level value.
- *
- * @param currentLevel - current level returned by `getThinkingLevel`
- *
- * @returns fake accessors and recorded set calls
- *
- * @example
- * ```typescript
- * const harness = createThinkingHarness({ currentLevel: 'high' });
- * ```
+ Creates fake pi thinking accessors backed by a current-level value.
+ 
+ @param currentLevel - current level returned by `getThinkingLevel`
+ 
+ @returns fake accessors and recorded set calls
+ 
+ @example
+ ```typescript
+ const harness = createThinkingHarness({ currentLevel: 'high' });
+ ```
  */
 function createThinkingHarness(
   {

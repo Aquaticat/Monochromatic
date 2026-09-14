@@ -16,12 +16,12 @@ import {
 } from './readonly-parameter-facts.ts';
 
 /**
- * Category-neutral evidence for one implemented callable.
- *
- * @example
- * ```ts
- * evidence.parameterFacts.forEach(useFacts);
- * ```
+ Category-neutral evidence for one implemented callable.
+ 
+ @example
+ ```ts
+ evidence.parameterFacts.forEach(useFacts);
+ ```
  */
 export type ReadonlyCallableEvidence = {
   readonly declaration: EffectCallableDeclaration;
@@ -33,22 +33,22 @@ export type ReadonlyCallableEvidence = {
 };
 
 /**
- * Computes every category-neutral fact for one implemented callable.
- *
- * @param declaration - Callable declaration owning parameter evidence.
- *
- * @param effectSummary - Whole-project effects reaching callable parameters.
- *
- * @param project - TypeScript project used by readonly classification.
- *
- * @param proveForeignBorrowed - Deferred complete ownership proof for callable.
- *
- * @returns immutable evidence consumed by split rule reporters.
- *
- * @example
- * ```ts
- * readonlyCallableEvidence({ declaration, effectSummary, project, proveForeignBorrowed });
- * ```
+ Computes every category-neutral fact for one implemented callable.
+ 
+ @param declaration - Callable declaration owning parameter evidence.
+ 
+ @param effectSummary - Whole-project effects reaching callable parameters.
+ 
+ @param project - TypeScript project used by readonly classification.
+ 
+ @param proveForeignBorrowed - Deferred complete ownership proof for callable.
+ 
+ @returns immutable evidence consumed by split rule reporters.
+ 
+ @example
+ ```ts
+ readonlyCallableEvidence({ declaration, effectSummary, project, proveForeignBorrowed });
+ ```
  */
 export function readonlyCallableEvidence({
   declaration,
@@ -62,34 +62,34 @@ export function readonlyCallableEvidence({
   readonly proveForeignBorrowed: () => ReadonlySet<ParameterIndex>;
 }>,): ReadonlyCallableEvidence {
   /**
-   * Source file owning callable and authored comments.
+   Source file owning callable and authored comments.
    */
   const sourceFile = declaration.getSourceFile();
   /**
-   * Attached mutation contracts, when callable has TSDoc.
+   Attached mutation contracts, when callable has TSDoc.
    */
   const contracts = mutationContractsForDeclaration({
     declaration,
     sourceFile,
   },);
   /**
-   * Valid contract targets mapped to parameter indexes.
+   Valid contract targets mapped to parameter indexes.
    */
   const targetIndexes = mutationTargetIndexes({
     declaration,
     sourceFile,
   },);
   /**
-   * Parsed mutation blocks, absent when callable has no TSDoc.
+   Parsed mutation blocks, absent when callable has no TSDoc.
    */
   const blocks = contracts === MUTATION_CONTRACT_UNAVAILABLE ? [] : contracts.blocks;
   /**
-   * Mutation blocks grouped by semantic parameter index.
+   Mutation blocks grouped by semantic parameter index.
    */
   const blocksByParameter = new Map<number, typeof blocks>();
   blocks.forEach(function groupBlock(block,): void {
     /**
-     * Parameter index matching authored target.
+     Parameter index matching authored target.
      */
     const parameterIndex = targetIndexes.get(block.parameterName,);
     if (parameterIndex === undefined)
@@ -103,7 +103,7 @@ export function readonlyCallableEvidence({
     );
   },);
   /**
-   * Everything each split policy reads before foreign ownership.
+   Everything each split policy reads before foreign ownership.
    */
   const parameterFacts = readonlyParameterFacts({
     declaration,
@@ -113,7 +113,7 @@ export function readonlyCallableEvidence({
     blocksByParameter,
   },);
   /**
-   * Parameters whose exact marker provenance reaches foreign ownership.
+   Parameters whose exact marker provenance reaches foreign ownership.
    */
   const foreignBorrowedParameters = parameterFacts
       .some(function verdictReadsForeign(facts: ReadonlyParameterFacts,): boolean {

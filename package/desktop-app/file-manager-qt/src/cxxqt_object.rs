@@ -55,7 +55,7 @@ pub struct AppBridgeRust {
 /// Why: gives QML a non-empty greeting binding without hardcoding it QML-side.
 impl Default for AppBridgeRust {
     fn default() -> Self {
-        Self {
+        return Self {
             greeting: QString::from("Monochromatic file manager (Qt / cxx-qt)"),
         }
     }
@@ -69,5 +69,22 @@ impl qobject::AppBridge {
     ///      off-thread logging the whole app uses, so it never blocks a frame.
     pub fn log_from_qml(&self, message: &QString) {
         tracing::info!(target: "app_bridge", message = %message, "logFromQml invoked from QML");
+    }
+}
+
+/// Verifies Rust-owned state exposed through generated Qt bindings.
+#[cfg(test)]
+mod tests {
+    use super::{AppBridgeRust, QString};
+
+    /// Ensures default construction preserves QML's visible initial state.
+    #[test]
+    fn default_state_carries_the_qml_greeting() {
+        let bridge = AppBridgeRust::default();
+
+        assert_eq!(
+            bridge.greeting,
+            QString::from("Monochromatic file manager (Qt / cxx-qt)"),
+        );
     }
 }

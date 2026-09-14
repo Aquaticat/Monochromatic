@@ -1,9 +1,9 @@
 /**
- * Unit tests for the location-fallback creation path against a stubbed
- * `fetch`: a 412 `resource_unavailable` advances to the next location, and an
- * all-locations-out-of-stock run throws a clear error. No real provisioning.
- *
- * @module
+ Unit tests for the location-fallback creation path against a stubbed
+ `fetch`: a 412 `resource_unavailable` advances to the next location, and an
+ all-locations-out-of-stock run throws a clear error. No real provisioning.
+ 
+ @module
  */
 
 import {
@@ -15,7 +15,7 @@ import {
 import { createWithFallback, } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/lifecycle.ts';
 
 /**
- * One recorded fetch invocation.
+ One recorded fetch invocation.
  */
 type Call = {
   readonly url: string;
@@ -23,7 +23,7 @@ type Call = {
 };
 
 /**
- * Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
+ Sets HCLOUD_TOKEN for a `using` scope so requireToken passes, restoring after.
  */
 function withToken(): Disposable {
   const prior = process.env.HCLOUD_TOKEN;
@@ -41,14 +41,14 @@ function withToken(): Disposable {
 }
 
 /**
- * Builds a JSON Response for the stub.
+ Builds a JSON Response for the stub.
  */
 function jsonResponse(body: unknown, status = 200,): Response {
   return Response.json(body, { status, },);
 }
 
 /**
- * Serves queued responses in order, recording each call; restores on dispose.
+ Serves queued responses in order, recording each call; restores on dispose.
  */
 function installQueue(responses: Response[],): Disposable & { readonly calls: Call[] } {
   const calls: Call[] = [];
@@ -70,7 +70,7 @@ function installQueue(responses: Response[],): Disposable & { readonly calls: Ca
 }
 
 /**
- * No-op logger satisfying the helper's logger surface.
+ No-op logger satisfying the helper's logger surface.
  */
 const RL = {
   debug() {},
@@ -78,7 +78,7 @@ const RL = {
 };
 
 /**
- * 412 out-of-stock response.
+ 412 out-of-stock response.
  */
 function outOfStock(): Response {
   return jsonResponse({ error: { code: 'resource_unavailable', message: 'no stock', }, }, 412,);

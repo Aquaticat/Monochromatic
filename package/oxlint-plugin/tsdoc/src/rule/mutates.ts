@@ -1,7 +1,7 @@
 /**
- * Mutation-contract tag validation.
- *
- * @module
+ Mutation-contract tag validation.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -23,22 +23,22 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Reports one malformed mutation block.
- *
- * @param report - Host callback receiving diagnostics.
- *
- * @param comment - Parsed comment owning block.
- *
- * @param block - Mutation contract to validate.
- *
- * @param validTargets - Parameter and destructured binding names accepted by callable.
- *
- * @param duplicate - Whether preceding block already names target.
- *
- * @example
- * ```ts
- * reportInvalidMutatesBlock({ report: context.report, comment, block, validTargets, duplicate: false });
- * ```
+ Reports one malformed mutation block.
+ 
+ @param report - Host callback receiving diagnostics.
+ 
+ @param comment - Parsed comment owning block.
+ 
+ @param block - Mutation contract to validate.
+ 
+ @param validTargets - Parameter and destructured binding names accepted by callable.
+ 
+ @param duplicate - Whether preceding block already names target.
+ 
+ @example
+ ```ts
+ reportInvalidMutatesBlock({ report: context.report, comment, block, validTargets, duplicate: false });
+ ```
  */
 function reportInvalidMutatesBlock({
   report,
@@ -54,7 +54,7 @@ function reportInvalidMutatesBlock({
   readonly duplicate: boolean;
 },): void {
   /**
-   * Location anchored to malformed custom-tag line.
+   Location anchored to malformed custom-tag line.
    */
   const loc = commentLineReportLoc({
     comment,
@@ -91,12 +91,12 @@ function reportInvalidMutatesBlock({
 }
 
 /**
- * Validates `@mutates target - rationale` grammar against callable parameters.
- *
- * @example
- * ```ts
- * // tsdoc/check-mutates reports unknown and duplicate targets.
- * ```
+ Validates `@mutates target - rationale` grammar against callable parameters.
+ 
+ @example
+ ```ts
+ // tsdoc/check-mutates reports unknown and duplicate targets.
+ ```
  */
 export const checkMutates: CreateOnceRule = {
   meta: {
@@ -121,7 +121,7 @@ export const checkMutates: CreateOnceRule = {
         result,
       ): void {
         /**
-         * Named parameters accepted as mutation targets.
+         Named parameters accepted as mutation targets.
          */
         const validTargets = new Set([
           ...extractParamNames(node,),
@@ -136,7 +136,7 @@ export const checkMutates: CreateOnceRule = {
             blocks,
           ): void {
             /**
-             * Whether another block named target earlier in source order.
+             Whether another block named target earlier in source order.
              */
             const duplicate = blocks.findIndex(function hasTarget(candidate,): boolean {
               return candidate.parameterName === block.parameterName;

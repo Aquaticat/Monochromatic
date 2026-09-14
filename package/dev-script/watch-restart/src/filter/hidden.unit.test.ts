@@ -13,25 +13,25 @@ import type {
 import { hiddenFilter, } from './hidden.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Builds a minimal {@link WatchCtx}; hiddenFilter ignores everything but
- * `event.relativePath`.
- *
- * @returns context object suitable for handing to hiddenFilter
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; hiddenFilter ignores everything but
+ `event.relativePath`.
+ 
+ @returns context object suitable for handing to hiddenFilter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -42,17 +42,17 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults give a `change`
- * to `file.ts`.
- *
- * @param overrides - partial event fields to merge over the default
- *
- * @returns fully-populated event
- *
- * @example
- * ```ts
- * const event = makeEvent({ relativePath: '.cache/data', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults give a `change`
+ to `file.ts`.
+ 
+ @param overrides - partial event fields to merge over the default
+ 
+ @returns fully-populated event
+ 
+ @example
+ ```ts
+ const event = makeEvent({ relativePath: '.cache/data', },);
+ ```
  */
 function makeEvent(
   overrides: {
@@ -73,22 +73,22 @@ function makeEvent(
 }
 
 /**
- * Reports whether the default (allowHidden off) filter treats `relativePath`
- * as a hidden segment, i.e. rejects it.
- *
- * Inverts the filter result: the filter returns `true` to admit a non-hidden
- * path, so a rejected (hidden) path negates to `true` here. Keeps the
- * equivalence assertions below readable as direct hidden/not-hidden facts.
- *
- * @param relativePath - event relative path under inspection
- *
- * @returns whether `relativePath` contains a hidden segment
- *
- * @example
- * ```ts
- * await isHidden('.config.ts'); // true
- * await isHidden('src/foo.ts'); // false
- * ```
+ Reports whether the default (allowHidden off) filter treats `relativePath`
+ as a hidden segment, i.e. rejects it.
+ 
+ Inverts the filter result: the filter returns `true` to admit a non-hidden
+ path, so a rejected (hidden) path negates to `true` here. Keeps the
+ equivalence assertions below readable as direct hidden/not-hidden facts.
+ 
+ @param relativePath - event relative path under inspection
+ 
+ @returns whether `relativePath` contains a hidden segment
+ 
+ @example
+ ```ts
+ await isHidden('.config.ts'); // true
+ await isHidden('src/foo.ts'); // false
+ ```
  */
 async function isHidden(relativePath: string,): Promise<boolean> {
   const filter = hiddenFilter({},);

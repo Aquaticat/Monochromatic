@@ -1,7 +1,7 @@
 /**
- * Tests for the built agent-settled notification extension.
- *
- * @module
+ Tests for the built agent-settled notification extension.
+ 
+ @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
@@ -39,14 +39,14 @@ type FakePiHarness = {
 };
 
 /**
- * Creates a fake Pi extension API that records lifecycle subscriptions.
- *
- * @returns fake API and captured event handlers
- *
- * @example
- * ```ts
- * const harness = createFakePiHarness();
- * ```
+ Creates a fake Pi extension API that records lifecycle subscriptions.
+ 
+ @returns fake API and captured event handlers
+ 
+ @example
+ ```ts
+ const harness = createFakePiHarness();
+ ```
  */
 function createFakePiHarness(): FakePiHarness {
   /** Mutable registrations populated through the fake `on()` method. */
@@ -78,20 +78,20 @@ function createFakePiHarness(): FakePiHarness {
 }
 
 /**
- * Retrieves the only handler registered for an event.
- *
- * @param handlersByEvent - captured Pi registrations
- *
- * @param event - lifecycle event whose callback is needed
- *
- * @returns registered lifecycle callback
- *
- * @throws when registration is absent or duplicated
- *
- * @example
- * ```ts
- * getOnlyHandler({ handlersByEvent: new Map(), event: 'agent_settled' });
- * ```
+ Retrieves the only handler registered for an event.
+ 
+ @param handlersByEvent - captured Pi registrations
+ 
+ @param event - lifecycle event whose callback is needed
+ 
+ @returns registered lifecycle callback
+ 
+ @throws when registration is absent or duplicated
+ 
+ @example
+ ```ts
+ getOnlyHandler({ handlersByEvent: new Map(), event: 'agent_settled' });
+ ```
  */
 function getOnlyHandler(
   {

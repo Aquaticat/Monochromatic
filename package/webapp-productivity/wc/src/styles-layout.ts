@@ -1,15 +1,15 @@
 /**
- * Reset, page scaffold, masthead, and input-panel styles for the wc
- * text-stats tool.
- *
- * The page is a viewport-filling flex column (`min-block-size: 100dvh`
- * on `.page`, not on the textarea) so an empty page shows no scrollbar:
- * the layout row flexes to fill exactly the remaining height and the
- * textarea stretches inside it. Growth beyond the viewport comes from
- * the client script's auto-grow, which raises the textarea's
- * `min-block-size` to its scroll height.
- *
- * Flexbox only; CSS grid is not allowed in this package.
+ Reset, page scaffold, masthead, and input-panel styles for the wc
+ text-stats tool.
+ 
+ The page is a viewport-filling flex column (`min-block-size: 100dvh`
+ on `.page`, not on the textarea) so an empty page shows no scrollbar:
+ the layout row flexes to fill exactly the remaining height and the
+ textarea stretches inside it. Growth beyond the viewport comes from
+ the client script's auto-grow, which raises the textarea's
+ `min-block-size` to its scroll height.
+ 
+ Flexbox only; CSS grid is not allowed in this package.
  */
 import {
   cssCh,
@@ -24,101 +24,101 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Viewport width, in rem, above which the input and results panels sit
- * side by side instead of stacked: the 60ch input minimum plus a usable
- * results column no longer fit below this.
+ Viewport width, in rem, above which the input and results panels sit
+ side by side instead of stacked: the 60ch input minimum plus a usable
+ results column no longer fit below this.
  */
 export const WIDE_VIEWPORT_REM: number = 64;
 
 /**
- * One half, composed from the exempt literal range.
+ One half, composed from the exempt literal range.
  */
 export const HALF: number = 1 / 2;
 
 /**
- * One quarter, composed from {@link HALF}.
+ One quarter, composed from {@link HALF}.
  */
 export const QUARTER: number = HALF / 2;
 
 /**
- * One eighth, composed from {@link QUARTER}.
+ One eighth, composed from {@link QUARTER}.
  */
 export const EIGHTH: number = QUARTER / 2;
 
 /**
- * Three quarters, composed from {@link HALF} and {@link QUARTER}.
+ Three quarters, composed from {@link HALF} and {@link QUARTER}.
  */
 export const THREE_QUARTERS: number = HALF + QUARTER;
 
 /**
- * Base spacing unit (rem) the scaffold's paddings and gaps derive from.
+ Base spacing unit (rem) the scaffold's paddings and gaps derive from.
  */
 const SPACE = 1 + HALF;
 
 /**
- * Hairline border width in rem (one device pixel at default zoom),
- * composed from {@link EIGHTH}.
+ Hairline border width in rem (one device pixel at default zoom),
+ composed from {@link EIGHTH}.
  */
 export const HAIRLINE: number = EIGHTH / 2;
 
 /**
- * Masthead title weight.
+ Masthead title weight.
  */
 const WEIGHT_TITLE = 700;
 
 /**
- * Input label weight.
+ Input label weight.
  */
 const WEIGHT_LABEL = 600;
 
 /**
- * Flex-grow factor that lets the input panel absorb all free inline
- * space (up to its 90ch cap) before the results panel starts growing.
+ Flex-grow factor that lets the input panel absorb all free inline
+ space (up to its 90ch cap) before the results panel starts growing.
  */
 const INPUT_GROW_FACTOR = 999;
 
 /**
- * Results panel preferred inline size in rem.
+ Results panel preferred inline size in rem.
  */
 const RESULTS_BASIS_REM = 24;
 
 /**
- * Results panel maximum inline size in rem.
+ Results panel maximum inline size in rem.
  */
 const RESULTS_MAX_REM = 40;
 
 /**
- * Empty-textarea minimum block size in rem, a floor for when the
- * flex-stretch has little room (stacked narrow layout).
+ Empty-textarea minimum block size in rem, a floor for when the
+ flex-stretch has little room (stacked narrow layout).
  */
 const INPUT_MIN_BLOCK_REM = 16;
 
 /**
- * Input box minimum inline size in ch (user requirement: never narrower
- * than 60ch, capped by the container on narrow viewports).
+ Input box minimum inline size in ch (user requirement: never narrower
+ than 60ch, capped by the container on narrow viewports).
  */
 const INPUT_MIN_CH = 60;
 
 /**
- * Input box maximum inline size in ch (user requirement: never wider
- * than 90ch).
+ Input box maximum inline size in ch (user requirement: never wider
+ than 90ch).
  */
 const INPUT_MAX_CH = 90;
 
 /**
- * Full-length percentage.
+ Full-length percentage.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Generates reset, body, page, masthead, and input-panel rules.
- *
- * @returns minified CSS string
- *
- * @example
- * ```ts
- * const css = renderLayoutStyles();
- * ```
+ Generates reset, body, page, masthead, and input-panel rules.
+ 
+ @returns minified CSS string
+ 
+ @example
+ ```ts
+ const css = renderLayoutStyles();
+ ```
  */
 export function renderLayoutStyles(): string {
   return [

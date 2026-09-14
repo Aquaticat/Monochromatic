@@ -1,7 +1,7 @@
 /**
- * Primary `unbash` node visitor for shell command analysis.
- *
- * @module
+ Primary `unbash` node visitor for shell command analysis.
+ 
+ @module
  */
 
 import type {
@@ -27,22 +27,22 @@ import {
 } from './work-items.ts';
 
 /**
- * Visit one AST node.
- *
- * @param node - AST node to visit
- *
- * @param redirects - redirects inherited from wrapping statement nodes
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @param context - execution context inherited by node
- *
- * @returns commands, child work, and flags emitted by node
- *
- * @example
- * ```ts
- * visitNode({ node, redirects: [], paramRefs: [], context });
- * ```
+ Visit one AST node.
+ 
+ @param node - AST node to visit
+ 
+ @param redirects - redirects inherited from wrapping statement nodes
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @param context - execution context inherited by node
+ 
+ @returns commands, child work, and flags emitted by node
+ 
+ @example
+ ```ts
+ visitNode({ node, redirects: [], paramRefs: [], context });
+ ```
  */
 function visitNode(
   {
@@ -156,7 +156,7 @@ function visitNode(
   }
   if (node.type === 'For') {
     /**
-     * Loop syntax parts used by pre-body work and body context.
+     Loop syntax parts used by pre-body work and body context.
      */
     const {
       body,
@@ -164,11 +164,11 @@ function visitNode(
       wordlist,
     } = node;
     /**
-     * Literal source values assigned to loop variable.
+     Literal source values assigned to loop variable.
      */
     const loopValues: string[] = [];
     /**
-     * Original shell spellings paired with loop values.
+     Original shell spellings paired with loop values.
      */
     const loopSourceTexts: string[] = [];
     for (const word of wordlist) {
@@ -176,7 +176,7 @@ function visitNode(
       loopSourceTexts[loopSourceTexts.length] = word.text;
     }
     /**
-     * Body context carrying literal source values assigned to loop variable.
+     Body context carrying literal source values assigned to loop variable.
      */
     const loopContext: ShellCommandContext = {
       ...context,

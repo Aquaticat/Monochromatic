@@ -1,12 +1,12 @@
 /**
- * Structural resolution over the current block tree.
- *
- * {@link locateValueNode} finds the value node a path addresses (a key-value's
- * value, an element inside an array/inline table, or a whole table section),
- * used by the parse-time-view readers {@link tomlGetNode} / {@link tomlGetRaw}.
- * Because it walks the current tree, only clean nodes carry a source range.
- *
- * @module
+ Structural resolution over the current block tree.
+ 
+ {@link locateValueNode} finds the value node a path addresses (a key-value's
+ value, an element inside an array/inline table, or a whole table section),
+ used by the parse-time-view readers {@link tomlGetNode} / {@link tomlGetRaw}.
+ Because it walks the current tree, only clean nodes carry a source range.
+ 
+ @module
  */
 
 import type {
@@ -23,10 +23,10 @@ import {
 import type { TomlPath, } from './types.ts';
 
 /**
- * A table section a path names directly.
- *
- * `table`: the path names a single standard `[foo]` section.
- * `aot`: the path names one or more array-of-tables `[[foo]]` instances.
+ A table section a path names directly.
+ 
+ `table`: the path names a single standard `[foo]` section.
+ `aot`: the path names one or more array-of-tables `[[foo]]` instances.
  */
 export type TableSectionHit =
   | {
@@ -39,7 +39,7 @@ export type TableSectionHit =
   };
 
 /**
- * Instruction to resume resolution inside a parent section's body.
+ Instruction to resume resolution inside a parent section's body.
  */
 export type TableSectionDescent = {
   readonly kind: 'descend';
@@ -48,9 +48,9 @@ export type TableSectionDescent = {
 };
 
 /**
- * A resolved structural location.
- *
- * `value`: the path addresses a key-value's value or a nested element.
+ A resolved structural location.
+ 
+ `value`: the path addresses a key-value's value or a nested element.
  */
 export type Located =
   | {
@@ -60,19 +60,19 @@ export type Located =
   | TableSectionHit;
 
 /**
- * Sentinel for "no structural location at this path".
+ Sentinel for "no structural location at this path".
  */
 export const NOT_LOCATED: unique symbol = Symbol('toml-edit/resolve-block-not-located',);
 
 /**
- * Locate the value node (or table) that `path` addresses in `blocks`.
- *
- * @returns A {@link Located} result, or {@link NOT_LOCATED}.
- *
- * @example
- * ```ts
- * locateValueNode({ blocks: edit.blocks, path: ['tools', 'bun'], },);
- * ```
+ Locate the value node (or table) that `path` addresses in `blocks`.
+ 
+ @returns A {@link Located} result, or {@link NOT_LOCATED}.
+ 
+ @example
+ ```ts
+ locateValueNode({ blocks: edit.blocks, path: ['tools', 'bun'], },);
+ ```
  */
 export function locateValueNode(
   {
@@ -84,8 +84,8 @@ export function locateValueNode(
   },
 ): Located | typeof NOT_LOCATED {
   /**
-   * Key-value whose key chain is a prefix of `path`, resolved first so a direct
-   * or dotted hit short-circuits the table scan.
+   Key-value whose key chain is a prefix of `path`, resolved first so a direct
+   or dotted hit short-circuits the table scan.
    */
   const kvHit = matchKeyValue({
     blocks,
@@ -106,7 +106,7 @@ export function locateValueNode(
     },);
   }
   /**
-   * Section scan shared with {@link locateBlock}; only the descent target differs.
+   Section scan shared with {@link locateBlock}; only the descent target differs.
    */
   const section = matchTableSection({
     blocks,
@@ -121,9 +121,9 @@ export function locateValueNode(
 }
 
 /**
- * Find a key-value block whose key segments prefix `path`.
- *
- * @returns Match plus its matched length, or {@link NOT_LOCATED}.
+ Find a key-value block whose key segments prefix `path`.
+ 
+ @returns Match plus its matched length, or {@link NOT_LOCATED}.
  */
 function matchKeyValue(
   {
@@ -155,18 +155,18 @@ function matchKeyValue(
 }
 
 /**
- * Resolve `path` against the standard and array table sections in `blocks`.
- *
- * Shared by both resolvers: an exact header yields a {@link TableSectionHit},
- * a strict-prefix standard header yields a {@link TableSectionDescent} that the
- * caller replays against its own entry point.
- *
- * @returns Section hit, descent instruction, or {@link NOT_LOCATED}.
- *
- * @example
- * ```ts
- * matchTableSection({ blocks: edit.blocks, path: ['tools'], },);
- * ```
+ Resolve `path` against the standard and array table sections in `blocks`.
+ 
+ Shared by both resolvers: an exact header yields a {@link TableSectionHit},
+ a strict-prefix standard header yields a {@link TableSectionDescent} that the
+ caller replays against its own entry point.
+ 
+ @returns Section hit, descent instruction, or {@link NOT_LOCATED}.
+ 
+ @example
+ ```ts
+ matchTableSection({ blocks: edit.blocks, path: ['tools'], },);
+ ```
  */
 export function matchTableSection(
   {
@@ -178,7 +178,7 @@ export function matchTableSection(
   },
 ): TableSectionHit | TableSectionDescent | typeof NOT_LOCATED {
   /**
-   * Table sections whose header exactly names `path`.
+   Table sections whose header exactly names `path`.
    */
   const exact = blocks.filter(function isExact(b,): b is TableNode {
     return (b.kind
@@ -191,7 +191,7 @@ export function matchTableSection(
   if (exact.length
     > 0) {
     /**
-     * First exact table so a standard header resolves to that single section.
+     First exact table so a standard header resolves to that single section.
      */
     const [first,] = exact;
     if ((first !== undefined) && (first.tableKind
@@ -206,7 +206,7 @@ export function matchTableSection(
     };
   }
   /**
-   * Standard table whose header is a strict prefix of `path`; descend its body.
+   Standard table whose header is a strict prefix of `path`; descend its body.
    */
   const parent = blocks.find(function isPrefixTable(b,): b is TableNode {
     return (b.kind
@@ -229,9 +229,9 @@ export function matchTableSection(
 }
 
 /**
- * Descend into a value node with the remaining path segments.
- *
- * @returns A {@link Located} value, or {@link NOT_LOCATED}.
+ Descend into a value node with the remaining path segments.
+ 
+ @returns A {@link Located} value, or {@link NOT_LOCATED}.
  */
 function descendValue(
   {
@@ -249,13 +249,13 @@ function descendValue(
       value,
     };
   /**
-   * Leading segment selecting the next child.
+   Leading segment selecting the next child.
    */
   const [head, ...tail] = rest;
   if ((value.kind
     === 'array') && ((typeof head) === 'number')) {
     /**
-     * Selected element, or `undefined` for an out-of-range index.
+     Selected element, or `undefined` for an out-of-range index.
      */
     const element = value.elements[head];
     if (element === undefined)
@@ -268,7 +268,7 @@ function descendValue(
   if (value.kind
     === 'inline-table') {
     /**
-     * Inline entry whose key chain prefixes the remaining segments.
+     Inline entry whose key chain prefixes the remaining segments.
      */
     const hit = matchKeyValue({
       blocks: value.entries,

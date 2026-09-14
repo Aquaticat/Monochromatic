@@ -1,17 +1,17 @@
 /**
- * Page-scoped CSS for the Search page.
- *
- * Separated from search.ts to keep the entry script focused on
- * hydration logic rather than style declarations.
+ Page-scoped CSS for the Search page.
+ 
+ Separated from search.ts to keep the entry script focused on
+ hydration logic rather than style declarations.
  */
 
 /**
- * Large border-radius value for pill-shaped tag chips.
+ Large border-radius value for pill-shaped tag chips.
  */
 const PILL_BORDER_RADIUS_REM = 62.5;
 
 /**
- * Search-specific styles for hints, tag chips, and responsive layout.
+ Search-specific styles for hints, tag chips, and responsive layout.
  */
 export const searchStyles: string = `
 .search-hint {

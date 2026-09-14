@@ -1,14 +1,14 @@
 /**
- * Internal helpers for {@link ./deck-scatter.ts}.
- *
- * Split out so the scatter file stays within the per-file line cap;
- * none of these are part of the public layer-factory surface.
- *
- * @example
- * ```ts
- * import { partitionProbes, computeNameBakeSet } from './deck-scatter-helpers.ts';
- * const { leaf, nonLeaf, unknown } = partitionProbes({ probes, state });
- * ```
+ Internal helpers for {@link ./deck-scatter.ts}.
+ 
+ Split out so the scatter file stays within the per-file line cap;
+ none of these are part of the public layer-factory surface.
+ 
+ @example
+ ```ts
+ import { partitionProbes, computeNameBakeSet } from './deck-scatter-helpers.ts';
+ const { leaf, nonLeaf, unknown } = partitionProbes({ probes, state });
+ ```
  */
 
 import {
@@ -22,7 +22,7 @@ import type { AppState, } from './script/state.ts';
 //region Types
 
 /**
- * Probe + its original index in the source array; preserved through partitioning so visibility lookups stay accurate.
+ Probe + its original index in the source array; preserved through partitioning so visibility lookups stay accurate.
  */
 export type ScatterDatum = Readonly<{
   probe: PackageProbe;
@@ -34,7 +34,7 @@ export type ScatterDatum = Readonly<{
 //region Constants
 
 /**
- * Maximum number of probes that receive baked-name textures under `nameLabels === 'topN'`.
+ Maximum number of probes that receive baked-name textures under `nameLabels === 'topN'`.
  */
 const TOP_N_NAMES = 10;
 
@@ -43,20 +43,20 @@ const TOP_N_NAMES = 10;
 //region Probe partitioning
 
 /**
- * Splits the probe array into leaf / non-leaf / unknown buckets,
- * preserving the original index of every probe.
- *
- * @param probes - Full probe array.
- *
- * @param state - Current state.
- *
- * @returns Three disjoint arrays.
- *
- * @example
- * ```ts
- * const { leaf, nonLeaf, unknown } = partitionProbes({ probes, state });
- * // leaf.length + nonLeaf.length + unknown.length === probes.length
- * ```
+ Splits the probe array into leaf / non-leaf / unknown buckets,
+ preserving the original index of every probe.
+ 
+ @param probes - Full probe array.
+ 
+ @param state - Current state.
+ 
+ @returns Three disjoint arrays.
+ 
+ @example
+ ```ts
+ const { leaf, nonLeaf, unknown } = partitionProbes({ probes, state });
+ // leaf.length + nonLeaf.length + unknown.length === probes.length
+ ```
  */
 export function partitionProbes(
   {
@@ -72,15 +72,15 @@ export function partitionProbes(
   unknown: readonly ScatterDatum[];
 } {
   /**
-   * Leaf-package bucket (no transitive deps, drawn as filled spheres).
+   Leaf-package bucket (no transitive deps, drawn as filled spheres).
    */
   const leaf: ScatterDatum[] = [];
   /**
-   * Non-leaf bucket (has transitive deps, drawn as octahedra).
+   Non-leaf bucket (has transitive deps, drawn as octahedra).
    */
   const nonLeaf: ScatterDatum[] = [];
   /**
-   * Unknown bucket (missing dim values or flagged via `unknownReason`); drawn at the +max corner.
+   Unknown bucket (missing dim values or flagged via `unknownReason`); drawn at the +max corner.
    */
   const unknown: ScatterDatum[] = [];
   probes.forEach(function bucket(
@@ -134,25 +134,25 @@ export function partitionProbes(
 //region Name-bake selection
 
 /**
- * Returns the set of `originalIndex` values whose textures should
- * include the baked name, given the current `nameLabels` toggle.
- *
- * - `'none'`: empty set; every probe gets a name-less colour texture.
- * - `'all'`: every probe gets a name-baked texture.
- * - `'topN'`: only the {@link TOP_N_NAMES} oldest probes (by
- *   `daysSinceLastCommitOrNull` descending) get baked names.
- *
- * @param probes - Full probe array.
- *
- * @param state - Current state (uses `displayToggles.nameLabels`).
- *
- * @returns Set of original indices to bake the name into.
- *
- * @example
- * ```ts
- * const bakeSet = computeNameBakeSet({ probes, state });
- * if (bakeSet.has(originalIndex)) renderWithName();
- * ```
+ Returns the set of `originalIndex` values whose textures should
+ include the baked name, given the current `nameLabels` toggle.
+ 
+ - `'none'`: empty set; every probe gets a name-less colour texture.
+ - `'all'`: every probe gets a name-baked texture.
+ - `'topN'`: only the {@link TOP_N_NAMES} oldest probes (by
+   `daysSinceLastCommitOrNull` descending) get baked names.
+ 
+ @param probes - Full probe array.
+ 
+ @param state - Current state (uses `displayToggles.nameLabels`).
+ 
+ @returns Set of original indices to bake the name into.
+ 
+ @example
+ ```ts
+ const bakeSet = computeNameBakeSet({ probes, state });
+ if (bakeSet.has(originalIndex)) renderWithName();
+ ```
  */
 export function computeNameBakeSet(
   {
@@ -178,7 +178,7 @@ export function computeNameBakeSet(
     },),);
   }
   /**
-   * Probes paired with their original indices, sorted oldest-first by last-commit age, then truncated to {@link TOP_N_NAMES}.
+   Probes paired with their original indices, sorted oldest-first by last-commit age, then truncated to {@link TOP_N_NAMES}.
    */
   const ranked = probes
     .map(function withIndex(

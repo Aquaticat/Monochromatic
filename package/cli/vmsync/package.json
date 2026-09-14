@@ -13,8 +13,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/node": "catalog:",
-    "find-up": "catalog:"
+    "@types/node": "catalog:"
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",

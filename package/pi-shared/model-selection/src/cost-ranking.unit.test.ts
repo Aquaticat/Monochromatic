@@ -1,7 +1,7 @@
 /**
- * Unit tests for cost ranking helpers.
- *
- * @module
+ Unit tests for cost ranking helpers.
+ 
+ @module
  */
 
 import {
@@ -10,14 +10,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { EffectiveModelScope, } from './core.ts';
 import {
+  type EffectiveModelScope,
   buildCostRanking,
   compareCostScores,
   scoreModel,
   selectDefaultModel,
   selectDefaultModelFromContextEstimates,
-} from './cost.ts';
+} from '../dist/final/node/index.mjs';
 import {
   CHEAP_INPUT,
   CHEAP_OUTPUT,

@@ -1,5 +1,5 @@
 /**
- * Private Rolldown TypeScript trust candidate builder. @module
+ Private Rolldown TypeScript trust candidate builder. @module
  */
 import {
   captureTrustCandidate,
@@ -20,38 +20,38 @@ import type {
 } from './types.ts';
 
 /**
- * Immutable output fields needed by trust validation.
+ Immutable output fields needed by trust validation.
  */
 type TypeScriptBuildOutput = Readonly<{
   /**
-   * Output discriminator.
+   Output discriminator.
    */
   type: 'asset';
 }> | Readonly<{
   /**
-   * Output discriminator.
+   Output discriminator.
    */
   type: 'chunk';
   /**
-   * Whether output is static entry.
+   Whether output is static entry.
    */
   isEntry: boolean;
   /**
-   * Generated JavaScript.
+   Generated JavaScript.
    */
   code: string;
   /**
-   * Generated output name.
+   Generated output name.
    */
   fileName: string;
 }>;
 
 /**
- * Selects and validates exactly one generated JavaScript chunk.
- *
- * @param chunks - complete Rolldown output
- *
- * @returns immutable executable bytes
+ Selects and validates exactly one generated JavaScript chunk.
+ 
+ @param chunks - complete Rolldown output
+ 
+ @returns immutable executable bytes
  */
 function executableBytes({
   chunks,
@@ -61,14 +61,14 @@ function executableBytes({
   if (chunks.length !== 1)
     throw new TypeScriptBuildError(`TypeScript trust build produced ${String(chunks.length,)} outputs instead of one.`,);
   /**
-   * Sole required output.
+   Sole required output.
    */
   const [output,] = chunks;
   if ((output === undefined) || (output.type !== 'chunk')
     || (!output.isEntry))
     throw new TypeScriptBuildError('TypeScript trust build did not produce one JavaScript entry chunk.',);
   /**
-   * Exact generated Node ESM bytes.
+   Exact generated Node ESM bytes.
    */
   const bytes = new TextEncoder().encode(output.code,);
   validateMjs({
@@ -79,18 +79,18 @@ function executableBytes({
 }
 
 /**
- * Builds one immutable TypeScript config candidate through public Rolldown API.
- *
- * @param discovered - canonical TypeScript config
- *
- * @param buildDirectory - disposable private output directory
- *
- * @returns exact sources, bundle, identity, and package warnings
- *
- * @example
- * ```ts
- * await buildTypeScriptCandidate({ discovered, buildDirectory: '/tmp/private-build' });
- * ```
+ Builds one immutable TypeScript config candidate through public Rolldown API.
+ 
+ @param discovered - canonical TypeScript config
+ 
+ @param buildDirectory - disposable private output directory
+ 
+ @returns exact sources, bundle, identity, and package warnings
+ 
+ @example
+ ```ts
+ await buildTypeScriptCandidate({ discovered, buildDirectory: '/tmp/private-build' });
+ ```
  */
 export async function buildTypeScriptCandidate({
   discovered,
@@ -102,11 +102,11 @@ export async function buildTypeScriptCandidate({
   if (discovered.format !== 'typescript')
     throw new TrustCandidateError('TypeScript builder requires cli-git.config.ts.',);
   /**
-   * Entry identity and exact bytes captured before build.
+   Entry identity and exact bytes captured before build.
    */
   const entry = await captureTrustCandidate(discovered,);
   /**
-   * Entry source projected into complete source graph.
+   Entry source projected into complete source graph.
    */
   const entrySource: CapturedTrustSource = {
     canonicalPath: entry.discovered
@@ -116,18 +116,18 @@ export async function buildTypeScriptCandidate({
     mtimeNanoseconds: entry.mtimeNanoseconds,
   };
   /**
-   * Source-capture plugin plus immutable build observations.
+   Source-capture plugin plus immutable build observations.
    */
   const sourceCapture = sourceCapturePlugin({
     discovered,
     entrySource,
   },);
   /**
-   * Lazy direct Rolldown API, absent from normal wrapper command startup.
+   Lazy direct Rolldown API, absent from normal wrapper command startup.
    */
   const { rolldown, } = await import('rolldown');
   /**
-   * Explicitly disposable bundler whose close stops native workers.
+   Explicitly disposable bundler whose close stops native workers.
    */
   await using build = await rolldown({
     cwd: discovered.repositoryRoot,
@@ -145,7 +145,7 @@ export async function buildTypeScriptCandidate({
     plugins: [sourceCapture.plugin,],
   },);
   /**
-   * Sole in-memory ESM output with code splitting forbidden.
+   Sole in-memory ESM output with code splitting forbidden.
    */
   const bundle = await build.generate({
     format: 'esm',
@@ -155,7 +155,7 @@ export async function buildTypeScriptCandidate({
     sourcemap: false,
   },);
   /**
-   * Canonically ordered complete exact source graph.
+   Canonically ordered complete exact source graph.
    */
   const sources = [...sourceCapture.capturedSources
     .values(),]
@@ -171,14 +171,14 @@ export async function buildTypeScriptCandidate({
   },))
     throw new TypeScriptBuildError('TypeScript trust build omitted entry from captured source graph.',);
   /**
-   * Output module IDs prove every tracked source participated.
+   Output module IDs prove every tracked source participated.
    */
   const moduleIds = new Set(bundle.output
     .flatMap(function outputModuleIds(chunk,) {
     if (chunk.type !== 'chunk')
       return [];
     /**
-     * Owned module ID list detached from Rolldown output.
+     Owned module ID list detached from Rolldown output.
      */
     const detachedModuleIds = [...chunk.moduleIds,];
     return detachedModuleIds.map(function normalizeModuleId(id,) {
@@ -190,7 +190,7 @@ export async function buildTypeScriptCandidate({
       throw new TypeScriptBuildError(`Tracked TypeScript source is absent from output metadata: ${source.canonicalPath}`,);
   },);
   /**
-   * Entry identity and bytes re-captured after build completion.
+   Entry identity and bytes re-captured after build completion.
    */
   const finalEntry = await captureTrustCandidate(discovered,);
   if ((finalEntry.identity
@@ -210,7 +210,7 @@ export async function buildTypeScriptCandidate({
     throw new TypeScriptBuildError('TypeScript entry identity or bytes changed during bundle generation.',);
   }
   /**
-   * Every tracked source re-captured after complete output generation.
+   Every tracked source re-captured after complete output generation.
    */
   const finalSources = await Promise.all(sources.map(function recaptureSource(source,) {
     return captureTrustSource(source.canonicalPath,);
@@ -220,7 +220,7 @@ export async function buildTypeScriptCandidate({
     index,
   ) {
     /**
-     * Final corresponding source snapshot.
+     Final corresponding source snapshot.
      */
     const finalSource = finalSources[index];
     return (finalSource === undefined)

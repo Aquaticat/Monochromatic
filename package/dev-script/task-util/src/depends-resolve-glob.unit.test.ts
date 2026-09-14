@@ -1,13 +1,13 @@
 /**
- * Equivalence tests for `firstGlobMetaIndex`.
- *
- * Capture the pre-refactor behavior of the glob metacharacter scanner so
- * the linear-pass rewrite stays behavior-identical: empty input, a literal
- * path with no metacharacter, each metacharacter in `*?{[`, the first of
- * several metacharacters winning, path separators (`/` and `\`) treated as
- * ordinary characters rather than metacharacters, and a long no-match run.
- *
- * @module
+ Equivalence tests for `firstGlobMetaIndex`.
+ 
+ Capture the pre-refactor behavior of the glob metacharacter scanner so
+ the linear-pass rewrite stays behavior-identical: empty input, a literal
+ path with no metacharacter, each metacharacter in `*?{[`, the first of
+ several metacharacters winning, path separators (`/` and `\`) treated as
+ ordinary characters rather than metacharacters, and a long no-match run.
+ 
+ @module
  */
 
 import {
@@ -16,7 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { firstGlobMetaIndex, } from './depends-resolve-glob.ts';
+import { firstGlobMetaIndex, } from '../dist/final/node/testing.mjs';
 
 /** Iteration count for the long no-match run; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;

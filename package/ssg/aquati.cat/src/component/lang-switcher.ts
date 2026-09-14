@@ -1,17 +1,17 @@
 /**
- * Language switcher dropdown.
- *
- * Renders a globe-icon trigger that opens a menu listing each supported
- * locale by its autonym. Items link to the same post in the target
- * locale when post context is available, falling back to the locale
- * landing otherwise.
- *
- * Uses native `<details>` / `<summary>` so the open/close click is
- * handled by the browser; no client-side JavaScript ships. Click-
- * outside-to-close is not provided (an Esc handler is also not added);
- * the user toggles by clicking the summary again. This is an
- * intentional trade-off for shipping without JS; see
- * `doc/tech-debt/lang-switcher.md`.
+ Language switcher dropdown.
+ 
+ Renders a globe-icon trigger that opens a menu listing each supported
+ locale by its autonym. Items link to the same post in the target
+ locale when post context is available, falling back to the locale
+ landing otherwise.
+ 
+ Uses native `<details>` / `<summary>` so the open/close click is
+ handled by the browser; no client-side JavaScript ships. Click-
+ outside-to-close is not provided (an Esc handler is also not added);
+ the user toggles by clicking the summary again. This is an
+ intentional trade-off for shipping without JS; see
+ `doc/tech-debt/lang-switcher.md`.
  */
 import {
   cssCalc,
@@ -38,12 +38,12 @@ import {
 //region Constants
 
 /**
- * Globe glyph from Material Symbols Outlined; codepoint U+E894.
+ Globe glyph from Material Symbols Outlined; codepoint U+E894.
  */
 const LANG_ICON = icon('language',);
 
 /**
- * Minimum menu width in rem; comfortably fits the longest autonym.
+ Minimum menu width in rem; comfortably fits the longest autonym.
  */
 const MENU_MIN_INLINE_REM = 8;
 
@@ -52,14 +52,14 @@ const MENU_MIN_INLINE_REM = 8;
 //region CSS
 
 /**
- * Trigger summary, menu list, and option styles.
- *
- * @returns CSS string for the `<lang-switcher>` element
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Trigger summary, menu list, and option styles.
+ 
+ @returns CSS string for the `<lang-switcher>` element
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -166,21 +166,21 @@ export function css(): string {
 //region HTML
 
 /**
- * Computes the href for a target locale's switcher item.
- *
- * @param targetLang - locale this item links to
- *
- * @param currentName - current post slug if rendering inside a post page
- *
- * @param availableInLangs - locales in which the current post exists
- *
- * @returns absolute path the item should link to
- *
- * @example
- * ```ts
- * resolveHref({ targetLang: 'ca', currentName: 'hello', availableInLangs: ['en', 'ca'] });
- * // '/ca/hello'
- * ```
+ Computes the href for a target locale's switcher item.
+ 
+ @param targetLang - locale this item links to
+ 
+ @param currentName - current post slug if rendering inside a post page
+ 
+ @param availableInLangs - locales in which the current post exists
+ 
+ @returns absolute path the item should link to
+ 
+ @example
+ ```ts
+ resolveHref({ targetLang: 'ca', currentName: 'hello', availableInLangs: ['en', 'ca'] });
+ // '/ca/hello'
+ ```
  */
 function resolveHref(
   {
@@ -195,7 +195,7 @@ function resolveHref(
 ): string {
   if (currentName !== undefined) {
     /**
-     * Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links.
+     Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links.
      */
     const hasTarget = (availableInLangs === undefined)
       || availableInLangs
@@ -207,21 +207,21 @@ function resolveHref(
 }
 
 /**
- * Renders the language switcher as a `<lang-switcher>` custom element.
- *
- * @param currentLang - locale of the page rendering this switcher
- *
- * @param currentName - current post slug; enables same-post links
- *
- * @param availableInLangs - locales in which the current post exists;
- * when set, locales outside this list fall back to `/{lang}`
- *
- * @returns HTML string for the language switcher
- *
- * @example
- * ```ts
- * const markup = html({ currentLang: 'en', currentName: 'hello', availableInLangs: ['en', 'ca'] });
- * ```
+ Renders the language switcher as a `<lang-switcher>` custom element.
+ 
+ @param currentLang - locale of the page rendering this switcher
+ 
+ @param currentName - current post slug; enables same-post links
+ 
+ @param availableInLangs - locales in which the current post exists;
+ when set, locales outside this list fall back to `/{lang}`
+ 
+ @returns HTML string for the language switcher
+ 
+ @example
+ ```ts
+ const markup = html({ currentLang: 'en', currentName: 'hello', availableInLangs: ['en', 'ca'] });
+ ```
  */
 export function html(
   {
@@ -260,7 +260,7 @@ export function html(
             class: 'menu',
             children: locales.map(function renderItem(targetLang,) {
               /**
-               * URL path computed once per locale row before the link element is built.
+               URL path computed once per locale row before the link element is built.
                */
               const href = resolveHref({
                 targetLang,
@@ -268,7 +268,7 @@ export function html(
                 ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
               },);
               /**
-               * Marks the current-locale item so aria-current renders consistently.
+               Marks the current-locale item so aria-current renders consistently.
                */
               const isCurrent = targetLang === currentLang;
               return h({

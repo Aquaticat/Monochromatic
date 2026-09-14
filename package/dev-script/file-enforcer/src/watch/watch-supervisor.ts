@@ -6,46 +6,46 @@ import type { EventKind, } from './watch-filter.ts';
 //region Watcher restart policy
 
 /**
- * Number of restart attempts after initial watcher failure before watch mode fails closed.
+ Number of restart attempts after initial watcher failure before watch mode fails closed.
  */
 const WATCHER_RESTART_LIMIT = 3;
 
 /**
- * Delay between watcher restart attempts.
+ Delay between watcher restart attempts.
  */
 const WATCHER_RESTART_DELAY_MS = 50;
 
 /**
- * Watcher implementation signature used by the restart supervisor.
+ Watcher implementation signature used by the restart supervisor.
  */
 type WatchDirectoryImplementation = typeof watchDirectory;
 
 /**
- * Logger surface needed by the watcher restart supervisor.
+ Logger surface needed by the watcher restart supervisor.
  */
 type WatchSupervisorLogger = Pick<Logger, 'error' | 'info'>;
 
 /**
- * Options for one supervised watcher loop.
+ Options for one supervised watcher loop.
  */
 type SupervisedWatcherOptions = {
   /**
-   * Directory path passed to chokidar.
+   Directory path passed to chokidar.
    */
   dir: string;
 
   /**
-   * Abort signal used to stop watcher during normal teardown.
+   Abort signal used to stop watcher during normal teardown.
    */
   signal: AbortSignal;
 
   /**
-   * Absolute config path used for event classification.
+   Absolute config path used for event classification.
    */
   configPath: string;
 
   /**
-   * Watch event callback forwarded to `watchDirectory`.
+   Watch event callback forwarded to `watchDirectory`.
    */
   onEvent: (
     kind: EventKind,
@@ -53,42 +53,42 @@ type SupervisedWatcherOptions = {
   ) => void;
 
   /**
-   * Callback fired after chokidar reports its initial scan is ready.
+   Callback fired after chokidar reports its initial scan is ready.
    */
   onReady?: () => void;
 
   /**
-   * Tagged logger for restart and limit diagnostics.
+   Tagged logger for restart and limit diagnostics.
    */
   logger: WatchSupervisorLogger;
 
   /**
-   * Watcher implementation, injectable for focused tests.
+   Watcher implementation, injectable for focused tests.
    */
   watchDirectoryImpl?: WatchDirectoryImplementation;
 
   /**
-   * Restart attempts allowed after initial failure.
+   Restart attempts allowed after initial failure.
    */
   restartLimit?: number;
 
   /**
-   * Delay between restart attempts.
+   Delay between restart attempts.
    */
   restartDelayMs?: number;
 };
 
 /**
- * Returns attempt ordinals for initial watcher start and bounded restarts.
- *
- * @param restartLimit - Restart attempts allowed after initial failure.
- *
- * @returns Attempt ordinals, where zero is initial start.
- *
- * @example
- * ```ts
- * const attempts = watcherAttemptOrdinals({ restartLimit: 3 });
- * ```
+ Returns attempt ordinals for initial watcher start and bounded restarts.
+ 
+ @param restartLimit - Restart attempts allowed after initial failure.
+ 
+ @returns Attempt ordinals, where zero is initial start.
+ 
+ @example
+ ```ts
+ const attempts = watcherAttemptOrdinals({ restartLimit: 3 });
+ ```
  */
 function watcherAttemptOrdinals(
   { restartLimit, }: { readonly restartLimit: number; },
@@ -105,36 +105,36 @@ function watcherAttemptOrdinals(
 }
 
 /**
- * Returns whether a caught watcher error is the expected abort teardown path.
- *
- * @param error - Caught watcher error.
- *
- * @returns Whether the error is an abort signal.
- *
- * @example
- * ```ts
- * const expected = watcherErrorIsAbort(error);
- * ```
+ Returns whether a caught watcher error is the expected abort teardown path.
+ 
+ @param error - Caught watcher error.
+ 
+ @returns Whether the error is an abort signal.
+ 
+ @example
+ ```ts
+ const expected = watcherErrorIsAbort(error);
+ ```
  */
 function watcherErrorIsAbort(error: unknown,): boolean {
   return (Error.isError(error,)) && (error.name === 'AbortError');
 }
 
 /**
- * Builds the fail-closed error thrown after watcher restart attempts are exhausted.
- *
- * @param dir - Directory whose watcher could not stay running.
- *
- * @param restartLimit - Restart attempts allowed after initial failure.
- *
- * @param cause - Last watcher failure.
- *
- * @returns Error explaining that watch mode exhausted its restart limit.
- *
- * @example
- * ```ts
- * throw watcherRestartLimitError({ dir: '/repo/src', restartLimit: 3, cause: error });
- * ```
+ Builds the fail-closed error thrown after watcher restart attempts are exhausted.
+ 
+ @param dir - Directory whose watcher could not stay running.
+ 
+ @param restartLimit - Restart attempts allowed after initial failure.
+ 
+ @param cause - Last watcher failure.
+ 
+ @returns Error explaining that watch mode exhausted its restart limit.
+ 
+ @example
+ ```ts
+ throw watcherRestartLimitError({ dir: '/repo/src', restartLimit: 3, cause: error });
+ ```
  */
 function watcherRestartLimitError(
   {
@@ -154,18 +154,18 @@ function watcherRestartLimitError(
 }
 
 /**
- * Waits before restarting a watcher, treating abort as normal teardown.
- *
- * @param delayMs - Restart delay in milliseconds.
- *
- * @param signal - Abort signal for normal watcher teardown.
- *
- * @mutates signal through wait abort-listener registration and retention
- *
- * @example
- * ```ts
- * await waitBeforeWatcherRestart({ delayMs: 50, signal });
- * ```
+ Waits before restarting a watcher, treating abort as normal teardown.
+ 
+ @param delayMs - Restart delay in milliseconds.
+ 
+ @param signal - Abort signal for normal watcher teardown.
+ 
+ @mutates signal through wait abort-listener registration and retention
+ 
+ @example
+ ```ts
+ await waitBeforeWatcherRestart({ delayMs: 50, signal });
+ ```
  */
 async function waitBeforeWatcherRestart(
   {
@@ -196,42 +196,42 @@ async function waitBeforeWatcherRestart(
 //region Supervised watcher loop
 
 /**
- * Runs one watcher and restarts it after non-abort failures up to a bounded limit.
- *
- * @param dir - Directory path passed to chokidar.
- *
- * @param signal - Abort signal used to stop watcher during normal teardown.
- *
- * @param configPath - Absolute config path used for event classification.
- *
- * @param onEvent - Watch event callback forwarded to {@link watchDirectory}.
- *
- * @param onReady - Callback fired after chokidar reports its initial scan is ready.
- *
- * @param logger - Tagged logger for restart and limit diagnostics.
- *
- * @param watchDirectoryImpl - Watcher implementation, injectable for focused tests.
- *
- * @param restartLimit - Restart attempts allowed after initial failure.
- *
- * @param restartDelayMs - Delay between restart attempts.
- *
- * @mutates signal through wait abort-listener registration and retention
- *
- * @throws {@link watcherRestartLimitError} When watcher failures exceed the restart limit.
- *
- * @example
- * ```ts
- * await watchDirectoryWithRestarts({
- *   dir: '/repo/src',
- *   signal: controller.signal,
- *   configPath: '/repo/file-enforcer.config.ts',
- *   logger,
- *   onEvent(kind, filename) {
- *     queue(kind, filename);
- *   },
- * });
- * ```
+ Runs one watcher and restarts it after non-abort failures up to a bounded limit.
+ 
+ @param dir - Directory path passed to chokidar.
+ 
+ @param signal - Abort signal used to stop watcher during normal teardown.
+ 
+ @param configPath - Absolute config path used for event classification.
+ 
+ @param onEvent - Watch event callback forwarded to {@link watchDirectory}.
+ 
+ @param onReady - Callback fired after chokidar reports its initial scan is ready.
+ 
+ @param logger - Tagged logger for restart and limit diagnostics.
+ 
+ @param watchDirectoryImpl - Watcher implementation, injectable for focused tests.
+ 
+ @param restartLimit - Restart attempts allowed after initial failure.
+ 
+ @param restartDelayMs - Delay between restart attempts.
+ 
+ @mutates signal through wait abort-listener registration and retention
+ 
+ @throws {@link watcherRestartLimitError} When watcher failures exceed the restart limit.
+ 
+ @example
+ ```ts
+ await watchDirectoryWithRestarts({
+   dir: '/repo/src',
+   signal: controller.signal,
+   configPath: '/repo/file-enforcer.config.ts',
+   logger,
+   onEvent(kind, filename) {
+     queue(kind, filename);
+   },
+ });
+ ```
  */
 export async function watchDirectoryWithRestarts(
   {
@@ -270,7 +270,7 @@ export async function watchDirectoryWithRestarts(
       logger.error(`watcher failed in ${dir}: ${String(watchError,)}`,);
       if (attempt >= restartLimit) {
         /**
-         * Fail-closed error surfaced to startWatching.
+         Fail-closed error surfaced to startWatching.
          */
         const limitError = watcherRestartLimitError({
           dir,

@@ -23,67 +23,67 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Maximum time allowed for a live chokidar event to reach watchDirectory's callback.
+ Maximum time allowed for a live chokidar event to reach watchDirectory's callback.
  */
 const WATCH_EVENT_TIMEOUT_MS = 2_000;
 
 /**
- * Maximum time allowed for watchDirectory to close after abort.
+ Maximum time allowed for watchDirectory to close after abort.
  */
 const WATCH_DIRECTORY_STOP_TIMEOUT_MS = 2_000;
 
 /**
- * Sentinel returned when a live watch event does not arrive in time.
+ Sentinel returned when a live watch event does not arrive in time.
  */
 const WATCH_EVENT_TIMEOUT = Symbol('watchDirectory event timeout');
 
 /**
- * Sentinel returned when chokidar reports initial scan readiness.
+ Sentinel returned when chokidar reports initial scan readiness.
  */
 const WATCH_DIRECTORY_READY = Symbol('watchDirectory ready');
 
 /**
- * Sentinel returned when watchDirectory closes normally after abort.
+ Sentinel returned when watchDirectory closes normally after abort.
  */
 const WATCH_DIRECTORY_CLOSED = Symbol('watchDirectory closed');
 
 /**
- * Sentinel returned when watchDirectory does not close after abort in time.
+ Sentinel returned when watchDirectory does not close after abort in time.
  */
 const WATCH_DIRECTORY_STOP_TIMEOUT = Symbol('watchDirectory stop timeout');
 
 /**
- * Event observed through watchDirectory's public callback.
+ Event observed through watchDirectory's public callback.
  */
 type WatchDirectoryObservedEvent = Readonly<{
   /**
-   * Classification produced by file-enforcer's watch filter.
+   Classification produced by file-enforcer's watch filter.
    */
   kind: EventKind;
 
   /**
-   * Filename relative to watched directory.
+   Filename relative to watched directory.
    */
   filename: string;
 }>;
 
 /**
- * WatchDirectory completion failure captured without rejecting in the background.
+ WatchDirectory completion failure captured without rejecting in the background.
  */
 type WatchDirectoryFailure = Readonly<{
   /**
-   * Error that made watchDirectory reject.
+   Error that made watchDirectory reject.
    */
   error: unknown;
 }>;
 
 /**
- * Result emitted by the background watchDirectory runner.
+ Result emitted by the background watchDirectory runner.
  */
 type WatchDirectoryFinish = typeof WATCH_DIRECTORY_CLOSED | WatchDirectoryFailure;
 
 /**
- * Result candidates while waiting for chokidar readiness.
+ Result candidates while waiting for chokidar readiness.
  */
 type WatchDirectoryReadyResult =
   | WatchDirectoryFailure
@@ -92,7 +92,7 @@ type WatchDirectoryReadyResult =
   | typeof WATCH_DIRECTORY_CLOSED;
 
 /**
- * Result candidates while waiting for one live watch event.
+ Result candidates while waiting for one live watch event.
  */
 type WatchDirectoryRaceResult =
   | WatchDirectoryObservedEvent
@@ -101,7 +101,7 @@ type WatchDirectoryRaceResult =
   | typeof WATCH_DIRECTORY_CLOSED;
 
 /**
- * Result candidates while waiting for watchDirectory teardown.
+ Result candidates while waiting for watchDirectory teardown.
  */
 type WatchDirectoryStopResult =
   | WatchDirectoryFailure
@@ -109,44 +109,44 @@ type WatchDirectoryStopResult =
   | typeof WATCH_DIRECTORY_STOP_TIMEOUT;
 
 /**
- * Mutable controls and promises for one watchDirectory capture.
+ Mutable controls and promises for one watchDirectory capture.
  */
 type WatchDirectoryCapture = Readonly<{
   /**
-   * Controller used to stop watchDirectory.
+   Controller used to stop watchDirectory.
    */
   controller: AbortController;
 
   /**
-   * First event observed by watchDirectory.
+   First event observed by watchDirectory.
    */
   eventReceived: Promise<WatchDirectoryObservedEvent>;
 
   /**
-   * Signal that chokidar's initial scan completed.
+   Signal that chokidar's initial scan completed.
    */
   readyReceived: Promise<typeof WATCH_DIRECTORY_READY>;
 
   /**
-   * Completion state of the background watchDirectory call.
+   Completion state of the background watchDirectory call.
    */
   watcherFinished: Promise<WatchDirectoryFinish>;
 }>;
 
 /**
- * Filesystem mutation performed after watchDirectory starts.
+ Filesystem mutation performed after watchDirectory starts.
  */
 type WatchDirectoryTrigger = () => Promise<void>;
 
 /**
- * Creates isolated temp directory for chokidar watch regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temp directory for chokidar watch regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -156,14 +156,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -176,16 +176,16 @@ async function teardown(tempDir: string,): Promise<void> {
 }
 
 /**
- * Returns whether a race result carries a watchDirectory failure.
- *
- * @param result - Result returned while waiting for an event or teardown.
- *
- * @returns Whether result is the failure wrapper.
- *
- * @example
- * ```ts
- * const failed = watchDirectoryResultIsFailure(result);
- * ```
+ Returns whether a race result carries a watchDirectory failure.
+ 
+ @param result - Result returned while waiting for an event or teardown.
+ 
+ @returns Whether result is the failure wrapper.
+ 
+ @example
+ ```ts
+ const failed = watchDirectoryResultIsFailure(result);
+ ```
  */
 function watchDirectoryResultIsFailure(
   result: WatchDirectoryRaceResult | WatchDirectoryReadyResult | WatchDirectoryStopResult,
@@ -199,18 +199,18 @@ function watchDirectoryResultIsFailure(
 }
 
 /**
- * Starts watchDirectory and captures its first callback event.
- *
- * @param dir - Directory passed to watchDirectory.
- *
- * @param configPath - Config path passed to watchDirectory.
- *
- * @returns Capture controls and promises.
- *
- * @example
- * ```ts
- * const capture = startWatchDirectoryCapture({ dir: '/tmp/repo', configPath: '/tmp/repo/config.ts' });
- * ```
+ Starts watchDirectory and captures its first callback event.
+ 
+ @param dir - Directory passed to watchDirectory.
+ 
+ @param configPath - Config path passed to watchDirectory.
+ 
+ @returns Capture controls and promises.
+ 
+ @example
+ ```ts
+ const capture = startWatchDirectoryCapture({ dir: '/tmp/repo', configPath: '/tmp/repo/config.ts' });
+ ```
  */
 function startWatchDirectoryCapture(
   {
@@ -222,19 +222,19 @@ function startWatchDirectoryCapture(
   },
 ): WatchDirectoryCapture {
   /**
-   * Abort controller for stopping the watcher after the assertion event arrives.
+   Abort controller for stopping the watcher after the assertion event arrives.
    */
   const controller = new AbortController();
   /**
-   * First event observed by watchDirectory's public callback.
+   First event observed by watchDirectory's public callback.
    */
   const eventReceived = Promise.withResolvers<WatchDirectoryObservedEvent>();
   /**
-   * Chokidar initial-scan readiness signal.
+   Chokidar initial-scan readiness signal.
    */
   const readyReceived = Promise.withResolvers<typeof WATCH_DIRECTORY_READY>();
   /**
-   * Background watchDirectory completion state.
+   Background watchDirectory completion state.
    */
   const watcherFinished = Promise.withResolvers<WatchDirectoryFinish>();
 
@@ -273,18 +273,18 @@ function startWatchDirectoryCapture(
 }
 
 /**
- * Stops watchDirectory and asserts abort teardown finished cleanly.
- *
- * @param controller - Controller used to abort watchDirectory.
- *
- * @param watcherFinished - Background watchDirectory completion state.
- *
- * @throws When watchDirectory fails or does not stop after abort.
- *
- * @example
- * ```ts
- * await stopWatchDirectoryCapture({ controller, watcherFinished });
- * ```
+ Stops watchDirectory and asserts abort teardown finished cleanly.
+ 
+ @param controller - Controller used to abort watchDirectory.
+ 
+ @param watcherFinished - Background watchDirectory completion state.
+ 
+ @throws When watchDirectory fails or does not stop after abort.
+ 
+ @example
+ ```ts
+ await stopWatchDirectoryCapture({ controller, watcherFinished });
+ ```
  */
 async function stopWatchDirectoryCapture(
   {
@@ -297,7 +297,7 @@ async function stopWatchDirectoryCapture(
 ): Promise<void> {
   controller.abort();
   /**
-   * Result of waiting for watchDirectory to finish after abort.
+   Result of waiting for watchDirectory to finish after abort.
    */
   const stopResult: WatchDirectoryStopResult = await Promise.race([
     watcherFinished,
@@ -314,22 +314,22 @@ async function stopWatchDirectoryCapture(
 }
 
 /**
- * Captures one watchDirectory event after triggering one filesystem mutation.
- *
- * @param dir - Directory passed to watchDirectory.
- *
- * @param configPath - Config path passed to watchDirectory.
- *
- * @param trigger - Mutation expected to produce a watch event.
- *
- * @returns First observed watchDirectory event.
- *
- * @throws When no event arrives, watchDirectory fails, or abort teardown fails.
- *
- * @example
- * ```ts
- * const event = await captureWatchDirectoryEvent({ dir, configPath, trigger });
- * ```
+ Captures one watchDirectory event after triggering one filesystem mutation.
+ 
+ @param dir - Directory passed to watchDirectory.
+ 
+ @param configPath - Config path passed to watchDirectory.
+ 
+ @param trigger - Mutation expected to produce a watch event.
+ 
+ @returns First observed watchDirectory event.
+ 
+ @throws When no event arrives, watchDirectory fails, or abort teardown fails.
+ 
+ @example
+ ```ts
+ const event = await captureWatchDirectoryEvent({ dir, configPath, trigger });
+ ```
  */
 async function captureWatchDirectoryEvent(
   {
@@ -343,14 +343,14 @@ async function captureWatchDirectoryEvent(
   },
 ): Promise<WatchDirectoryObservedEvent> {
   /**
-   * Background watchDirectory capture for this assertion.
+   Background watchDirectory capture for this assertion.
    */
   const capture = startWatchDirectoryCapture({
     dir,
     configPath,
   },);
   /**
-   * Readiness, timeout, or early watcher completion before mutation.
+   Readiness, timeout, or early watcher completion before mutation.
    */
   const readyResult: WatchDirectoryReadyResult = await Promise.race([
     capture.readyReceived,
@@ -375,7 +375,7 @@ async function captureWatchDirectoryEvent(
 
   await trigger();
   /**
-   * First event, timeout, or early watcher completion.
+   First event, timeout, or early watcher completion.
    */
   const eventResult: WatchDirectoryRaceResult = await Promise.race([
     capture.eventReceived,

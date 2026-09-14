@@ -7,18 +7,18 @@ import {
 
 declare global {
   // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
-  var moduleLogger: typeof import('@monochromatic-dev/module-logger');
+  var moduleLoggerBrowser: typeof import('@monochromatic-dev/module-logger/browser');
 }
 
 test.describe('IndexedDB sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
-    await page.waitForFunction(() => globalThis.moduleLogger !== undefined);
+    await page.waitForFunction(() => globalThis.moduleLoggerBrowser !== undefined);
   },);
 
   test('createIndexedDbSink exposes a callable verify', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
-      const { createIndexedDbSink, } = globalThis.moduleLogger.sinks;
+      const { createIndexedDbSink, } = globalThis.moduleLoggerBrowser;
       return typeof createIndexedDbSink().verify;
     },);
     expect(typeofVerify,).toBe('function',);
@@ -26,7 +26,7 @@ test.describe('IndexedDB sink', () => {
 
   test('verify detects availability', async ({ page, },) => {
     const result = await page.evaluate(async () => {
-      const { createIndexedDbSink, } = globalThis.moduleLogger.sinks;
+      const { createIndexedDbSink, } = globalThis.moduleLoggerBrowser;
       return createIndexedDbSink().verify();
     },);
     expect(result,).toBe(true,);
@@ -34,7 +34,7 @@ test.describe('IndexedDB sink', () => {
 
   test('a verified sink writes records across levels and message shapes', async ({ page, },) => {
     const allSucceeded = await page.evaluate(async () => {
-      const { createIndexedDbSink, } = globalThis.moduleLogger.sinks;
+      const { createIndexedDbSink, } = globalThis.moduleLoggerBrowser;
       const sink = createIndexedDbSink();
       await sink.verify();
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
@@ -67,7 +67,7 @@ test.describe('IndexedDB sink', () => {
 
   test('a flushed batch is readable back out of the database as JSONL', async ({ page, },) => {
     const result = await page.evaluate(async () => {
-      const { createIndexedDbSink, } = globalThis.moduleLogger.sinks;
+      const { createIndexedDbSink, } = globalThis.moduleLoggerBrowser;
       const sink = createIndexedDbSink();
       await sink.verify();
 
@@ -126,7 +126,7 @@ test.describe('IndexedDB sink', () => {
   test('retention trims the store back to the cap, oldest first', async ({ page, },) => {
     test.setTimeout(120_000,);
     const result = await page.evaluate(async () => {
-      const { createIndexedDbSink, } = globalThis.moduleLogger.sinks;
+      const { createIndexedDbSink, } = globalThis.moduleLoggerBrowser;
       const sink = createIndexedDbSink();
       await sink.verify();
 

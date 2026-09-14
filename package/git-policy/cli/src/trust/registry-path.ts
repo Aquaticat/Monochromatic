@@ -1,24 +1,24 @@
 /**
- * Reversible unhashed trust registry paths.
- *
- * @module
+ Reversible unhashed trust registry paths.
+ 
+ @module
  */
 import { join, } from 'node:path';
 import type { TrustIdentity, } from './types.ts';
 
 /**
- * Fixed encoded canonical-path component width.
+ Fixed encoded canonical-path component width.
  */
 const PATH_CHUNK_LENGTH = 120;
 
 /**
- * Invalid reversible trust identity path.
+ Invalid reversible trust identity path.
  */
 export class TrustPathError extends Error {
   /**
-   * Creates path validation failure.
-   *
-   * @param message - safe failure explanation
+   Creates path validation failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -27,22 +27,22 @@ export class TrustPathError extends Error {
 }
 
 /**
- * Encodes exact UTF-8 value as unpadded base64url.
- *
- * @param value - identity field
- *
- * @returns reversible filesystem-safe encoding
- *
- * @example
- * ```ts
- * encodeIdentityField('/repo/config.mjs');
- * ```
+ Encodes exact UTF-8 value as unpadded base64url.
+ 
+ @param value - identity field
+ 
+ @returns reversible filesystem-safe encoding
+ 
+ @example
+ ```ts
+ encodeIdentityField('/repo/config.mjs');
+ ```
  */
 export function encodeIdentityField(value: string,): string {
   if (value.length === 0)
     throw new TrustPathError('Trust identity fields must not be empty.',);
   /**
-   * Canonical unpadded base64url bytes.
+   Canonical unpadded base64url bytes.
    */
   const encoded = Buffer.from(
     value,
@@ -55,22 +55,22 @@ export function encodeIdentityField(value: string,): string {
 }
 
 /**
- * Decodes canonical unpadded base64url identity field.
- *
- * @param encoded - filesystem component encoding
- *
- * @returns exact decoded UTF-8 value
- *
- * @example
- * ```ts
- * decodeIdentityField('L3JlcG8');
- * ```
+ Decodes canonical unpadded base64url identity field.
+ 
+ @param encoded - filesystem component encoding
+ 
+ @returns exact decoded UTF-8 value
+ 
+ @example
+ ```ts
+ decodeIdentityField('L3JlcG8');
+ ```
  */
 export function decodeIdentityField(encoded: string,): string {
   if ((encoded.length === 0) || encoded.includes('=',))
     throw new TrustPathError('Encoded trust identity field is invalid.',);
   /**
-   * Exact UTF-8 decoded field.
+   Exact UTF-8 decoded field.
    */
   const decoded = Buffer.from(
     encoded,
@@ -83,22 +83,22 @@ export function decodeIdentityField(encoded: string,): string {
 }
 
 /**
- * Splits encoded canonical path into bounded components.
- *
- * @param encodedPath - complete base64url canonical path
- *
- * @returns fixed-width chunks preserving exact order
- *
- * @example
- * ```ts
- * chunkEncodedPath('abc');
- * ```
+ Splits encoded canonical path into bounded components.
+ 
+ @param encodedPath - complete base64url canonical path
+ 
+ @returns fixed-width chunks preserving exact order
+ 
+ @example
+ ```ts
+ chunkEncodedPath('abc');
+ ```
  */
 export function chunkEncodedPath(encodedPath: string,): readonly string[] {
   if (encodedPath.length === 0)
     throw new TrustPathError('Encoded canonical path must not be empty.',);
   /**
-   * Required bounded component count.
+   Required bounded component count.
    */
   const chunkCount = Math.ceil(encodedPath.length / PATH_CHUNK_LENGTH,);
   return Array.from(
@@ -108,7 +108,7 @@ export function chunkEncodedPath(encodedPath: string,): readonly string[] {
       index,
     ) {
     /**
-     * Byte-safe ASCII slice start.
+     Byte-safe ASCII slice start.
      */
     const start = index * PATH_CHUNK_LENGTH;
     return encodedPath.slice(
@@ -120,18 +120,18 @@ export function chunkEncodedPath(encodedPath: string,): readonly string[] {
 }
 
 /**
- * Resolves exact per-identity record directory.
- *
- * @param registryRoot - complete injected or account-derived registry root
- *
- * @param identity - complete unhashed identity
- *
- * @returns record directory ending in encoded path chunks
- *
- * @example
- * ```ts
- * recordDirectory({ registryRoot: '/r', identity: { filesystemId: 'fs-uuid_x', canonicalConfigPath: '/repo/cli-git.config.mjs' } });
- * ```
+ Resolves exact per-identity record directory.
+ 
+ @param registryRoot - complete injected or account-derived registry root
+ 
+ @param identity - complete unhashed identity
+ 
+ @returns record directory ending in encoded path chunks
+ 
+ @example
+ ```ts
+ recordDirectory({ registryRoot: '/r', identity: { filesystemId: 'fs-uuid_x', canonicalConfigPath: '/repo/cli-git.config.mjs' } });
+ ```
  */
 export function recordDirectory({
   registryRoot,
@@ -141,11 +141,11 @@ export function recordDirectory({
   identity: TrustIdentity;
 }>,): string {
   /**
-   * Reversible complete filesystem ID component.
+   Reversible complete filesystem ID component.
    */
   const encodedFilesystemId = encodeIdentityField(identity.filesystemId,);
   /**
-   * Reversible complete canonical-path components.
+   Reversible complete canonical-path components.
    */
   const encodedPath = encodeIdentityField(identity.canonicalConfigPath,);
   return join(
@@ -158,20 +158,20 @@ export function recordDirectory({
 }
 
 /**
- * Confirms record path encoding reproduces stored identity.
- *
- * @param registryRoot - registry root
- *
- * @param identity - stored identity
- *
- * @param directory - actual record directory
- *
- * @throws TrustPathError when path and record disagree
- *
- * @example
- * ```ts
- * assertRecordDirectoryIdentity({ registryRoot, identity, directory });
- * ```
+ Confirms record path encoding reproduces stored identity.
+ 
+ @param registryRoot - registry root
+ 
+ @param identity - stored identity
+ 
+ @param directory - actual record directory
+ 
+ @throws TrustPathError when path and record disagree
+ 
+ @example
+ ```ts
+ assertRecordDirectoryIdentity({ registryRoot, identity, directory });
+ ```
  */
 export function assertRecordDirectoryIdentity({
   registryRoot,
@@ -190,16 +190,16 @@ export function assertRecordDirectoryIdentity({
 }
 
 /**
- * Validates safe slash-separated record-relative snapshot path.
- *
- * @param value - record metadata path
- *
- * @returns validated relative path unchanged
- *
- * @example
- * ```ts
- * validateSnapshotRelativePath('snapshots/config.mjs');
- * ```
+ Validates safe slash-separated record-relative snapshot path.
+ 
+ @param value - record metadata path
+ 
+ @returns validated relative path unchanged
+ 
+ @example
+ ```ts
+ validateSnapshotRelativePath('snapshots/config.mjs');
+ ```
  */
 export function validateSnapshotRelativePath(value: unknown,): string {
   if (((typeof value) !== 'string') || (value.length === 0)
@@ -207,7 +207,7 @@ export function validateSnapshotRelativePath(value: unknown,): string {
     || value.includes('\\',))
     throw new TrustPathError('Snapshot path must be a non-empty slash-relative path.',);
   /**
-   * Slash-separated record-relative components.
+   Slash-separated record-relative components.
    */
   const segments = value.split('/',);
   if (segments.some(function isUnsafeSegment(segment,) {

@@ -9,17 +9,17 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { getOPMLTexts, } from './opml-text.ts';
 
 /**
- * Logger root for rss after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for rss after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'rss', },);
 
 /**
- * Tagged logger for the outline module.
+ Tagged logger for the outline module.
  */
 const l = tagged({
   tag: 'outline',
@@ -27,51 +27,51 @@ const l = tagged({
 },);
 
 /**
- * OPML outline with a required, validated `xmlUrl` property.
- * Represents a feed subscription entry ready for fetching.
- *
- * @see {@link Opml} for the base outline type
+ OPML outline with a required, validated `xmlUrl` property.
+ Represents a feed subscription entry ready for fetching.
+ 
+ @see {@link Opml} for the base outline type
  */
 export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 
 //region OPML parsing and outline extraction: Converts raw XML into validated feed outline structures
 
 /**
- * Extracts validated inner outlines with xmlUrl from raw OPML source URLs.
- * Orchestrates the full pipeline: fetch texts via {@link getOPMLTexts}, parse
- * XML through {@link parseSafe}, extract outlines, validate URLs.
- *
- * @param opmls - Validated OPML source URLs
- *
- * @returns Array of outlines with validated HTTP(S) xmlUrl properties
- *
- * @mutates opmls - `getOPMLTexts(opmls)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable source values to `fetchOpml`.
- *
- * @example
- * ```ts
- * const outlines = await getOutlinesFromOpmls(getOpmls());
- * ```
+ Extracts validated inner outlines with xmlUrl from raw OPML source URLs.
+ Orchestrates the full pipeline: fetch texts via {@link getOPMLTexts}, parse
+ XML through {@link parseSafe}, extract outlines, validate URLs.
+ 
+ @param opmls - Validated OPML source URLs
+ 
+ @returns Array of outlines with validated HTTP(S) xmlUrl properties
+ 
+ @mutates opmls - `getOPMLTexts(opmls)` delegates to `mapIterableAsync`, which may invoke caller-owned iterator capabilities and passes reachable source values to `fetchOpml`.
+ 
+ @example
+ ```ts
+ const outlines = await getOutlinesFromOpmls(getOpmls());
+ ```
  */
 export async function getOutlinesFromOpmls(
   opmls: string[],
 ): Promise<InnerOutlineWUrl[]> {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: getOutlinesFromOpmls.name,
     l,
   },);
   /**
-   * Raw OPML XML texts pulled before parsing so partial failures do not stall the pipeline.
+   Raw OPML XML texts pulled before parsing so partial failures do not stall the pipeline.
    */
   const texts = await getOPMLTexts(opmls,);
   /**
-   * Parsed OPML documents, with unparseable inputs discarded by parseSafe.
+   Parsed OPML documents, with unparseable inputs discarded by parseSafe.
    */
   const parsed = parseSafe(texts,);
   /**
-   * Top-level outline groups extracted from each OPML body.
+   Top-level outline groups extracted from each OPML body.
    */
   const outerOutlines = parsed.flatMap(function extractBody(opml,) {
     return opml.body
@@ -79,21 +79,21 @@ export async function getOutlinesFromOpmls(
       ?? [];
   },);
   /**
-   * Nested feed outlines unwrapped one level so the validate step sees flat entries.
+   Nested feed outlines unwrapped one level so the validate step sees flat entries.
    */
   const innerOutlines = outerOutlines.flatMap(function extractInner(outline,) {
     return outline.outlines
       ?? [];
   },);
   /**
-   * Outlines whose xmlUrl passes HTTP-domain validation, returned as the function output.
+   Outlines whose xmlUrl passes HTTP-domain validation, returned as the function output.
    */
   const result = innerOutlines.filter(
     function hasValidXmlUrl(
       outline,
     ): outline is InnerOutlineWUrl {
       /**
-       * Destructured xmlUrl so the empty/undefined gate reads on a named binding.
+       Destructured xmlUrl so the empty/undefined gate reads on a named binding.
        */
       const { xmlUrl, } = outline;
       if ((xmlUrl === undefined) || (xmlUrl === '')) {
@@ -109,7 +109,7 @@ export async function getOutlinesFromOpmls(
             v.check(
               function isHttpDomainUrl(s,) {
                 /**
-                 * Parsed URL so the protocol and hostname can be checked independently.
+                 Parsed URL so the protocol and hostname can be checked independently.
                  */
                 const u = new URL(s,);
                 return ((u.protocol
@@ -137,15 +137,15 @@ export async function getOutlinesFromOpmls(
 }
 
 /**
- * Safely parses an array of OPML XML strings, discarding unparseable entries.
- *
- * @param texts - Raw OPML XML strings
- *
- * @returns Successfully parsed OPML documents
+ Safely parses an array of OPML XML strings, discarding unparseable entries.
+ 
+ @param texts - Raw OPML XML strings
+ 
+ @returns Successfully parsed OPML documents
  */
 function parseSafe(texts: readonly string[],): ReadonlyDeep<Opml.Document<string>>[] {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: parseSafe.name,

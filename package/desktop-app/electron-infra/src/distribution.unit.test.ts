@@ -1,7 +1,7 @@
 /**
- * Unit tests for reusable Electron distribution helpers.
- *
- * @module
+ Unit tests for reusable Electron distribution helpers.
+ 
+ @module
  */
 
 import {
@@ -28,7 +28,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Expected default target keys.
+ Expected default target keys.
  */
 const expectedTargetKeys = [
   'linux-x64',
@@ -40,7 +40,7 @@ const expectedTargetKeys = [
 ];
 
 /**
- * Disposable temp package fixture.
+ Disposable temp package fixture.
  */
 type TempPackage = {
   /** Package root path. */
@@ -50,18 +50,18 @@ type TempPackage = {
 };
 
 /**
- * Creates a minimal package fixture for dry-run distribution.
- *
- * @returns Disposable package fixture.
- *
- * @example
- * ```ts
- * await using fixture = await makeTempPackage();
- * ```
+ Creates a minimal package fixture for dry-run distribution.
+ 
+ @returns Disposable package fixture.
+ 
+ @example
+ ```ts
+ await using fixture = await makeTempPackage();
+ ```
  */
 async function makeTempPackage(): Promise<TempPackage> {
   /**
-   * Temporary package root.
+   Temporary package root.
    */
   const packageRoot = await mkdtemp(join(
     tmpdir(),
@@ -187,7 +187,7 @@ await describe({
             },);
 
             /**
-             * Written manifest text.
+             Written manifest text.
              */
             const manifestText = await readFile(
               join(

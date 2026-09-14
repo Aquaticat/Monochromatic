@@ -14,7 +14,7 @@ function singleLineWithTag(): number {
 }
 
 /**
- * Shape with property-level structural issue.
+ Shape with property-level structural issue.
  */
 type SingleLinePropertyDoc = {
   /** Property description. */
@@ -27,15 +27,15 @@ type SingleLinePropertyDoc = {
 function doubleAsterisk(): void {}
 
 /**
- * Description.
- * @returns without blank line
+ Description.
+ @returns without blank line
  */
 function missingBlankBeforeTag(): number {
   return 1;
 }
 
 /**
- * @internal do not use this
+ @internal do not use this
  */
 function modifierTagWithContent(): void {}
 

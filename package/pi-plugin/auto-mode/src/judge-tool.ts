@@ -1,12 +1,12 @@
 /**
- * `render_verdict` tool definition plus provider-specific
- * `tool_choice` mapping.
- *
- * The schema and the toolChoice helper are tested standalone in
- * `judge.unit.test.ts`, so they live separately from the streaming
- * machinery in `judge.ts` (which wires the model call together).
- *
- * @module
+ `render_verdict` tool definition plus provider-specific
+ `tool_choice` mapping.
+ 
+ The schema and the toolChoice helper are tested standalone in
+ `judge.unit.test.ts`, so they live separately from the streaming
+ machinery in `judge.ts` (which wires the model call together).
+ 
+ @module
  */
 
 import {
@@ -17,7 +17,7 @@ import {
 import { toolChoiceForApi as sharedToolChoiceForApi, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
 /**
- * Verdict values for the judge tool.
+ Verdict values for the judge tool.
  */
 const VERDICT_VALUES = [
   'approve',
@@ -26,17 +26,17 @@ const VERDICT_VALUES = [
 ] as const;
 
 /**
- * Schema for the verdict string enum.
+ Schema for the verdict string enum.
  */
 const VerdictEnum = StringEnum(VERDICT_VALUES,);
 
 /**
- * Tool definition for the structured-output judge.
- *
- * Uses forced `tool_choice` to guarantee a machine-readable
- * verdict instead of free-text JSON parsing.
- *
- * Shape matches {@link Tool} from pi-ai: `name`, `description`, `parameters`.
+ Tool definition for the structured-output judge.
+ 
+ Uses forced `tool_choice` to guarantee a machine-readable
+ verdict instead of free-text JSON parsing.
+ 
+ Shape matches {@link Tool} from pi-ai: `name`, `description`, `parameters`.
  */
 const VERDICT_TOOL: Tool = {
   name: 'render_verdict',
@@ -70,23 +70,23 @@ const VERDICT_TOOL: Tool = {
 };
 
 /**
- * Get the tool_choice value for a given model API.
- *
- * API-specific tool choice values:
- * - Anthropic messages: `{ type: "tool", name }` (forced tool call)
- * - OpenAI completions / responses: `"required"` (forced tool call)
- * - Others: `"any"` (allow any tool call)
- *
- * @param api - the model API identifier (from `model.api`)
- *
- * @returns the API-specific tool_choice value
- *
- * @example
- * ```typescript
- * toolChoiceForApi("anthropic-messages"); // { type: "tool", name: "render_verdict" }
- * toolChoiceForApi("openai-completions"); // "required"
- * toolChoiceForApi("google-generative-ai"); // "any"
- * ```
+ Get the tool_choice value for a given model API.
+ 
+ API-specific tool choice values:
+ - Anthropic messages: `{ type: "tool", name }` (forced tool call)
+ - OpenAI completions / responses: `"required"` (forced tool call)
+ - Others: `"any"` (allow any tool call)
+ 
+ @param api - the model API identifier (from `model.api`)
+ 
+ @returns the API-specific tool_choice value
+ 
+ @example
+ ```typescript
+ toolChoiceForApi("anthropic-messages"); // { type: "tool", name: "render_verdict" }
+ toolChoiceForApi("openai-completions"); // "required"
+ toolChoiceForApi("google-generative-ai"); // "any"
+ ```
  */
 function toolChoiceForApi(
   api: string,

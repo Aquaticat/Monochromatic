@@ -4,48 +4,48 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { getStaticMemberName, } from '../ast-shared.ts';
 
 /**
- * Genuine sentinel for {@link staticDescription} when no static string
- * description is present (absent, dynamic, or non-string). A unique `Symbol`,
- * never `null`, so the return type carries no nullish union.
+ Genuine sentinel for {@link staticDescription} when no static string
+ description is present (absent, dynamic, or non-string). A unique `Symbol`,
+ never `null`, so the return type carries no nullish union.
  */
 export const NO_STATIC_DESCRIPTION: unique symbol = Symbol('static Symbol description absent or dynamic',);
 
 /**
- * Checks whether a call is `Symbol(...)` via the global identifier.
- *
- * @param node - call expression to inspect
- *
- * @returns whether callee is the bare `Symbol` identifier
- *
- * @example
- * ```ts
- * isSymbolCall({ node }); // true for Symbol('id')
- * ```
+ Checks whether a call is `Symbol(...)` via the global identifier.
+ 
+ @param node - call expression to inspect
+ 
+ @returns whether callee is the bare `Symbol` identifier
+ 
+ @example
+ ```ts
+ isSymbolCall({ node }); // true for Symbol('id')
+ ```
  */
 export function isSymbolCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   /**
-   * Callee of the call expression.
+   Callee of the call expression.
    */
   const { callee, } = node;
   return (callee.type === 'Identifier') && (callee.name === 'Symbol');
 }
 
 /**
- * Checks whether a call is `Symbol.for(...)` via a static member access,
- * read with {@link getStaticMemberName}.
- *
- * @param node - call expression to inspect
- *
- * @returns whether callee is the static `Symbol.for` member
- *
- * @example
- * ```ts
- * isSymbolForCall({ node }); // true for Symbol.for('id')
- * ```
+ Checks whether a call is `Symbol.for(...)` via a static member access,
+ read with {@link getStaticMemberName}.
+ 
+ @param node - call expression to inspect
+ 
+ @returns whether callee is the static `Symbol.for` member
+ 
+ @example
+ ```ts
+ isSymbolForCall({ node }); // true for Symbol.for('id')
+ ```
  */
 export function isSymbolForCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   /**
-   * Callee of the call expression.
+   Callee of the call expression.
    */
   const { callee, } = node;
   if (callee.type !== 'MemberExpression')
@@ -53,7 +53,7 @@ export function isSymbolForCall({ node, }: ForeignBorrowed<{ readonly node: ESTr
   if (callee.computed)
     return false;
   /**
-   * Object of the member access, expected to be the `Symbol` identifier.
+   Object of the member access, expected to be the `Symbol` identifier.
    */
   const { object, } = callee;
   if ((object.type !== 'Identifier') || (object.name !== 'Symbol'))
@@ -62,24 +62,24 @@ export function isSymbolForCall({ node, }: ForeignBorrowed<{ readonly node: ESTr
 }
 
 /**
- * Extracts a static string description from a Symbol call's first argument:
- * a string literal, or a zero-expression template literal. Absent, dynamic, and
- * non-string descriptions yield {@link NO_STATIC_DESCRIPTION}.
- *
- * @param node - Symbol or Symbol.for call expression
- *
- * @returns static description text, or sentinel when none is statically known
- *
- * @example
- * ```ts
- * staticDescription({ node }); // 'id' for Symbol('id') and Symbol(`id`)
- * ```
+ Extracts a static string description from a Symbol call's first argument:
+ a string literal, or a zero-expression template literal. Absent, dynamic, and
+ non-string descriptions yield {@link NO_STATIC_DESCRIPTION}.
+ 
+ @param node - Symbol or Symbol.for call expression
+ 
+ @returns static description text, or sentinel when none is statically known
+ 
+ @example
+ ```ts
+ staticDescription({ node }); // 'id' for Symbol('id') and Symbol(`id`)
+ ```
  */
 export function staticDescription(
   { node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,
 ): string | typeof NO_STATIC_DESCRIPTION {
   /**
-   * First argument node, the description position.
+   First argument node, the description position.
    */
   const [firstArgument,] = node.arguments;
   if (firstArgument === undefined)
@@ -96,13 +96,13 @@ export function staticDescription(
         === 1)
   ) {
     /**
-     * Sole template quasi when no interpolation is present.
+     Sole template quasi when no interpolation is present.
      */
     const [onlyQuasi,] = firstArgument.quasis;
     if (onlyQuasi === undefined)
       return NO_STATIC_DESCRIPTION;
     /**
-     * Cooked value of the quasi, null on an invalid escape.
+     Cooked value of the quasi, null on an invalid escape.
      */
     const { cooked, } = onlyQuasi.value;
     if (cooked === null)

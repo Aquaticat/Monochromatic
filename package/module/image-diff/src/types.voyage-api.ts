@@ -3,7 +3,7 @@ import type { VoyageModel, } from './types.ts';
 //region Voyage API types
 
 /**
- * Shape of the Voyage AI multimodal embeddings API response.
+ Shape of the Voyage AI multimodal embeddings API response.
  */
 export type VoyageApiResponse = {
   readonly object: 'list';
@@ -22,7 +22,7 @@ export type VoyageApiResponse = {
 };
 
 /**
- * Content item for the Voyage AI multimodal embeddings API request.
+ Content item for the Voyage AI multimodal embeddings API request.
  */
 export type VoyageContentItem =
   | {
@@ -35,14 +35,14 @@ export type VoyageContentItem =
   };
 
 /**
- * Single input entry for the Voyage AI multimodal embeddings API request.
+ Single input entry for the Voyage AI multimodal embeddings API request.
  */
 export type VoyageInput = {
   readonly content: readonly VoyageContentItem[];
 };
 
 /**
- * Request body for the Voyage AI multimodal embeddings API.
+ Request body for the Voyage AI multimodal embeddings API.
  */
 export type VoyageApiRequest = {
   readonly inputs: readonly VoyageInput[];

@@ -14,21 +14,21 @@ import {
 } from './infra/lock.ts';
 import { log, } from './infra/syslog.ts';
 
-export {};
+
 
 /**
- * Minutes per cycle interval.
+ Minutes per cycle interval.
  */
 const INTERVAL_MINUTES = 5;
 
 /**
- * Interval between capture-analyze-notify cycles.
+ Interval between capture-analyze-notify cycles.
  */
 const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE
   * MS_PER_SECOND;
 
 /**
- * Parsed CLI arguments for the hall-monitor daemon.
+ Parsed CLI arguments for the hall-monitor daemon.
  */
 const { values: args, } = parseArgs({
   args: process.argv
@@ -40,14 +40,14 @@ const { values: args, } = parseArgs({
 },);
 
 /**
- * Module-singleton mutable state for the daemon loop flag; wrapped so it satisfies no-module-root-let.
+ Module-singleton mutable state for the daemon loop flag; wrapped so it satisfies no-module-root-let.
  */
 const state: { running: boolean; } = { running: true, };
 
 /**
- * Gracefully shuts down the daemon by stopping the main loop,
- * closing the lock socket via {@link closeLock}, and force-killing any
- * llama-server processes via {@link forceCleanup}.
+ Gracefully shuts down the daemon by stopping the main loop,
+ closing the lock socket via {@link closeLock}, and force-killing any
+ llama-server processes via {@link forceCleanup}.
  */
 async function shutdown(): Promise<void> {
   log.debug('[hall-monitor] Shutting down...',);
@@ -58,7 +58,7 @@ async function shutdown(): Promise<void> {
 }
 
 /**
- * Synchronous signal-listener wrapper; fires the async {@link shutdown} without awaiting.
+ Synchronous signal-listener wrapper; fires the async {@link shutdown} without awaiting.
  */
 function onSignal(): void {
   void shutdown();
@@ -74,10 +74,10 @@ process.on(
 );
 
 /**
- * Main daemon entry point.
- * Acquires the lock (falling back to {@link killExisting} when
- * `--kill-existing` is set and {@link acquireLock} fails), runs the first
- * {@link cycle}, then loops at the configured interval.
+ Main daemon entry point.
+ Acquires the lock (falling back to {@link killExisting} when
+ `--kill-existing` is set and {@link acquireLock} fails), runs the first
+ {@link cycle}, then loops at the configured interval.
  */
 // Async IIFE required because `bun build --compile` does not support top-level await.
 async function main(): Promise<void> {

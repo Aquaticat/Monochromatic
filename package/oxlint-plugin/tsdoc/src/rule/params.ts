@@ -1,7 +1,7 @@
 /**
- * TSDoc parameter name matching and presence rules.
- *
- * @module
+ TSDoc parameter name matching and presence rules.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -23,29 +23,29 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Validates that `\@param` tag names match the function's actual parameter names.
- *
- * Reports mismatches, incorrect order, and `\@param` tags for nonexistent parameters.
- * Compares parameter names from {@link extractParamNames} against documented
- * tag names from {@link extractDocParamNames}. Allows `\@param` tags that match
- * property names from destructured parameters (ObjectPattern/ArrayPattern, via
- * {@link extractDestructuredParamNames}), since documenting destructured
- * properties by name is a common TSDoc convention.
- *
- * @example
- * ```ts
- * // Bad; parameter name doesn't match
- * /\** \@param x - description *\/
- * function foo(name: string): void {}
- *
- * // Good
- * /\** \@param name - description *\/
- * function foo(name: string): void {}
- *
- * // Good; destructured property names are allowed
- * /\** \@param value - item to process *\/
- * function foo({ value }: Options): void {}
- * ```
+ Validates that `\@param` tag names match the function's actual parameter names.
+ 
+ Reports mismatches, incorrect order, and `\@param` tags for nonexistent parameters.
+ Compares parameter names from {@link extractParamNames} against documented
+ tag names from {@link extractDocParamNames}. Allows `\@param` tags that match
+ property names from destructured parameters (ObjectPattern/ArrayPattern, via
+ {@link extractDestructuredParamNames}), since documenting destructured
+ properties by name is a common TSDoc convention.
+ 
+ @example
+ ```ts
+ // Bad; parameter name doesn't match
+ /\** \@param x - description *\/
+ function foo(name: string): void {}
+ 
+ // Good
+ /\** \@param name - description *\/
+ function foo(name: string): void {}
+ 
+ // Good; destructured property names are allowed
+ /\** \@param value - item to process *\/
+ function foo({ value }: Options): void {}
+ ```
  */
 export const checkParamNames: CreateOnceRule = {
   meta: {
@@ -64,16 +64,16 @@ export const checkParamNames: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
@@ -83,15 +83,15 @@ export const checkParamNames: CreateOnceRule = {
         result,
       ): void {
         /**
-         * Ordered list of declared parameter names; positions in this array drive the index match.
+         Ordered list of declared parameter names; positions in this array drive the index match.
          */
         const paramNames = extractParamNames(node,);
         /**
-         * Ordered list of `\@param` names extracted from the TSDoc comment.
+         Ordered list of `\@param` names extracted from the TSDoc comment.
          */
         const docParamNames = extractDocParamNames(result.docComment,);
         /**
-         * Names from destructured patterns; `\@param` tags matching these are accepted as-is.
+         Names from destructured patterns; `\@param` tags matching these are accepted as-is.
          */
         const destructuredNames = extractDestructuredParamNames(node,);
 
@@ -105,7 +105,7 @@ export const checkParamNames: CreateOnceRule = {
             return;
 
           /**
-           * Parameter at the same index as the current doc tag; basis for the name comparison.
+           Parameter at the same index as the current doc tag; basis for the name comparison.
            */
           const correspondingParam = paramNames[index];
           if (correspondingParam === undefined) {
@@ -141,22 +141,22 @@ export const checkParamNames: CreateOnceRule = {
 };
 
 /**
- * Requires `\@param` tags for all function parameters, comparing
- * {@link extractParamNames} against {@link extractDocParamNames}.
- *
- * @example
- * ```ts
- * // Bad; missing \@param for `count`
- * /\** \@param name - user name *\/
- * function greet(name: string, count: number): void {}
- *
- * // Good
- * /\**
- *  * \@param name - user name
- *  * \@param count - greeting count
- *  *\/
- * function greet(name: string, count: number): void {}
- * ```
+ Requires `\@param` tags for all function parameters, comparing
+ {@link extractParamNames} against {@link extractDocParamNames}.
+ 
+ @example
+ ```ts
+ // Bad; missing \@param for `count`
+ /\** \@param name - user name *\/
+ function greet(name: string, count: number): void {}
+ 
+ // Good
+ /\**
+  \@param name - user name
+  \@param count - greeting count
+  *\/
+ function greet(name: string, count: number): void {}
+ ```
  */
 export const requireParam: CreateOnceRule = {
   meta: {
@@ -170,16 +170,16 @@ export const requireParam: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
@@ -189,11 +189,11 @@ export const requireParam: CreateOnceRule = {
         result,
       ): void {
         /**
-         * Declared parameter names; each must appear among the documented tags.
+         Declared parameter names; each must appear among the documented tags.
          */
         const paramNames = extractParamNames(node,);
         /**
-         * Documented param names indexed in a Set for O(1) presence checks.
+         Documented param names indexed in a Set for O(1) presence checks.
          */
         const docParamNames = new Set(extractDocParamNames(result.docComment,),);
 

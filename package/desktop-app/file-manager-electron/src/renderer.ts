@@ -1,16 +1,16 @@
 /**
- * Browser renderer boot for the sticky-flow file-manager prototype.
- *
- * Runs as a plain browser ES module inside Electron's sandboxed renderer.
- * All layout behavior during scrolling (panes pinning inside their rails,
- * non-overlap, clamping) is delegated to CSS normal flow plus
- * `position: sticky`; script only mutates the pane model, reconciles the DOM,
- * and mirrors observable state across the preload bridge.
- *
- * @example
- * ```ts
- * // index.html loads this file as <script type="module">.
- * ```
+ Browser renderer boot for the sticky-flow file-manager prototype.
+ 
+ Runs as a plain browser ES module inside Electron's sandboxed renderer.
+ All layout behavior during scrolling (panes pinning inside their rails,
+ non-overlap, clamping) is delegated to CSS normal flow plus
+ `position: sticky`; script only mutates the pane model, reconciles the DOM,
+ and mirrors observable state across the preload bridge.
+ 
+ @example
+ ```ts
+ // index.html loads this file as <script type="module">.
+ ```
  */
 
 import type { FileManagerBridge, } from './bridge-types.js';
@@ -32,21 +32,21 @@ import {
 } from './strip.js';
 
 /**
- * Error thrown when the preload bridge is absent or misshapen.
- *
- * @example
- * ```ts
- * new MissingBridgeError();
- * ```
+ Error thrown when the preload bridge is absent or misshapen.
+ 
+ @example
+ ```ts
+ new MissingBridgeError();
+ ```
  */
 class MissingBridgeError extends Error {
   /**
-   * Builds the descriptive bridge-lookup error.
-   *
-   * @example
-   * ```ts
-   * new MissingBridgeError();
-   * ```
+   Builds the descriptive bridge-lookup error.
+   
+   @example
+   ```ts
+   new MissingBridgeError();
+   ```
    */
   public constructor() {
     super('Preload bridge fileManagerBridge is missing; preload.cjs did not run.',);
@@ -55,17 +55,17 @@ class MissingBridgeError extends Error {
 }
 
 /**
- * Checks whether a value is the preload bridge, narrowing without an
- * unchecked type assertion.
- *
- * @param value - Global property to check.
- *
- * @returns Whether the value carries the three bridge functions.
- *
- * @example
- * ```ts
- * isFileManagerBridge(Reflect.get(globalThis, 'fileManagerBridge'));
- * ```
+ Checks whether a value is the preload bridge, narrowing without an
+ unchecked type assertion.
+ 
+ @param value - Global property to check.
+ 
+ @returns Whether the value carries the three bridge functions.
+ 
+ @example
+ ```ts
+ isFileManagerBridge(Reflect.get(globalThis, 'fileManagerBridge'));
+ ```
  */
 function isFileManagerBridge(value: unknown,): value is FileManagerBridge {
   return ((typeof value) === 'object')
@@ -79,20 +79,20 @@ function isFileManagerBridge(value: unknown,): value is FileManagerBridge {
 }
 
 /**
- * Reads the preload bridge off the global scope.
- *
- * @returns Verified preload bridge.
- *
- * @throws MissingBridgeError when the bridge is absent or misshapen.
- *
- * @example
- * ```ts
- * const bridge = getBridge();
- * ```
+ Reads the preload bridge off the global scope.
+ 
+ @returns Verified preload bridge.
+ 
+ @throws MissingBridgeError when the bridge is absent or misshapen.
+ 
+ @example
+ ```ts
+ const bridge = getBridge();
+ ```
  */
 function getBridge(): FileManagerBridge {
   /**
-   * Whatever the preload script exposed on the main world, if anything.
+   Whatever the preload script exposed on the main world, if anything.
    */
   const candidate: unknown = Reflect.get(
     globalThis,
@@ -106,16 +106,16 @@ function getBridge(): FileManagerBridge {
 }
 
 /**
- * Applies the debug tint when the main process requested it via query string.
- *
- * @example
- * ```ts
- * applyDebugTintFromQuery();
- * ```
+ Applies the debug tint when the main process requested it via query string.
+ 
+ @example
+ ```ts
+ applyDebugTintFromQuery();
+ ```
  */
 function applyDebugTintFromQuery(): void {
   /**
-   * Query parameters of the loaded renderer document.
+   Query parameters of the loaded renderer document.
    */
   const query = new URLSearchParams(globalThis.location
     .search,);
@@ -127,34 +127,34 @@ function applyDebugTintFromQuery(): void {
 }
 
 /**
- * Boots the renderer: opens the root pane over the bridge, installs keyboard
- * and scroll wiring, and reports the first observable state.
- *
- * @example
- * ```ts
- * await bootFileManager();
- * ```
+ Boots the renderer: opens the root pane over the bridge, installs keyboard
+ and scroll wiring, and reports the first observable state.
+ 
+ @example
+ ```ts
+ await bootFileManager();
+ ```
  */
 async function bootFileManager(): Promise<void> {
   applyDebugTintFromQuery();
 
   /**
-   * Typed bridge installed by the preload script.
+   Typed bridge installed by the preload script.
    */
   const bridge = getBridge();
 
   /**
-   * Directory the first root pane lists.
+   Directory the first root pane lists.
    */
   const rootPath = await bridge.initialRoot();
 
   /**
-   * Root directory listing fetched before the first render.
+   Root directory listing fetched before the first render.
    */
   const rootListing = await bridge.listDirectory(rootPath,);
 
   /**
-   * Model after opening the root pane.
+   Model after opening the root pane.
    */
   const opened = openRoot({
     location: directoryLocation({ path: rootPath, },),
@@ -162,7 +162,7 @@ async function bootFileManager(): Promise<void> {
   },);
 
   /**
-   * Mutable renderer session shared by every handler.
+   Mutable renderer session shared by every handler.
    */
   const session: RendererSession = {
     bridge,

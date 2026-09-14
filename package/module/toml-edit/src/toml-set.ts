@@ -1,13 +1,13 @@
 /**
- * {@link tomlSet}: write a value at a path, returning a fresh state.
- *
- * Resolves the path against the current block tree and dispatches:
- * replace an existing value; wholesale-replace an array-of-tables; replace a
- * standard table's or the top-level body; replace an implicit dotted-key parent
- * (issue #252); or create a fresh dotted key-value. All paths are pure: the new
- * state shares unchanged nodes by reference.
- *
- * @module
+ {@link tomlSet}: write a value at a path, returning a fresh state.
+ 
+ Resolves the path against the current block tree and dispatches:
+ replace an existing value; wholesale-replace an array-of-tables; replace a
+ standard table's or the top-level body; replace an implicit dotted-key parent
+ (issue #252); or create a fresh dotted key-value. All paths are pure: the new
+ state shares unchanged nodes by reference.
+ 
+ @module
  */
 
 import type { Block, } from './document.ts';
@@ -33,9 +33,9 @@ import type {
 } from './types.ts';
 
 /**
- * True when `block` is a table of `tableKind` whose header exactly names `path`.
- *
- * @returns Resulting boolean.
+ True when `block` is a table of `tableKind` whose header exactly names `path`.
+ 
+ @returns Resulting boolean.
  */
 function headerEquals(
   {
@@ -59,20 +59,20 @@ function headerEquals(
 }
 
 /**
- * Set `value` at `path`, returning a fresh {@link TomlEditState}.
- *
- * @returns Fresh {@link TomlEditState}.
- *
- * @throws {@link TomlTypeError} when `value` is `null`/`undefined`, or when an
- *         object is required (table/implicit replace) but not supplied.
- *
- * @throws {@link TomlImmutableNodeError} when the path names multiple sibling
- *         standard tables under an implicit parent (set per sub-table instead).
- *
- * @example
- * ```ts
- * const e1 = tomlSet({ edit: e0, path: ['tools', 'bun'], value: 'latest', },);
- * ```
+ Set `value` at `path`, returning a fresh {@link TomlEditState}.
+ 
+ @returns Fresh {@link TomlEditState}.
+ 
+ @throws {@link TomlTypeError} when `value` is `null`/`undefined`, or when an
+         object is required (table/implicit replace) but not supplied.
+ 
+ @throws {@link TomlImmutableNodeError} when the path names multiple sibling
+         standard tables under an implicit parent (set per sub-table instead).
+ 
+ @example
+ ```ts
+ const e1 = tomlSet({ edit: e0, path: ['tools', 'bun'], value: 'latest', },);
+ ```
  */
 export function tomlSet(
   {
@@ -92,7 +92,7 @@ export function tomlSet(
   }
 
   /**
-   * Fresh blocks when the path addressed an existing value; else the sentinel.
+   Fresh blocks when the path addressed an existing value; else the sentinel.
    */
   const replaced = replaceExistingValue({
     blocks: edit.blocks,
@@ -121,7 +121,7 @@ export function tomlSet(
     },);
 
   /**
-   * Index of a standard table whose header exactly names the path.
+   Index of a standard table whose header exactly names the path.
    */
   const stdIndex = edit.blocks
     .findIndex(function isStd(b,) {
@@ -133,7 +133,7 @@ export function tomlSet(
   },);
   if (stdIndex !== (-1)) {
     /**
-     * The standard table whose body is replaced.
+     The standard table whose body is replaced.
      */
     const table = edit.blocks[stdIndex];
     if ((table !== undefined) && (table.kind
@@ -155,7 +155,7 @@ export function tomlSet(
     },);
 
   /**
-   * Constituent entries of an implicit parent at this path, if any.
+   Constituent entries of an implicit parent at this path, if any.
    */
   const constituents = edit.blocks
     .filter(function isConst(b,) {

@@ -63,9 +63,10 @@ development.
 - **check-alignment**:
    enforces consistent asterisk alignment in multiline TSDoc blocks
 - **multiline-blocks**:
-   requires multiline format for all TSDoc comments and auto-fixes single-line blocks
+   requires multiline format for all TSDoc comments and auto-fixes single-line blocks to star-less body lines
 - **no-multi-asterisks**:
-   disallows `** text` lines (doubled leading asterisks)
+   disallows `** text` lines (doubled canonical prefixes) while permitting literal-leading Markdown such as
+  `**Note**`
 - **tag-lines**:
    requires blank comment lines before block tags
 - **empty-tags**:

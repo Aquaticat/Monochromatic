@@ -2,74 +2,74 @@ import { AsyncLocalStorage, } from 'node:async_hooks';
 import { resolve, } from 'node:path';
 
 /**
- * Glob expansion observed while a builder's lazy callback executed.
+ Glob expansion observed while a builder's lazy callback executed.
  */
 export type TrackedGlob = {
   /**
-   * Glob pattern passed to {@link cat}.
+   Glob pattern passed to {@link cat}.
    */
   readonly pattern: string;
 
   /**
-   * Paths matched by the glob.
+   Paths matched by the glob.
    */
   readonly paths: readonly string[];
 };
 
 /**
- * Function shape used by source capture.
+ Function shape used by source capture.
  */
 export type SourceCaptureCallback<TResult,> = () => TResult | Promise<TResult>;
 
 /**
- * Captured builder result and source dependencies.
+ Captured builder result and source dependencies.
  */
 export type CapturedSources<TResult,> = {
   /**
-   * Value returned by the captured callback.
+   Value returned by the captured callback.
    */
   readonly value: TResult;
 
   /**
-   * Absolute file paths read while the callback executed.
+   Absolute file paths read while the callback executed.
    */
   readonly reads: readonly string[];
 
   /**
-   * Glob expansions observed while the callback executed.
+   Glob expansions observed while the callback executed.
    */
   readonly globs: readonly TrackedGlob[];
 };
 
 /**
- * Mutable async-local capture state.
+ Mutable async-local capture state.
  */
 type SourceCaptureState = {
   /**
-   * Absolute file paths captured in the current async context.
+   Absolute file paths captured in the current async context.
    */
   readonly reads: Set<string>;
 
   /**
-   * Glob expansions captured in the current async context, keyed by pattern.
+   Glob expansions captured in the current async context, keyed by pattern.
    */
   readonly globs: Map<string, readonly string[]>;
 };
 
 /**
- * Async-local capture store used by lazy staleness-cache builders.
+ Async-local capture store used by lazy staleness-cache builders.
  */
 const sourceCaptureStorage: AsyncLocalStorage<SourceCaptureState> = new AsyncLocalStorage<SourceCaptureState>();
 
 /**
- * Records an already-resolved read path in the active source capture.
- *
- * @param absolutePath - Absolute path to add to the active capture.
- *
- * @example
- * ```ts
- * recordReadInActiveCapture('/repo/AGENTS.md');
- * ```
+ Records an already-resolved read path in the active source capture.
+ 
+ @param absolutePath - Absolute path to add to the active capture.
+ 
+ @example
+ ```ts
+ recordReadInActiveCapture('/repo/AGENTS.md');
+ ```
  */
 export function recordReadInActiveCapture(absolutePath: string,): void {
   sourceCaptureStorage.getStore()
@@ -78,16 +78,16 @@ export function recordReadInActiveCapture(absolutePath: string,): void {
 }
 
 /**
- * Records a glob expansion in the active source capture.
- *
- * @param pattern - Glob pattern passed to {@link cat}.
- *
- * @param paths - Paths matched by the glob.
- *
- * @example
- * ```ts
- * recordGlobInActiveCapture({ pattern: './src/*.ts', paths: ['./src/index.ts'] });
- * ```
+ Records a glob expansion in the active source capture.
+ 
+ @param pattern - Glob pattern passed to {@link cat}.
+ 
+ @param paths - Paths matched by the glob.
+ 
+ @example
+ ```ts
+ recordGlobInActiveCapture({ pattern: './src/*.ts', paths: ['./src/index.ts'] });
+ ```
  */
 export function recordGlobInActiveCapture(
   {
@@ -109,22 +109,22 @@ export function recordGlobInActiveCapture(
 }
 
 /**
- * Returns captured globs in deterministic order.
- *
- * @param globs - Mutable glob capture map.
- *
- * @returns Sorted glob captures.
- *
- * @example
- * ```ts
- * const globs = capturedGlobs(capture.globs);
- * ```
+ Returns captured globs in deterministic order.
+ 
+ @param globs - Mutable glob capture map.
+ 
+ @returns Sorted glob captures.
+ 
+ @example
+ ```ts
+ const globs = capturedGlobs(capture.globs);
+ ```
  */
 function capturedGlobs(globs: ReadonlyMap<string, readonly string[]>,): readonly TrackedGlob[] {
   return [...globs.entries(),]
     .map(function toTrackedGlob(entry,): TrackedGlob {
       /**
-       * Glob pattern and paths tuple.
+       Glob pattern and paths tuple.
        */
       const [pattern, paths,] = entry;
       return {
@@ -143,18 +143,18 @@ function capturedGlobs(globs: ReadonlyMap<string, readonly string[]>,): readonly
 }
 
 /**
- * Captures reads and glob expansions performed by an async builder callback.
- *
- * @param fn - Callback whose calls to {@link cat} and {@link addWatchedPaths} should be captured.
- *
- * @mutates fn through sourceCaptureStorage.run callback invocation
- *
- * @returns Callback result plus captured sources.
- *
- * @example
- * ```ts
- * const captured = await captureTrackedSources({ fn: () => cat(['./AGENTS.md']) });
- * ```
+ Captures reads and glob expansions performed by an async builder callback.
+ 
+ @param fn - Callback whose calls to {@link cat} and {@link addWatchedPaths} should be captured.
+ 
+ @mutates fn through sourceCaptureStorage.run callback invocation
+ 
+ @returns Callback result plus captured sources.
+ 
+ @example
+ ```ts
+ const captured = await captureTrackedSources({ fn: () => cat(['./AGENTS.md']) });
+ ```
  */
 export async function captureTrackedSources<TResult,>(
   {
@@ -164,14 +164,14 @@ export async function captureTrackedSources<TResult,>(
   },
 ): Promise<CapturedSources<Awaited<TResult>>> {
   /**
-   * Mutable capture state scoped to this async call chain.
+   Mutable capture state scoped to this async call chain.
    */
   const captureState: SourceCaptureState = {
     reads: new Set<string>(),
     globs: new Map<string, readonly string[]>(),
   };
   /**
-   * Value returned by the captured callback.
+   Value returned by the captured callback.
    */
   const value = await sourceCaptureStorage.run(
     captureState,

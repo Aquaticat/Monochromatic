@@ -1,14 +1,14 @@
 /**
- * Runtime image identity and build.
- *
- * The image bakes the whole repository with a frozen pnpm install; its
- * tag derives from the lockfile and Containerfile contents so dependency
- * or runtime changes rebuild while unrelated edits reuse the cache.
- *
- * @example
- * ```ts
- * const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
- * ```
+ Runtime image identity and build.
+ 
+ The image bakes the whole repository with a frozen pnpm install; its
+ tag derives from the lockfile and Containerfile contents so dependency
+ or runtime changes rebuild while unrelated edits reuse the cache.
+ 
+ @example
+ ```ts
+ const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
+ ```
  */
 
 import type { Dirent, } from 'node:fs';
@@ -25,62 +25,62 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Module logger for host-side image management.
+ Module logger for host-side image management.
  */
 const l = tagged({ tag: 'mutation-test', },);
 
 /**
- * Local image repository name for the mutation runtime.
+ Local image repository name for the mutation runtime.
  */
 const IMAGE_REPOSITORY = 'localhost/mutation-test-runtime';
 
 /**
- * Containerfile path relative to the repo root.
+ Containerfile path relative to the repo root.
  */
 const CONTAINERFILE = 'package/cli/mutation-test/runtime/Containerfile';
 
 /**
- * Build-context ignore file path relative to the repo root.
- *
- * Building from the repo root without it sweeps node_modules, .git, and
- * dist into the context (multi-GB layer commit, measured 36 minute
- * upload before failing); the ignore list mirrors the work-tree rsync
- * excludes.
+ Build-context ignore file path relative to the repo root.
+ 
+ Building from the repo root without it sweeps node_modules, .git, and
+ dist into the context (multi-GB layer commit, measured 36 minute
+ upload before failing); the ignore list mirrors the work-tree rsync
+ excludes.
  */
 const CONTAINER_IGNOREFILE = 'package/cli/mutation-test/runtime/containerignore';
 
 /**
- * Tag hash length keeping references short yet distinct.
+ Tag hash length keeping references short yet distinct.
  */
 const TAG_HEX_LENGTH = 12;
 
 /**
- * Recursively lists files under one directory, sorted for stable hashes.
- *
- * @param dir - Absolute directory.
- *
- * @returns Sorted absolute file paths.
- *
- * @example
- * ```ts
- * await listFilesSorted('/repo/packages/cli/mutation-test/src');
- * ```
+ Recursively lists files under one directory, sorted for stable hashes.
+ 
+ @param dir - Absolute directory.
+ 
+ @returns Sorted absolute file paths.
+ 
+ @example
+ ```ts
+ await listFilesSorted('/repo/packages/cli/mutation-test/src');
+ ```
  */
 async function listFilesSorted(dir: string,): Promise<readonly string[]> {
   /**
-   * Directory entries at this level.
+   Directory entries at this level.
    */
   const entries = await readdir(
     dir,
     { withFileTypes: true, },
   );
   /**
-   * Files from this level and below.
+   Files from this level and below.
    */
   const nested = await Promise.all(entries.map(
     async function collect(entry: ForeignBorrowed<Dirent>,): Promise<readonly string[]> {
       /**
-       * Absolute path of this entry.
+       Absolute path of this entry.
        */
       const absolute = join(
         dir,
@@ -94,33 +94,33 @@ async function listFilesSorted(dir: string,): Promise<readonly string[]> {
 }
 
 /**
- * Computes the image reference for the current repo state.
- *
- * The hash covers dependency identity (lockfile), build recipe
- * (Containerfile plus ignore list), and this package's own sources,
- * because containers execute the baked copy of that source; without the
- * source hash a container-side change would silently reuse stale images.
- *
- * @param options - Repository root.
- *
- * @returns Image reference including content-derived tag.
- *
- * @example
- * ```ts
- * await imageReference({ repoRoot });
- * // 'localhost/mutation-test-runtime:3fc9...'
- * ```
+ Computes the image reference for the current repo state.
+ 
+ The hash covers dependency identity (lockfile), build recipe
+ (Containerfile plus ignore list), and this package's own sources,
+ because containers execute the baked copy of that source; without the
+ source hash a container-side change would silently reuse stale images.
+ 
+ @param options - Repository root.
+ 
+ @returns Image reference including content-derived tag.
+ 
+ @example
+ ```ts
+ await imageReference({ repoRoot });
+ // 'localhost/mutation-test-runtime:3fc9...'
+ ```
  */
 export async function imageReference(options: {
   readonly repoRoot: string;
 },): Promise<string> {
   /**
-   * Content hash over inputs that must trigger a rebuild.
+   Content hash over inputs that must trigger a rebuild.
    */
   const hash = createHash('sha256',);
   /**
-   * Source directories inside the container's execution closure; host
-   * orchestration changes must not force image rebuilds.
+   Source directories inside the container's execution closure; host
+   orchestration changes must not force image rebuilds.
    */
   const containerSourceDirs = await Promise.all([
     'package/cli/mutation-test/src/container',
@@ -132,7 +132,7 @@ export async function imageReference(options: {
     ),);
   },),);
   /**
-   * This package's container-executed source files, baked into the image.
+   This package's container-executed source files, baked into the image.
    */
   const sourceFiles = [
     ...containerSourceDirs.flat(),
@@ -154,7 +154,7 @@ export async function imageReference(options: {
     },)
     .toSorted();
   /**
-   * Rebuild-triggering input files, read concurrently.
+   Rebuild-triggering input files, read concurrently.
    */
   const inputs = await Promise.all([
     join(
@@ -185,16 +185,16 @@ export async function imageReference(options: {
 }
 
 /**
- * Returns whether an image reference exists locally.
- *
- * @param reference - Image reference to probe.
- *
- * @returns Whether podman knows the image.
- *
- * @example
- * ```ts
- * await imageExists('localhost/mutation-test-runtime:abc');
- * ```
+ Returns whether an image reference exists locally.
+ 
+ @param reference - Image reference to probe.
+ 
+ @returns Whether podman knows the image.
+ 
+ @example
+ ```ts
+ await imageExists('localhost/mutation-test-runtime:abc');
+ ```
  */
 async function imageExists(reference: string,): Promise<boolean> {
   try {
@@ -219,32 +219,32 @@ async function imageExists(reference: string,): Promise<boolean> {
 }
 
 /**
- * Ensures the runtime image exists, building it when needed.
- *
- * @param options - Repository root and build-skip toggle.
- *
- * @returns Usable image reference.
- *
- * @throws Error when skipping the build but no image exists.
- *
- * @example
- * ```ts
- * const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
- * ```
+ Ensures the runtime image exists, building it when needed.
+ 
+ @param options - Repository root and build-skip toggle.
+ 
+ @returns Usable image reference.
+ 
+ @throws Error when skipping the build but no image exists.
+ 
+ @example
+ ```ts
+ const image = await ensureRuntimeImage({ repoRoot, skipImageBuild: false });
+ ```
  */
 export async function ensureRuntimeImage(options: {
   readonly repoRoot: string;
   readonly skipImageBuild: boolean;
 },): Promise<string> {
   /**
-   * Logger scoped to image resolution.
+   Logger scoped to image resolution.
    */
   const rl = tagged({
     tag: ensureRuntimeImage.name,
     l,
   },);
   /**
-   * Content-derived image reference for the current repo state.
+   Content-derived image reference for the current repo state.
    */
   const reference = await imageReference({ repoRoot: options.repoRoot, },);
 

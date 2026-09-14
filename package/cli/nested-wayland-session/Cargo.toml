@@ -67,6 +67,10 @@ crossbeam-channel = "0.5"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+# Private XDG Settings portal used by --color-scheme. The blocking API owns its
+# executor thread while the Smithay event loop stays synchronous.
+zbus = "5.19.0"
+
 # The compositor toolkit. Pinned EXACTLY to the crates.io 0.7.0 release with `=`,
 # not a caret range: Smithay is pre-1.0, its git HEAD is far ahead of 0.7.0 with
 # breaking changes, and its `## Unreleased` changelog already lists many. The

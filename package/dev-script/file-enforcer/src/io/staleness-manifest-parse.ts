@@ -14,16 +14,16 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Manifest shape accepted by persistence helpers that may serialize caller hooks.
+ Manifest shape accepted by persistence helpers that may serialize caller hooks.
  */
 export type PersistableStalenessManifest = {
   /**
-   * Manifest schema version.
+   Manifest schema version.
    */
   version: number;
 
   /**
-   * Entry map for serialization and merge.
+   Entry map for serialization and merge.
    */
   entries: Readonly<Record<string, StalenessEntry>>;
 };
@@ -31,14 +31,14 @@ export type PersistableStalenessManifest = {
 //region Manifest parsing and serialization
 
 /**
- * Returns default empty manifest.
- *
- * @returns Empty manifest for absent cache file.
- *
- * @example
- * ```ts
- * const manifest = emptyManifest();
- * ```
+ Returns default empty manifest.
+ 
+ @returns Empty manifest for absent cache file.
+ 
+ @example
+ ```ts
+ const manifest = emptyManifest();
+ ```
  */
 export function emptyManifest(): StalenessManifest {
   return {
@@ -48,18 +48,18 @@ export function emptyManifest(): StalenessManifest {
 }
 
 /**
- * Serializes manifest as pretty JSON with trailing newline.
- *
- * @param manifest - Manifest object to serialize.
- *
- * @returns Manifest JSON text.
- *
- * @mutates manifest - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
- *
- * @example
- * ```ts
- * const text = serializeManifest(manifest);
- * ```
+ Serializes manifest as pretty JSON with trailing newline.
+ 
+ @param manifest - Manifest object to serialize.
+ 
+ @returns Manifest JSON text.
+ 
+ @mutates manifest - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ 
+ @example
+ ```ts
+ const text = serializeManifest(manifest);
+ ```
  */
 export function serializeManifest(manifest: PersistableStalenessManifest,): string {
   return `${JSON.stringify(
@@ -70,28 +70,28 @@ export function serializeManifest(manifest: PersistableStalenessManifest,): stri
 }
 
 /**
- * Reads manifest from disk via {@link readManifestContent}, parses it with
- * {@link parseManifestJson}, and validates the shape with {@link isStalenessManifest}.
- * Returns empty only when file is absent.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @returns Parsed manifest.
- *
- * @throws {@link StalenessManifestPersistenceError} When manifest exists but is unreadable or invalid.
- *
- * @example
- * ```ts
- * const manifest = await readManifestFromDisk('/tmp/manifest.json');
- * ```
+ Reads manifest from disk via {@link readManifestContent}, parses it with
+ {@link parseManifestJson}, and validates the shape with {@link isStalenessManifest}.
+ Returns empty only when file is absent.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @returns Parsed manifest.
+ 
+ @throws {@link StalenessManifestPersistenceError} When manifest exists but is unreadable or invalid.
+ 
+ @example
+ ```ts
+ const manifest = await readManifestFromDisk('/tmp/manifest.json');
+ ```
  */
 export async function readManifestFromDisk(manifestPath: string,): Promise<StalenessManifest> {
   /**
-   * Raw manifest JSON content read from disk.
+   Raw manifest JSON content read from disk.
    */
   const rawManifest = await readManifestContent(manifestPath,);
   /**
-   * Parsed manifest JSON value.
+   Parsed manifest JSON value.
    */
   const parsedManifest = parseManifestJson({
     manifestPath,
@@ -107,18 +107,18 @@ export async function readManifestFromDisk(manifestPath: string,): Promise<Stale
 }
 
 /**
- * Reads raw manifest JSON text from disk.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @returns Raw manifest text, or empty manifest JSON when absent.
- *
- * @throws When manifest exists but cannot be read.
- *
- * @example
- * ```ts
- * const raw = await readManifestContent('/tmp/manifest.json');
- * ```
+ Reads raw manifest JSON text from disk.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @returns Raw manifest text, or empty manifest JSON when absent.
+ 
+ @throws When manifest exists but cannot be read.
+ 
+ @example
+ ```ts
+ const raw = await readManifestContent('/tmp/manifest.json');
+ ```
  */
 async function readManifestContent(manifestPath: string,): Promise<string> {
   try {
@@ -142,20 +142,20 @@ async function readManifestContent(manifestPath: string,): Promise<string> {
 }
 
 /**
- * Parses raw manifest JSON text.
- *
- * @param manifestPath - Absolute manifest path for diagnostics.
- *
- * @param rawManifest - Raw manifest JSON text.
- *
- * @returns Parsed JSON value.
- *
- * @throws When JSON parsing fails.
- *
- * @example
- * ```ts
- * const parsed = parseManifestJson({ manifestPath, rawManifest });
- * ```
+ Parses raw manifest JSON text.
+ 
+ @param manifestPath - Absolute manifest path for diagnostics.
+ 
+ @param rawManifest - Raw manifest JSON text.
+ 
+ @returns Parsed JSON value.
+ 
+ @throws When JSON parsing fails.
+ 
+ @example
+ ```ts
+ const parsed = parseManifestJson({ manifestPath, rawManifest });
+ ```
  */
 function parseManifestJson(
   {

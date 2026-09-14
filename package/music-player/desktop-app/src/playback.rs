@@ -78,7 +78,7 @@ fn is_apple_double_sidecar(path: &Path) -> bool {
         // ```ts
         // return name.startsWith(APPLE_DOUBLE_PREFIX);
         // ```
-        Some(name) => name.to_string_lossy().starts_with(APPLE_DOUBLE_PREFIX),
+        Some(name) => return name.to_string_lossy().starts_with(APPLE_DOUBLE_PREFIX),
         // What:     `None => false`. The path has no final filename component.
         // Why:      Without a filename, it cannot be an AppleDouble sidecar file.
         //
@@ -86,7 +86,7 @@ fn is_apple_double_sidecar(path: &Path) -> bool {
         // ```ts
         // return false;
         // ```
-        None => false,
+        None => return false,
     }
 }
 
@@ -140,7 +140,7 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
         // ```ts
         // return AUDIO_EXTENSIONS.includes(ext.toLowerCase());
         // ```
-        Some(ext) => AUDIO_EXTENSIONS.contains(&ext.to_string_lossy().to_lowercase().as_str()),
+        Some(ext) => return AUDIO_EXTENSIONS.contains(&ext.to_string_lossy().to_lowercase().as_str()),
         // What:     `None => false`. No extension (extensionless name or a dotfile):
         //           not recognised as audio.
         // Why:      Skip extensionless and hidden files.
@@ -149,7 +149,7 @@ pub(crate) fn is_audio_file(path: &Path) -> bool {
         // ```ts
         // return false;
         // ```
-        None => false,
+        None => return false,
     }
 }
 
@@ -185,7 +185,7 @@ pub(crate) fn process_sample(sample: f32, gain: f32) -> f32 {
     // ```ts
     // return Math.max(-1, Math.min(1, sample * gain));
     // ```
-    (sample * gain).clamp(-1.0, 1.0)
+    return (sample * gain).clamp(-1.0, 1.0)
 }
 
 /// What:     `pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64`. Convert a
@@ -221,7 +221,7 @@ pub(crate) fn frames_to_secs(frames: u64, rate: u32) -> f64 {
     // ```ts
     // return frames / rate;
     // ```
-    frames as f64 / rate as f64
+    return frames as f64 / rate as f64
 }
 
 /// What:     `pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf>`. Turn
@@ -313,7 +313,7 @@ pub(crate) fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // ```ts
     // return out;
     // ```
-    out
+    return out
 }
 
 /// What:     `fn collect_dir_files(root: &Path) -> Vec<PathBuf>`. Walk a directory tree
@@ -534,7 +534,7 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
     // ```ts
     // return out;
     // ```
-    out
+    return out
 }
 
 /// What:     `pub(crate) fn file_name_of(path: &Path) -> String`. The display filename
@@ -565,7 +565,7 @@ pub(crate) fn file_name_of(path: &Path) -> String {
         // ```ts
         // return name;
         // ```
-        Some(name) => name.to_string_lossy().into_owned(),
+        Some(name) => return name.to_string_lossy().into_owned(),
         // What:     `None => path.display().to_string()`. Fall back to the full path
         //           text. `display()` formats the path; `.to_string()` owns it.
         // Why:      Always show something.
@@ -574,7 +574,7 @@ pub(crate) fn file_name_of(path: &Path) -> String {
         // ```ts
         // return String(path);
         // ```
-        None => path.display().to_string(),
+        None => return path.display().to_string(),
     }
 }
 

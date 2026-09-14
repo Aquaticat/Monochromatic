@@ -1,15 +1,15 @@
 /**
- * Equivalence tests for `splitOnWhitespace`.
- *
- * Capture the pre-refactor behavior of the whitespace splitter so the
- * linear single-pass rewrite stays behavior-identical: empty input, all
- * whitespace, a single token, leading and trailing separators dropped,
- * consecutive separators collapsed, every whitespace kind treated as a
- * break, the realistic `/proc/net/unix` field-extraction case, and long
- * repeated runs that the prior recursive O(n) stack and O(n^2) array-spread
- * walker could not handle.
- *
- * @module
+ Equivalence tests for `splitOnWhitespace`.
+ 
+ Capture the pre-refactor behavior of the whitespace splitter so the
+ linear single-pass rewrite stays behavior-identical: empty input, all
+ whitespace, a single token, leading and trailing separators dropped,
+ consecutive separators collapsed, every whitespace kind treated as a
+ break, the realistic `/proc/net/unix` field-extraction case, and long
+ repeated runs that the prior recursive O(n) stack and O(n^2) array-spread
+ walker could not handle.
+ 
+ @module
  */
 
 import {

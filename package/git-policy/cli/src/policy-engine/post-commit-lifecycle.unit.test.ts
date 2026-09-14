@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   POST_COMMIT_LIFECYCLE_DEPENDENCIES,
   runPostCommitLifecycle,
@@ -84,9 +84,9 @@ const THROW_POLICY: RuntimePolicyDefinition = {
 };
 
 /**
- * Creates repository with one real landed commit.
- *
- * @returns disposable committed repository
+ Creates repository with one real landed commit.
+ 
+ @returns disposable committed repository
  */
 async function createRepository(): Promise<RepositoryFixture> {
   /** Disposable repository root. */

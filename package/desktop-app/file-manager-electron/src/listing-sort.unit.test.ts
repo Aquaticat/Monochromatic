@@ -1,10 +1,10 @@
 /**
- * Unit tests for the directory-listing sort.
- *
- * Tests import from built `dist/app` so they verify the artifact the main
- * process consumes.
- *
- * @module
+ Unit tests for the directory-listing sort.
+ 
+ Tests import from built `dist/app` so they verify the artifact the main
+ process consumes.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 } from '../dist/app/listing-sort.js';
 
 /**
- * Shorthand fixture entry builder.
+ Shorthand fixture entry builder.
  */
 function entry(
   {

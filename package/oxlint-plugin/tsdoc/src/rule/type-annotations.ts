@@ -1,9 +1,9 @@
 /**
- * TSDoc type annotation disallow rule.
- *
- * Extracted from `tag-types.ts` to keep files under 100 countable lines.
- *
- * @module
+ TSDoc type annotation disallow rule.
+ 
+ Extracted from `tag-types.ts` to keep files under 100 countable lines.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -24,34 +24,34 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Character that follows `{` for TSDoc inline tags such as `{@link Target}`.
+ Character that follows `{` for TSDoc inline tags such as `{@link Target}`.
  */
 const INLINE_TAG_MARKER = '@';
 
 /**
- * Checks whether a brace opens a TSDoc inline tag rather than a JSDoc type.
- *
- * @param params - source text and opening-brace index
- *
- * @returns true when the brace is immediately followed by an inline tag marker
- *
- * @example
- * ```ts
- * isInlineTagOpener({ text: '{@link Target}', braceIndex: 0 }); // true
- * ```
+ Checks whether a brace opens a TSDoc inline tag rather than a JSDoc type.
+ 
+ @param params - source text and opening-brace index
+ 
+ @returns true when the brace is immediately followed by an inline tag marker
+ 
+ @example
+ ```ts
+ isInlineTagOpener({ text: '{@link Target}', braceIndex: 0 }); // true
+ ```
  */
 function isInlineTagOpener(params: {
   /**
-   * Source text containing the candidate brace.
+   Source text containing the candidate brace.
    */
   readonly text: string;
   /**
-   * Index of the candidate opening brace.
+   Index of the candidate opening brace.
    */
   readonly braceIndex: number;
 },): boolean {
   /**
-   * Source text and brace index used to test the character after `{`.
+   Source text and brace index used to test the character after `{`.
    */
   const {
     text,
@@ -61,28 +61,28 @@ function isInlineTagOpener(params: {
 }
 
 /**
- * Collects every JSDoc-style `{Type}` body that follows a `@word` and at
- * least one whitespace char in `s`. Matches the legacy `/@\w+\s+\{([^}]+)\}/g`
- * shape except for TSDoc inline tags such as `{@link Target}`, detected via
- * {@link isInlineTagOpener}.
- *
- * Strictly linear: each `@` candidate is found by `indexOf`, surrounding
- * checks are constant-time, and the cursor advances past every consumed
- * span so the total work is bounded by the length of `s`.
- *
- * @param s - line content (already stripped of comment markers and trim)
- *
- * @returns ordered list of captured type bodies (without the braces)
- *
- * @example
- * ```ts
- * // built by concatenation so this example does not itself trip the no-types rule
- * findTypeAnnotations('@param ' + '{string}'); // ['string']
- * ```
+ Collects every JSDoc-style `{Type}` body that follows a `@word` and at
+ least one whitespace char in `s`. Matches the legacy `/@\w+\s+\{([^}]+)\}/g`
+ shape except for TSDoc inline tags such as `{@link Target}`, detected via
+ {@link isInlineTagOpener}.
+ 
+ Strictly linear: each `@` candidate is found by `indexOf`, surrounding
+ checks are constant-time, and the cursor advances past every consumed
+ span so the total work is bounded by the length of `s`.
+ 
+ @param s - line content (already stripped of comment markers and trim)
+ 
+ @returns ordered list of captured type bodies (without the braces)
+ 
+ @example
+ ```ts
+ // built by concatenation so this example does not itself trip the no-types rule
+ findTypeAnnotations('@param ' + '{string}'); // ['string']
+ ```
  */
 export function findTypeAnnotations(s: string,): readonly string[] {
   /**
-   * Captured type bodies in source order; each omits the surrounding braces.
+   Captured type bodies in source order; each omits the surrounding braces.
    */
   const out: string[] = [];
   // Linear walk: each `@` is located by `indexOf`; the tag run, whitespace gap,
@@ -92,7 +92,7 @@ export function findTypeAnnotations(s: string,): readonly string[] {
   for (let from = 0; from < s
     .length;) {
     /**
-     * Position of the next at-sign; -1 ends the scan.
+     Position of the next at-sign; -1 ends the scan.
      */
     const atIdx = s.indexOf(
       '@',
@@ -101,7 +101,7 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     if (atIdx === (-1))
       break;
     /**
-     * Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign.
+     Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign.
      */
     const tagEnd = wordRunEnd({
       text: s,
@@ -112,7 +112,7 @@ export function findTypeAnnotations(s: string,): readonly string[] {
       continue;
     }
     /**
-     * First index past the inter-token whitespace; `{` must live here for a match.
+     First index past the inter-token whitespace; `{` must live here for a match.
      */
     const afterWs = whitespaceRunEnd({
       text: s,
@@ -124,7 +124,7 @@ export function findTypeAnnotations(s: string,): readonly string[] {
       continue;
     }
     /**
-     * Position of the matching `}`; -1 means the type body is unterminated.
+     Position of the matching `}`; -1 means the type body is unterminated.
      */
     const closeIdx = s.indexOf(
       '}',
@@ -140,7 +140,7 @@ export function findTypeAnnotations(s: string,): readonly string[] {
       continue;
     }
     /**
-     * Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`.
+     Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`.
      */
     const body = s.slice(
       afterWs + 1,
@@ -158,11 +158,11 @@ export function findTypeAnnotations(s: string,): readonly string[] {
 }
 
 /**
- * Disallows type annotations in TSDoc tags, detected via
- * {@link findTypeAnnotations}.
- *
- * In TypeScript projects, types are expressed via type annotations, not JSDoc-style
- * `{Type}` syntax. Reports param/returns with `{Type}` syntax.
+ Disallows type annotations in TSDoc tags, detected via
+ {@link findTypeAnnotations}.
+ 
+ In TypeScript projects, types are expressed via type annotations, not JSDoc-style
+ `{Type}` syntax. Reports param/returns with `{Type}` syntax.
  */
 export const noTypes: CreateOnceRule = {
   meta: {
@@ -177,16 +177,16 @@ export const noTypes: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createTsdocVisitor({
@@ -196,8 +196,8 @@ export const noTypes: CreateOnceRule = {
         comment,
       ): void {
         /**
-         * Comment body split into lines; each is scanned for the disallowed JSDoc-style
-         * curly-braced type annotation that follows a tag.
+         Comment body split into lines; each is scanned for the disallowed JSDoc-style
+         curly-braced type annotation that follows a tag.
          */
         const lines = comment.value
           .split('\n',);
@@ -206,7 +206,7 @@ export const noTypes: CreateOnceRule = {
           index,
         ): void {
           /**
-           * Line stripped of indent and leading `*` so the scan matches at the start of the content.
+           Line stripped of indent and leading `*` so the scan matches at the start of the content.
            */
           const trimmed = stripCommentLineMarker(line.trimStart(),)
             .trimStart();

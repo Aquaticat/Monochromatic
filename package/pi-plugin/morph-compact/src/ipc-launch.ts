@@ -1,11 +1,11 @@
 /**
- * Tiered IPC launch logic for morph-compact.
- *
- * When compressed context exceeds the argv length limit, falls back
- * through IPC tiers: temp file → Unix domain socket → TCP localhost.
- * Also handles reading from the active IPC channel during session start.
- *
- * @module
+ Tiered IPC launch logic for morph-compact.
+ 
+ When compressed context exceeds the argv length limit, falls back
+ through IPC tiers: temp file → Unix domain socket → TCP localhost.
+ Also handles reading from the active IPC channel during session start.
+ 
+ @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
@@ -33,7 +33,7 @@ import { sendVisibleCompactContext, } from './visible-context.ts';
 //region Module logger
 
 /**
- * Module logger tagged for morph-compact tiered IPC launch.
+ Module logger tagged for morph-compact tiered IPC launch.
  */
 const l = tagged({ tag: 'morph-compact:ipc-launch', },);
 
@@ -42,11 +42,11 @@ const l = tagged({ tag: 'morph-compact:ipc-launch', },);
 //region Constants
 
 /**
- * Maximum byte length for passing compressed text as a CLI argument.
- *
- * Conservative threshold below Linux `MAX_ARG_STRLEN` (128KB).
- * Text exceeding this limit is transferred via file or socket IPC
- * instead of argv to avoid `E2BIG` errors.
+ Maximum byte length for passing compressed text as a CLI argument.
+ 
+ Conservative threshold below Linux `MAX_ARG_STRLEN` (128KB).
+ Text exceeding this limit is transferred via file or socket IPC
+ instead of argv to avoid `E2BIG` errors.
  */
 export const MAX_COMPRESSED_ARG_BYTES = 100_000;
 
@@ -55,7 +55,7 @@ export const MAX_COMPRESSED_ARG_BYTES = 100_000;
 //region Types
 
 /**
- * Minimal pi API surface used by session-start context injection.
+ Minimal pi API surface used by session-start context injection.
  */
 type CompactContextInjectionApi = Pick<
   ExtensionAPI,
@@ -67,26 +67,26 @@ type CompactContextInjectionApi = Pick<
 //region Launch with large context
 
 /**
- * Launch a new pi session with compressed context that exceeds
- * the argv length limit.
- *
- * Tries IPC tiers in order: temp file → Unix domain socket → TCP.
- * Each tier writes the text to a channel the new session reads
- * during `session_start` via the corresponding extension flag.
- *
- * @param cwd - working directory for the new terminal
- *
- * @param compressedText - the compressed context string
- *
- * @throws when all IPC tiers fail
- *
- * @example
- * ```typescript
- * await launchWithLargeContext({
- *   cwd: '/home/user/project',
- *   compressedText,
- * });
- * ```
+ Launch a new pi session with compressed context that exceeds
+ the argv length limit.
+ 
+ Tries IPC tiers in order: temp file → Unix domain socket → TCP.
+ Each tier writes the text to a channel the new session reads
+ during `session_start` via the corresponding extension flag.
+ 
+ @param cwd - working directory for the new terminal
+ 
+ @param compressedText - the compressed context string
+ 
+ @throws when all IPC tiers fail
+ 
+ @example
+ ```typescript
+ await launchWithLargeContext({
+   cwd: '/home/user/project',
+   compressedText,
+ });
+ ```
  */
 export async function launchWithLargeContext({
   cwd,
@@ -98,7 +98,7 @@ export async function launchWithLargeContext({
   // Tier 2: temp file
   try {
     /**
-     * Path returned by the file tier; surfaced as a CLI flag to the child.
+     Path returned by the file tier; surfaced as a CLI flag to the child.
      */
     const { filePath, } = await writeCompactFile(compressedText,);
     await launchTerminal({
@@ -124,7 +124,7 @@ export async function launchWithLargeContext({
   // Tier 3: Unix domain socket
   try {
     /**
-     * Socket path returned by the unix-socket tier; surfaced as a CLI flag.
+     Socket path returned by the unix-socket tier; surfaced as a CLI flag.
      */
     const { socketPath, } = createOneShotSocketServer(compressedText,);
     await launchTerminal({
@@ -149,7 +149,7 @@ export async function launchWithLargeContext({
 
   // Tier 4: TCP localhost (zero filesystem dependency)
   /**
-   * Final-tier listen address forwarded to the child via CLI flag.
+   Final-tier listen address forwarded to the child via CLI flag.
    */
   const { address, } = await createOneShotTcpServer(compressedText,);
   await launchTerminal({
@@ -167,18 +167,18 @@ export async function launchWithLargeContext({
 //region Session start injection
 
 /**
- * Handle the `session_start` event for IPC context injection.
- *
- * Reads compressed context from whichever IPC channel is active
- * (checked in priority order: file → Unix socket → TCP) and
- * injects it as a user message.
- *
- * @param extensionApi - the pi extension API for flag access and messaging
- *
- * @example
- * ```typescript
- * await handleSessionStartInject(pi);
- * ```
+ Handle the `session_start` event for IPC context injection.
+ 
+ Reads compressed context from whichever IPC channel is active
+ (checked in priority order: file → Unix socket → TCP) and
+ injects it as a user message.
+ 
+ @param extensionApi - the pi extension API for flag access and messaging
+ 
+ @example
+ ```typescript
+ await handleSessionStartInject(pi);
+ ```
  */
 export async function handleSessionStartInject(
   extensionApi: CompactContextInjectionApi,
@@ -187,16 +187,16 @@ export async function handleSessionStartInject(
 }
 
 /**
- * Add a visible transcript marker, then deliver compacted context to the agent.
- *
- * @param api - pi extension API used for visible and agent-facing messages
- *
- * @param text - Morph-compressed context payload
- *
- * @example
- * ```typescript
- * deliverCompactContext({ api, text: compressedText });
- * ```
+ Add a visible transcript marker, then deliver compacted context to the agent.
+ 
+ @param api - pi extension API used for visible and agent-facing messages
+ 
+ @param text - Morph-compressed context payload
+ 
+ @example
+ ```typescript
+ deliverCompactContext({ api, text: compressedText });
+ ```
  */
 function deliverCompactContext(
   {
@@ -215,29 +215,29 @@ function deliverCompactContext(
 }
 
 /**
- * Read compressed context from the active IPC channel and inject
- * it as a user message.
- *
- * Checks extension flags in priority order:
- * 1. `--morph-compact-file` → read file, delete it, send message
- * 2. `--morph-compact-socket` → connect to socket, read, unlink, send message
- * 3. `--morph-compact-tcp` → connect to TCP, read, send message
- *
- * Does nothing if no IPC flag is set (normal session start).
- *
- * @param api - the pi extension API
+ Read compressed context from the active IPC channel and inject
+ it as a user message.
+ 
+ Checks extension flags in priority order:
+ 1. `--morph-compact-file` → read file, delete it, send message
+ 2. `--morph-compact-socket` → connect to socket, read, unlink, send message
+ 3. `--morph-compact-tcp` → connect to TCP, read, send message
+ 
+ Does nothing if no IPC flag is set (normal session start).
+ 
+ @param api - the pi extension API
  */
 async function injectCompactContext(
   api: CompactContextInjectionApi,
 ): Promise<void> {
   // Tier 2: temp file
   /**
-   * File path passed from launcher; non-string means file tier inactive.
+   File path passed from launcher; non-string means file tier inactive.
    */
   const filePath = api.getFlag('morph-compact-file',);
   if ((typeof filePath) === 'string') {
     /**
-     * Decoded compact payload read off disk for injection.
+     Decoded compact payload read off disk for injection.
      */
     const text = await readCompactFile(filePath,);
     deliverCompactContext({
@@ -267,12 +267,12 @@ async function injectCompactContext(
 
   // Tier 3: Unix domain socket
   /**
-   * Socket path passed from launcher; non-string means socket tier inactive.
+   Socket path passed from launcher; non-string means socket tier inactive.
    */
   const socketPath = api.getFlag('morph-compact-socket',);
   if ((typeof socketPath) === 'string') {
     /**
-     * Payload read from the one-shot socket server before injection.
+     Payload read from the one-shot socket server before injection.
      */
     const text = await readFromUnixSocket(socketPath,);
     deliverCompactContext({
@@ -296,12 +296,12 @@ async function injectCompactContext(
 
   // Tier 4: TCP localhost
   /**
-   * TCP address passed from launcher; non-string means TCP tier inactive.
+   TCP address passed from launcher; non-string means TCP tier inactive.
    */
   const tcpAddress = api.getFlag('morph-compact-tcp',);
   if ((typeof tcpAddress) === 'string') {
     /**
-     * Payload read from the one-shot TCP server before injection.
+     Payload read from the one-shot TCP server before injection.
      */
     const text = await readFromTcpSocket(tcpAddress,);
     deliverCompactContext({

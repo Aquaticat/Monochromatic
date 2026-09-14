@@ -1,7 +1,7 @@
 /**
- * {@link tomlGetCommentsBefore}: attached comment block immediately before a path.
- *
- * @module
+ {@link tomlGetCommentsBefore}: attached comment block immediately before a path.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -18,19 +18,19 @@ import type {
 } from './types.ts';
 
 /**
- * The contiguous block of comments immediately preceding the entry at `path`,
- * with no blank line between any pair. A comment separated by a blank line is
- * not attached; a created (synthetic) entry has no source comments.
- *
- * @returns Computed result (`readonly TomlComment[]`).
- *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist.
- *
- * @example
- * ```toml
- * # attached
- * key = 1
- * ```
+ The contiguous block of comments immediately preceding the entry at `path`,
+ with no blank line between any pair. A comment separated by a blank line is
+ not attached; a created (synthetic) entry has no source comments.
+ 
+ @returns Computed result (`readonly TomlComment[]`).
+ 
+ @throws {@link TomlPathNotFoundError} when `path` does not exist.
+ 
+ @example
+ ```toml
+ # attached
+ key = 1
+ ```
  */
 export function tomlGetCommentsBefore(
   {
@@ -42,7 +42,7 @@ export function tomlGetCommentsBefore(
   },
 ): readonly TomlComment[] {
   /**
-   * Entry block at the path; its clean start offset anchors the comment scan.
+   Entry block at the path; its clean start offset anchors the comment scan.
    */
   const located = locateBlock({
     blocks: edit.blocks,
@@ -54,7 +54,7 @@ export function tomlGetCommentsBefore(
     );
   }
   /**
-   * Clean start offset of the entry, or `-1` when the entry is synthetic.
+   Clean start offset of the entry, or `-1` when the entry is synthetic.
    */
   const start = startOf({ located, },);
   if (start === (-1))
@@ -67,19 +67,19 @@ export function tomlGetCommentsBefore(
 }
 
 /**
- * Clean start offset for a located entry, or `-1` when synthetic.
- *
- * Char offsets are non-negative, so `-1` unambiguously signals "no clean source
- * position" without a nullish union.
- *
- * @param located - Located block whose clean start offset anchors the scan.
- *
- * @returns Clean start offset, or `-1` when synthetic.
- *
- * @example
- * ```ts
- * startOf({ located: locateBlock({ blocks, path, },), },);
- * ```
+ Clean start offset for a located entry, or `-1` when synthetic.
+ 
+ Char offsets are non-negative, so `-1` unambiguously signals "no clean source
+ position" without a nullish union.
+ 
+ @param located - Located block whose clean start offset anchors the scan.
+ 
+ @returns Clean start offset, or `-1` when synthetic.
+ 
+ @example
+ ```ts
+ startOf({ located: locateBlock({ blocks, path, },), },);
+ ```
  */
 function startOf(
   { located, }: { readonly located: ReturnType<typeof locateBlock>; },
@@ -103,7 +103,7 @@ function startOf(
         .headerOrigin
         .range[0] : -1;
   /**
-   * First array-of-tables instance is where a preceding block attaches.
+   First array-of-tables instance is where a preceding block attaches.
    */
   const first = nonNullishOrThrow(located.tables[0],);
   return first.headerOrigin

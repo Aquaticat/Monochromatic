@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden">
+  <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid #26262E;opacity:.45">
+    <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:1px solid #6F6A78;border-radius:20px;font-size:14px">No folder</div>
+  </div>
+  <div style="flex:1 1 auto;min-height:0;display:grid;place-items:center;padding:24px">
+    <div style="max-width:460px;display:flex;flex-direction:column;gap:22px">
+      <div>
+        <div style="font-size:22px;font-weight:500">Nothing is open</div>
+        <div style="font-size:14px;color:#CAC4D0;margin-top:8px;text-wrap:pretty">Point the player at a directory of music. Its subfolders become the folder list, and it's remembered next time you launch.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="min-height:52px;box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:0 22px;border-radius:26px;background:#D0BCFF;color:#381E72;font-size:15px;font-weight:500"><svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:#381E72"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open a folder</div>
+        <div style="min-height:52px;box-sizing:border-box;display:flex;align-items:center;padding:0 20px;border:1px solid #6F6A78;border-radius:26px;font-size:14.5px;font-weight:500">Settings</div>
+      </div>
+      <div style="height:1px;background:#26262E"></div>
+      <div style="display:flex;gap:14px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#D0BCFF;flex:0 0 auto;margin-top:2px"><path d="M12 2 2 20h20zm0 6 5.5 10h-11z"></path></svg>
+        <div>
+          <div style="font-size:14.5px;font-weight:500">The first run analyses every file</div>
+          <div style="font-size:13.5px;color:#CAC4D0;margin-top:6px;text-wrap:pretty">Playback is normalised by true peak, which has to be measured once per file. For a large library that's about an hour at high CPU, and you'll hear the fan. It happens once, you can pause it any time, and playback works throughout.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:10px 16px;border-top:1px solid #26262E;color:#8E8894;font-size:12px;font-family:ui-monospace,monospace">EMPTY-A — the scan is explained here, before it ever runs, where there's room and nothing to interrupt.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:860,&quot;height&quot;:600}}"></script>
+</body>
+</html>

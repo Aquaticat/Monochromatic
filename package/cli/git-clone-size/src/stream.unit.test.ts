@@ -1,8 +1,8 @@
 /**
- * Tests the progressive generator on the local exact path: a coarse first
- * snapshot, then a final very-high-confidence snapshot.
- *
- * @module
+ Tests the progressive generator on the local exact path: a coarse first
+ snapshot, then a final very-high-confidence snapshot.
+ 
+ @module
  */
 
 import { execFileSync, } from 'node:child_process';
@@ -31,7 +31,7 @@ import {
 import type { EstimateSnapshot, } from './types.ts';
 
 /**
- * Default options for the local path.
+ Default options for the local path.
  */
 const OPTIONS: EstimateOptions = {
   defaultBranchOnly: false,
@@ -41,16 +41,16 @@ const OPTIONS: EstimateOptions = {
 };
 
 /**
- * A scratch directory that removes itself at the end of a `using` scope.
+ A scratch directory that removes itself at the end of a `using` scope.
  */
 type DisposableDir = { readonly path: string; readonly [Symbol.dispose]: () => void; };
 
 /**
- * Creates a self-cleaning throwaway repo with explicit-pathspec commits.
- *
- * @param commits - number of commits
- *
- * @returns disposable repository handle
+ Creates a self-cleaning throwaway repo with explicit-pathspec commits.
+ 
+ @param commits - number of commits
+ 
+ @returns disposable repository handle
  */
 function makeRepo(commits: number): DisposableDir {
   const path = mkdtempSync(join(tmpdir(), 'gcs-stream-'));
@@ -72,9 +72,9 @@ function makeRepo(commits: number): DisposableDir {
 }
 
 /**
- * Creates a self-cleaning throwaway repo with an unborn HEAD (no commits).
- *
- * @returns disposable repository handle
+ Creates a self-cleaning throwaway repo with an unborn HEAD (no commits).
+ 
+ @returns disposable repository handle
  */
 function makeUnbornRepo(): DisposableDir {
   const path = mkdtempSync(join(tmpdir(), 'gcs-stream-unborn-'));

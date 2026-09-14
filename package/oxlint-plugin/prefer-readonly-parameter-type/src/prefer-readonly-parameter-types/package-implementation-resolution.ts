@@ -1,7 +1,7 @@
 /**
- * Package export to shipped implementation resolution.
- *
- * @module
+ Package export to shipped implementation resolution.
+ 
+ @module
  */
 
 import { statSync, } from 'node:fs';
@@ -17,14 +17,14 @@ import type {
 import { implementationAnalysisEvidence, } from './package-source-map-resolution.ts';
 
 /**
- * Sentinel when package export has no inspectable implementation.
+ Sentinel when package export has no inspectable implementation.
  */
 export const PACKAGE_IMPLEMENTATION_UNAVAILABLE: unique symbol = Symbol(
   'package export implementation could not be resolved',
 );
 
 /**
- * Shipped package implementation selected for one export subpath.
+ Shipped package implementation selected for one export subpath.
  */
 export type PackageImplementation = {
   readonly packageRoot: string;
@@ -37,7 +37,7 @@ export type PackageImplementation = {
 };
 
 /**
- * Runtime export conditions accepted by Node ESM analysis.
+ Runtime export conditions accepted by Node ESM analysis.
  */
 const RUNTIME_CONDITIONS: ReadonlySet<string> = new Set([
   'import',
@@ -46,7 +46,7 @@ const RUNTIME_CONDITIONS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Supported inspectable implementation suffixes.
+ Supported inspectable implementation suffixes.
  */
 const IMPLEMENTATION_SUFFIXES = [
   '.js',
@@ -60,18 +60,18 @@ const IMPLEMENTATION_SUFFIXES = [
 ] as const;
 
 /**
- * Supported implementation suffix membership.
+ Supported implementation suffix membership.
  */
 const IMPLEMENTATION_SUFFIX_SET: ReadonlySet<string> = new Set(
   IMPLEMENTATION_SUFFIXES,
 );
 
 /**
- * Tests whether unknown manifest field is property-bearing record.
- *
- * @param value - Manifest field.
- *
- * @returns whether string-keyed values can be inspected.
+ Tests whether unknown manifest field is property-bearing record.
+ 
+ @param value - Manifest field.
+ 
+ @returns whether string-keyed values can be inspected.
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return ((typeof value) === 'object')
@@ -80,13 +80,13 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
 }
 
 /**
- * Selects runtime path from package export target.
- *
- * @param target - Export target string,
- * condition map,
- * or fallback array.
- *
- * @returns runtime-relative target or unavailable sentinel.
+ Selects runtime path from package export target.
+ 
+ @param target - Export target string,
+ condition map,
+ or fallback array.
+ 
+ @returns runtime-relative target or unavailable sentinel.
  */
 function runtimeTarget(
   target: unknown,
@@ -96,7 +96,7 @@ function runtimeTarget(
   if (Array.isArray(target,)) {
     for (const candidate of target) {
       /**
-       * First inspectable target selected in authored fallback order.
+       First inspectable target selected in authored fallback order.
        */
       const selected = runtimeTarget(candidate,);
       if (selected !== PACKAGE_IMPLEMENTATION_UNAVAILABLE)
@@ -110,7 +110,7 @@ function runtimeTarget(
     if (!RUNTIME_CONDITIONS.has(condition,))
       continue;
     /**
-     * Runtime target selected recursively under authored supported condition.
+     Runtime target selected recursively under authored supported condition.
      */
     const selected = runtimeTarget(nestedTarget,);
     if (selected !== PACKAGE_IMPLEMENTATION_UNAVAILABLE)
@@ -120,11 +120,11 @@ function runtimeTarget(
 }
 
 /**
- * Selects declaration target from package export conditions.
- *
- * @param target - Export target condition map or fallback array.
- *
- * @returns declaration-relative target or unavailable sentinel.
+ Selects declaration target from package export conditions.
+ 
+ @param target - Export target condition map or fallback array.
+ 
+ @returns declaration-relative target or unavailable sentinel.
  */
 function declarationTarget(
   target: unknown,
@@ -132,7 +132,7 @@ function declarationTarget(
   if (Array.isArray(target,)) {
     for (const candidate of target) {
       /**
-       * First declaration target in authored fallback order.
+       First declaration target in authored fallback order.
        */
       const selected = declarationTarget(candidate,);
       if (selected !== PACKAGE_IMPLEMENTATION_UNAVAILABLE)
@@ -146,13 +146,13 @@ function declarationTarget(
 }
 
 /**
- * Computes package export key from exact module specifier.
- *
- * @param packageName - Exact package manifest name.
- *
- * @param moduleSpecifier - Authored import module specifier.
- *
- * @returns package export key or unavailable sentinel.
+ Computes package export key from exact module specifier.
+ 
+ @param packageName - Exact package manifest name.
+ 
+ @param moduleSpecifier - Authored import module specifier.
+ 
+ @returns package export key or unavailable sentinel.
  */
 function packageExportKey({
   packageName,
@@ -164,7 +164,7 @@ function packageExportKey({
   if (moduleSpecifier === packageName)
     return '.';
   /**
-   * Prefix for package subpath imports.
+   Prefix for package subpath imports.
    */
   const prefix = `${packageName}/`;
   return moduleSpecifier.startsWith(prefix,)
@@ -173,13 +173,13 @@ function packageExportKey({
 }
 
 /**
- * Resolves runtime target from package exports or root legacy fields.
- *
- * @param identity - Exact package manifest identity.
- *
- * @param exportKey - Requested package export key.
- *
- * @returns package-relative runtime target or unavailable sentinel.
+ Resolves runtime target from package exports or root legacy fields.
+ 
+ @param identity - Exact package manifest identity.
+ 
+ @param exportKey - Requested package export key.
+ 
+ @returns package-relative runtime target or unavailable sentinel.
  */
 function manifestRuntimeTarget({
   identity,
@@ -189,7 +189,7 @@ function manifestRuntimeTarget({
   readonly exportKey: string;
 }): string | typeof PACKAGE_IMPLEMENTATION_UNAVAILABLE {
   /**
-   * Authored package exports field.
+   Authored package exports field.
    */
   const exportsField = identity.manifest
     .exports;
@@ -198,7 +198,7 @@ function manifestRuntimeTarget({
       return runtimeTarget(exportsField,);
     if (isRecord(exportsField,)) {
       /**
-       * Whether exports object uses explicit subpath keys.
+       Whether exports object uses explicit subpath keys.
        */
       const hasSubpathKeys = Object.keys(exportsField,)
         .some(function subpathKey(key,): boolean {
@@ -214,7 +214,7 @@ function manifestRuntimeTarget({
   if (exportKey !== '.')
     return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
   /**
-   * Legacy ESM entry before CommonJS main fallback.
+   Legacy ESM entry before CommonJS main fallback.
    */
   const legacyEntry = (typeof identity.manifest
     .module) === 'string'
@@ -236,13 +236,13 @@ function manifestRuntimeTarget({
 }
 
 /**
- * Resolves target file with explicit supported suffix fallback.
- *
- * @param packageRoot - Exact package root.
- *
- * @param relativeTarget - Manifest runtime target.
- *
- * @returns existing implementation path or unavailable sentinel.
+ Resolves target file with explicit supported suffix fallback.
+ 
+ @param packageRoot - Exact package root.
+ 
+ @param relativeTarget - Manifest runtime target.
+ 
+ @returns existing implementation path or unavailable sentinel.
  */
 function implementationPath({
   packageRoot,
@@ -252,7 +252,7 @@ function implementationPath({
   readonly relativeTarget: string;
 }): string | typeof PACKAGE_IMPLEMENTATION_UNAVAILABLE {
   /**
-   * Absolute target normalized from package root.
+   Absolute target normalized from package root.
    */
   const target = resolve(
     packageRoot,
@@ -261,7 +261,7 @@ function implementationPath({
   if ((!target.startsWith(`${packageRoot}/`,)) && (target !== packageRoot))
     return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
   /**
-   * Exact target followed by supported extension and directory-index fallbacks.
+   Exact target followed by supported extension and directory-index fallbacks.
    */
   const candidates = [
     target,
@@ -285,30 +285,30 @@ function implementationPath({
 }
 
 /**
- * Tests whether one candidate path is a readable file rather than a directory.
- *
- * Existence alone is not enough, and the reason is a directory whose own name ends in a supported suffix.
- * A package named `foo.js` would have its root accepted as an implementation, because the root is the
- * first candidate and `extname` reads `.js` from the directory name. It then fails later, since no source
- * file loads for a directory, so the cost is a blocked resolution rather than a wrong answer. Asking for a
- * file states the requirement where it belongs instead.
- *
- * Measured on this workspace: of the packages that declare no runtime entry, exactly one has a dotted
- * name, `lodash.truncate`, and `.truncate` is not a supported suffix, so nothing here reaches it today.
- *
- * @param candidate - Path a manifest target or index fallback produced.
- *
- * @returns whether it names an existing file.
- *
- * @example
- * ```ts
- * candidateIsFile('/repo/node_modules/pkg/index.js');
- * ```
+ Tests whether one candidate path is a readable file rather than a directory.
+ 
+ Existence alone is not enough, and the reason is a directory whose own name ends in a supported suffix.
+ A package named `foo.js` would have its root accepted as an implementation, because the root is the
+ first candidate and `extname` reads `.js` from the directory name. It then fails later, since no source
+ file loads for a directory, so the cost is a blocked resolution rather than a wrong answer. Asking for a
+ file states the requirement where it belongs instead.
+ 
+ Measured on this workspace: of the packages that declare no runtime entry, exactly one has a dotted
+ name, `lodash.truncate`, and `.truncate` is not a supported suffix, so nothing here reaches it today.
+ 
+ @param candidate - Path a manifest target or index fallback produced.
+ 
+ @returns whether it names an existing file.
+ 
+ @example
+ ```ts
+ candidateIsFile('/repo/node_modules/pkg/index.js');
+ ```
  */
 function candidateIsFile(candidate: string,): boolean {
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor confirms shipped implementation before analysis. */
   /**
-   * Metadata for the candidate, absent when nothing exists at that path.
+   Metadata for the candidate, absent when nothing exists at that path.
    */
   const metadata = statSync(
     candidate,
@@ -320,18 +320,18 @@ function candidateIsFile(candidate: string,): boolean {
 }
 
 /**
- * Resolves declaration file to authored package module specifier.
- *
- * @param identity - Exact package manifest identity.
- *
- * @param declarationFileName - Selected declaration source path.
- *
- * @returns package module specifier or unavailable sentinel.
- *
- * @example
- * ```ts
- * packageModuleSpecifierForDeclaration({ identity, declarationFileName });
- * ```
+ Resolves declaration file to authored package module specifier.
+ 
+ @param identity - Exact package manifest identity.
+ 
+ @param declarationFileName - Selected declaration source path.
+ 
+ @returns package module specifier or unavailable sentinel.
+ 
+ @example
+ ```ts
+ packageModuleSpecifierForDeclaration({ identity, declarationFileName });
+ ```
  */
 export function packageModuleSpecifierForDeclaration({
   identity,
@@ -341,11 +341,11 @@ export function packageModuleSpecifierForDeclaration({
   readonly declarationFileName: string;
 }): string | typeof PACKAGE_IMPLEMENTATION_UNAVAILABLE {
   /**
-   * Declaration path normalized for exact target comparison.
+   Declaration path normalized for exact target comparison.
    */
   const declarationPath = resolve(declarationFileName,);
   /**
-   * Root declaration target supplied separately from conditional runtime exports.
+   Root declaration target supplied separately from conditional runtime exports.
    */
   const rootDeclarationTarget = (typeof identity.manifest
     .types) === 'string'
@@ -360,13 +360,13 @@ export function packageModuleSpecifierForDeclaration({
     ) === declarationPath))
     return identity.name;
   /**
-   * Package exports field containing declaration conditions.
+   Package exports field containing declaration conditions.
    */
   const exportsField = identity.manifest
     .exports;
   if (isRecord(exportsField,)) {
     /**
-     * Explicit subpath entries or root condition map.
+     Explicit subpath entries or root condition map.
      */
     const entries: readonly (readonly [
       string,
@@ -382,7 +382,7 @@ export function packageModuleSpecifierForDeclaration({
       ],];
     for (const [exportKey, target,] of entries) {
       /**
-       * Declaration target selected from current export entry.
+       Declaration target selected from current export entry.
        */
       const relativeTarget = declarationTarget(target,);
       if ((relativeTarget !== PACKAGE_IMPLEMENTATION_UNAVAILABLE)
@@ -416,18 +416,18 @@ export function packageModuleSpecifierForDeclaration({
 }
 
 /**
- * Resolves exact module export to shipped inspectable implementation.
- *
- * @param identity - Exact package identity from declaration provenance.
- *
- * @param moduleSpecifier - Authored package import specifier.
- *
- * @returns shipped implementation identity or unavailable sentinel.
- *
- * @example
- * ```ts
- * resolvePackageImplementation({ identity, moduleSpecifier: 'pkg/subpath' });
- * ```
+ Resolves exact module export to shipped inspectable implementation.
+ 
+ @param identity - Exact package identity from declaration provenance.
+ 
+ @param moduleSpecifier - Authored package import specifier.
+ 
+ @returns shipped implementation identity or unavailable sentinel.
+ 
+ @example
+ ```ts
+ resolvePackageImplementation({ identity, moduleSpecifier: 'pkg/subpath' });
+ ```
  */
 export function resolvePackageImplementation({
   identity,
@@ -437,7 +437,7 @@ export function resolvePackageImplementation({
   readonly moduleSpecifier: string;
 }): PackageImplementation | typeof PACKAGE_IMPLEMENTATION_UNAVAILABLE {
   /**
-   * Requested package export key.
+   Requested package export key.
    */
   const exportKey = packageExportKey({
     packageName: identity.name,
@@ -446,7 +446,7 @@ export function resolvePackageImplementation({
   if (exportKey === PACKAGE_IMPLEMENTATION_UNAVAILABLE)
     return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
   /**
-   * Runtime target selected from exact package export.
+   Runtime target selected from exact package export.
    */
   const relativeTarget = manifestRuntimeTarget({
     identity,
@@ -455,7 +455,7 @@ export function resolvePackageImplementation({
   if (relativeTarget === PACKAGE_IMPLEMENTATION_UNAVAILABLE)
     return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
   /**
-   * Existing shipped implementation path.
+   Existing shipped implementation path.
    */
   const path = implementationPath({
     packageRoot: identity.root,
@@ -464,7 +464,7 @@ export function resolvePackageImplementation({
   if (path === PACKAGE_IMPLEMENTATION_UNAVAILABLE)
     return PACKAGE_IMPLEMENTATION_UNAVAILABLE;
   /**
-   * Runtime and source-map evidence selecting analysis source.
+   Runtime and source-map evidence selecting analysis source.
    */
   const evidence = implementationAnalysisEvidence({
     packageRoot: identity.root,

@@ -1,7 +1,7 @@
 /**
- * Pi Search Fetch config schema and value normalization.
- *
- * @module
+ Pi Search Fetch config schema and value normalization.
+ 
+ @module
  */
 
 import { basename, } from 'node:path';
@@ -20,20 +20,20 @@ import type {
 } from './config-types.ts';
 
 /**
- * Validate parsed config-file shape.
- *
- * @param value - parsed JSON value
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns config-file shape
- *
- * @throws when value is not expected flat object
- *
- * @example
- * ```ts
- * validateConfigShape({ value: {}, configPath: '/tmp/pi-search-fetch.json' });
- * ```
+ Validate parsed config-file shape.
+ 
+ @param value - parsed JSON value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns config-file shape
+ 
+ @throws when value is not expected flat object
+ 
+ @example
+ ```ts
+ validateConfigShape({ value: {}, configPath: '/tmp/pi-search-fetch.json' });
+ ```
  */
 function validateConfigShape(
   {
@@ -45,7 +45,7 @@ function validateConfigShape(
   },
 ): ConfigFileShape {
   /**
-   * Local value for record.
+   Local value for record.
    */
   const record = configRecord({
     value,
@@ -58,7 +58,7 @@ function validateConfigShape(
   },);
 
   /**
-   * Local destructured value.
+   Local destructured value.
    */
   const {
     exaApiKey,
@@ -89,20 +89,20 @@ function validateConfigShape(
 }
 
 /**
- * Validate parsed legacy config-file shape.
- *
- * @param value - parsed JSON value
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns legacy config-file shape
- *
- * @throws when value is not expected flat object
- *
- * @example
- * ```ts
- * validateLegacyConfigShape({ value: {}, configPath: '/tmp/pi-linkup.json' });
- * ```
+ Validate parsed legacy config-file shape.
+ 
+ @param value - parsed JSON value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns legacy config-file shape
+ 
+ @throws when value is not expected flat object
+ 
+ @example
+ ```ts
+ validateLegacyConfigShape({ value: {}, configPath: '/tmp/pi-linkup.json' });
+ ```
  */
 function validateLegacyConfigShape(
   {
@@ -114,7 +114,7 @@ function validateLegacyConfigShape(
   },
 ): LegacyConfigFileShape {
   /**
-   * Local value for record.
+   Local value for record.
    */
   const record = configRecord({
     value,
@@ -127,7 +127,7 @@ function validateLegacyConfigShape(
   },);
 
   /**
-   * Local destructured value.
+   Local destructured value.
    */
   const {
     apiKey,
@@ -151,20 +151,20 @@ function validateLegacyConfigShape(
 }
 
 /**
- * Normalize blocklist from config and wrap failures with config context.
- *
- * @param entries - raw blocklist entries
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns normalized host suffix blocklist
- *
- * @throws when blocklist normalization rejects an entry
- *
- * @example
- * ```ts
- * normalizeConfigBlocklist({ entries: [], configPath: '/tmp/pi-search-fetch.json' });
- * ```
+ Normalize blocklist from config and wrap failures with config context.
+ 
+ @param entries - raw blocklist entries
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns normalized host suffix blocklist
+ 
+ @throws when blocklist normalization rejects an entry
+ 
+ @example
+ ```ts
+ normalizeConfigBlocklist({ entries: [], configPath: '/tmp/pi-search-fetch.json' });
+ ```
  */
 function normalizeConfigBlocklist(
   {
@@ -180,7 +180,7 @@ function normalizeConfigBlocklist(
   }
   catch (error: unknown) {
     /**
-     * Local value for detail.
+     Local value for detail.
      */
     const detail = caughtValueText(error,);
     throw new Error(
@@ -191,20 +191,20 @@ function normalizeConfigBlocklist(
 }
 
 /**
- * Resolve API key precedence.
- *
- * @param env - environment values
- *
- * @param envKey - environment key to check
- *
- * @param configApiKey - optional config-file API key
- *
- * @returns effective API key resolution
- *
- * @example
- * ```ts
- * resolveApiKey({ env: {}, envKey: 'EXA_API_KEY' });
- * ```
+ Resolve API key precedence.
+ 
+ @param env - environment values
+ 
+ @param envKey - environment key to check
+ 
+ @param configApiKey - optional config-file API key
+ 
+ @returns effective API key resolution
+ 
+ @example
+ ```ts
+ resolveApiKey({ env: {}, envKey: 'EXA_API_KEY' });
+ ```
  */
 function resolveApiKey(
   {
@@ -218,7 +218,7 @@ function resolveApiKey(
   },
 ): ApiKeyResolution {
   /**
-   * Local value for envApiKey.
+   Local value for envApiKey.
    */
   const envApiKey = env[envKey]
     ?.trim();
@@ -229,7 +229,7 @@ function resolveApiKey(
     };
 
   /**
-   * Local value for fileApiKey.
+   Local value for fileApiKey.
    */
   const fileApiKey = configApiKey?.trim();
   if ((fileApiKey === undefined) || (fileApiKey === ''))
@@ -241,13 +241,13 @@ function resolveApiKey(
 }
 
 /**
- * Return parsed config root as record or throw schema error.
- *
- * @param value - parsed JSON value
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns config root record
+ Return parsed config root as record or throw schema error.
+ 
+ @param value - parsed JSON value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns config root record
  */
 function configRecord(
   {
@@ -267,13 +267,13 @@ function configRecord(
 }
 
 /**
- * Reject unsupported config keys.
- *
- * @param value - config root record
- *
- * @param configPath - config path used in diagnostics
- *
- * @param keySet - supported key lookup
+ Reject unsupported config keys.
+ 
+ @param value - config root record
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @param keySet - supported key lookup
  */
 function rejectExtraKeys(
   {
@@ -287,7 +287,7 @@ function rejectExtraKeys(
   },
 ): void {
   /**
-   * Local value for extraKeys.
+   Local value for extraKeys.
    */
   const extraKeys = Object
     .keys(value,)
@@ -302,13 +302,13 @@ function rejectExtraKeys(
 }
 
 /**
- * Require optional value to be string when present.
- *
- * @param value - candidate value
- *
- * @param configPath - config path used in diagnostics
- *
- * @param key - config key name
+ Require optional value to be string when present.
+ 
+ @param value - candidate value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @param key - config key name
  */
 function rejectOptionalNonString(
   {
@@ -329,13 +329,13 @@ function rejectOptionalNonString(
 }
 
 /**
- * Require optional value to be string array when present.
- *
- * @param value - candidate value
- *
- * @param configPath - config path used in diagnostics
- *
- * @param key - config key name
+ Require optional value to be string array when present.
+ 
+ @param value - candidate value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @param key - config key name
  */
 function rejectOptionalNonStringArray(
   {
@@ -356,13 +356,13 @@ function rejectOptionalNonStringArray(
 }
 
 /**
- * Build a schema-validation error with config context.
- *
- * @param configPath - config path used in diagnostics
- *
- * @param reason - validation failure summary
- *
- * @returns schema-validation error
+ Build a schema-validation error with config context.
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @param reason - validation failure summary
+ 
+ @returns schema-validation error
  */
 function schemaError(
   {
@@ -377,11 +377,11 @@ function schemaError(
 }
 
 /**
- * Return whether value is a non-null object record.
- *
- * @param value - unknown value
- *
- * @returns whether value can be read by string keys
+ Return whether value is a non-null object record.
+ 
+ @param value - unknown value
+ 
+ @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)
@@ -390,11 +390,11 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Return whether value is an array of strings.
- *
- * @param value - unknown value
- *
- * @returns whether value is a readonly string array
+ Return whether value is an array of strings.
+ 
+ @param value - unknown value
+ 
+ @returns whether value is a readonly string array
  */
 function isStringArray(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)

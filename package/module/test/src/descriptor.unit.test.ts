@@ -1,7 +1,7 @@
 /**
- * Tests for the lazy {@link TestDescriptor} primitive.
- *
- * @module
+ Tests for the lazy {@link TestDescriptor} primitive.
+ 
+ @module
  */
 
 import {

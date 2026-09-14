@@ -1,7 +1,7 @@
 /**
- * Human-readable diagnostics for unresolved caller-observable effects.
- *
- * @module
+ Human-readable diagnostics for unresolved caller-observable effects.
+ 
+ @module
  */
 
 import type { Context, } from '@oxlint/plugins';
@@ -19,24 +19,24 @@ import {
 } from './input-diagnostic-description.ts';
 
 /**
- * Sorted uncertainty provenance and display text for one parameter.
- *
- * `facts` carries only the causes this report can address, which are unresolved calls.
- * A store is recorded as opacity too, because an escaped reference is exactly a value the
- * analysis cannot prove stays unwritten, but it is not a call and no remedy this report
- * offers applies to it. Keeping it out of `facts` also keeps it out of
- * `everyBoundaryIsInputMethod`, which is an `every` over the same list and would otherwise
- * lose the method-specific message for any parameter that is both called and stored.
- *
- * @example
- * ```ts
- * const uncertainty: UncertaintyBoundaries = {
- *   facts: ['JSON.stringify'],
- *   names: 'JSON.stringify',
- *   reportable: true,
- *   retained: false,
- * };
- * ```
+ Sorted uncertainty provenance and display text for one parameter.
+ 
+ `facts` carries only the causes this report can address, which are unresolved calls.
+ A store is recorded as opacity too, because an escaped reference is exactly a value the
+ analysis cannot prove stays unwritten, but it is not a call and no remedy this report
+ offers applies to it. Keeping it out of `facts` also keeps it out of
+ `everyBoundaryIsInputMethod`, which is an `every` over the same list and would otherwise
+ lose the method-specific message for any parameter that is both called and stored.
+ 
+ @example
+ ```ts
+ const uncertainty: UncertaintyBoundaries = {
+   facts: ['JSON.stringify'],
+   names: 'JSON.stringify',
+   reportable: true,
+   retained: false,
+ };
+ ```
  */
 export type UncertaintyBoundaries = {
   readonly facts: readonly string[];
@@ -46,18 +46,18 @@ export type UncertaintyBoundaries = {
 };
 
 /**
- * Reads stable uncertainty provenance for one parameter.
- *
- * @param effectSummary - Callable effects carrying upstream provenance.
- *
- * @param parameterIndex - Parameter whose uncertainty is described.
- *
- * @returns sorted facts and human-readable fallback.
- *
- * @example
- * ```ts
- * uncertaintyBoundaries({ effectSummary, parameterIndex: 0 });
- * ```
+ Reads stable uncertainty provenance for one parameter.
+ 
+ @param effectSummary - Callable effects carrying upstream provenance.
+ 
+ @param parameterIndex - Parameter whose uncertainty is described.
+ 
+ @returns sorted facts and human-readable fallback.
+ 
+ @example
+ ```ts
+ uncertaintyBoundaries({ effectSummary, parameterIndex: 0 });
+ ```
  */
 export function uncertaintyBoundaries({
   effectSummary,
@@ -67,7 +67,7 @@ export function uncertaintyBoundaries({
   readonly parameterIndex: ParameterIndex;
 },): UncertaintyBoundaries {
   /**
-   * Sorted upstream boundary names retained by effect propagation, whatever caused them.
+   Sorted upstream boundary names retained by effect propagation, whatever caused them.
    */
   const boundaries = [
     ...effectSummary.opaqueProvenanceByParameter
@@ -75,7 +75,7 @@ export function uncertaintyBoundaries({
       ?? [],
   ].toSorted();
   /**
-   * Boundaries split into causes this report can address and stores it cannot.
+   Boundaries split into causes this report can address and stores it cannot.
    */
   const {
     callBoundaries,
@@ -97,25 +97,25 @@ export function uncertaintyBoundaries({
 }
 
 /**
- * Reads the member name out of one recorded boundary.
- *
- * A boundary is authored text plus a location, `slices.filter [path:line]`, so the member is
- * the last dotted segment of the expression half. Parsed rather than carried alongside
- * because the boundary set is what crosses into the summary and the cache, and widening that
- * to a structured record would change the serialized shape for one message's benefit.
- *
- * @param boundary - Recorded boundary text.
- *
- * @returns member name, empty when the boundary names no member.
- *
- * @example
- * ```ts
- * collectionMemberOf({ boundary: 'slices.filter [src/a.ts:7]' });
- * ```
+ Reads the member name out of one recorded boundary.
+ 
+ A boundary is authored text plus a location, `slices.filter [path:line]`, so the member is
+ the last dotted segment of the expression half. Parsed rather than carried alongside
+ because the boundary set is what crosses into the summary and the cache, and widening that
+ to a structured record would change the serialized shape for one message's benefit.
+ 
+ @param boundary - Recorded boundary text.
+ 
+ @returns member name, empty when the boundary names no member.
+ 
+ @example
+ ```ts
+ collectionMemberOf({ boundary: 'slices.filter [src/a.ts:7]' });
+ ```
  */
 function collectionMemberOf({ boundary, }: { readonly boundary: string; },): string {
   /**
-   * Expression half, before the location this boundary was recorded at.
+   Expression half, before the location this boundary was recorded at.
    */
   const [expression = '',] = boundary.split(' [',);
   return expression.split('.',)
@@ -124,26 +124,26 @@ function collectionMemberOf({ boundary, }: { readonly boundary: string; },): str
 }
 
 /**
- * Builds unresolved external effect report for one input.
- *
- * @param loc - Parameter source location.
- *
- * @param inputSubject - Plain-language input description.
- *
- * @param affectedNames - Bindings whose own slot carries the opacity, absent to name them all.
- *
- * @param targetIndexes - Authored targets mapped to parameter indexes.
- *
- * @param parameterIndex - Parameter carrying unresolved effects.
- *
- * @param uncertainty - Sorted upstream boundary description.
- *
- * @returns unresolved-effect report descriptor.
- *
- * @example
- * ```ts
- * opaqueEffectReport({ loc, inputSubject, targetIndexes, parameterIndex, uncertainty });
- * ```
+ Builds unresolved external effect report for one input.
+ 
+ @param loc - Parameter source location.
+ 
+ @param inputSubject - Plain-language input description.
+ 
+ @param affectedNames - Bindings whose own slot carries the opacity, absent to name them all.
+ 
+ @param targetIndexes - Authored targets mapped to parameter indexes.
+ 
+ @param parameterIndex - Parameter carrying unresolved effects.
+ 
+ @param uncertainty - Sorted upstream boundary description.
+ 
+ @returns unresolved-effect report descriptor.
+ 
+ @example
+ ```ts
+ opaqueEffectReport({ loc, inputSubject, targetIndexes, parameterIndex, uncertainty });
+ ```
  */
 export function opaqueEffectReport({
   loc,
@@ -170,7 +170,7 @@ export function opaqueEffectReport({
   readonly uncertainty: UncertaintyBoundaries;
 },): Parameters<Context['report']>[0] {
   /**
-   * Whether every unknown call is a method on one current input binding.
+   Whether every unknown call is a method on one current input binding.
    */
   const onlyInputMethods = everyBoundaryIsInputMethod({
     boundaries: uncertainty.facts,
@@ -183,23 +183,23 @@ export function opaqueEffectReport({
    * which ordinary array data is not. Issue #414 reports exactly that: the message names no
    * change that resolves the finding it is attached to. */
   /**
-   * How many calls this finding names as causes.
+   How many calls this finding names as causes.
    */
   const namedCallCount = uncertainty.facts
     .length;
   /**
-   * Whether every named call is a recognised collection member.
-   *
-   * Vacuously true for an empty list, which is why the count is asked separately: a finding
-   * with no named cause speaks through the general message rather than claiming to be about
-   * collections.
+   Whether every named call is a recognised collection member.
+   
+   Vacuously true for an empty list, which is why the count is asked separately: a finding
+   with no named cause speaks through the general message rather than claiming to be about
+   collections.
    */
   const everyCauseIsCollection = uncertainty.facts
     .every(function namesCollectionMember(boundary,): boolean {
       return COLLECTION_MEMBER_NAMES.has(collectionMemberOf({ boundary, },),);
     },);
   /**
-   * Whether this finding is entirely about collection members on one input.
+   Whether this finding is entirely about collection members on one input.
    */
   const onlyCollectionMembers = onlyInputMethods
     && (namedCallCount > 0)

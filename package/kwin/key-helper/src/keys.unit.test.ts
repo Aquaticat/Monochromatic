@@ -1,9 +1,9 @@
 /**
- * Tests for `keysToEvdev`, the combo-to-evdev translation that is the injection
- * security boundary: known combos map to the exact press/release token order,
- * and any unknown or hostile token throws instead of reaching ydotool.
- *
- * @module
+ Tests for `keysToEvdev`, the combo-to-evdev translation that is the injection
+ security boundary: known combos map to the exact press/release token order,
+ and any unknown or hostile token throws instead of reaching ydotool.
+ 
+ @module
  */
 
 import {

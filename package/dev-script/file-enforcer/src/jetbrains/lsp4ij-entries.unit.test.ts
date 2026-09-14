@@ -27,7 +27,7 @@ await describe({
           name: 'wraps config and schema as options under one settings entry, round-tripping escaped JSON',
           fn: async () => {
             /**
-             * Rendered settings entry with an embedded quoted JSON value.
+             Rendered settings entry with an embedded quoted JSON value.
              */
             const block = buildLanguageSettingsEntry({
               serverId: 'srv',
@@ -56,11 +56,11 @@ await describe({
           name: 'copies present options, skips absent ones, and declares id, name, and mappings',
           fn: async () => {
             /**
-             * Source server block holding one copyable option.
+             Source server block holding one copyable option.
              */
             const sourceBlock = '<option name="commandLine" value="harper-ls" />';
             /**
-             * Rendered user-defined entry derived from the source block.
+             Rendered user-defined entry derived from the source block.
              */
             const block = buildUserDefinedEntry({
               copyOptions: ['commandLine', 'missing',],

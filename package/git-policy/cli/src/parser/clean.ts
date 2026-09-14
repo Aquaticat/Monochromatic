@@ -19,13 +19,13 @@ import {
 //region Clean post-subcommand region parser
 
 /**
- * Declared option surface of the post-`clean` argv region.
- *
- * Declares every long option that influences destructiveness with all
- * accepted abbreviations, so git's unambiguous long-option prefix matching
- * can no longer bypass the wrapper guard. The `-e <pattern>` short form is
- * modelled with arity so the escape-hatch token cannot be misread when it
- * appears in the value position.
+ Declared option surface of the post-`clean` argv region.
+ 
+ Declares every long option that influences destructiveness with all
+ accepted abbreviations, so git's unambiguous long-option prefix matching
+ can no longer bypass the wrapper guard. The `-e <pattern>` short form is
+ modelled with arity so the escape-hatch token cannot be misread when it
+ appears in the value position.
  */
 const cleanRegionSpec: ArgvSpec = {
   flags: {
@@ -52,61 +52,61 @@ const cleanRegionSpec: ArgvSpec = {
 //region Clean region facts derived from optique parse
 
 /**
- * Facts about the post-`clean` argv region used by linked-worktree policy.
+ Facts about the post-`clean` argv region used by linked-worktree policy.
  */
 export type CleanRegion = {
   /**
-   * Number of `--dry-run`/`-n` occurrences (any accepted abbreviation).
+   Number of `--dry-run`/`-n` occurrences (any accepted abbreviation).
    */
   readonly dryRunCount: number;
   /**
-   * Number of `--no-dry-run` occurrences (any accepted abbreviation).
+   Number of `--no-dry-run` occurrences (any accepted abbreviation).
    */
   readonly noDryRunCount: number;
   /**
-   * Number of `--interactive`/`-i` occurrences (any accepted abbreviation).
+   Number of `--interactive`/`-i` occurrences (any accepted abbreviation).
    */
   readonly interactiveCount: number;
   /**
-   * Number of `--no-interactive` occurrences (any accepted abbreviation).
+   Number of `--no-interactive` occurrences (any accepted abbreviation).
    */
   readonly noInteractiveCount: number;
   /**
-   * Final dry-run state after applying Git's left-to-right ordering.
+   Final dry-run state after applying Git's left-to-right ordering.
    */
   readonly dryRunActive: boolean;
   /**
-   * Final interactive state after applying Git's left-to-right ordering.
+   Final interactive state after applying Git's left-to-right ordering.
    */
   readonly interactiveActive: boolean;
   /**
-   * True when wrapper-only escape hatch appears as a real flag.
+   True when wrapper-only escape hatch appears as a real flag.
    */
   readonly hasEscapeHatch: boolean;
   /**
-   * True when optique parse failed; rule should be conservative.
+   True when optique parse failed; rule should be conservative.
    */
   readonly parseFailed: boolean;
 };
 
 /**
- * Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only the option
- * region. Tokens past `--` are pathspecs and never carry wrapper-relevant
- * options.
- *
- * @param args - Post-subcommand argv tokens.
- *
- * @returns Argv slice strictly before `--`.
- *
- * @example
- * ```ts
- * optionRegion(['-n', '--', 'file']);
- * // => ['-n']
- * ```
+ Splits `args` at the {@link PATHSPEC_SEPARATOR} and returns only the option
+ region. Tokens past `--` are pathspecs and never carry wrapper-relevant
+ options.
+ 
+ @param args - Post-subcommand argv tokens.
+ 
+ @returns Argv slice strictly before `--`.
+ 
+ @example
+ ```ts
+ optionRegion(['-n', '--', 'file']);
+ // => ['-n']
+ ```
  */
 function optionRegion(args: readonly string[],): readonly string[] {
   /**
-   * Position of pathspec separator inside post-subcommand region.
+   Position of pathspec separator inside post-subcommand region.
    */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
@@ -120,37 +120,37 @@ function optionRegion(args: readonly string[],): readonly string[] {
 }
 
 /**
- * Parses the post-`clean` argv region into a structured fact set used by the
- * linked-worktree rule. Splits the region with {@link optionRegion}, then the
- * parser walks it with arity awareness, so the wrapper-only escape hatch
- * cannot be confused with the value of `-e <pattern>` and unambiguous
- * long-option abbreviations are recognised exactly as git would interpret
- * them; {@link scanCleanOptionOrder} resolves Git's last-option-wins ordering
- * for dry-run and interactive state.
- *
- * Parse failures leave `parseFailed: true` so the linked-worktree rule can
- * default to a conservative enforcement decision.
- *
- * @param postSubcommandArgs - Arguments strictly after `clean` subcommand.
- *
- * @returns Fact record consumed by clean-worktree policy.
- *
- * @example
- * ```ts
- * parseCleanRegion(['--excl', 'pat', '--dry-run']);
- * // dryRunCount = 1, excludeValues drained, hasEscapeHatch = false
- * ```
+ Parses the post-`clean` argv region into a structured fact set used by the
+ linked-worktree rule. Splits the region with {@link optionRegion}, then the
+ parser walks it with arity awareness, so the wrapper-only escape hatch
+ cannot be confused with the value of `-e <pattern>` and unambiguous
+ long-option abbreviations are recognised exactly as git would interpret
+ them; {@link scanCleanOptionOrder} resolves Git's last-option-wins ordering
+ for dry-run and interactive state.
+ 
+ Parse failures leave `parseFailed: true` so the linked-worktree rule can
+ default to a conservative enforcement decision.
+ 
+ @param postSubcommandArgs - Arguments strictly after `clean` subcommand.
+ 
+ @returns Fact record consumed by clean-worktree policy.
+ 
+ @example
+ ```ts
+ parseCleanRegion(['--excl', 'pat', '--dry-run']);
+ // dryRunCount = 1, excludeValues drained, hasEscapeHatch = false
+ ```
  */
 export function parseCleanRegion(
   postSubcommandArgs: readonly string[],
 ): CleanRegion {
   /**
-   * Argv slice handed to optique; pathspec region is excluded.
+   Argv slice handed to optique; pathspec region is excluded.
    */
   const region = optionRegion(postSubcommandArgs,);
 
   /**
-   * Parsed facts over the cleaned option region, or refusal.
+   Parsed facts over the cleaned option region, or refusal.
    */
   const parsed = tryParseArgv({
     args: region,
@@ -171,11 +171,11 @@ export function parseCleanRegion(
   }
 
   /**
-   * Occurrence count per declared flag group.
+   Occurrence count per declared flag group.
    */
   const { flagCounts, } = parsed;
   /**
-   * Ordered dry-run and interactive state matching Git's last-option-wins behavior.
+   Ordered dry-run and interactive state matching Git's last-option-wins behavior.
    */
   const orderedState = scanCleanOptionOrder(region,);
 
@@ -200,24 +200,24 @@ export function parseCleanRegion(
 //region Clean destructiveness policy
 
 /**
- * Determines whether a `git clean` invocation can change worktree files.
- *
- * Interactive clean can delete selected paths when the final interactive mode
- * is active, so that form always enforces the guard. Otherwise the invocation
- * is destructive unless the final dry-run state is active.
- *
- * Conservative under parse failure: treats unknown cases as destructive so
- * the linked-worktree guard runs.
- *
- * @param region - Parsed clean region.
- *
- * @returns `true` when invocation can change worktree filesystem state.
- *
- * @example
- * ```ts
- * cleanChangesWorktree(parseCleanRegion(['-ndX']));
- * // => false (dry-run prevents deletion)
- * ```
+ Determines whether a `git clean` invocation can change worktree files.
+ 
+ Interactive clean can delete selected paths when the final interactive mode
+ is active, so that form always enforces the guard. Otherwise the invocation
+ is destructive unless the final dry-run state is active.
+ 
+ Conservative under parse failure: treats unknown cases as destructive so
+ the linked-worktree guard runs.
+ 
+ @param region - Parsed clean region.
+ 
+ @returns `true` when invocation can change worktree filesystem state.
+ 
+ @example
+ ```ts
+ cleanChangesWorktree(parseCleanRegion(['-ndX']));
+ // => false (dry-run prevents deletion)
+ ```
  */
 export function cleanChangesWorktree(region: CleanRegion,): boolean {
   if (region.parseFailed)

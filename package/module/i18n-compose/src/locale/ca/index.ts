@@ -1,12 +1,12 @@
 /**
- * Catalan locale builder.
- *
- * Implements the Catalan-specific grammar strategy: gender/number article
- * agreement, finite verb forms indexed by person/number/tense, infinitive
- * complements via bare infinitive, question rendering via punctuation +
- * intonation (no inversion rewrite in v1).
- *
- * @module
+ Catalan locale builder.
+ 
+ Implements the Catalan-specific grammar strategy: gender/number article
+ agreement, finite verb forms indexed by person/number/tense, infinitive
+ complements via bare infinitive, question rendering via punctuation +
+ intonation (no inversion rewrite in v1).
+ 
+ @module
  */
 
 import type { LocaleSpec, } from '../../locale-spec.ts';
@@ -18,16 +18,16 @@ import { makeCatalanVerbPhraseRenderer, } from './render-vp.ts';
 import type { DefineCatalanLocaleInput, } from './types.ts';
 
 /**
- * Builds a Catalan {@link LocaleSpec} from a vocabulary bundle.
- *
- * @param input - labels, subjects, nouns, verbs keyed by the consumer's unions
- *
- * @returns spec ready to plug into {@link createI18n}
- *
- * @example
- * ```ts
- * const ca = defineCatalanLocale({ labels, subjects, nouns, verbs });
- * ```
+ Builds a Catalan {@link LocaleSpec} from a vocabulary bundle.
+ 
+ @param input - labels, subjects, nouns, verbs keyed by the consumer's unions
+ 
+ @returns spec ready to plug into {@link createI18n}
+ 
+ @example
+ ```ts
+ const ca = defineCatalanLocale({ labels, subjects, nouns, verbs });
+ ```
  */
 export function defineCatalanLocale<
   Label extends string,
@@ -38,18 +38,18 @@ export function defineCatalanLocale<
   input: DefineCatalanLocaleInput<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
   /**
-   * Noun-phrase renderer closed over the noun + subject tables.
+   Noun-phrase renderer closed over the noun + subject tables.
    */
   const renderNounPhrase = makeCatalanNounPhraseRenderer({
     nouns: input.nouns,
     subjects: input.subjects,
   },);
   /**
-   * Adverbial cluster renderer depending on noun-phrase rendering.
+   Adverbial cluster renderer depending on noun-phrase rendering.
    */
   const renderAdverbials = makeCatalanAdverbialRenderer({ renderNounPhrase, },);
   /**
-   * Verb-phrase renderer with closure over verbs + sub-renderers.
+   Verb-phrase renderer with closure over verbs + sub-renderers.
    */
   const renderVerbPhrase = makeCatalanVerbPhraseRenderer({
     verbs: input.verbs,
@@ -57,7 +57,7 @@ export function defineCatalanLocale<
     renderAdverbials,
   },);
   /**
-   * Sentence renderer dispatching on AST kind.
+   Sentence renderer dispatching on AST kind.
    */
   const renderSentence = makeCatalanSentenceRenderer({
     subjects: input.subjects,
@@ -67,7 +67,7 @@ export function defineCatalanLocale<
     renderAdverbials,
   },);
   /**
-   * Fragment renderer dispatching on AST kind.
+   Fragment renderer dispatching on AST kind.
    */
   const renderFragment = makeCatalanFragmentRenderer({
     labels: input.labels,
@@ -78,22 +78,22 @@ export function defineCatalanLocale<
   },);
 
   /**
-   * Resolves a static label key against the supplied label table.
-   *
-   * @param key - consumer label key
-   *
-   * @returns rendered surface
+   Resolves a static label key against the supplied label table.
+   
+   @param key - consumer label key
+   
+   @returns rendered surface
    */
   function renderLabel(key: Label,): string {
     return input.labels[key];
   }
 
   /**
-   * Resolves a bare noun key to its surface form.
-   *
-   * @param key - consumer noun key
-   *
-   * @returns rendered surface
+   Resolves a bare noun key to its surface form.
+   
+   @param key - consumer noun key
+   
+   @returns rendered surface
    */
   function renderNoun(key: Noun,): string {
     return input.nouns[key]

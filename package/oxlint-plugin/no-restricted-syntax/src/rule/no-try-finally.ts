@@ -7,29 +7,29 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
- * Bans `try...finally` blocks in favor of `using`/`await using` for cleanup.
- * Built via {@link simpleBanRule}.
- *
- * The `using` declaration with `Symbol.dispose`/`Symbol.asyncDispose` provides
- * deterministic cleanup without the nesting and control flow complexity of
- * `finally` blocks.
- *
- * Only the `finally` clause is banned; `try...catch` without `finally` is fine.
- *
- * @example
- * ```ts
- * // Bad
- * const handle = openResource();
- * try {
- *   await process(handle);
- * } finally {
- *   handle.close();
- * }
- *
- * // Good
- * await using handle = openResource();
- * await process(handle);
- * ```
+ Bans `try...finally` blocks in favor of `using`/`await using` for cleanup.
+ Built via {@link simpleBanRule}.
+ 
+ The `using` declaration with `Symbol.dispose`/`Symbol.asyncDispose` provides
+ deterministic cleanup without the nesting and control flow complexity of
+ `finally` blocks.
+ 
+ Only the `finally` clause is banned; `try...catch` without `finally` is fine.
+ 
+ @example
+ ```ts
+ // Bad
+ const handle = openResource();
+ try {
+   await process(handle);
+ } finally {
+   handle.close();
+ }
+ 
+ // Good
+ await using handle = openResource();
+ await process(handle);
+ ```
  */
 export const noTryFinally: CreateOnceRule = simpleBanRule({
   type: 'suggestion',

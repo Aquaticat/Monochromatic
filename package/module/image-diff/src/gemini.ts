@@ -21,28 +21,28 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * Compute a single image embedding via the Gemini embedContent API.
- *
- * @param input - image to embed, in any supported format
- *
- * @param config - client configuration
- *
- * @returns embedding vector and usage metadata
- *
- * @example
- * ```ts
- * const { embedding } = await geminiEmbed({ input: { path: './photo.png' }, config: {} });
- * ```
+ Compute a single image embedding via the Gemini embedContent API.
+ 
+ @param input - image to embed, in any supported format
+ 
+ @param config - client configuration
+ 
+ @returns embedding vector and usage metadata
+ 
+ @example
+ ```ts
+ const { embedding } = await geminiEmbed({ input: { path: './photo.png' }, config: {} });
+ ```
  */
 async function geminiEmbed({
   input,
@@ -52,7 +52,7 @@ async function geminiEmbed({
   readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: geminiEmbed.name,
@@ -61,21 +61,21 @@ async function geminiEmbed({
   rl.debug('computing single image embedding via Gemini',);
 
   /**
-   * Resolved Gemini credential; pulled here once and forwarded into the API call.
+   Resolved Gemini credential; pulled here once and forwarded into the API call.
    */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
   /**
-   * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
+   Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
   /**
-   * Gemini-shaped inline data payload converted from the caller's image input.
+   Gemini-shaped inline data payload converted from the caller's image input.
    */
   const inlineData = await toGeminiInlineData(input,);
 
   /**
-   * embedContent request body wrapping the inline data in Gemini's `content.parts[]` shape.
+   embedContent request body wrapping the inline data in Gemini's `content.parts[]` shape.
    */
   const requestBody: GeminiEmbedContentRequest = {
     content: {
@@ -84,13 +84,13 @@ async function geminiEmbed({
   };
 
   /**
-   * Full embedContent endpoint URL with the resolved model interpolated.
+   Full embedContent endpoint URL with the resolved model interpolated.
    */
   const url = `${GEMINI_API_BASE}/${model}:embedContent`;
   rl.debug(`calling Gemini API: ${url}`,);
 
   /**
-   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
    */
   const response = await fetch(
     url,
@@ -106,7 +106,7 @@ async function geminiEmbed({
 
   if (!response.ok) {
     /**
-     * Raw response body captured for both the log line and the thrown error message.
+     Raw response body captured for both the log line and the thrown error message.
      */
     const errorBody = await response.text();
     rl.error(`Gemini API returned ${String(response.status,)}: ${errorBody}`,);
@@ -114,7 +114,7 @@ async function geminiEmbed({
   }
 
   /**
-   * Parsed embedContent payload; embedding vector lives at `embedding.values`.
+   Parsed embedContent payload; embedding vector lives at `embedding.values`.
    */
   const result = await response.json() as GeminiEmbedContentResponse;
   rl.debug(
@@ -135,13 +135,13 @@ async function geminiEmbed({
 }
 
 /**
- * Gemini embedding provider.
- * Implements the {@link EmbeddingProvider} interface for the Gemini multimodal API.
- *
- * @example
- * ```ts
- * const result = await geminiProvider.embed({ path: 'photo.png' }, {});
- * ```
+ Gemini embedding provider.
+ Implements the {@link EmbeddingProvider} interface for the Gemini multimodal API.
+ 
+ @example
+ ```ts
+ const result = await geminiProvider.embed({ path: 'photo.png' }, {});
+ ```
  */
 export const geminiProvider: EmbeddingProvider = {
   embed: geminiEmbed,

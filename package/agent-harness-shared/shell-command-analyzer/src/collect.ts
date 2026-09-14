@@ -1,7 +1,7 @@
 /**
- * Stack-based `unbash` AST collection for shell command analysis.
- *
- * @module
+ Stack-based `unbash` AST collection for shell command analysis.
+ 
+ @module
  */
 
 import type { Script as UnbashScript, } from 'unbash';
@@ -27,18 +27,18 @@ import {
 import { statementWorkItems, } from './work-items.ts';
 
 /**
- * Visit queued redirect work item.
- *
- * @param item - redirect work item to visit
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @returns visit result for item
- *
- * @example
- * ```ts
- * visitRedirectsWorkItem({ item, paramRefs: [] });
- * ```
+ Visit queued redirect work item.
+ 
+ @param item - redirect work item to visit
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @returns visit result for item
+ 
+ @example
+ ```ts
+ visitRedirectsWorkItem({ item, paramRefs: [] });
+ ```
  */
 function visitRedirectsWorkItem(
   {
@@ -57,18 +57,18 @@ function visitRedirectsWorkItem(
 }
 
 /**
- * Visit one queued work item.
- *
- * @param item - work item to visit
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @returns visit result for item
- *
- * @example
- * ```ts
- * visitWorkItem({ item, paramRefs: [] });
- * ```
+ Visit one queued work item.
+ 
+ @param item - work item to visit
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @returns visit result for item
+ 
+ @example
+ ```ts
+ visitWorkItem({ item, paramRefs: [] });
+ ```
  */
 function visitWorkItem(
   {
@@ -118,18 +118,18 @@ function visitWorkItem(
 }
 
 /**
- * Convert parsed `unbash` script to command collection.
- *
- * @param script - parsed script from `unbash.parse`
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @returns command collection for guardrail signal checks
- *
- * @example
- * ```ts
- * collectCommandInfoFromScript({ script, paramRefs: [] });
- * ```
+ Convert parsed `unbash` script to command collection.
+ 
+ @param script - parsed script from `unbash.parse`
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @returns command collection for guardrail signal checks
+ 
+ @example
+ ```ts
+ collectCommandInfoFromScript({ script, paramRefs: [] });
+ ```
  */
 function collectCommandInfoFromScript(
   {
@@ -141,15 +141,15 @@ function collectCommandInfoFromScript(
   },
 ): CommandCollection {
   /**
-   * Parsed command records accumulated in traversal order.
+   Parsed command records accumulated in traversal order.
    */
   const commands: ShellCommandInfo[] = [];
   /**
-   * Nested parse errors accumulated in traversal order.
+   Nested parse errors accumulated in traversal order.
    */
   const parseErrors: ShellParseError[] = [];
   /**
-   * Mutable traversal flags updated while stack drains.
+   Mutable traversal flags updated while stack drains.
    */
   const flags = {
     isPipeline: false,
@@ -158,7 +158,7 @@ function collectCommandInfoFromScript(
     hasProcessSubstitution: false,
   };
   /**
-   * LIFO work stack seeded with top-level statements.
+   LIFO work stack seeded with top-level statements.
    */
   const stack: WorkItem[] = statementWorkItems({
     statements: script.commands,
@@ -168,7 +168,7 @@ function collectCommandInfoFromScript(
 
   for (let item = stack.pop(); item !== undefined; item = stack.pop()) {
     /**
-     * Result emitted by current traversal item.
+     Result emitted by current traversal item.
      */
     const result = visitWorkItem({
       item,

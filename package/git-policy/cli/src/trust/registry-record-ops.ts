@@ -1,7 +1,7 @@
 /**
- * Installed trust record reads and removals.
- *
- * @module
+ Installed trust record reads and removals.
+ 
+ @module
  */
 import {
   mkdir,
@@ -25,18 +25,18 @@ import type {
 } from './types.ts';
 
 /**
- * Reads exact identity record after path and permission validation.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - live candidate identifying record
- *
- * @returns validated record
- *
- * @example
- * ```ts
- * await loadRecord({ registryRoot, candidate });
- * ```
+ Reads exact identity record after path and permission validation.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - live candidate identifying record
+ 
+ @returns validated record
+ 
+ @example
+ ```ts
+ await loadRecord({ registryRoot, candidate });
+ ```
  */
 export async function loadRecord({
   registryRoot,
@@ -46,7 +46,7 @@ export async function loadRecord({
   candidate: TrustCandidate;
 }>,): Promise<TrustRecord> {
   /**
-   * Exact identity record directory.
+   Exact identity record directory.
    */
   const directory = recordDirectory({
     registryRoot,
@@ -63,18 +63,18 @@ export async function loadRecord({
 }
 
 /**
- * Removes exact identity record under exclusive writer lock.
- *
- * @param registryRoot - complete registry root
- *
- * @param candidate - live candidate identifying record
- *
- * @returns whether a record was removed
- *
- * @example
- * ```ts
- * await removeRecord({ registryRoot, candidate });
- * ```
+ Removes exact identity record under exclusive writer lock.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param candidate - live candidate identifying record
+ 
+ @returns whether a record was removed
+ 
+ @example
+ ```ts
+ await removeRecord({ registryRoot, candidate });
+ ```
  */
 export async function removeRecord({
   registryRoot,
@@ -84,14 +84,14 @@ export async function removeRecord({
   candidate: TrustCandidate;
 }>,): Promise<boolean> {
   /**
-   * Exact identity record directory.
+   Exact identity record directory.
    */
   const directory = recordDirectory({
     registryRoot,
     identity: candidate.identity,
   },);
   /**
-   * Parent containing record and lock siblings.
+   Parent containing record and lock siblings.
    */
   const parentDirectory = dirname(directory,);
   try {
@@ -106,7 +106,7 @@ export async function removeRecord({
     throw error;
   }
   /**
-   * Exclusive writer lock.
+   Exclusive writer lock.
    */
   const lockDirectory = `${directory}.lock`;
   await mkdir(
@@ -118,7 +118,7 @@ export async function removeRecord({
     directory: true,
   },);
   /**
-   * Atomic removal sibling before recursive deletion.
+   Atomic removal sibling before recursive deletion.
    */
   const removedDirectory = `${directory}.removed-${randomUUID()}`;
   try {

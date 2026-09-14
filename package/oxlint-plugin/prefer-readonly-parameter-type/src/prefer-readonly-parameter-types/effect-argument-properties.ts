@@ -1,19 +1,19 @@
 /**
- * Decomposition of one call argument into the caller origins reaching each of its properties.
- *
- * A callee that destructures records its writes against property slots, and the edge maps each
- * of those slots onto caller origins. Repeating the whole argument's origins on every property
- * slot is sound and is what slot allocation shipped with, but it attributes a write through one
- * property to everything the argument packages. This module answers the narrower question:
- * given an actual and a property key the callee reads, which caller values can that property
- * hold.
- *
- * The answer is only ever narrowed where the actual is an authored object literal with no
- * accessor in it. Anything else reports `ARGUMENT_NOT_DECOMPOSABLE`, and the edge broadcasts as
- * before. Withholding a narrowing costs precision; narrowing something that should not be
- * narrowed loses a write, which is what offers `readonly` for state a callee mutates.
- *
- * @module
+ Decomposition of one call argument into the caller origins reaching each of its properties.
+ 
+ A callee that destructures records its writes against property slots, and the edge maps each
+ of those slots onto caller origins. Repeating the whole argument's origins on every property
+ slot is sound and is what slot allocation shipped with, but it attributes a write through one
+ property to everything the argument packages. This module answers the narrower question:
+ given an actual and a property key the callee reads, which caller values can that property
+ hold.
+ 
+ The answer is only ever narrowed where the actual is an authored object literal with no
+ accessor in it. Anything else reports `ARGUMENT_NOT_DECOMPOSABLE`, and the edge broadcasts as
+ before. Withholding a narrowing costs precision; narrowing something that should not be
+ narrowed loses a write, which is what offers `readonly` for state a callee mutates.
+ 
+ @module
  */
 
 import type {
@@ -50,23 +50,23 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Property name whose plain assignment form sets a prototype instead of an own property.
+ Property name whose plain assignment form sets a prototype instead of an own property.
  */
 const PROTOTYPE_PROPERTY_KEY = '__proto__';
 
 /**
- * Sentinel for an actual whose property structure cannot be read.
+ Sentinel for an actual whose property structure cannot be read.
  */
 export const ARGUMENT_NOT_DECOMPOSABLE: unique symbol = Symbol(
   'call argument exposes no authored property structure',
 );
 
 /**
- * One authored property of an object literal, reduced to what it contributes.
- *
- * `key` is `NOT_A_STATIC_KEY` for a contributor that could fill any property: a spread, a
- * computed name, or a plain prototype assignment. Those contribute to every key and never end
- * the reverse walk.
+ One authored property of an object literal, reduced to what it contributes.
+ 
+ `key` is `NOT_A_STATIC_KEY` for a contributor that could fill any property: a spread, a
+ computed name, or a plain prototype assignment. Those contribute to every key and never end
+ the reverse walk.
  */
 type PropertyContribution = {
   readonly key: string | typeof NOT_A_STATIC_KEY;
@@ -74,29 +74,29 @@ type PropertyContribution = {
 };
 
 /**
- * Authored properties of one object-literal actual, in source order.
+ Authored properties of one object-literal actual, in source order.
  */
 export type ArgumentPropertyView = {
   readonly contributions: readonly PropertyContribution[];
 };
 
 /**
- * Unwraps the wrappers that change nothing about the value an argument holds.
- *
- * Parentheses and type-only wrappers only. An assignment, a sequence, an `await` or a call must
- * not be unwrapped: in `callee(argument = {}, Object.assign(argument, { named: owned },),)` the
- * first actual is mutated while the second is evaluated, so the literal written there is not
- * the object the callee receives. A spread element must not be unwrapped either, because
- * `callee(...values)` fills formals from the elements of `values` rather than from `values`.
- *
- * @param node - Call argument, possibly parenthesized or asserted.
- *
- * @returns object literal underneath, or sentinel when the actual is anything else.
- *
- * @example
- * ```ts
- * objectLiteralUnder({ node: call.arguments[0] });
- * ```
+ Unwraps the wrappers that change nothing about the value an argument holds.
+ 
+ Parentheses and type-only wrappers only. An assignment, a sequence, an `await` or a call must
+ not be unwrapped: in `callee(argument = {}, Object.assign(argument, { named: owned },),)` the
+ first actual is mutated while the second is evaluated, so the literal written there is not
+ the object the callee receives. A spread element must not be unwrapped either, because
+ `callee(...values)` fills formals from the elements of `values` rather than from `values`.
+ 
+ @param node - Call argument, possibly parenthesized or asserted.
+ 
+ @returns object literal underneath, or sentinel when the actual is anything else.
+ 
+ @example
+ ```ts
+ objectLiteralUnder({ node: call.arguments[0] });
+ ```
  */
 function objectLiteralUnder(
   { node, }: { readonly node: Node; },
@@ -115,29 +115,29 @@ function objectLiteralUnder(
 }
 
 /**
- * Tests whether a literal sets a prototype rather than defining an own property.
- *
- * Only the plain `__proto__: value` spelling does that. Its danger is not the property it fails
- * to define but the behaviour it installs for every other key: an inherited accessor runs with
- * the receiving literal as its `this`, so `{ __proto__: { get named() { return this.hidden; } },
- * hidden: owned }` reaches `owned` through a sibling key that no walk looking for `named` would
- * consider, and the getter body names no caller binding at all. An extracted method keeps its
- * home object for `super`, which is a second route to the same loss. Deciding that a key holds
- * nothing is what offers `readonly` for state a callee writes, so a literal setting a prototype
- * is not decomposed at all. Recovering precision here would mean proving the whole chain carries
- * no receiver-sensitive accessor, method or proxy, which nothing available here can do.
- *
- * The computed, shorthand and method spellings of the same name define ordinary own properties
- * and do not set a prototype, so none of them reaches this test.
- *
- * @param literal - Object literal being decomposed.
- *
- * @returns whether any member is a plain prototype assignment.
- *
- * @example
- * ```ts
- * setsPrototype({ literal });
- * ```
+ Tests whether a literal sets a prototype rather than defining an own property.
+ 
+ Only the plain `__proto__: value` spelling does that. Its danger is not the property it fails
+ to define but the behaviour it installs for every other key: an inherited accessor runs with
+ the receiving literal as its `this`, so `{ __proto__: { get named() { return this.hidden; } },
+ hidden: owned }` reaches `owned` through a sibling key that no walk looking for `named` would
+ consider, and the getter body names no caller binding at all. An extracted method keeps its
+ home object for `super`, which is a second route to the same loss. Deciding that a key holds
+ nothing is what offers `readonly` for state a callee writes, so a literal setting a prototype
+ is not decomposed at all. Recovering precision here would mean proving the whole chain carries
+ no receiver-sensitive accessor, method or proxy, which nothing available here can do.
+ 
+ The computed, shorthand and method spellings of the same name define ordinary own properties
+ and do not set a prototype, so none of them reaches this test.
+ 
+ @param literal - Object literal being decomposed.
+ 
+ @returns whether any member is a plain prototype assignment.
+ 
+ @example
+ ```ts
+ setsPrototype({ literal });
+ ```
  */
 function setsPrototype(
   { literal, }: { readonly literal: ObjectLiteralExpression; },
@@ -150,22 +150,22 @@ function setsPrototype(
 }
 
 /**
- * Tests whether a literal defines any property through an accessor.
- *
- * An accessor defeats the reverse walk from either end. `{ hidden: owned, get named() { return
- * this.hidden; } }` reaches `owned` through `this`, which no scan of the accessor body finds,
- * and `{ get named() { return owned; }, set named(value) {} }` puts the origin-free setter
- * last, so a walk that stops at the first exact match from the end stops on the setter and
- * drops the getter's origin. Both lose a write, so a literal holding either is not narrowed.
- *
- * @param literal - Object literal being decomposed.
- *
- * @returns whether any member is a getter or a setter.
- *
- * @example
- * ```ts
- * definesAccessor({ literal });
- * ```
+ Tests whether a literal defines any property through an accessor.
+ 
+ An accessor defeats the reverse walk from either end. `{ hidden: owned, get named() { return
+ this.hidden; } }` reaches `owned` through `this`, which no scan of the accessor body finds,
+ and `{ get named() { return owned; }, set named(value) {} }` puts the origin-free setter
+ last, so a walk that stops at the first exact match from the end stops on the setter and
+ drops the getter's origin. Both lose a write, so a literal holding either is not narrowed.
+ 
+ @param literal - Object literal being decomposed.
+ 
+ @returns whether any member is a getter or a setter.
+ 
+ @example
+ ```ts
+ definesAccessor({ literal });
+ ```
  */
 function definesAccessor(
   { literal, }: { readonly literal: ObjectLiteralExpression; },
@@ -178,20 +178,20 @@ function definesAccessor(
 }
 
 /**
- * Reduces one authored property to the key it fills and the origins it contributes.
- *
- * @param project - TypeScript project resolving symbols and types.
- *
- * @param bindingOriginBySymbolId - Local binding symbols mapped to caller slots.
- *
- * @param property - Authored member of the object literal.
- *
- * @returns key filled and origins contributed.
- *
- * @example
- * ```ts
- * propertyContribution({ project, bindingOriginBySymbolId, property });
- * ```
+ Reduces one authored property to the key it fills and the origins it contributes.
+ 
+ @param project - TypeScript project resolving symbols and types.
+ 
+ @param bindingOriginBySymbolId - Local binding symbols mapped to caller slots.
+ 
+ @param property - Authored member of the object literal.
+ 
+ @returns key filled and origins contributed.
+ 
+ @example
+ ```ts
+ propertyContribution({ project, bindingOriginBySymbolId, property });
+ ```
  */
 function propertyContribution({
   project,
@@ -203,7 +203,7 @@ function propertyContribution({
   readonly property: Node;
 },): PropertyContribution {
   /**
-   * Checker resolving shorthand values and primitive classification.
+   Checker resolving shorthand values and primitive classification.
    */
   const { checker, } = project;
   if (isSpreadAssignment(property,))
@@ -240,11 +240,11 @@ function propertyContribution({
   }
   if (isShorthandPropertyAssignment(property,)) {
     /**
-     * Value symbol hidden behind the shorthand property symbol.
+     Value symbol hidden behind the shorthand property symbol.
      */
     const valueSymbol = checker.getShorthandAssignmentValueSymbol(property,);
     /**
-     * Caller origins the shorthand value carries.
+     Caller origins the shorthand value carries.
      */
     const shorthandOrigins = ((valueSymbol === undefined)
         || (!expressionCanCarryMutableState({
@@ -289,20 +289,20 @@ function propertyContribution({
 }
 
 /**
- * Reads the authored property structure of one call argument.
- *
- * @param project - TypeScript project resolving symbols and types.
- *
- * @param bindingOriginBySymbolId - Local binding symbols mapped to caller slots.
- *
- * @param node - Call argument to decompose.
- *
- * @returns property view, or sentinel when the actual exposes no readable structure.
- *
- * @example
- * ```ts
- * argumentPropertyView({ project, bindingOriginBySymbolId, node: call.arguments[0] });
- * ```
+ Reads the authored property structure of one call argument.
+ 
+ @param project - TypeScript project resolving symbols and types.
+ 
+ @param bindingOriginBySymbolId - Local binding symbols mapped to caller slots.
+ 
+ @param node - Call argument to decompose.
+ 
+ @returns property view, or sentinel when the actual exposes no readable structure.
+ 
+ @example
+ ```ts
+ argumentPropertyView({ project, bindingOriginBySymbolId, node: call.arguments[0] });
+ ```
  */
 export function argumentPropertyView({
   project,
@@ -314,7 +314,7 @@ export function argumentPropertyView({
   readonly node: Node;
 },): ArgumentPropertyView | typeof ARGUMENT_NOT_DECOMPOSABLE {
   /**
-   * Object literal this actual is, once type-only wrappers are removed.
+   Object literal this actual is, once type-only wrappers are removed.
    */
   const literal = objectLiteralUnder({ node, },);
   if ((literal === ARGUMENT_NOT_DECOMPOSABLE)
@@ -334,29 +334,29 @@ export function argumentPropertyView({
 }
 
 /**
- * Resolves which caller origins one property key of a decomposed actual can hold.
- *
- * Walks the authored properties in reverse. An exact match contributes its value and stops,
- * because the last definition of a key is the one the callee reads. A different known key is
- * ignored. A contributor that fills no nameable key contributes and the walk continues, since
- * only a later exact match can shadow what it supplied. So `{ ...other, named: first }`
- * attributes `named` to `first` alone, while `{ named: first, ...other }` attributes it to
- * both.
- *
- * An empty result is a real answer rather than a missing one: the literal defines that key
- * nowhere, and nothing it packages can reach it. Callers must not read empty as unknown, which
- * is why `calleeSlotOrigins` falls back only on an absent entry.
- *
- * @param view - Decomposed actual.
- *
- * @param key - Canonical property key the callee reads.
- *
- * @returns caller origins that key can hold, empty when the literal never fills it.
- *
- * @example
- * ```ts
- * originsOfPropertyKey({ view, key: 'named' });
- * ```
+ Resolves which caller origins one property key of a decomposed actual can hold.
+ 
+ Walks the authored properties in reverse. An exact match contributes its value and stops,
+ because the last definition of a key is the one the callee reads. A different known key is
+ ignored. A contributor that fills no nameable key contributes and the walk continues, since
+ only a later exact match can shadow what it supplied. So `{ ...other, named: first }`
+ attributes `named` to `first` alone, while `{ named: first, ...other }` attributes it to
+ both.
+ 
+ An empty result is a real answer rather than a missing one: the literal defines that key
+ nowhere, and nothing it packages can reach it. Callers must not read empty as unknown, which
+ is why `calleeSlotOrigins` falls back only on an absent entry.
+ 
+ @param view - Decomposed actual.
+ 
+ @param key - Canonical property key the callee reads.
+ 
+ @returns caller origins that key can hold, empty when the literal never fills it.
+ 
+ @example
+ ```ts
+ originsOfPropertyKey({ view, key: 'named' });
+ ```
  */
 export function originsOfPropertyKey({
   view,
@@ -366,7 +366,7 @@ export function originsOfPropertyKey({
   readonly key: string;
 },): readonly EffectSlot[] {
   /**
-   * Origins collected while walking back towards the defining property.
+   Origins collected while walking back towards the defining property.
    */
   const origins = new Set<EffectSlot>();
   for (const contribution of view.contributions

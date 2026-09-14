@@ -1,11 +1,11 @@
 /**
- * Unit tests for the live-importer declaration check.
- *
- * Builds a throwaway monorepo (root manifest plus a `package/grp/consumer`
- * importer) so the check runs against a real `package/*\/*` layout and real
- * `package.json` files.
- *
- * @module
+ Unit tests for the live-importer declaration check.
+ 
+ Builds a throwaway monorepo (root manifest plus a `package/grp/consumer`
+ importer) so the check runs against a real `package/*\/*` layout and real
+ `package.json` files.
+ 
+ @module
  */
 
 import {
@@ -32,27 +32,27 @@ import {
 } from './declared.ts';
 
 /**
- * Throwaway monorepo that removes itself when its `await using` scope ends.
+ Throwaway monorepo that removes itself when its `await using` scope ends.
  */
 type TempRepo = AsyncDisposable & {
   /**
-   * Absolute path to the throwaway monorepo root.
+   Absolute path to the throwaway monorepo root.
    */
   readonly root: string;
 };
 
 /**
- * Creates a throwaway monorepo with a root manifest and one importer under
- * `package/grp/consumer` whose dependency fields are seeded from `deps`.
- *
- * @param deps - dependency-field maps to write into the consumer manifest
- *
- * @returns disposable holding the root path; disposal removes the tree
- *
- * @example
- * ```ts
- * await using repo = await makeRepo({ dependencies: { picomatch: 'catalog:' } });
- * ```
+ Creates a throwaway monorepo with a root manifest and one importer under
+ `package/grp/consumer` whose dependency fields are seeded from `deps`.
+ 
+ @param deps - dependency-field maps to write into the consumer manifest
+ 
+ @returns disposable holding the root path; disposal removes the tree
+ 
+ @example
+ ```ts
+ await using repo = await makeRepo({ dependencies: { picomatch: 'catalog:' } });
+ ```
  */
 async function makeRepo(
   deps: {
@@ -61,7 +61,7 @@ async function makeRepo(
   },
 ): Promise<TempRepo> {
   /**
-   * Freshly created throwaway root path.
+   Freshly created throwaway root path.
    */
   const root = await mkdtemp(join(
     tmpdir(),
@@ -78,7 +78,7 @@ async function makeRepo(
     },),
   );
   /**
-   * Importer directory under the `package/*\/*` glob the check discovers.
+   Importer directory under the `package/*\/*` glob the check discovers.
    */
   const consumerDir = join(
     root,

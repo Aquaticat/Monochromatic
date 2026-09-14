@@ -1,9 +1,9 @@
 /**
- * Explicit testing seam for filesystem identity adapters and platform fixtures.
- *
- * This subpath is not required by ordinary consumers.
- *
- * @module
+ Explicit testing seam for filesystem identity adapters and platform fixtures.
+ 
+ This subpath is not required by ordinary consumers.
+ 
+ @module
  */
 
 export {

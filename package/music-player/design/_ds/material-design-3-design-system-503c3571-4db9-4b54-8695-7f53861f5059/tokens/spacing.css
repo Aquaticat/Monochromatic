@@ -1,0 +1,20 @@
+/* md.sys.spacing — 8dp base grid, space0..space900.
+   Values from m3.material.io/styles/spacing/tokens (0, 8, 16, 24, 32, 40, 48, 56, 64, 72). */
+:root {
+  --md-sys-spacing-space0: 0px;
+  --md-sys-spacing-space100: 8px;
+  --md-sys-spacing-space200: 16px;
+  --md-sys-spacing-space300: 24px;
+  --md-sys-spacing-space400: 32px;
+  --md-sys-spacing-space500: 40px;
+  --md-sys-spacing-space600: 48px;
+  --md-sys-spacing-space700: 56px;
+  --md-sys-spacing-space800: 64px;
+  --md-sys-spacing-space900: 72px;
+
+  /* window-size-class margins (compact / medium / expanded) */
+  --md-sys-layout-margin-compact: 16px;
+  --md-sys-layout-margin-medium: 24px;
+  --md-sys-layout-margin-expanded: 24px;
+  --md-sys-layout-pane-gutter: 24px;
+}

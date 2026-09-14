@@ -1,7 +1,7 @@
 /**
- * Tests for `throws`.
- *
- * @module
+ Tests for `throws`.
+ 
+ @module
  */
 
 import {
@@ -14,18 +14,18 @@ import {
 import { throws, } from '../dist/final/neutral/index.mjs';
 
 /**
- * Calls `throws` and returns caught value for exact identity assertions.
- *
- * @param error - Error instance to pass through `throws`
- *
- * @returns Value caught from `throws`
- *
- * @throws Error if `throws` unexpectedly returns
- *
- * @example
- * ```ts
- * const caught = captureThrownError(new Error('boom',),);
- * ```
+ Calls `throws` and returns caught value for exact identity assertions.
+ 
+ @param error - Error instance to pass through `throws`
+ 
+ @returns Value caught from `throws`
+ 
+ @throws Error if `throws` unexpectedly returns
+ 
+ @example
+ ```ts
+ const caught = captureThrownError(new Error('boom',),);
+ ```
  */
 function captureThrownError(error: Error,): unknown {
   try {
@@ -39,12 +39,12 @@ function captureThrownError(error: Error,): unknown {
 }
 
 /**
- * Options for token fallback expression type checks.
- *
- * @example
- * ```ts
- * const options: RequireTokenOptions = { value: 'present', };
- * ```
+ Options for token fallback expression type checks.
+ 
+ @example
+ ```ts
+ const options: RequireTokenOptions = { value: 'present', };
+ ```
  */
 type RequireTokenOptions = {
   /** Token value when caller supplied one. */
@@ -52,18 +52,18 @@ type RequireTokenOptions = {
 };
 
 /**
- * Requires a token through a nullish fallback expression.
- *
- * @param options - Candidate token options
- *
- * @returns Candidate token when present
- *
- * @throws Error when `options.value` is missing
- *
- * @example
- * ```ts
- * const token = requireToken({ value: 'present', },);
- * ```
+ Requires a token through a nullish fallback expression.
+ 
+ @param options - Candidate token options
+ 
+ @returns Candidate token when present
+ 
+ @throws Error when `options.value` is missing
+ 
+ @example
+ ```ts
+ const token = requireToken({ value: 'present', },);
+ ```
  */
 function requireToken(options: RequireTokenOptions,): string {
   return options.value ?? throws(new Error('Missing token',),);
@@ -105,12 +105,12 @@ await describe({
 },);
 
 /**
- * Compile-time assertion that string overloads are absent.
- *
- * @example
- * ```ts
- * rejectsStringInput();
- * ```
+ Compile-time assertion that string overloads are absent.
+ 
+ @example
+ ```ts
+ rejectsStringInput();
+ ```
  */
 export function rejectsStringInput(): void {
   // @ts-expect-error - strings are rejected so thrown values keep Error metadata.
@@ -118,12 +118,12 @@ export function rejectsStringInput(): void {
 }
 
 /**
- * Compile-time assertion that descriptor-object overloads are absent.
- *
- * @example
- * ```ts
- * rejectsDescriptorInput();
- * ```
+ Compile-time assertion that descriptor-object overloads are absent.
+ 
+ @example
+ ```ts
+ rejectsDescriptorInput();
+ ```
  */
 export function rejectsDescriptorInput(): void {
   // @ts-expect-error - descriptor policy fields are rejected so custom Error subclasses stay faithful.

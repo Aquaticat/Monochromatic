@@ -1,24 +1,24 @@
 /**
- * Watch-mode lifecycle state and cleanup helpers.
+ Watch-mode lifecycle state and cleanup helpers.
  */
 export type WatchModeLifecycle = Readonly<{
   /**
-   * Promise that rejects when watch mode fails closed.
+   Promise that rejects when watch mode fails closed.
    */
   failure: Promise<never>;
 
   /**
-   * Returns whether watch mode has already failed closed.
+   Returns whether watch mode has already failed closed.
    */
   hasFailed: () => boolean;
 
   /**
-   * Fails watch mode closed and tears down active state.
+   Fails watch mode closed and tears down active state.
    */
   fail: (failureError: unknown) => void;
 
   /**
-   * Registers watcher abort controller for later teardown.
+   Registers watcher abort controller for later teardown.
    */
   registerController: (args: {
     readonly controller: AbortController;
@@ -26,12 +26,12 @@ export type WatchModeLifecycle = Readonly<{
   }) => void;
 
   /**
-   * Aborts all active watchers and clears their registry.
+   Aborts all active watchers and clears their registry.
    */
   closeAllWatchers: () => void;
 
   /**
-   * Schedules one debounce timer, clearing any older timer first.
+   Schedules one debounce timer, clearing any older timer first.
    */
   scheduleDebounce: (args: {
     readonly callback: () => void;
@@ -39,7 +39,7 @@ export type WatchModeLifecycle = Readonly<{
   }) => void;
 
   /**
-   * Clears pending debounce timer state.
+   Clears pending debounce timer state.
    */
   clearDebounceTimer: () => void;
 }>;
@@ -47,47 +47,47 @@ export type WatchModeLifecycle = Readonly<{
 //region Lifecycle factory
 
 /**
- * Creates state holder for watcher teardown, debounce cleanup, and fail-closed
- * rejection: `fail` tears down active state through
- * {@link WatchModeLifecycle.closeAllWatchers} and
- * {@link WatchModeLifecycle.clearDebounceTimer} before rejecting.
- *
- * @returns Watch-mode lifecycle helpers.
- *
- * @example
- * ```ts
- * const lifecycle = createWatchModeLifecycle();
- * ```
+ Creates state holder for watcher teardown, debounce cleanup, and fail-closed
+ rejection: `fail` tears down active state through
+ {@link WatchModeLifecycle.closeAllWatchers} and
+ {@link WatchModeLifecycle.clearDebounceTimer} before rejecting.
+ 
+ @returns Watch-mode lifecycle helpers.
+ 
+ @example
+ ```ts
+ const lifecycle = createWatchModeLifecycle();
+ ```
  */
 export function createWatchModeLifecycle(): WatchModeLifecycle {
   /**
-   * Active AbortControllers for each watched directory.
+   Active AbortControllers for each watched directory.
    */
   const controllers = new Map<string, AbortController>();
   /**
-   * Single-key holder for active debounce timer.
+   Single-key holder for active debounce timer.
    */
   const debounceTimerHolder = new Map<'timer', ReturnType<typeof setTimeout>>();
   /**
-   * Promise resolver pair used to fail watch mode closed.
+   Promise resolver pair used to fail watch mode closed.
    */
   const watchModeFailure = Promise.withResolvers<never>();
   /**
-   * Single-key holder marking watch mode as failed.
+   Single-key holder marking watch mode as failed.
    */
   const watchModeFailureState = new Map<'failed', true>();
 
   /**
-   * Clears active debounce timer.
-   *
-   * @example
-   * ```ts
-   * clearDebounceTimer();
-   * ```
+   Clears active debounce timer.
+   
+   @example
+   ```ts
+   clearDebounceTimer();
+   ```
    */
   function clearDebounceTimer(): void {
     /**
-     * Active debounce timer handle, or absent between bursts.
+     Active debounce timer handle, or absent between bursts.
      */
     const activeTimer = debounceTimerHolder.get('timer',);
     if (activeTimer !== undefined)
@@ -96,12 +96,12 @@ export function createWatchModeLifecycle(): WatchModeLifecycle {
   }
 
   /**
-   * Closes every registered watcher controller.
-   *
-   * @example
-   * ```ts
-   * closeAllWatchers();
-   * ```
+   Closes every registered watcher controller.
+   
+   @example
+   ```ts
+   closeAllWatchers();
+   ```
    */
   function closeAllWatchers(): void {
     controllers.forEach(function abortController(controller,): void {
@@ -118,11 +118,11 @@ export function createWatchModeLifecycle(): WatchModeLifecycle {
     },
 
     /**
-     * Fails watch mode once and closes active watchers.
-     *
-     * @param failureError - rejection reason retained by failure promise
-     *
-     * @mutates failureError through watchModeFailure.reject rejection retention
+     Fails watch mode once and closes active watchers.
+     
+     @param failureError - rejection reason retained by failure promise
+     
+     @mutates failureError through watchModeFailure.reject rejection retention
      */
     fail(failureError: unknown,): void {
       if (watchModeFailureState.has('failed',))

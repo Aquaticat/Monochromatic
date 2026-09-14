@@ -1,7 +1,7 @@
 /**
- * Structural and reachability claims for one default-library collection call.
- *
- * @module
+ Structural and reachability claims for one default-library collection call.
+ 
+ @module
  */
 
 import type {
@@ -44,28 +44,28 @@ import { recordReadonlyViewApplications, } from './effect-readonly-view-applicat
 import { recordResultApplication, } from './effect-result-substitution.ts';
 
 /**
- * Nothing about the call was answered, so both sides stay opaque.
+ Nothing about the call was answered, so both sides stay opaque.
  */
 export const COLLECTION_CALL_UNDERIVED: unique symbol = Symbol(
   'collection call left both receiver and arguments unproven',
 );
 
 /**
- * What the call does to its receiver is answered; its arguments are not.
+ What the call does to its receiver is answered; its arguments are not.
  */
 export const COLLECTION_CALL_RECEIVER_DERIVED: unique symbol = Symbol(
   'collection call answered for its receiver only',
 );
 
 /**
- * The whole call is answered and needs no opaque boundary.
+ The whole call is answered and needs no opaque boundary.
  */
 export const COLLECTION_CALL_DERIVED: unique symbol = Symbol(
   'collection call fully answered',
 );
 
 /**
- * How much of one collection call the derivation could answer.
+ How much of one collection call the derivation could answer.
  */
 export type CollectionCallCoverage =
   | typeof COLLECTION_CALL_UNDERIVED
@@ -73,31 +73,31 @@ export type CollectionCallCoverage =
   | typeof COLLECTION_CALL_DERIVED;
 
 /**
- * Tests whether the receiver claim alone is answerable for this member.
- *
- * Two conditions, both load-bearing. The member's user-code channel must be
- * verified, because a result carrying nothing proves nothing on its own: `join`
- * returns a `string` and still calls every element's `toString`, and
- * `values.some(foreignPredicate)` returns a `boolean` and still runs the predicate.
- * And the result must expose no caller-owned state, because a verified channel
- * proves nothing about what comes back: `values.at(0)` reaches no user code and
- * hands back the receiver's own element, which nothing then tracks as an alias, so
- * `values.at(0).label = 'x'` would go unreported.
- *
- * @param project - TypeScript project proving default-library ownership.
- *
- * @param checker - TypeScript checker resolving the instantiated result type.
- *
- * @param call - Collection call whose result type decides exposure.
- *
- * @param declaration - Resolved member declaration.
- *
- * @returns whether receiver opacity is dischargeable for this call.
- *
- * @example
- * ```ts
- * receiverClaimAnswerable({ project, checker, call, declaration, });
- * ```
+ Tests whether the receiver claim alone is answerable for this member.
+ 
+ Two conditions, both load-bearing. The member's user-code channel must be
+ verified, because a result carrying nothing proves nothing on its own: `join`
+ returns a `string` and still calls every element's `toString`, and
+ `values.some(foreignPredicate)` returns a `boolean` and still runs the predicate.
+ And the result must expose no caller-owned state, because a verified channel
+ proves nothing about what comes back: `values.at(0)` reaches no user code and
+ hands back the receiver's own element, which nothing then tracks as an alias, so
+ `values.at(0).label = 'x'` would go unreported.
+ 
+ @param project - TypeScript project proving default-library ownership.
+ 
+ @param checker - TypeScript checker resolving the instantiated result type.
+ 
+ @param call - Collection call whose result type decides exposure.
+ 
+ @param declaration - Resolved member declaration.
+ 
+ @returns whether receiver opacity is dischargeable for this call.
+ 
+ @example
+ ```ts
+ receiverClaimAnswerable({ project, checker, call, declaration, });
+ ```
  */
 function receiverClaimAnswerable({
   project,
@@ -113,7 +113,7 @@ function receiverClaimAnswerable({
   readonly body?: Node;
 },): boolean {
   /**
-   * How many arguments this call site passes, deciding the argument-conditional channel.
+   How many arguments this call site passes, deciding the argument-conditional channel.
    */
   const passedArgumentCount = call.arguments
     .length;
@@ -131,7 +131,7 @@ function receiverClaimAnswerable({
   },))
     return false;
   /**
-   * Instantiated result type of this call.
+   Instantiated result type of this call.
    */
   const resultType = checker.getTypeAtLocation(call,);
   if (resultType === undefined)
@@ -184,44 +184,44 @@ function receiverClaimAnswerable({
 }
 
 /**
- * Records both claims for one default-library collection call.
- *
- * The two claims stay independent, because a member can restructure its receiver
- * and run user code over it in the same call. `Map.getOrInsertComputed` inserts
- * and invokes a caller-supplied factory; `Array.sort(comparator)` reorders and
- * invokes the comparator. Each records its mutation and then, separately, has its
- * observers analyzed.
- *
- * Only a fully answered call is discharged. A restructuring member whose
- * reachable user code cannot be derived reports its mutation and still falls
- * through to the opaque boundary, so a bare `Array.sort()`, which reorders and
- * runs the default comparator's string coercion, ends up both mutated and
- * opaque rather than silently accepted.
- *
- * @param project - TypeScript project resolving observer declarations.
- *
- * @param checker - TypeScript checker resolving receiver and parameter types.
- *
- * @param bindingOriginBySymbolId - Current callable parameter and alias origins.
- *
- * @param call - Collection call expression.
- *
- * @param receiver - Receiver expression whose parameter root is required.
- *
- * @param declaration - Resolved member declaration.
- *
- * @param summary - Caller summary receiving facts.
- *
- * @param analysisRoot - Optional external implementation root.
- *
- * @returns how much of the call was answered.
- *
- * @mutates summary - Adds receiver mutation and derived element-flow relations.
- *
- * @example
- * ```ts
- * recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, containerLiteralHolders, call, receiver, declaration, summary });
- * ```
+ Records both claims for one default-library collection call.
+ 
+ The two claims stay independent, because a member can restructure its receiver
+ and run user code over it in the same call. `Map.getOrInsertComputed` inserts
+ and invokes a caller-supplied factory; `Array.sort(comparator)` reorders and
+ invokes the comparator. Each records its mutation and then, separately, has its
+ observers analyzed.
+ 
+ Only a fully answered call is discharged. A restructuring member whose
+ reachable user code cannot be derived reports its mutation and still falls
+ through to the opaque boundary, so a bare `Array.sort()`, which reorders and
+ runs the default comparator's string coercion, ends up both mutated and
+ opaque rather than silently accepted.
+ 
+ @param project - TypeScript project resolving observer declarations.
+ 
+ @param checker - TypeScript checker resolving receiver and parameter types.
+ 
+ @param bindingOriginBySymbolId - Current callable parameter and alias origins.
+ 
+ @param call - Collection call expression.
+ 
+ @param receiver - Receiver expression whose parameter root is required.
+ 
+ @param declaration - Resolved member declaration.
+ 
+ @param summary - Caller summary receiving facts.
+ 
+ @param analysisRoot - Optional external implementation root.
+ 
+ @returns how much of the call was answered.
+ 
+ @mutates summary - Adds receiver mutation and derived element-flow relations.
+ 
+ @example
+ ```ts
+ recordCollectionMemberEffect({ project, checker, bindingOriginBySymbolId, containerLiteralHolders, call, receiver, declaration, summary });
+ ```
  */
 export function recordCollectionMemberEffect({
   project,
@@ -247,7 +247,7 @@ export function recordCollectionMemberEffect({
   readonly body?: Node;
 },): CollectionCallCoverage {
   /**
-   * What this member does to the receiver's own structure.
+   What this member does to the receiver's own structure.
    */
   const structure = collectionStructureClaim({
     project,
@@ -258,7 +258,7 @@ export function recordCollectionMemberEffect({
     return COLLECTION_CALL_UNDERIVED;
   if (structure === COLLECTION_STRUCTURE_MUTATED) {
     /**
-     * Caller parameters owning receiver, when receiver can carry mutable state.
+     Caller parameters owning receiver, when receiver can carry mutable state.
      */
     const mutatedParameterOrigins = expressionCanCarryMutableState({
           checker,

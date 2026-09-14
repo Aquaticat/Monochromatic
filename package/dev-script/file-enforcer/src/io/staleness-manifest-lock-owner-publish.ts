@@ -9,26 +9,26 @@ import { join, } from 'node:path';
 //region Lock owner publication paths
 
 /**
- * Metadata file made visible only after complete staging.
+ Metadata file made visible only after complete staging.
  */
 const LOCK_OWNER_FILE_NAME = 'owner.json';
 
 /**
- * Private staging file renamed atomically after complete owner serialization.
+ Private staging file renamed atomically after complete owner serialization.
  */
 const LOCK_OWNER_PENDING_FILE_NAME = 'owner.pending.json';
 
 /**
- * Returns private staging path for lock owner metadata.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Private staging path.
- *
- * @example
- * ```ts
- * const path = pendingLockOwnerPath('/tmp/manifest.json.lock');
- * ```
+ Returns private staging path for lock owner metadata.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Private staging path.
+ 
+ @example
+ ```ts
+ const path = pendingLockOwnerPath('/tmp/manifest.json.lock');
+ ```
  */
 function pendingLockOwnerPath(lockPath: string,): string {
   return join(
@@ -38,16 +38,16 @@ function pendingLockOwnerPath(lockPath: string,): string {
 }
 
 /**
- * Returns published path for lock owner metadata.
- *
- * @param lockPath - Lock directory path.
- *
- * @returns Published owner path.
- *
- * @example
- * ```ts
- * const path = publishedLockOwnerPath('/tmp/manifest.json.lock');
- * ```
+ Returns published path for lock owner metadata.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @returns Published owner path.
+ 
+ @example
+ ```ts
+ const path = publishedLockOwnerPath('/tmp/manifest.json.lock');
+ ```
  */
 function publishedLockOwnerPath(lockPath: string,): string {
   return join(
@@ -61,16 +61,16 @@ function publishedLockOwnerPath(lockPath: string,): string {
 //region Lock owner publication lifecycle
 
 /**
- * Writes complete lock owner text to private staging path.
- *
- * @param lockPath - Lock directory path.
- *
- * @param ownerText - Complete serialized owner metadata.
- *
- * @example
- * ```ts
- * await stageLockOwnerPublication({ lockPath, ownerText });
- * ```
+ Writes complete lock owner text to private staging path.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @param ownerText - Complete serialized owner metadata.
+ 
+ @example
+ ```ts
+ await stageLockOwnerPublication({ lockPath, ownerText });
+ ```
  */
 export async function stageLockOwnerPublication(
   {
@@ -88,14 +88,14 @@ export async function stageLockOwnerPublication(
 }
 
 /**
- * Atomically publishes previously staged lock owner metadata.
- *
- * @param lockPath - Lock directory path.
- *
- * @example
- * ```ts
- * await publishLockOwnerPublication('/tmp/manifest.json.lock');
- * ```
+ Atomically publishes previously staged lock owner metadata.
+ 
+ @param lockPath - Lock directory path.
+ 
+ @example
+ ```ts
+ await publishLockOwnerPublication('/tmp/manifest.json.lock');
+ ```
  */
 export async function publishLockOwnerPublication(lockPath: string,): Promise<void> {
   await rename(
@@ -105,17 +105,17 @@ export async function publishLockOwnerPublication(lockPath: string,): Promise<vo
 }
 
 /**
- * Removes published owner and its lock directory with one-shot operations.
- *
- * Avoiding recursive path removal prevents a completed release from revisiting
- * and deleting a successor lock created at the same path.
- *
- * @param lockPath - Lock directory path owned by caller.
- *
- * @example
- * ```ts
- * await removeLockOwnerPublication('/tmp/manifest.json.lock');
- * ```
+ Removes published owner and its lock directory with one-shot operations.
+ 
+ Avoiding recursive path removal prevents a completed release from revisiting
+ and deleting a successor lock created at the same path.
+ 
+ @param lockPath - Lock directory path owned by caller.
+ 
+ @example
+ ```ts
+ await removeLockOwnerPublication('/tmp/manifest.json.lock');
+ ```
  */
 export async function removeLockOwnerPublication(lockPath: string,): Promise<void> {
   await unlink(publishedLockOwnerPath(lockPath,),);

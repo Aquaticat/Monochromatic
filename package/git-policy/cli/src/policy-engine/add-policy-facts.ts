@@ -1,7 +1,7 @@
 /**
- * Private-index candidate facts for pre-forward Git add policies.
- *
- * @module
+ Private-index candidate facts for pre-forward Git add policies.
+ 
+ @module
  */
 import { randomUUID, } from 'node:crypto';
 import {
@@ -28,63 +28,63 @@ import {
 import { runTransactionGit, } from './commit-transaction-git.ts';
 
 /**
- * Add policy facts do not apply to current command.
+ Add policy facts do not apply to current command.
  */
 export const ADD_POLICY_FACTS_NOT_APPLICABLE: unique symbol = Symbol('add policy facts not applicable',);
 /**
- * Strict Git path decoder.
+ Strict Git path decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
 /**
- * Private add-check directory mode.
+ Private add-check directory mode.
  */
 const PRIVATE_DIRECTORY_MODE = 0o700;
 
 /**
- * Scoped private add candidate state.
+ Scoped private add candidate state.
  */
 export type AddPolicyFactsScope = {
   /**
-   * Canonical repository root.
+   Canonical repository root.
    */
   readonly repositoryRoot: string;
   /**
-   * Exact would-be-index candidate facts.
+   Exact would-be-index candidate facts.
    */
   readonly gitFacts: LazyPolicyGitFacts;
   /**
-   * Private workspace directory.
+   Private workspace directory.
    */
   readonly directory: string;
   /**
-   * Private candidate index path.
+   Private candidate index path.
    */
   readonly indexPath: string;
   /**
-   * Real index path that must remain unchanged during direct fix.
+   Real index path that must remain unchanged during direct fix.
    */
   readonly realIndexPath: string;
   /**
-   * Candidate paths selected by caller scope.
+   Candidate paths selected by caller scope.
    */
   readonly paths: readonly string[];
   /**
-   * Removes private index state.
+   Removes private index state.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Resolves absolute Git administrative path.
- *
- * @param cwd - effective repository cwd
- *
- * @param reportedPath - Git path output
- *
- * @returns absolute path
+ Resolves absolute Git administrative path.
+ 
+ @param cwd - effective repository cwd
+ 
+ @param reportedPath - Git path output
+ 
+ @returns absolute path
  */
 function absoluteGitPath({
   cwd,
@@ -100,20 +100,20 @@ function absoluteGitPath({
 }
 
 /**
- * Creates exact private-index facts for one noninteractive add invocation.
- *
- * @param args - wrapper-control-free Git arguments
- *
- * @param gitPath - resolved real Git executable
- *
- * @param candidatePathspecs - optional unchanged-inclusive candidate scope
- *
- * @returns scoped facts or not-applicable sentinel
- *
- * @example
- * ```ts
- * await createAddPolicyFacts({ args: ['add', 'file.txt'], gitPath: '/usr/bin/git' });
- * ```
+ Creates exact private-index facts for one noninteractive add invocation.
+ 
+ @param args - wrapper-control-free Git arguments
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param candidatePathspecs - optional unchanged-inclusive candidate scope
+ 
+ @returns scoped facts or not-applicable sentinel
+ 
+ @example
+ ```ts
+ await createAddPolicyFacts({ args: ['add', 'file.txt'], gitPath: '/usr/bin/git' });
+ ```
  */
 export async function createAddPolicyFacts({
   args,
@@ -125,13 +125,13 @@ export async function createAddPolicyFacts({
   candidatePathspecs?: readonly string[];
 }>,): Promise<AddPolicyFactsScope | typeof ADD_POLICY_FACTS_NOT_APPLICABLE> {
   /**
-   * Effective command layout after global options.
+   Effective command layout after global options.
    */
   const layout = parseGlobalOptions(args,);
   if (args[layout.subcommandIndex] !== 'add')
     return ADD_POLICY_FACTS_NOT_APPLICABLE;
   /**
-   * Exact repository root or failure outside worktree.
+   Exact repository root or failure outside worktree.
    */
   const rootResult = await runTransactionGit({
     gitPath,
@@ -145,12 +145,12 @@ export async function createAddPolicyFacts({
   if (rootResult.exitCode !== 0)
     return ADD_POLICY_FACTS_NOT_APPLICABLE;
   /**
-   * Canonical repository root spelling from Git.
+   Canonical repository root spelling from Git.
    */
   const repositoryRoot = DECODER.decode(rootResult.stdout,)
     .trim();
   /**
-   * Current real-index path from Git.
+   Current real-index path from Git.
    */
   const reportedIndex = DECODER.decode((await runTransactionGit({
     gitPath,
@@ -163,14 +163,14 @@ export async function createAddPolicyFacts({
   },)).stdout,)
     .trim();
   /**
-   * Absolute real-index path.
+   Absolute real-index path.
    */
   const realIndexPath = absoluteGitPath({
     cwd: layout.effectiveCwd,
     reportedPath: reportedIndex,
   },);
   /**
-   * Private candidate directory beside real index.
+   Private candidate directory beside real index.
    */
   const directory = join(
     dirname(realIndexPath,),
@@ -181,7 +181,7 @@ export async function createAddPolicyFacts({
     { mode: PRIVATE_DIRECTORY_MODE, },
   );
   /**
-   * Private would-be add index.
+   Private would-be add index.
    */
   const indexPath = join(
     directory,
@@ -208,8 +208,8 @@ export async function createAddPolicyFacts({
     },);
   }
   /**
-   * Complete records before replaying the add, scoping the add gate to
-   * exactly the entries this invocation stages.
+   Complete records before replaying the add, scoping the add gate to
+   exactly the entries this invocation stages.
    */
   const beforeRecords = await captureIndexRecords({
     gitPath,
@@ -223,7 +223,7 @@ export async function createAddPolicyFacts({
     args: args.slice(layout.subcommandIndex,),
   },);
   /**
-   * Paths this add staged or exact unchanged-inclusive direct scope.
+   Paths this add staged or exact unchanged-inclusive direct scope.
    */
   const paths = candidatePathspecs === undefined
     ? await stagedDeltaPaths({

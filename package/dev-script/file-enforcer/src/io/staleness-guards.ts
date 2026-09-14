@@ -9,16 +9,16 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Returns true when a value is a non-array object.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value can be inspected as a record.
- *
- * @example
- * ```ts
- * const valid = isRecord(value);
- * ```
+ Returns true when a value is a non-array object.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value can be inspected as a record.
+ 
+ @example
+ ```ts
+ const valid = isRecord(value);
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   if ((typeof value) !== 'object')
@@ -30,16 +30,16 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Returns true when a value is a persisted file stamp.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value matches {@link FileStamp}.
- *
- * @example
- * ```ts
- * const valid = isFileStamp(parsed);
- * ```
+ Returns true when a value is a persisted file stamp.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value matches {@link FileStamp}.
+ 
+ @example
+ ```ts
+ const valid = isFileStamp(parsed);
+ ```
  */
 function isFileStamp(value: unknown,): value is FileStamp {
   if (!isRecord(value,))
@@ -53,23 +53,23 @@ function isFileStamp(value: unknown,): value is FileStamp {
 }
 
 /**
- * Returns true when a value is a persisted destination stamp.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value matches {@link DestinationStamp}.
- *
- * @example
- * ```ts
- * const valid = isDestinationStamp(parsed);
- * ```
+ Returns true when a value is a persisted destination stamp.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value matches {@link DestinationStamp}.
+ 
+ @example
+ ```ts
+ const valid = isDestinationStamp(parsed);
+ ```
  */
 function isDestinationStamp(value: unknown,): value is DestinationStamp {
   if (!isRecord(value,))
     return false;
 
   /**
-   * Hash value captured while `value` is still a generic record.
+   Hash value captured while `value` is still a generic record.
    */
   const { hash, } = value;
   if (!isFileStamp(value,))
@@ -79,16 +79,16 @@ function isDestinationStamp(value: unknown,): value is DestinationStamp {
 }
 
 /**
- * Returns true when a value is a persisted glob stamp.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value matches {@link GlobStamp}.
- *
- * @example
- * ```ts
- * const valid = isGlobStamp(parsed);
- * ```
+ Returns true when a value is a persisted glob stamp.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value matches {@link GlobStamp}.
+ 
+ @example
+ ```ts
+ const valid = isGlobStamp(parsed);
+ ```
  */
 function isGlobStamp(value: unknown,): value is GlobStamp {
   if (!isRecord(value,))
@@ -106,16 +106,16 @@ function isGlobStamp(value: unknown,): value is GlobStamp {
 }
 
 /**
- * Returns true when a value is a supported entry kind.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value is a staleness entry kind.
- *
- * @example
- * ```ts
- * const valid = isEntryKind(value);
- * ```
+ Returns true when a value is a supported entry kind.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value is a staleness entry kind.
+ 
+ @example
+ ```ts
+ const valid = isEntryKind(value);
+ ```
  */
 function isEntryKind(value: unknown,): value is StalenessEntryKind {
   if (value === 'single')
@@ -125,18 +125,18 @@ function isEntryKind(value: unknown,): value is StalenessEntryKind {
 }
 
 /**
- * Returns true when a value is a persisted staleness entry, validating its
- * kind with {@link isEntryKind} and its per-field stamp shapes with
- * {@link isFileStamp}, {@link isGlobStamp}, and {@link isDestinationStamp}.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value matches {@link StalenessEntry}.
- *
- * @example
- * ```ts
- * const valid = isStalenessEntry(parsed);
- * ```
+ Returns true when a value is a persisted staleness entry, validating its
+ kind with {@link isEntryKind} and its per-field stamp shapes with
+ {@link isFileStamp}, {@link isGlobStamp}, and {@link isDestinationStamp}.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value matches {@link StalenessEntry}.
+ 
+ @example
+ ```ts
+ const valid = isStalenessEntry(parsed);
+ ```
  */
 function isStalenessEntry(value: unknown,): value is StalenessEntry {
   if (!isRecord(value,))
@@ -174,16 +174,16 @@ function isStalenessEntry(value: unknown,): value is StalenessEntry {
 }
 
 /**
- * Returns true when a value is a persisted staleness manifest.
- *
- * @param value - Unknown value from JSON parsing.
- *
- * @returns Whether value matches {@link StalenessManifest}.
- *
- * @example
- * ```ts
- * const valid = isStalenessManifest(parsed);
- * ```
+ Returns true when a value is a persisted staleness manifest.
+ 
+ @param value - Unknown value from JSON parsing.
+ 
+ @returns Whether value matches {@link StalenessManifest}.
+ 
+ @example
+ ```ts
+ const valid = isStalenessManifest(parsed);
+ ```
  */
 export function isStalenessManifest(value: unknown,): value is StalenessManifest {
   if (!isRecord(value,))

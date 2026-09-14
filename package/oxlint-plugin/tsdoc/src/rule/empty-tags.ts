@@ -1,9 +1,9 @@
 /**
- * TSDoc empty modifier tag validation rule.
- *
- * Extracted from `structural-tags.ts` to keep files under 100 countable lines.
- *
- * @module
+ TSDoc empty modifier tag validation rule.
+ 
+ Extracted from `structural-tags.ts` to keep files under 100 countable lines.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -25,54 +25,54 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Absence marker for {@link parseTaggedLine} meaning "line is not `@tag <text>`
- * form"; never a parsed tagged line.
- *
- * @example
- * ```ts
- * const parsed = parseTaggedLine('plain text',);
- * if (parsed === UNTAGGED_LINE)
- *   return;
- * ```
+ Absence marker for {@link parseTaggedLine} meaning "line is not `@tag <text>`
+ form"; never a parsed tagged line.
+ 
+ @example
+ ```ts
+ const parsed = parseTaggedLine('plain text',);
+ if (parsed === UNTAGGED_LINE)
+   return;
+ ```
  */
 export const UNTAGGED_LINE: unique symbol = Symbol('tsdoc parser found line without tag',);
 
 /**
- * Parsed shape of a tagged TSDoc line; {@link UNTAGGED_LINE} when the line is not
- * `@tag <text>` form.
+ Parsed shape of a tagged TSDoc line; {@link UNTAGGED_LINE} when the line is not
+ `@tag <text>` form.
  */
 type TaggedLine = {
   /**
-   * Captured tag including the leading at-sign.
+   Captured tag including the leading at-sign.
    */
   tag: string;
   /**
-   * Content following the whitespace gap.
+   Content following the whitespace gap.
    */
   rest: string;
 };
 
 /**
- * Parses a TSDoc line of the form `@tag <whitespace> <rest>`.
- *
- * Linear scan over the leading `@word` run, the whitespace gap, and the
- * remainder; no backtracking. Mirrors `/^(@\w+)\s+(.+)/`.
- *
- * @param s - line content (with the leading `*` already stripped)
- *
- * @returns parsed tag + rest, or {@link UNTAGGED_LINE} when the shape does not match
- *
- * @example
- * ```ts
- * parseTaggedLine('@param foo'); // { tag: '@param', rest: 'foo' }
- * parseTaggedLine('@param'); // UNTAGGED_LINE
- * ```
+ Parses a TSDoc line of the form `@tag <whitespace> <rest>`.
+ 
+ Linear scan over the leading `@word` run, the whitespace gap, and the
+ remainder; no backtracking. Mirrors `/^(@\w+)\s+(.+)/`.
+ 
+ @param s - line content (with the leading `*` already stripped)
+ 
+ @returns parsed tag + rest, or {@link UNTAGGED_LINE} when the shape does not match
+ 
+ @example
+ ```ts
+ parseTaggedLine('@param foo'); // { tag: '@param', rest: 'foo' }
+ parseTaggedLine('@param'); // UNTAGGED_LINE
+ ```
  */
 export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
   if (!s.startsWith('@',))
     return UNTAGGED_LINE;
   /**
-   * Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
+   Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
    */
   const tagEnd = wordRunEnd({
     text: s,
@@ -81,7 +81,7 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
   if (tagEnd === 1)
     return UNTAGGED_LINE;
   /**
-   * First index past the inter-token whitespace; rest starts here.
+   First index past the inter-token whitespace; rest starts here.
    */
   const restStart = whitespaceRunEnd({
     text: s,
@@ -90,7 +90,7 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
   if (restStart === tagEnd)
     return UNTAGGED_LINE;
   /**
-   * Remaining content; must be non-empty to match `(.+)`.
+   Remaining content; must be non-empty to match `(.+)`.
    */
   const rest = s.slice(restStart,);
   if (rest.length
@@ -106,12 +106,12 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
 }
 
 /**
- * Enforces that TSDoc tags which should not have content are empty.
- *
- * Modifier tags like `\@public`, `\@readonly`, `\@override`, `\@sealed`,
- * `\@virtual`, `\@alpha`, `\@beta`, `\@internal`, `\@experimental`,
- * `\@eventProperty`, and `\@packageDocumentation` must not have content,
- * parsed via {@link parseTaggedLine}.
+ Enforces that TSDoc tags which should not have content are empty.
+ 
+ Modifier tags like `\@public`, `\@readonly`, `\@override`, `\@sealed`,
+ `\@virtual`, `\@alpha`, `\@beta`, `\@internal`, `\@experimental`,
+ `\@eventProperty`, and `\@packageDocumentation` must not have content,
+ parsed via {@link parseTaggedLine}.
  */
 export const emptyTags: CreateOnceRule = {
   meta: {
@@ -125,20 +125,20 @@ export const emptyTags: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     /**
-     * Tags that must be standalone (no content after them).
+     Tags that must be standalone (no content after them).
      */
     const modifierTags = new Set([
       '@public',
@@ -161,7 +161,7 @@ export const emptyTags: CreateOnceRule = {
         comment,
       ): void {
         /**
-         * Comment body split into lines; each is inspected independently for modifier-tag misuse.
+         Comment body split into lines; each is inspected independently for modifier-tag misuse.
          */
         const lines = getCommentLines(comment,);
         lines.forEach(function checkLine(
@@ -169,18 +169,18 @@ export const emptyTags: CreateOnceRule = {
           index,
         ): void {
           /**
-           * Line stripped of indent and `*` so the leading `\@tag` (if any) is at column 0.
+           Line stripped of indent and `*` so the leading `\@tag` (if any) is at column 0.
            */
           const trimmed = stripCommentLineMarker(line.trimStart(),)
             .trimStart();
           /**
-           * Parsed `\@tag <text>` shape; absent when the line carries no tag with trailing text.
+           Parsed `\@tag <text>` shape; absent when the line carries no tag with trailing text.
            */
           const tagMatch = parseTaggedLine(trimmed,);
           if (tagMatch === UNTAGGED_LINE)
             return;
           /**
-           * Captured tag name and remainder; both populate the diagnostic and gate the report.
+           Captured tag name and remainder; both populate the diagnostic and gate the report.
            */
           const {
             tag,

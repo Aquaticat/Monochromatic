@@ -1,7 +1,7 @@
 /**
- * Neutral side-effect-free Git policy authoring contract.
- *
- * @module
+ Neutral side-effect-free Git policy authoring contract.
+ 
+ @module
  */
 
 export {

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden}</style></helmet>
+<div style="background:#141218;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column">
+  <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:16px;padding:8px 16px">
+    <div style="font-size:22px;font-weight:400">Music Player</div>
+    <div style="flex:1 1 auto"></div>
+    <div style="width:24px;height:24px;border-radius:8px;background:#2B2930"></div>
+    <div style="width:24px;height:24px;border-radius:8px;background:#2B2930"></div>
+  </div>
+
+  <div style="flex:0 0 auto;margin:0 16px;background:#211F26;border-radius:16px;padding:16px 20px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:24px">
+      <div style="flex:1 1 auto;min-width:0">
+        <div style="font-size:16px;font-weight:500;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+        <div style="font-size:14px;color:#CAC4D0;margin-top:4px">Camellia</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#2B2930;border-radius:32px;padding:6px">
+        <div style="width:56px;height:52px;border-radius:26px 12px 12px 26px;background:#4A4458;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:#E8DEF8"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+        <div style="width:76px;height:60px;border-radius:24px;background:#D0BCFF;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+        <div style="width:56px;height:52px;border-radius:12px 26px 26px 12px;background:#4A4458;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:#E8DEF8"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M4 9v6h4l5 4V5L8 9z"></path></svg>
+        <div style="width:130px;height:44px;display:flex;align-items:center;gap:6px">
+          <div style="flex:0 0 82%;height:16px;border-radius:8px;background:#D0BCFF"></div>
+          <div style="width:4px;height:28px;border-radius:2px;background:#D0BCFF"></div>
+          <div style="flex:1 1 auto;height:16px;border-radius:8px;background:#4A4458"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">0:42</span>
+      <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:6px">
+        <div style="flex:0 0 16%;height:16px;border-radius:8px;background:#D0BCFF"></div>
+        <div style="width:4px;height:28px;border-radius:2px;background:#D0BCFF"></div>
+        <div style="flex:1 1 auto;height:16px;border-radius:8px;background:#4A4458"></div>
+      </div>
+      <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">4:35</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:14px;color:#CAC4D0;flex:0 0 auto">When this track ends</span>
+      <div style="display:flex;border:1px solid #49454F;border-radius:20px;overflow:hidden">
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:500;color:#E6E0E9;border-right:1px solid #49454F">Repeat</div>
+        <div style="min-height:48px;display:flex;align-items:center;gap:8px;padding:0 20px;font-size:14px;font-weight:500;background:#4A4458;color:#E8DEF8;border-right:1px solid #49454F"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#E8DEF8"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:500;color:#E6E0E9;border-right:1px solid #49454F">Shuffle folder</div>
+        <div style="min-height:48px;display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:500;color:#E6E0E9">Shuffle all</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:16px 20px 8px">
+    <div style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 20px;border:1px solid #938F99;border-radius:24px;font-size:14px;font-weight:500">Camellia<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+    <span style="font-size:14px;color:#CAC4D0">16 tracks</span>
+    <div style="flex:1 1 auto"></div>
+    <span style="font-size:13px;color:#938F99">~/Music/flac</span>
+  </div>
+
+  <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:0 8px 12px">
+    <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:8px 16px;background:#4A4458;border-radius:16px;margin-bottom:2px">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#D0BCFF;flex:0 0 auto"><path d="M7 4v16l13-8z"></path></svg>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#E8DEF8">Another Xronixle</div><div style="font-size:14px;color:#CAC4D0;margin-top:2px">4:35 · FLAC 24/96</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:8px 16px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:#938F99">2</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Burning Aquamarine</div><div style="font-size:14px;color:#CAC4D0;margin-top:2px">5:12 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:8px 16px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:#938F99">3</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dokuhebi - Venomous Snake</div><div style="font-size:14px;color:#CAC4D0;margin-top:2px">4:01 · FLAC 16/44.1</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:8px 16px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:#938F99">4</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ENÛMA∇ELIŠ ~Camellia Saga~ (from the album -REX-)</div><div style="font-size:14px;color:#CAC4D0;margin-top:2px">9:47 · FLAC 24/48</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:8px 16px">
+      <span style="width:18px;flex:0 0 auto;text-align:center;font-size:14px;color:#938F99">5</span>
+      <div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Flash Me Back -300k subs on YT-</div><div style="font-size:14px;color:#CAC4D0;margin-top:2px">3:28 · FLAC 16/44.1</div></div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:10px 16px;background:#211F26;color:#938F99;font-size:12px;font-family:ui-monospace,monospace">MD3 + one borrowing — baseline everywhere, Expressive's button group for the transport only. Everything else identical to MD3.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:700}}"></script>
+</body>
+</html>

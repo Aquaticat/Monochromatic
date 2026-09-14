@@ -1,14 +1,14 @@
 /**
- * Shard composition: grouping mutants into container-sized batches.
- *
- * Shards never span source files, keeping each shard's selected-test set
- * tight; oversized per-file mutant lists chunk into consecutive shards.
- * Bisection re-shards use the same chunker at half size.
- *
- * @example
- * ```ts
- * composeShards({ groups, shardSize: 16, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath });
- * ```
+ Shard composition: grouping mutants into container-sized batches.
+ 
+ Shards never span source files, keeping each shard's selected-test set
+ tight; oversized per-file mutant lists chunk into consecutive shards.
+ Bisection re-shards use the same chunker at half size.
+ 
+ @example
+ ```ts
+ composeShards({ groups, shardSize: 16, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath });
+ ```
  */
 
 import { sanitizeShardTag, } from './shard-tag.ts';
@@ -19,7 +19,7 @@ import {
 import type { Mutant, } from '../engine/types.ts';
 
 /**
- * One source file's mutants with their selected tests.
+ One source file's mutants with their selected tests.
  */
 export type MutantGroup = {
   readonly file: string;
@@ -28,17 +28,17 @@ export type MutantGroup = {
 };
 
 /**
- * Splits one array into consecutive chunks of at most size.
- *
- * @param options - Items and maximum chunk size.
- *
- * @returns Non-empty chunks preserving order.
- *
- * @example
- * ```ts
- * chunk({ items: [1, 2, 3], size: 2 });
- * // [[1, 2], [3]]
- * ```
+ Splits one array into consecutive chunks of at most size.
+ 
+ @param options - Items and maximum chunk size.
+ 
+ @returns Non-empty chunks preserving order.
+ 
+ @example
+ ```ts
+ chunk({ items: [1, 2, 3], size: 2 });
+ // [[1, 2], [3]]
+ ```
  */
 export function chunk<const T,>(options: {
   readonly items: readonly T[];
@@ -65,16 +65,16 @@ export function chunk<const T,>(options: {
 }
 
 /**
- * Composes shard manifests from per-file mutant groups.
- *
- * @param options - Groups, shard size, timeouts, and package identity.
- *
- * @returns Manifests ready to mount into containers.
- *
- * @example
- * ```ts
- * const manifests = composeShards({ groups, shardSize: 16, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath: 'package/module/fs-path' });
- * ```
+ Composes shard manifests from per-file mutant groups.
+ 
+ @param options - Groups, shard size, timeouts, and package identity.
+ 
+ @returns Manifests ready to mount into containers.
+ 
+ @example
+ ```ts
+ const manifests = composeShards({ groups, shardSize: 16, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath: 'package/module/fs-path' });
+ ```
  */
 export function composeShards(options: {
   readonly groups: readonly MutantGroup[];
@@ -107,17 +107,17 @@ export function composeShards(options: {
 }
 
 /**
- * Rebuilds manifests for a set of mutant ids at a given shard size,
- * regrouping by source file; used for taint resharding and confirmation.
- *
- * @param options - Ids, size, lookup, timeouts, and package identity.
- *
- * @returns Manifests grouped per source file.
- *
- * @example
- * ```ts
- * composeReshard({ ids, size: 1, entryOf, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath });
- * ```
+ Rebuilds manifests for a set of mutant ids at a given shard size,
+ regrouping by source file; used for taint resharding and confirmation.
+ 
+ @param options - Ids, size, lookup, timeouts, and package identity.
+ 
+ @returns Manifests grouped per source file.
+ 
+ @example
+ ```ts
+ composeReshard({ ids, size: 1, entryOf, timeoutFloorMs: 5000, timeoutFactor: 3, packagePath });
+ ```
  */
 export function composeReshard(options: {
   readonly ids: readonly string[];
@@ -131,7 +131,7 @@ export function composeReshard(options: {
   readonly packagePath: string;
 },): readonly ShardManifest[] {
   /**
-   * Reshard groups keyed by source file.
+   Reshard groups keyed by source file.
    */
   const byFile = new Map<string, {
     readonly mutants: Mutant[];
@@ -140,11 +140,11 @@ export function composeReshard(options: {
 
   for (const id of options.ids) {
     /**
-     * Lookup entry for this reshard id.
+     Lookup entry for this reshard id.
      */
     const entry = options.entryOf(id,);
     /**
-     * Existing bucket for this mutant's file.
+     Existing bucket for this mutant's file.
      */
     const bucket = byFile.get(entry.mutant
       .file,);

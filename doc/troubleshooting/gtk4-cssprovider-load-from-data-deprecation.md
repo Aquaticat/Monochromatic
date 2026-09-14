@@ -60,19 +60,12 @@ Environment:
 - Use the replacement API:
    `load_from_string` (same argument,
    same behavior for UTF-8 CSS).
-  Applied in `file-manager-gtk-sticky/src/style.rs`.
-   Tradeoff:
-   none at 4.12+;
-   it just requires
-  the same feature bump that triggered the deprecation.
-- If a dependency you also maintain still targets an older feature level (the original
-  `file-manager` here),
-   its own standalone builds stay warning-free;
-   only unified-graph builds
-  print warnings for it.
-   Leaving it as-is is acceptable until that crate bumps deliberately.
+  Applied in `package/desktop-app/file-manager/src/style.rs` and
+  `package/desktop-app/file-manager-gtk-sticky/src/style.rs`.
+  Both packages expose GTK 4.12 APIs,
+  so standalone and unified build graphs use the same non-deprecated call.
   Tradeoff:
-   warning noise in this crate's build output.
+  GTK 4.12 is now the minimum supported API level.
 
 ## What does not work
 

@@ -1,9 +1,9 @@
 /**
- * TSDoc inline tag escaping rule.
- *
- * Extracted from `structural-tags.ts` to keep files under 100 countable lines.
- *
- * @module
+ TSDoc inline tag escaping rule.
+ 
+ Extracted from `structural-tags.ts` to keep files under 100 countable lines.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -21,21 +21,21 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Returns true when `trimmed` contains an unescaped `*\/` sequence
- * (i.e. one whose preceding character is not a backslash).
- *
- * Linear scan: each candidate `*\/` is found by `indexOf`, the previous
- * character is checked, and the cursor advances past the match before the
- * next `indexOf` call, so worst-case work is bounded by the length of `s`.
- *
- * @param s - line content (with the leading `*` already stripped)
- *
- * @returns whether an unescaped comment closer appears in `s`
- *
- * @example
- * ```ts
- * hasUnescapedCommentClose('plain content'); // false
- * ```
+ Returns true when `trimmed` contains an unescaped `*\/` sequence
+ (i.e. one whose preceding character is not a backslash).
+ 
+ Linear scan: each candidate `*\/` is found by `indexOf`, the previous
+ character is checked, and the cursor advances past the match before the
+ next `indexOf` call, so worst-case work is bounded by the length of `s`.
+ 
+ @param s - line content (with the leading `*` already stripped)
+ 
+ @returns whether an unescaped comment closer appears in `s`
+ 
+ @example
+ ```ts
+ hasUnescapedCommentClose('plain content'); // false
+ ```
  */
 export function hasUnescapedCommentClose(s: string,): boolean {
   // Linear walk: each `*\/` is located by `indexOf`, the cursor advances past
@@ -44,7 +44,7 @@ export function hasUnescapedCommentClose(s: string,): boolean {
   for (let from = 0; from <= s
     .length;) {
     /**
-     * Position of the next `*\/`; -1 means the rest of the string is safe.
+     Position of the next `*\/`; -1 means the rest of the string is safe.
      */
     const idx = s.indexOf(
       '*/',
@@ -53,7 +53,7 @@ export function hasUnescapedCommentClose(s: string,): boolean {
     if (idx === (-1))
       return false;
     /**
-     * Char immediately before the match; backslash means the closer is escaped.
+     Char immediately before the match; backslash means the closer is escaped.
      */
     const prev = idx === 0 ? '' : s.charAt(idx - 1,);
     if (prev !== '\\')
@@ -64,10 +64,10 @@ export function hasUnescapedCommentClose(s: string,): boolean {
 }
 
 /**
- * Enforces that `*\/` inside TSDoc content is escaped as `*\\/`, detected via
- * {@link hasUnescapedCommentClose}.
- *
- * An unescaped `*\/` would prematurely close the comment block.
+ Enforces that `*\/` inside TSDoc content is escaped as `*\\/`, detected via
+ {@link hasUnescapedCommentClose}.
+ 
+ An unescaped `*\/` would prematurely close the comment block.
  */
 export const escapeInlineTags: CreateOnceRule = {
   meta: {
@@ -81,16 +81,16 @@ export const escapeInlineTags: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createTsdocVisitor({
@@ -100,7 +100,7 @@ export const escapeInlineTags: CreateOnceRule = {
         comment,
       ): void {
         /**
-         * Comment body split into lines; the last (legitimate closer) is dropped before scanning.
+         Comment body split into lines; the last (legitimate closer) is dropped before scanning.
          */
         const lines = getCommentLines(comment,);
         // Skip the last line which is the legitimate closing `*/`
@@ -119,7 +119,7 @@ export const escapeInlineTags: CreateOnceRule = {
               .endsWith('*',))
               return;
             /**
-             * Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content.
+             Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content.
              */
             const trimmed = stripCommentLineMarker(line.trimStart(),);
             // Look for `*/` not preceded by backslash inside content

@@ -1,7 +1,7 @@
 /**
- * Client entry script for the Settings page.
- *
- * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
+ Client entry script for the Settings page.
+ 
+ Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
@@ -15,11 +15,11 @@ import './component/top-nav.ts';
 import './component/setting-group.ts';
 
 /**
- * Shape of the JSON blob embedded in the settings page by the server.
+ Shape of the JSON blob embedded in the settings page by the server.
  */
 type SettingsPageData = {
   /**
-   * Server-provided settings message.
+   Server-provided settings message.
    */
   message: string;
 };
@@ -27,19 +27,19 @@ type SettingsPageData = {
 injectCSS(styles,);
 
 /**
- * Deserialized settings page data (reserved for future use).
+ Deserialized settings page data (reserved for future use).
  */
 const _pageData = readPageData<SettingsPageData>();
 
 /**
- * Root app container element.
+ Root app container element.
  */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
 /**
- * Typed reference to the app container.
+ Typed reference to the app container.
  */
 const app = appElement;
 

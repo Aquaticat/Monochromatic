@@ -1,7 +1,7 @@
 /**
- * Tests for `bigintOrThrow`.
- *
- * @module
+ Tests for `bigintOrThrow`.
+ 
+ @module
  */
 
 import {

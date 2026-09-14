@@ -1,9 +1,9 @@
 /**
- * Phrase lists and word-bounded scans used by the uncertainty detection
- * engine. Apostrophe normalisation is centralised here so every consumer
- * folds curly quotes to ASCII before lookup.
- *
- * @module
+ Phrase lists and word-bounded scans used by the uncertainty detection
+ engine. Apostrophe normalisation is centralised here so every consumer
+ folds curly quotes to ASCII before lookup.
+ 
+ @module
  */
 
 import { isWordChar, } from '@monochromatic-dev/agent-harness-shared-text-scan/ts';
@@ -11,27 +11,27 @@ import { isWordChar, } from '@monochromatic-dev/agent-harness-shared-text-scan/t
 //region Apostrophe normalisation
 
 /**
- * Unicode left single quotation mark (`U+2018`).
+ Unicode left single quotation mark (`U+2018`).
  */
 const LEFT_SINGLE_QUOTE = '‘';
 
 /**
- * Unicode right single quotation mark (`U+2019`).
+ Unicode right single quotation mark (`U+2019`).
  */
 const RIGHT_SINGLE_QUOTE = '’';
 
 /**
- * Folds curly single quotation marks to ASCII apostrophes so phrase lookups
- * only need the straight-apostrophe variant of each entry.
- *
- * @param text - input text
- *
- * @returns text with curly single quotes replaced by `'`
- *
- * @example
- * ```ts
- * normaliseApostrophes('that’s wrong'); // => "that's wrong"
- * ```
+ Folds curly single quotation marks to ASCII apostrophes so phrase lookups
+ only need the straight-apostrophe variant of each entry.
+ 
+ @param text - input text
+ 
+ @returns text with curly single quotes replaced by `'`
+ 
+ @example
+ ```ts
+ normaliseApostrophes('that’s wrong'); // => "that's wrong"
+ ```
  */
 function normaliseApostrophes(text: string,): string {
   return text
@@ -50,20 +50,20 @@ function normaliseApostrophes(text: string,): string {
 //region Uncertainty phrase list
 
 /**
- * Lowercase phrases that indicate hedging or uncertain language in prose.
- *
- * Each entry expands one alternation of the original regex array:
- *
- * - Modal hedges (probably, maybe, perhaps, possibly, presumably, likely)
- * - Epistemic hedges (I think, I believe, I assume, I suspect, ...)
- * - Conditional hedges (might be, could be, should be)
- * - Uncertainty markers (not sure, hard to say, difficult to tell)
- * - Approximation markers (if I recall, from what I recall, as far as I know)
- * - Comparative hedges ("worse than most", "more than most", "less than most")
- *
- * The `\wer than most` variant is handled separately by
- * {@link containsErThanMost} since it requires a word-character prefix the
- * word-bounded-phrase scan cannot express.
+ Lowercase phrases that indicate hedging or uncertain language in prose.
+ 
+ Each entry expands one alternation of the original regex array:
+ 
+ - Modal hedges (probably, maybe, perhaps, possibly, presumably, likely)
+ - Epistemic hedges (I think, I believe, I assume, I suspect, ...)
+ - Conditional hedges (might be, could be, should be)
+ - Uncertainty markers (not sure, hard to say, difficult to tell)
+ - Approximation markers (if I recall, from what I recall, as far as I know)
+ - Comparative hedges ("worse than most", "more than most", "less than most")
+ 
+ The `\wer than most` variant is handled separately by
+ {@link containsErThanMost} since it requires a word-character prefix the
+ word-bounded-phrase scan cannot express.
  */
 const UNCERTAINTY_PHRASES: readonly string[] = [
   'probably',
@@ -109,40 +109,40 @@ const UNCERTAINTY_PHRASES: readonly string[] = [
 //region Comparative `\wer than most` scan
 
 /**
- * Literal substring scanned for when looking for comparative-suffix `<X>er than most` hedges.
+ Literal substring scanned for when looking for comparative-suffix `<X>er than most` hedges.
  */
 const ER_THAN_MOST_PHRASE = 'er than most';
 
 /**
- * Sentinel returned by {@link findErThanMost} when no comparative fragment is found.
- *
- * A unique symbol rather than `undefined`: callers narrow on identity so the
- * matched-fragment string never shares a nullish union with "no match".
+ Sentinel returned by {@link findErThanMost} when no comparative fragment is found.
+ 
+ A unique symbol rather than `undefined`: callers narrow on identity so the
+ matched-fragment string never shares a nullish union with "no match".
  */
 const ER_NOT_FOUND: unique symbol = Symbol('uncertainty-phrases/er-not-found',);
 
 /**
- * Looks up the first `<word>er than most` occurrence in `text`, returning
- * the matched word fragment (e.g. `'bigger than most'`).
- *
- * Mirrors the original regex `/\wer than most\b/i`: scans for the literal
- * `er than most`, checks that the character preceding the `e` is a word
- * character (so `'inner than most'` matches but `' er than most'` does
- * not), and that the trailing `most` ends at a word boundary.
- *
- * @param text - input text to scan
- *
- * @returns matched fragment from `<word>er` through `most`, or `ER_NOT_FOUND` when no match exists
- *
- * @example
- * ```ts
- * findErThanMost('this is bigger than most lengths'); // => 'bigger than most'
- * findErThanMost('just er than most');                // => ER_NOT_FOUND (no word prefix)
- * ```
+ Looks up the first `<word>er than most` occurrence in `text`, returning
+ the matched word fragment (e.g. `'bigger than most'`).
+ 
+ Mirrors the original regex `/\wer than most\b/i`: scans for the literal
+ `er than most`, checks that the character preceding the `e` is a word
+ character (so `'inner than most'` matches but `' er than most'` does
+ not), and that the trailing `most` ends at a word boundary.
+ 
+ @param text - input text to scan
+ 
+ @returns matched fragment from `<word>er` through `most`, or `ER_NOT_FOUND` when no match exists
+ 
+ @example
+ ```ts
+ findErThanMost('this is bigger than most lengths'); // => 'bigger than most'
+ findErThanMost('just er than most');                // => ER_NOT_FOUND (no word prefix)
+ ```
  */
 function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
   /**
-   * Lower-cased text used for the case-insensitive substring scan.
+   Lower-cased text used for the case-insensitive substring scan.
    */
   const lower = text.toLowerCase();
   // Walk every `er than most` occurrence in order (monotonic `indexOf`, no
@@ -162,13 +162,13 @@ function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
     if (idx === 0)
       continue;
     /**
-     * Character immediately before the `e`; must be a word char for the match.
+     Character immediately before the `e`; must be a word char for the match.
      */
     const before = lower.charAt(idx - 1,);
     if (!isWordChar(before,))
       continue;
     /**
-     * Position one past the trailing `t` of `most`; checked for a word boundary below.
+     Position one past the trailing `t` of `most`; checked for a word boundary below.
      */
     const endIdx = idx + ER_THAN_MOST_PHRASE
       .length;
@@ -176,7 +176,7 @@ function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
       .length) && isWordChar(lower.charAt(endIdx,),))
       continue;
     /**
-     * Inclusive start of the word that ends in `er`, found by scanning back over word chars.
+     Inclusive start of the word that ends in `er`, found by scanning back over word chars.
      */
     let wordStart = idx - 1;
     while ((wordStart > 0) && isWordChar(text.charAt(wordStart - 1,),)) {
@@ -191,17 +191,17 @@ function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
 }
 
 /**
- * Whether `text` contains any `<word>er than most` occurrence.
- *
- * @param text - input text
- *
- * @returns whether the comparative hedge appears
- *
- * @example
- * ```ts
- * containsErThanMost('this is faster than most options'); // true
- * containsErThanMost('all good');                         // false
- * ```
+ Whether `text` contains any `<word>er than most` occurrence.
+ 
+ @param text - input text
+ 
+ @returns whether the comparative hedge appears
+ 
+ @example
+ ```ts
+ containsErThanMost('this is faster than most options'); // true
+ containsErThanMost('all good');                         // false
+ ```
  */
 function containsErThanMost(text: string,): boolean {
   return findErThanMost(text,)
@@ -213,11 +213,11 @@ function containsErThanMost(text: string,): boolean {
 //region Dismissal phrase list
 
 /**
- * Lowercase phrases for categorical dismissals that a citation must
- * accompany. Apostrophe-bearing variants are paired with their
- * no-apostrophe forms (`don't` / `dont`) to mirror the original regex
- * `['']?` markers; curly quotes in input are folded via
- * {@link normaliseApostrophes} before lookup.
+ Lowercase phrases for categorical dismissals that a citation must
+ accompany. Apostrophe-bearing variants are paired with their
+ no-apostrophe forms (`don't` / `dont`) to mirror the original regex
+ `['']?` markers; curly quotes in input are folded via
+ {@link normaliseApostrophes} before lookup.
  */
 const DISMISSAL_PHRASES: readonly string[] = [
   // \b(?:the )?project doesn['']?t use\b

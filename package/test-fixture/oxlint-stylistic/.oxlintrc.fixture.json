@@ -11,6 +11,10 @@
     "**/node_modules"
   ],
   "rules": {
+    "stylistic/require-asterisk-prefix": [
+      "error",
+      "never"
+    ],
     "stylistic/param-per-line": "error",
     "stylistic/argument-per-line": "error",
     "stylistic/array-element-per-line": "error",

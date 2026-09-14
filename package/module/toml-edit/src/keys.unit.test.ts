@@ -1,10 +1,10 @@
 /**
- * Tests for TOML key encoding (`encodeKey`).
- *
- * Captures the bare-vs-quoted decision and the basic-string escaping so the
- * linear `isBareKey` scanner stays equivalent to the prior recursive walker.
- *
- * @module
+ Tests for TOML key encoding (`encodeKey`).
+ 
+ Captures the bare-vs-quoted decision and the basic-string escaping so the
+ linear `isBareKey` scanner stays equivalent to the prior recursive walker.
+ 
+ @module
  */
 
 import {

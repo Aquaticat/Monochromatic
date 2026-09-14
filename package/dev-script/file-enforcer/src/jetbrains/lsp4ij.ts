@@ -27,7 +27,7 @@ import type {
 //region Helpers: read tracked files
 
 /**
- * Default LSP4IJ persistent-state file names under a JetBrains options directory.
+ Default LSP4IJ persistent-state file names under a JetBrains options directory.
  */
 const DEFAULT_OPTIONS_FILES: Lsp4ijOptionsFiles = {
   languageSettings: 'LanguageServersSettings.xml',
@@ -35,16 +35,16 @@ const DEFAULT_OPTIONS_FILES: Lsp4ijOptionsFiles = {
 };
 
 /**
- * Reads a tracked local file, registering it for watch mode.
- *
- * @param filePath - File path to read and register for watch mode.
- *
- * @returns File content, or {@link ABSENT_FILE_CONTENT} when the file does not exist.
- *
- * @example
- * ```ts
- * await readTrackedExisting({ filePath });
- * ```
+ Reads a tracked local file, registering it for watch mode.
+ 
+ @param filePath - File path to read and register for watch mode.
+ 
+ @returns File content, or {@link ABSENT_FILE_CONTENT} when the file does not exist.
+ 
+ @example
+ ```ts
+ await readTrackedExisting({ filePath });
+ ```
  */
 async function readTrackedExisting(
   { filePath, }: { readonly filePath: string; },
@@ -58,37 +58,37 @@ async function readTrackedExisting(
 //region Public task: non-blocking editor-local LSP4IJ sync
 
 /**
- * Syncs LSP4IJ language-server settings in the latest JetBrains product config,
- * located via {@link latestJetbrainsOptionsDirectory}. Missing JetBrains
- * config, settings files, or base server (matched via
- * {@link findBaseServerEntry}) are intentionally non-blocking because not
- * every developer uses this editor integration. Corrupt config discovery,
- * unreadable settings, XML update failures (from
- * {@link updatedLanguageSettingsXml} and {@link updatedUserDefinedXml}), and
- * write failures (from {@link overwrite}) propagate so broken local state
- * does not look like absence.
- *
- * @param settings - Declarative LSP4IJ server settings policy.
- *
- * @example
- * ```ts
- * await manageLsp4ijServerSettings({
- *   productPrefixes: ['IntelliJIdea'],
- *   baseServerMatch: { templateId: 'harper-ls' },
- *   scopedServers: [],
- * });
- * ```
+ Syncs LSP4IJ language-server settings in the latest JetBrains product config,
+ located via {@link latestJetbrainsOptionsDirectory}. Missing JetBrains
+ config, settings files, or base server (matched via
+ {@link findBaseServerEntry}) are intentionally non-blocking because not
+ every developer uses this editor integration. Corrupt config discovery,
+ unreadable settings, XML update failures (from
+ {@link updatedLanguageSettingsXml} and {@link updatedUserDefinedXml}), and
+ write failures (from {@link overwrite}) propagate so broken local state
+ does not look like absence.
+ 
+ @param settings - Declarative LSP4IJ server settings policy.
+ 
+ @example
+ ```ts
+ await manageLsp4ijServerSettings({
+   productPrefixes: ['IntelliJIdea'],
+   baseServerMatch: { templateId: 'harper-ls' },
+   scopedServers: [],
+ });
+ ```
  */
 export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,): Promise<void> {
   /**
-   * Function-scoped tagged logger.
+   Function-scoped tagged logger.
    */
   const log = tagged({
     tag: manageLsp4ijServerSettings.name,
     l,
   },);
   /**
-   * Latest matching JetBrains product options directory, or absent sentinel.
+   Latest matching JetBrains product options directory, or absent sentinel.
    */
   const latest = await latestJetbrainsOptionsDirectory({ productPrefixes: settings.productPrefixes, },);
   if (latest === NO_JETBRAINS_OPTIONS_DIRECTORY) {
@@ -97,25 +97,25 @@ export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,
     return;
   }
   /**
-   * LSP4IJ persistent-state file names to manage.
+   LSP4IJ persistent-state file names to manage.
    */
   const files = settings.optionsFiles ?? DEFAULT_OPTIONS_FILES;
   /**
-   * Absolute path to the global language-server settings file.
+   Absolute path to the global language-server settings file.
    */
   const languageSettingsPath = join(
     latest.optionsDirectory,
     files.languageSettings,
   );
   /**
-   * Absolute path to the user-defined language-server settings file.
+   Absolute path to the user-defined language-server settings file.
    */
   const userDefinedPath = join(
     latest.optionsDirectory,
     files.userDefined,
   );
   /**
-   * Current contents of both settings files, or absent sentinels.
+   Current contents of both settings files, or absent sentinels.
    */
   const [languageXml, userDefinedXml,] = await Promise.all([
     readTrackedExisting({ filePath: languageSettingsPath, },),
@@ -126,7 +126,7 @@ export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,
     return;
   }
   /**
-   * Server ids ineligible to be the base server (the managed scoped servers).
+   Server ids ineligible to be the base server (the managed scoped servers).
    */
   const excludedIds = new Set([
     ...(settings.baseServerMatch
@@ -138,7 +138,7 @@ export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,
     },),
   ],);
   /**
-   * Base user-defined server entry, or absent sentinel.
+   Base user-defined server entry, or absent sentinel.
    */
   const baseEntry = findBaseServerEntry({
     userDefinedXml,

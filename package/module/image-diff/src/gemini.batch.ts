@@ -19,31 +19,31 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * Compute embeddings for multiple images via the Gemini batchEmbedContents API.
- *
- * @param inputs - array of images to embed
- *
- * @param config - client configuration
- *
- * @returns embedding vectors (in input order) and aggregate usage metadata
- *
- * @example
- * ```ts
- * const { embeddings } = await geminiEmbedBatch({
- *   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
- *   config: {},
- * });
- * ```
+ Compute embeddings for multiple images via the Gemini batchEmbedContents API.
+ 
+ @param inputs - array of images to embed
+ 
+ @param config - client configuration
+ 
+ @returns embedding vectors (in input order) and aggregate usage metadata
+ 
+ @example
+ ```ts
+ const { embeddings } = await geminiEmbedBatch({
+   inputs: [{ path: 'a.png' }, { path: 'b.png' }],
+   config: {},
+ });
+ ```
  */
 export async function geminiEmbedBatch({
   inputs,
@@ -53,7 +53,7 @@ export async function geminiEmbedBatch({
   readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: geminiEmbedBatch.name,
@@ -64,17 +64,17 @@ export async function geminiEmbedBatch({
   );
 
   /**
-   * Resolved Gemini credential; pulled here once and forwarded into the API call.
+   Resolved Gemini credential; pulled here once and forwarded into the API call.
    */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
   /**
-   * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
+   Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
 
   /**
-   * Gemini-shaped inline data payloads converted from each caller image, in input order.
+   Gemini-shaped inline data payloads converted from each caller image, in input order.
    */
   const inlineDataItems = await Promise.all(
     inputs.map(function convertInput(input,) {
@@ -83,7 +83,7 @@ export async function geminiEmbedBatch({
   );
 
   /**
-   * batchEmbedContents request body wrapping each inline item in its own per-request entry.
+   batchEmbedContents request body wrapping each inline item in its own per-request entry.
    */
   const requestBody: GeminiBatchEmbedRequest = {
     requests: inlineDataItems.map(function wrapInlineData(inlineData,) {
@@ -97,13 +97,13 @@ export async function geminiEmbedBatch({
   };
 
   /**
-   * Full batchEmbedContents endpoint URL with the resolved model interpolated.
+   Full batchEmbedContents endpoint URL with the resolved model interpolated.
    */
   const url = `${GEMINI_API_BASE}/${model}:batchEmbedContents`;
   rl.debug(`calling Gemini batch API: ${url}, ${String(inputs.length,)} input(s)`,);
 
   /**
-   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
    */
   const response = await fetch(
     url,
@@ -119,7 +119,7 @@ export async function geminiEmbedBatch({
 
   if (!response.ok) {
     /**
-     * Raw response body captured for both the log line and the thrown error message.
+     Raw response body captured for both the log line and the thrown error message.
      */
     const errorBody = await response.text();
     rl.error(`Gemini batch API returned ${String(response.status,)}: ${errorBody}`,);
@@ -127,7 +127,7 @@ export async function geminiEmbedBatch({
   }
 
   /**
-   * Parsed batchEmbedContents payload; embedding vectors arrive in input order at `embeddings[]`.
+   Parsed batchEmbedContents payload; embedding vectors arrive in input order at `embeddings[]`.
    */
   const result = await response.json() as GeminiBatchEmbedResponse;
   rl.debug(`received ${String(result.embeddings

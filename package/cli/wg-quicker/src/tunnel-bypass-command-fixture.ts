@@ -1,7 +1,7 @@
 /**
- * Command helpers for disposable bypass integration test.
- *
- * @module
+ Command helpers for disposable bypass integration test.
+ 
+ @module
  */
 
 import { spawn, } from 'node:child_process';
@@ -9,7 +9,7 @@ import { once, } from 'node:events';
 import { text, } from 'node:stream/consumers';
 
 /**
- * Result from allowed-failure integration command.
+ Result from allowed-failure integration command.
  */
 export type FixtureCommandResult = {
   readonly exitCode: number;
@@ -18,7 +18,7 @@ export type FixtureCommandResult = {
 };
 
 /**
- * Persisted state fields consumed by integration checks.
+ Persisted state fields consumed by integration checks.
  */
 export type FixtureBypassState = {
   readonly preference: number;
@@ -26,7 +26,7 @@ export type FixtureBypassState = {
 };
 
 /**
- * Disposable network namespace fixture.
+ Disposable network namespace fixture.
  */
 export type BypassFixture = {
   readonly namespace: string;
@@ -40,7 +40,7 @@ export type BypassFixture = {
 };
 
 /**
- * Built CLI bundle exercised by end-user lifecycle checks.
+ Built CLI bundle exercised by end-user lifecycle checks.
  */
 const CLI_BUNDLE_PATH = new URL(
   '../dist/final/node/index.mjs',
@@ -48,7 +48,7 @@ const CLI_BUNDLE_PATH = new URL(
 ).pathname;
 
 /**
- * Built bypass bundle exercised by namespace child.
+ Built bypass bundle exercised by namespace child.
  */
 const BYPASS_BUNDLE_URL = new URL(
   '../dist/final/node/tunnel-bypass.mjs',
@@ -56,28 +56,28 @@ const BYPASS_BUNDLE_URL = new URL(
 ).href;
 
 /**
- * Runs privileged command and returns stdout.
- *
- * @param args - Arguments after `sudo`.
- *
- * @returns Captured UTF-8 stdout.
- *
- * @example
- * ```ts
- * await runSudo({ args: ['ip', 'netns', 'list'] });
- * ```
+ Runs privileged command and returns stdout.
+ 
+ @param args - Arguments after `sudo`.
+ 
+ @returns Captured UTF-8 stdout.
+ 
+ @example
+ ```ts
+ await runSudo({ args: ['ip', 'netns', 'list'] });
+ ```
  */
 export async function runSudo(
   { args, }: { readonly args: readonly string[]; },
 ): Promise<string> {
   /**
-   * Fresh argument container sharing only immutable strings.
+   Fresh argument container sharing only immutable strings.
    */
   const isolatedArgs = args.map(function copyArgument(value,): string {
     return value;
   },);
   /**
-   * Captured command result checked at privilege boundary.
+   Captured command result checked at privilege boundary.
    */
   const result = await runSudoAllowingFailure({ args: isolatedArgs, },);
   if (result.exitCode !== 0) {
@@ -92,28 +92,28 @@ export async function runSudo(
 }
 
 /**
- * Runs privileged command while capturing nonzero result.
- *
- * @param args - Arguments after `sudo`.
- *
- * @returns Exit code and output streams.
- *
- * @example
- * ```ts
- * await runSudoAllowingFailure({ args: ['ip', 'netns', 'delete', 'missing'] });
- * ```
+ Runs privileged command while capturing nonzero result.
+ 
+ @param args - Arguments after `sudo`.
+ 
+ @returns Exit code and output streams.
+ 
+ @example
+ ```ts
+ await runSudoAllowingFailure({ args: ['ip', 'netns', 'delete', 'missing'] });
+ ```
  */
 export async function runSudoAllowingFailure(
   { args, }: { readonly args: readonly string[]; },
 ): Promise<FixtureCommandResult> {
   /**
-   * Fresh argument container sharing only immutable strings.
+   Fresh argument container sharing only immutable strings.
    */
   const isolatedArgs = args.map(function copyArgument(value,): string {
     return value;
   },);
   /**
-   * Child with piped output and inherited execution environment.
+   Child with piped output and inherited execution environment.
    */
   const child = spawn(
     'sudo',
@@ -129,11 +129,11 @@ export async function runSudoAllowingFailure(
   if ((child.stdout === null) || (child.stderr === null))
     throw new Error('Fixture command did not expose output streams.',);
   /**
-   * Concurrent stdout collection preventing pipe backpressure.
+   Concurrent stdout collection preventing pipe backpressure.
    */
   const stdoutPromise = text(child.stdout,);
   /**
-   * Concurrent stderr collection preventing pipe backpressure.
+   Concurrent stderr collection preventing pipe backpressure.
    */
   const stderrPromise = text(child.stderr,);
   await once(
@@ -141,13 +141,13 @@ export async function runSudoAllowingFailure(
     'close',
   );
   /**
-   * Exit code available after close event.
+   Exit code available after close event.
    */
   const { exitCode, } = child;
   if (exitCode === null)
     throw new Error('Fixture command closed without an exit code.',);
   /**
-   * Captured streams complete after child closes.
+   Captured streams complete after child closes.
    */
   const [stdout, stderr,] = await Promise.all([
     stdoutPromise,
@@ -161,16 +161,16 @@ export async function runSudoAllowingFailure(
 }
 
 /**
- * Writes root-owned fixture file without shell interpolation.
- *
- * @param path - Destination path.
- *
- * @param contents - UTF-8 fixture contents.
- *
- * @example
- * ```ts
- * await writeRootFixtureFile({ path: '/tmp/state', contents: '{}' });
- * ```
+ Writes root-owned fixture file without shell interpolation.
+ 
+ @param path - Destination path.
+ 
+ @param contents - UTF-8 fixture contents.
+ 
+ @example
+ ```ts
+ await writeRootFixtureFile({ path: '/tmp/state', contents: '{}' });
+ ```
  */
 export async function writeRootFixtureFile(
   {
@@ -198,18 +198,18 @@ export async function writeRootFixtureFile(
 }
 
 /**
- * Runs `ip` command inside fixture namespace.
- *
- * @param fixture - Namespace fixture.
- *
- * @param args - Arguments after `ip`.
- *
- * @returns Captured stdout.
- *
- * @example
- * ```ts
- * await runNamespaceIp({ fixture, args: ['route', 'show'] });
- * ```
+ Runs `ip` command inside fixture namespace.
+ 
+ @param fixture - Namespace fixture.
+ 
+ @param args - Arguments after `ip`.
+ 
+ @returns Captured stdout.
+ 
+ @example
+ ```ts
+ await runNamespaceIp({ fixture, args: ['route', 'show'] });
+ ```
  */
 export async function runNamespaceIp(
   {
@@ -233,20 +233,20 @@ export async function runNamespaceIp(
 }
 
 /**
- * Runs built CLI command inside fixture namespace.
- *
- * @param fixture - Namespace fixture.
- *
- * @param operation - `up` or `down` command.
- *
- * @param configPath - Explicit config path.
- *
- * @returns Successful command result with both output streams.
- *
- * @example
- * ```ts
- * await runWgQuickerCli({ fixture, operation: 'up', configPath: '/tmp/wgtest.conf' });
- * ```
+ Runs built CLI command inside fixture namespace.
+ 
+ @param fixture - Namespace fixture.
+ 
+ @param operation - `up` or `down` command.
+ 
+ @param configPath - Explicit config path.
+ 
+ @returns Successful command result with both output streams.
+ 
+ @example
+ ```ts
+ await runWgQuickerCli({ fixture, operation: 'up', configPath: '/tmp/wgtest.conf' });
+ ```
  */
 export async function runWgQuickerCli(
   {
@@ -260,7 +260,7 @@ export async function runWgQuickerCli(
   },
 ): Promise<FixtureCommandResult> {
   /**
-   * Captured built CLI result checked before return.
+   Captured built CLI result checked before return.
    */
   const result = await runSudoAllowingFailure({
     args: [
@@ -290,18 +290,18 @@ export async function runWgQuickerCli(
 }
 
 /**
- * Runs built bypass operation inside fixture namespace.
- *
- * @param fixture - Namespace fixture.
- *
- * @param source - JavaScript operation after bundle import.
- *
- * @returns Captured stdout.
- *
- * @example
- * ```ts
- * await runBypassOperation({ fixture, source: 'await removeExemptRule(...);' });
- * ```
+ Runs built bypass operation inside fixture namespace.
+ 
+ @param fixture - Namespace fixture.
+ 
+ @param source - JavaScript operation after bundle import.
+ 
+ @returns Captured stdout.
+ 
+ @example
+ ```ts
+ await runBypassOperation({ fixture, source: 'await removeExemptRule(...);' });
+ ```
  */
 export async function runBypassOperation(
   {
@@ -329,18 +329,18 @@ export async function runBypassOperation(
 }
 
 /**
- * Runs built bypass operation expected to fail.
- *
- * @param fixture - Namespace fixture.
- *
- * @param source - JavaScript operation body.
- *
- * @returns Captured nonzero result.
- *
- * @example
- * ```ts
- * await runBypassOperationAllowingFailure({ fixture, source: 'await addExemptRule(...);' });
- * ```
+ Runs built bypass operation expected to fail.
+ 
+ @param fixture - Namespace fixture.
+ 
+ @param source - JavaScript operation body.
+ 
+ @returns Captured nonzero result.
+ 
+ @example
+ ```ts
+ await runBypassOperationAllowingFailure({ fixture, source: 'await addExemptRule(...);' });
+ ```
  */
 export async function runBypassOperationAllowingFailure(
   {
@@ -368,22 +368,22 @@ export async function runBypassOperationAllowingFailure(
 }
 
 /**
- * Reads persisted bypass state through privileged boundary.
- *
- * @param fixture - Namespace fixture.
- *
- * @returns Parsed table field.
- *
- * @example
- * ```ts
- * await readFixtureState({ fixture });
- * ```
+ Reads persisted bypass state through privileged boundary.
+ 
+ @param fixture - Namespace fixture.
+ 
+ @returns Parsed table field.
+ 
+ @example
+ ```ts
+ await readFixtureState({ fixture });
+ ```
  */
 export async function readFixtureState(
   { fixture, }: { readonly fixture: BypassFixture; },
 ): Promise<FixtureBypassState> {
   /**
-   * Parsed state JSON.
+   Parsed state JSON.
    */
   const value: unknown = JSON.parse(await runSudo({
     args: [

@@ -1,7 +1,7 @@
 /**
- * Unit tests for Pi Search Fetch tool output helpers.
- *
- * @module
+ Unit tests for Pi Search Fetch tool output helpers.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -20,22 +20,22 @@ import {
 //region Fixtures
 
 /**
- * Tool name fixture.
+ Tool name fixture.
  */
 const TOOL_NAME = 'linkup_web_search';
 
 /**
- * Fixed behavior warning fixture.
+ Fixed behavior warning fixture.
  */
 const FIXED_BEHAVIOR = 'This extension always uses fixed behavior.';
 
 /**
- * Response fixture.
+ Response fixture.
  */
 const RESPONSE = { results: [], };
 
 /**
- * Response fixture with object search results.
+ Response fixture with object search results.
  */
 const RESULTS_RESPONSE = {
   results: [
@@ -51,7 +51,7 @@ const RESULTS_RESPONSE = {
 } as const;
 
 /**
- * Response fixture with results plus metadata.
+ Response fixture with results plus metadata.
  */
 const RESULTS_WITH_EXTRA_KEY_RESPONSE = {
   results: [
@@ -64,7 +64,7 @@ const RESULTS_WITH_EXTRA_KEY_RESPONSE = {
 } as const;
 
 /**
- * Search response fixture carrying Linkup metadata in a noncanonical property order.
+ Search response fixture carrying Linkup metadata in a noncanonical property order.
  */
 const METADATA_RESULTS_RESPONSE = {
   costDollars: {
@@ -80,7 +80,7 @@ const METADATA_RESULTS_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture with unexpected top-level data.
+ Metadata search response fixture with unexpected top-level data.
  */
 const METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE = {
   ...METADATA_RESULTS_RESPONSE,
@@ -88,7 +88,7 @@ const METADATA_RESULTS_WITH_EXTRA_KEY_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture missing required cost data.
+ Metadata search response fixture missing required cost data.
  */
 const METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE = {
   requestId: METADATA_RESULTS_RESPONSE.requestId,
@@ -98,7 +98,7 @@ const METADATA_RESULTS_WITH_MISSING_KEY_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture containing an invalid scalar result item.
+ Metadata search response fixture containing an invalid scalar result item.
  */
 const METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE = {
   ...METADATA_RESULTS_RESPONSE,
@@ -109,7 +109,7 @@ const METADATA_RESULTS_WITH_SCALAR_ITEM_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture containing an invalid null result item.
+ Metadata search response fixture containing an invalid null result item.
  */
 const METADATA_RESULTS_WITH_NULL_ITEM_RESPONSE = {
   ...METADATA_RESULTS_RESPONSE,
@@ -120,7 +120,7 @@ const METADATA_RESULTS_WITH_NULL_ITEM_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture containing an invalid array result item.
+ Metadata search response fixture containing an invalid array result item.
  */
 const METADATA_RESULTS_WITH_ARRAY_ITEM_RESPONSE = {
   ...METADATA_RESULTS_RESPONSE,
@@ -131,7 +131,7 @@ const METADATA_RESULTS_WITH_ARRAY_ITEM_RESPONSE = {
 } as const;
 
 /**
- * Metadata search response fixture containing a non-array results value.
+ Metadata search response fixture containing a non-array results value.
  */
 const METADATA_RESULTS_WITH_NON_ARRAY_RESULTS_RESPONSE = {
   ...METADATA_RESULTS_RESPONSE,
@@ -139,7 +139,7 @@ const METADATA_RESULTS_WITH_NON_ARRAY_RESULTS_RESPONSE = {
 } as const;
 
 /**
- * Metadata response shapes that must retain complete pretty JSON rather than JSONL.
+ Metadata response shapes that must retain complete pretty JSON rather than JSONL.
  */
 const METADATA_RESULTS_JSON_FALLBACK_CASES = [
   {
@@ -169,12 +169,12 @@ const METADATA_RESULTS_JSON_FALLBACK_CASES = [
 ] as const;
 
 /**
- * Markdown-only response fixture.
+ Markdown-only response fixture.
  */
 const MARKDOWN_ONLY_RESPONSE = { markdown: '# Meow', } as const;
 
 /**
- * Markdown response fixture with additional metadata.
+ Markdown response fixture with additional metadata.
  */
 const MARKDOWN_WITH_EXTRA_KEY_RESPONSE = {
   markdown: '# Meow',
@@ -182,17 +182,17 @@ const MARKDOWN_WITH_EXTRA_KEY_RESPONSE = {
 } as const;
 
 /**
- * Bytes in one kibibyte, matching Pi's truncation utilities.
+ Bytes in one kibibyte, matching Pi's truncation utilities.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
- * Expected Linkup visible JSON cap in kibibytes.
+ Expected Linkup visible JSON cap in kibibytes.
  */
 const EXPECTED_LINKUP_VISIBLE_JSON_KIBIBYTES = 100;
 
 /**
- * JSON payload kibibytes that exceed Pi's core default but not Linkup's cap.
+ JSON payload kibibytes that exceed Pi's core default but not Linkup's cap.
  */
 const ABOVE_PI_DEFAULT_JSON_KIBIBYTES = 60;
 
@@ -208,7 +208,7 @@ await describe({
           name: 'names ignored keys and fixed behavior',
           fn: async () => {
             /**
-             * Local value for warning.
+             Local value for warning.
              */
             const warning = createWarningContent({
               toolName: TOOL_NAME,
@@ -230,7 +230,7 @@ await describe({
           name: 'returns pretty JSON text when below truncation limits',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: RESPONSE,
@@ -245,14 +245,14 @@ await describe({
           name: 'returns inner results array as JSONL when requested',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: RESULTS_RESPONSE,
               renderResultsArrayAsJsonl: true,
             },);
             /**
-             * Expected model-visible JSONL text.
+             Expected model-visible JSONL text.
              */
             const expectedJsonl = [
               '{"title":"First","url":"https://example.com/first"}',
@@ -269,14 +269,14 @@ await describe({
           name: 'returns metadata envelope results as JSONL when requested',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: METADATA_RESULTS_RESPONSE,
               renderResultsArrayAsJsonl: true,
             },);
             /**
-             * Expected model-visible JSONL text.
+             Expected model-visible JSONL text.
              */
             const expectedJsonl = [
               '{"title":"First","url":"https://example.com/first"}',
@@ -293,7 +293,7 @@ await describe({
           name: 'ignores metadata value types when exact top-level key set matches',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: {
@@ -316,7 +316,7 @@ await describe({
             name: `keeps complete JSON for metadata envelopes with ${testCase.name}`,
             fn: async () => {
               /**
-               * Local value for result.
+               Local value for result.
                */
               const result = await createJsonContent({
                 value: testCase.value,
@@ -337,7 +337,7 @@ await describe({
           name: 'returns empty JSONL for empty results when requested',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: RESPONSE,
@@ -353,7 +353,7 @@ await describe({
           name: 'keeps JSON for results responses with extra fields',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: RESULTS_WITH_EXTRA_KEY_RESPONSE,
@@ -369,7 +369,7 @@ await describe({
           name: 'truncates JSONL and writes full JSONL to temp file',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: RESULTS_RESPONSE,
@@ -386,7 +386,7 @@ await describe({
               throw new Error('missing full JSONL path',);
             expect(result.fullJsonPath.endsWith('/response.jsonl',),).toBe(true,);
             /**
-             * Local value for fullJsonl.
+             Local value for fullJsonl.
              */
             const fullJsonl = await readFile(result.fullJsonPath, 'utf8',);
             expect(fullJsonl,).toContain('"title":"First"',);
@@ -397,7 +397,7 @@ await describe({
           name: 'truncates metadata-envelope JSONL and writes full JSONL to temp file',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: METADATA_RESULTS_RESPONSE,
@@ -414,7 +414,7 @@ await describe({
               throw new Error('missing full metadata-envelope JSONL path',);
             expect(result.fullJsonPath.endsWith('/response.jsonl',),).toBe(true,);
             /**
-             * Local value for fullJsonl.
+             Local value for fullJsonl.
              */
             const fullJsonl = await readFile(result.fullJsonPath, 'utf8',);
             expect(fullJsonl,).toContain('"title":"First"',);
@@ -425,7 +425,7 @@ await describe({
           name: 'returns raw markdown for single-field markdown responses',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: MARKDOWN_ONLY_RESPONSE,
@@ -441,7 +441,7 @@ await describe({
           name: 'keeps JSON for markdown responses with extra fields',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: MARKDOWN_WITH_EXTRA_KEY_RESPONSE,
@@ -457,13 +457,13 @@ await describe({
           name: 'keeps JSON above Pi default when below Linkup byte limit',
           fn: async () => {
             /**
-             * Large string that would exceed Pi's 50 KiB default limit.
+             Large string that would exceed Pi's 50 KiB default limit.
              */
             const largeText = 'x'.repeat(
               ABOVE_PI_DEFAULT_JSON_KIBIBYTES * BYTES_PER_KIBIBYTE,
             );
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: {
@@ -482,7 +482,7 @@ await describe({
           name: 'truncates large JSON and writes full JSON to temp file',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createJsonContent({
               value: {
@@ -499,7 +499,7 @@ await describe({
             if (result.fullJsonPath === undefined)
               throw new Error('missing full JSON path',);
             /**
-             * Local value for fullJson.
+             Local value for fullJson.
              */
             const fullJson = await readFile(result.fullJsonPath, 'utf8',);
             expect(fullJson,).toContain('abcdefghijklmnopqrstuvwxyz',);
@@ -514,7 +514,7 @@ await describe({
           name: 'returns JSON content and details for model-visible response',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createLinkupToolOutput({
               toolName: TOOL_NAME,
@@ -534,7 +534,7 @@ await describe({
           name: 'returns markdown content and details for markdown-only response',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createLinkupToolOutput({
               toolName: TOOL_NAME,
@@ -557,7 +557,7 @@ await describe({
           name: 'returns warning before JSON when ignored keys are present',
           fn: async () => {
             /**
-             * Local value for result.
+             Local value for result.
              */
             const result = await createLinkupToolOutput({
               toolName: TOOL_NAME,

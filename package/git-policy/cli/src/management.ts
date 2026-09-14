@@ -1,11 +1,13 @@
 /**
- * Management-command parser and dispatcher. @module
+ Management-command parser and dispatcher. @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
+  MANAGEMENT_HELP,
   MANAGEMENT_REFUSED,
   MANAGEMENT_USAGE,
   parseManagementArgs,
+  TRUST_HELP,
 } from './management-parser.ts';
 import {
   createEngineFailureEvent,
@@ -22,26 +24,26 @@ import {
 } from './trust/runtime-config.ts';
 
 /**
- * Detects positional input before explicit pathspec separator.
- *
- * @param args - complete management arguments
- *
- * @returns whether non-option input appears before `--`
+ Detects positional input before explicit pathspec separator.
+ 
+ @param args - complete management arguments
+ 
+ @returns whether non-option input appears before `--`
  */
 function hasPreSeparatorPositional(args: readonly string[],): boolean {
   /**
-   * Tokens before pathspec separator, excluding command name.
+   Tokens before pathspec separator, excluding command name.
    */
   const separatorIndex = args.indexOf('--',);
   /**
-   * Option region that cannot contain direct-check paths.
+   Option region that cannot contain direct-check paths.
    */
   const optionRegion = args.slice(
     1,
     separatorIndex === (-1) ? args.length : separatorIndex,
   );
   /**
-   * Parser state for separated `--policy <id>` values.
+   Parser state for separated `--policy <id>` values.
    */
   const state = optionRegion.reduce(
     function inspectOptionRegion(
@@ -79,20 +81,20 @@ function hasPreSeparatorPositional(args: readonly string[],): boolean {
 }
 
 /**
- * Direct-check runtime configuration resolution.
+ Direct-check runtime configuration resolution.
  */
 type DirectRuntimeResolution =
   | Readonly<{ loaded: Awaited<ReturnType<typeof resolveRuntimeConfig>>; }>
   | Readonly<{ error: unknown; }>;
 
 /**
- * Loads trusted direct-check config while retaining stable failure output.
- *
- * @param gitGlobalArgs - global options determining repository
- *
- * @param registryRoot - internal private registry root
- *
- * @returns loaded config or captured failure
+ Loads trusted direct-check config while retaining stable failure output.
+ 
+ @param gitGlobalArgs - global options determining repository
+ 
+ @param registryRoot - internal private registry root
+ 
+ @returns loaded config or captured failure
  */
 async function resolveDirectRuntime({
   gitGlobalArgs,
@@ -116,20 +118,20 @@ async function resolveDirectRuntime({
 }
 
 /**
- * Parses and runs one namespaced management command.
- *
- * @param args - arguments following `git cli-git`
- *
- * @param gitGlobalArgs - arguments preceding `cli-git`
- *
- * @param registryRoot - internal complete test registry root
- *
- * @returns settled cli-git exit code
- *
- * @example
- * ```ts
- * await runManagementCommand({ args: ['status'], gitGlobalArgs: [] });
- * ```
+ Parses and runs one namespaced management command.
+ 
+ @param args - arguments following `git cli-git`
+ 
+ @param gitGlobalArgs - arguments preceding `cli-git`
+ 
+ @param registryRoot - internal complete test registry root
+ 
+ @returns settled cli-git exit code
+ 
+ @example
+ ```ts
+ await runManagementCommand({ args: ['status'], gitGlobalArgs: [] });
+ ```
  */
 export async function runManagementCommand({
   args,
@@ -141,12 +143,16 @@ export async function runManagementCommand({
   registryRoot?: string;
 }>,): Promise<0 | 1 | 2> {
   /**
-   * Resolved management action, or refusal.
+   Resolved management action, or refusal.
    */
   const parsed = parseManagementArgs(args,);
   if (parsed === MANAGEMENT_REFUSED) {
     console.error(MANAGEMENT_USAGE,);
     return 2;
+  }
+  if (parsed.command === 'help') {
+    console.log(parsed.topic === 'trust' ? TRUST_HELP : MANAGEMENT_HELP,);
+    return 0;
   }
 
   if ((parsed.command === 'trust')
@@ -167,17 +173,17 @@ export async function runManagementCommand({
     return 2;
   }
   /**
-   * Position of required pathspec separator.
+   Position of required pathspec separator.
    */
   const separatorIndex = args.indexOf('--',);
   /**
-   * Whether invocation selected non-empty pathspec scope.
+   Whether invocation selected non-empty pathspec scope.
    */
   const hasPathspecScope = (separatorIndex !== (-1)) && (parsed.pathspecs
     .length
     > 0);
   /**
-   * Whether invocation selected complete repository scope.
+   Whether invocation selected complete repository scope.
    */
   const hasAllScope = parsed.all;
   if (hasAllScope === hasPathspecScope) {
@@ -192,11 +198,11 @@ export async function runManagementCommand({
   }
 
   /**
-   * Deduplicated direct-check filter preserving first occurrence order.
+   Deduplicated direct-check filter preserving first occurrence order.
    */
   const selectedPolicyIds = parsed.policies;
   /**
-   * Trusted direct-check config resolution.
+   Trusted direct-check config resolution.
    */
   const runtimeResolution = await resolveDirectRuntime({
     gitGlobalArgs,
@@ -204,7 +210,7 @@ export async function runManagementCommand({
   },);
   if ('error' in runtimeResolution) {
     /**
-     * Stable direct trust failure code.
+     Stable direct trust failure code.
      */
     const code = runtimeResolution.error instanceof TrustedConfigError
       ? runtimeResolution.error
@@ -219,18 +225,18 @@ export async function runManagementCommand({
     return 2;
   }
   /**
-   * Loaded config or no-config sentinel.
+   Loaded config or no-config sentinel.
    */
   const runtimeConfig = runtimeResolution.loaded;
   /**
-   * Concrete direct-check Git pathspec scope.
+   Concrete direct-check Git pathspec scope.
    */
   const directPathspecs: readonly string[] = hasAllScope
     ? [':/',]
     : parsed.pathspecs;
   if (parsed.command === 'fix') {
     /**
-     * Converged direct-fix operation.
+     Converged direct-fix operation.
      */
     const fixed = await runDirectFix({
       gitGlobalArgs,
@@ -250,7 +256,7 @@ export async function runManagementCommand({
       },
     },);
     /**
-     * Stable direct-fix JSONL.
+     Stable direct-fix JSONL.
      */
     const renderedEvents = renderPolicyEvents(fixed.policyResult
       .events,);
@@ -261,7 +267,7 @@ export async function runManagementCommand({
       .exitCode;
   }
   /**
-   * Exact private worktree/index projection or stable setup failure.
+   Exact private worktree/index projection or stable setup failure.
    */
   const directFacts = await prepareDirectCheckFacts({
     args,
@@ -276,11 +282,11 @@ export async function runManagementCommand({
       .exitCode;
   }
   /**
-   * Scope-bound exact direct-check candidate facts.
+   Scope-bound exact direct-check candidate facts.
    */
   await using scopedDirectFacts = directFacts.scope;
   /**
-   * Built-in and trusted-plugin direct-check decision.
+   Built-in and trusted-plugin direct-check decision.
    */
   const result = await runPolicyEngine({
     args: gitGlobalArgs,
@@ -300,7 +306,7 @@ export async function runManagementCommand({
       }),
   },);
   /**
-   * Stable direct-command JSONL.
+   Stable direct-command JSONL.
    */
   const renderedEvents = renderPolicyEvents(result.events,);
   if (renderedEvents !== '')

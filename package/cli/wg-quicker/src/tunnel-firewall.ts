@@ -10,16 +10,16 @@ import { makeTempDir, } from './tempdir.ts';
 import { isV6, } from './tunnel-util.ts';
 
 /**
- * Installs the nft kill-switch so non-tunnel packets to interface addresses drop.
- *
- * @param config - Parsed config (addresses drive the drop rules).
- *
- * @param table - Policy table whose fwmark identifies tunnel-bound packets.
- *
- * @example
- * ```ts
- * await addKillSwitch({ config, table: 51820 });
- * ```
+ Installs the nft kill-switch so non-tunnel packets to interface addresses drop.
+ 
+ @param config - Parsed config (addresses drive the drop rules).
+ 
+ @param table - Policy table whose fwmark identifies tunnel-bound packets.
+ 
+ @example
+ ```ts
+ await addKillSwitch({ config, table: 51820 });
+ ```
  */
 export async function addKillSwitch(
   {
@@ -31,15 +31,15 @@ export async function addKillSwitch(
   },
 ): Promise<void> {
   /**
-   * Interface receiving the kill-switch.
+   Interface receiving the kill-switch.
    */
   const iface = config.interfaceName;
   /**
-   * Name of the dedicated nft table for this interface.
+   Name of the dedicated nft table for this interface.
    */
   const nftable = `wg-quicker-${iface}`;
   /**
-   * nft statements built up and applied atomically via `nft -f`.
+   nft statements built up and applied atomically via `nft -f`.
    */
   const statements: string[] = [`add table inet ${nftable}`,];
   for (const proto of [
@@ -51,14 +51,14 @@ export async function addKillSwitch(
     );
     for (const address of config.addresses) {
       /**
-       * Bare address without its prefix length.
+       Bare address without its prefix length.
        */
       const addr = address.slice(
         0,
         address.indexOf('/',),
       );
       /**
-       * Address family token matching the current protocol chain.
+       Address family token matching the current protocol chain.
        */
       const family = isV6({ prefix: addr, },) ? 'ip6' : 'ip';
       if (family === proto)
@@ -74,12 +74,12 @@ export async function addKillSwitch(
     `add rule inet ${nftable} premangle meta l4proto udp meta mark set ct mark`,
   );
   /**
-   * Temp file holding the nft script; `nft -f` reads a seekable file as
-   * `/dev/stdin`, which a pipe from a spawned child is not.
+   Temp file holding the nft script; `nft -f` reads a seekable file as
+   `/dev/stdin`, which a pipe from a spawned child is not.
    */
   await using dir = await makeTempDir();
   /**
-   * Path of the nft script file.
+   Path of the nft script file.
    */
   const scriptPath = join(
     dir.path,
@@ -99,14 +99,14 @@ export async function addKillSwitch(
 }
 
 /**
- * Removes the nft kill-switch table, idempotently.
- *
- * @param interfaceName - Interface whose kill-switch table is deleted.
- *
- * @example
- * ```ts
- * await removeKillSwitch({ interfaceName: 'wg0' });
- * ```
+ Removes the nft kill-switch table, idempotently.
+ 
+ @param interfaceName - Interface whose kill-switch table is deleted.
+ 
+ @example
+ ```ts
+ await removeKillSwitch({ interfaceName: 'wg0' });
+ ```
  */
 export async function removeKillSwitch(
   { interfaceName, }: { readonly interfaceName: string; },

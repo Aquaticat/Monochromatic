@@ -25,56 +25,56 @@ import { createWatchModeLifecycle, } from './watch-lifecycle.ts';
 import { watchDirectoryWithRestarts, } from './watch-supervisor.ts';
 
 /**
- * Watches source files and managed destinations, re-executing the config
- * on source changes and reverting + notifying on external destination edits.
- * Builds its watch-mode state with {@link createWatchModeLifecycle}, serializes
- * reruns through {@link createWatchRerunQueue}, derives watched directories with
- * {@link watchDirs}, supervises each one via {@link watchDirectoryWithRestarts},
- * and reports protected-path edits with {@link notifyWriteProtection}.
- *
- * This function never returns under normal operation (it loops forever watching).
- *
- * @param configPath - Path to the file-enforcer config file
- *
- * @example
- * ```ts
- * await startWatching('./file-enforcer.config.ts');
- * ```
+ Watches source files and managed destinations, re-executing the config
+ on source changes and reverting + notifying on external destination edits.
+ Builds its watch-mode state with {@link createWatchModeLifecycle}, serializes
+ reruns through {@link createWatchRerunQueue}, derives watched directories with
+ {@link watchDirs}, supervises each one via {@link watchDirectoryWithRestarts},
+ and reports protected-path edits with {@link notifyWriteProtection}.
+ 
+ This function never returns under normal operation (it loops forever watching).
+ 
+ @param configPath - Path to the file-enforcer config file
+ 
+ @example
+ ```ts
+ await startWatching('./file-enforcer.config.ts');
+ ```
  */
 export function startWatching(configPath: string,): Promise<never> {
   /**
-   * Function-scoped logger tagged with the call site for traceable watch-mode logs.
+   Function-scoped logger tagged with the call site for traceable watch-mode logs.
    */
   const rl = tagged({
     tag: startWatching.name,
     l,
   },);
   /**
-   * Absolute config path for reliable comparisons
+   Absolute config path for reliable comparisons
    */
   const absoluteConfig = resolve(configPath,);
   setActiveConfigPath({ configPath: absoluteConfig, },);
   rl.info('watch mode started',);
 
   /**
-   * Watch-mode state holder for watcher teardown, debounce cleanup, and fail-closed rejection.
+   Watch-mode state holder for watcher teardown, debounce cleanup, and fail-closed rejection.
    */
   const lifecycle = createWatchModeLifecycle();
 
   /**
-   * Paths accumulated during the debounce window, invalidated together on re-run
+   Paths accumulated during the debounce window, invalidated together on re-run
    */
   const pendingPaths: Set<string> = new Set<string>();
   /**
-   * Protected paths that need notification, accumulated during the debounce window
+   Protected paths that need notification, accumulated during the debounce window
    */
   const pendingProtected: Set<string> = new Set<string>();
   /**
-   * Re-imports the config with a cache-busting query parameter,
-   * then updates the watcher set from newly tracked reads/writes.
-   *
-   * @param changedPaths - Absolute paths of files that triggered the re-run,
-   *   invalidated from the read cache so only those files are re-read from disk
+   Re-imports the config with a cache-busting query parameter,
+   then updates the watcher set from newly tracked reads/writes.
+   
+   @param changedPaths - Absolute paths of files that triggered the re-run,
+     invalidated from the read cache so only those files are re-read from disk
    */
   async function rerun(changedPaths: readonly string[],): Promise<void> {
     rl.info('re-running config...',);
@@ -93,8 +93,8 @@ export function startWatching(configPath: string,): Promise<never> {
   }
 
   /**
-   * Serial queue that prevents overlapping config reruns from interleaving tracker
-   * reset, config import, and watcher recreation.
+   Serial queue that prevents overlapping config reruns from interleaving tracker
+   reset, config import, and watcher recreation.
    */
   const rerunQueue = createWatchRerunQueue({
     run: async function runWatchRerunBatch(batch: WatchRerunBatch,): Promise<void> {
@@ -110,15 +110,15 @@ export function startWatching(configPath: string,): Promise<never> {
   },);
 
   /**
-   * Handles a classified filesystem event by accumulating the changed path
-   * and scheduling a debounced re-run. Multiple rapid events are coalesced
-   * into a single re-run that invalidates all accumulated paths.
-   *
-   * @param kind - classification of the filesystem event
-   *
-   * @param filename - filename from the watch event
-   *
-   * @param dir - directory the event occurred in
+   Handles a classified filesystem event by accumulating the changed path
+   and scheduling a debounced re-run. Multiple rapid events are coalesced
+   into a single re-run that invalidates all accumulated paths.
+   
+   @param kind - classification of the filesystem event
+   
+   @param filename - filename from the watch event
+   
+   @param dir - directory the event occurred in
    */
   function handleEvent(
     {
@@ -132,7 +132,7 @@ export function startWatching(configPath: string,): Promise<never> {
     },
   ): void {
     /**
-     * Absolute path of the file that triggered this event
+     Absolute path of the file that triggered this event
      */
     const changedPath = resolve(join(
       dir,
@@ -147,15 +147,15 @@ export function startWatching(configPath: string,): Promise<never> {
       delayMs: DEBOUNCE_MS,
       callback: function debouncedRerun(): void {
         /**
-         * Snapshot accumulated state before clearing
+         Snapshot accumulated state before clearing
          */
         const paths = [...pendingPaths,];
         /**
-         * Snapshot of paths that need write-protection notifications, paired with `paths`.
+         Snapshot of paths that need write-protection notifications, paired with `paths`.
          */
         const protectedPaths = [...pendingProtected,];
         /**
-         * Debounced watch event batch submitted to the serial rerun queue.
+         Debounced watch event batch submitted to the serial rerun queue.
          */
         const batch: WatchRerunBatch = {
           paths,
@@ -171,20 +171,20 @@ export function startWatching(configPath: string,): Promise<never> {
   }
 
   /**
-   * Supervises one watcher, reporting exhausted restart attempts to watch mode.
-   *
-   * @param dir - Directory being watched.
-   *
-   * @param controller - Abort controller for normal watcher teardown.
-   *
-   * @param onReady - Callback fired after chokidar reports initial scan readiness.
-   *
-   * @mutates controller through wait abort-listener registration on controller.signal
-   *
-   * @example
-   * ```ts
-   * await monitorWatcher({ dir: '/repo/src', controller, onReady });
-   * ```
+   Supervises one watcher, reporting exhausted restart attempts to watch mode.
+   
+   @param dir - Directory being watched.
+   
+   @param controller - Abort controller for normal watcher teardown.
+   
+   @param onReady - Callback fired after chokidar reports initial scan readiness.
+   
+   @mutates controller through wait abort-listener registration on controller.signal
+   
+   @example
+   ```ts
+   await monitorWatcher({ dir: '/repo/src', controller, onReady });
+   ```
    */
   async function monitorWatcher(
     {
@@ -222,24 +222,24 @@ export function startWatching(configPath: string,): Promise<never> {
   }
 
   /**
-   * Creates watchers for every directory derived from tracked reads and writes,
-   * waiting until their initial chokidar scans have completed.
+   Creates watchers for every directory derived from tracked reads and writes,
+   waiting until their initial chokidar scans have completed.
    */
   async function setupWatchers(): Promise<void> {
     if (lifecycle.hasFailed())
       return;
     /**
-     * Directories to watch, derived from current tracked reads + writes
+     Directories to watch, derived from current tracked reads + writes
      */
     const dirs = await watchDirs(absoluteConfig,);
     rl.info(`watching ${String(dirs.size,)} directories`,);
 
     /**
-     * Per-watcher readiness signals; all must resolve before setup is complete.
+     Per-watcher readiness signals; all must resolve before setup is complete.
      */
     const readySignals = [...dirs,].map(function setupDir(dir,): Promise<void> {
       /**
-       * Per-directory abort controller for teardown
+       Per-directory abort controller for teardown
        */
       const controller = new AbortController();
       lifecycle.registerController({
@@ -247,17 +247,17 @@ export function startWatching(configPath: string,): Promise<never> {
         controller,
       },);
       /**
-       * Readiness signal for this chokidar watcher.
+       Readiness signal for this chokidar watcher.
        */
       const ready = Promise.withResolvers<void>();
 
       /**
-       * Marks this watcher ready after chokidar's initial scan completes.
-       *
-       * @example
-       * ```ts
-       * markWatcherReady();
-       * ```
+       Marks this watcher ready after chokidar's initial scan completes.
+       
+       @example
+       ```ts
+       markWatcherReady();
+       ```
        */
       function markWatcherReady(): void {
         ready.resolve();

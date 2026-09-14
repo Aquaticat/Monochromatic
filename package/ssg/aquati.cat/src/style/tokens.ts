@@ -1,9 +1,9 @@
 /**
- * Design token CSS custom properties.
- *
- * Defines all color tokens as a `:root` block with dark mode overrides
- * and inverse-mode overrides for the theme toggle.
- * Every color value in the site references these tokens via `var(--token-name)`.
+ Design token CSS custom properties.
+ 
+ Defines all color tokens as a `:root` block with dark mode overrides
+ and inverse-mode overrides for the theme toggle.
+ Every color value in the site references these tokens via `var(--token-name)`.
  */
 import {
   cssCalc,
@@ -14,15 +14,15 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Light mode token values (excluding theme-invariant primary colors).
- *
- * @returns declarations object reusable across `:root` and inverse overrides
- *
- * @example
- * ```ts
- * const decls = lightTokenDecls();
- * // { '--color-fg': ..., '--color-bg': ..., ... }
- * ```
+ Light mode token values (excluding theme-invariant primary colors).
+ 
+ @returns declarations object reusable across `:root` and inverse overrides
+ 
+ @example
+ ```ts
+ const decls = lightTokenDecls();
+ // { '--color-fg': ..., '--color-bg': ..., ... }
+ ```
  */
 function lightTokenDecls(): CssDeclarations {
   return {
@@ -57,15 +57,15 @@ function lightTokenDecls(): CssDeclarations {
 }
 
 /**
- * Dark mode token values.
- *
- * @returns declarations object reusable across dark media query and inverse overrides
- *
- * @example
- * ```ts
- * const decls = darkTokenDecls();
- * // { '--color-fg': ..., '--color-bg': ..., ... }
- * ```
+ Dark mode token values.
+ 
+ @returns declarations object reusable across dark media query and inverse overrides
+ 
+ @example
+ ```ts
+ const decls = darkTokenDecls();
+ // { '--color-fg': ..., '--color-bg': ..., ... }
+ ```
  */
 function darkTokenDecls(): CssDeclarations {
   return {
@@ -103,15 +103,15 @@ function darkTokenDecls(): CssDeclarations {
 }
 
 /**
- * Generates the `:root` block with all color custom properties.
- *
- * @returns CSS string with custom property declarations
- *
- * @example
- * ```ts
- * const css = tokenStyles();
- * // ':root { --primary-light: #bf97e3; ... }'
- * ```
+ Generates the `:root` block with all color custom properties.
+ 
+ @returns CSS string with custom property declarations
+ 
+ @example
+ ```ts
+ const css = tokenStyles();
+ // ':root { --primary-light: #bf97e3; ... }'
+ ```
  */
 export function tokenStyles(): string {
   return $({
@@ -125,17 +125,17 @@ export function tokenStyles(): string {
 }
 
 /**
- * Generates the dark mode override block via `prefers-color-scheme`.
- *
- * Swaps light color values for dark-appropriate alternatives.
- *
- * @returns CSS `@media` block string with dark color overrides
- *
- * @example
- * ```ts
- * const css = darkModeTokenStyles();
- * // '\@media (prefers-color-scheme: dark) { :root { ... } }'
- * ```
+ Generates the dark mode override block via `prefers-color-scheme`.
+ 
+ Swaps light color values for dark-appropriate alternatives.
+ 
+ @returns CSS `@media` block string with dark color overrides
+ 
+ @example
+ ```ts
+ const css = darkModeTokenStyles();
+ // '\@media (prefers-color-scheme: dark) { :root { ... } }'
+ ```
  */
 export function darkModeTokenStyles(): string {
   return $({
@@ -151,17 +151,17 @@ export function darkModeTokenStyles(): string {
 }
 
 /**
- * Generates inverse-mode token overrides driven by the theme toggle checkbox.
- *
- * When `#theme-toggle` is checked, `:has()` flips the active token set:
- * system-light users get dark tokens, system-dark users get light tokens.
- *
- * @returns CSS string with inverse override rules
- *
- * @example
- * ```ts
- * const css = inverseTokenStyles();
- * ```
+ Generates inverse-mode token overrides driven by the theme toggle checkbox.
+ 
+ When `#theme-toggle` is checked, `:has()` flips the active token set:
+ system-light users get dark tokens, system-dark users get light tokens.
+ 
+ @returns CSS string with inverse override rules
+ 
+ @example
+ ```ts
+ const css = inverseTokenStyles();
+ ```
  */
 export function inverseTokenStyles(): string {
   return [

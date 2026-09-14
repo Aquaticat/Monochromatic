@@ -1,7 +1,7 @@
 /**
- * Deterministic bounded asynchronous mapping tests.
- *
- * @module
+ Deterministic bounded asynchronous mapping tests.
+ 
+ @module
  */
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {

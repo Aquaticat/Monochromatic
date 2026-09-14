@@ -1,8 +1,8 @@
 /**
- * Site CSS orchestrator.
- *
- * Composes all style modules, both pure-style files and
- * colocated component CSS, into a single CSS string for the build.
+ Site CSS orchestrator.
+ 
+ Composes all style modules, both pure-style files and
+ colocated component CSS, into a single CSS string for the build.
  */
 import * as calloutAlert from '../component/callout-alert.ts';
 import * as langSwitcher from '../component/lang-switcher.ts';
@@ -31,15 +31,15 @@ import {
 } from './tokens.ts';
 
 /**
- * Generates the complete site CSS as a single string.
- *
- * @returns concatenated CSS rules from all style modules
- *
- * @example
- * ```ts
- * const css = generateSiteCss();
- * await writeFile('dist/styles.css', css);
- * ```
+ Generates the complete site CSS as a single string.
+ 
+ @returns concatenated CSS rules from all style modules
+ 
+ @example
+ ```ts
+ const css = generateSiteCss();
+ await writeFile('dist/styles.css', css);
+ ```
  */
 export function generateSiteCss(): string {
   return [

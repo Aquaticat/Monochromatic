@@ -3,27 +3,30 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Mise monorepo root for the spawn cwd, so the bin path is invariant to the task's launch directory. */
-const REPO_ROOT = await findMiseMonorepoRootCached();
+const REPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';
 
 /**
- * Filters out logger `[info]` lines from raw stdout,
- * returning only the application output.
- *
- * @param raw - Raw stdout string including logger lines
- * @returns Lines that are not logger output, joined with newlines
- *
- * @example
- * ```ts
- * stripLogLines({ raw: '[info] ...debug\n/tmp/test\n' });
- * // => '/tmp/test'
- * ```
+ Filters out logger `[info]` lines from raw stdout,
+ returning only the application output.
+ 
+ @param raw - Raw stdout string including logger lines
+ @returns Lines that are not logger output, joined with newlines
+ 
+ @example
+ ```ts
+ stripLogLines({ raw: '[info] ...debug\n/tmp/test\n' });
+ // => '/tmp/test'
+ ```
  */
 function stripLogLines({ raw, }: { raw: string; },): string {
   return raw
@@ -36,17 +39,17 @@ function stripLogLines({ raw, }: { raw: string; },): string {
 }
 
 /**
- * Runs cli-fy as a subprocess and returns stdout (with log lines stripped),
- * raw stderr, and exit code.
- *
- * @param args - CLI arguments to pass after `cli-fy`
- * @returns Cleaned stdout text, raw stderr text, and numeric exit code
- *
- * @example
- * ```ts
- * const result = await runCliFy({ args: ['node:path', 'join', '/tmp', 'test'] });
- * // result.stdout === '/tmp/test'
- * ```
+ Runs cli-fy as a subprocess and returns stdout (with log lines stripped),
+ raw stderr, and exit code.
+ 
+ @param args - CLI arguments to pass after `cli-fy`
+ @returns Cleaned stdout text, raw stderr text, and numeric exit code
+ 
+ @example
+ ```ts
+ const result = await runCliFy({ args: ['node:path', 'join', '/tmp', 'test'] });
+ // result.stdout === '/tmp/test'
+ ```
  */
 async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
   stdout: string;

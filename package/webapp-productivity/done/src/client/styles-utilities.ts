@@ -1,5 +1,5 @@
 /**
- * Shared utility CSS classes used across multiple pages.
+ Shared utility CSS classes used across multiple pages.
  */
 import {
   cssCalc,
@@ -10,12 +10,12 @@ import {
 import { $ as css, } from './css.ts';
 
 /**
- * Full percentage for divider inline-size.
+ Full percentage for divider inline-size.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Task list, divider, and empty-state utility styles.
+ Task list, divider, and empty-state utility styles.
  */
 export const utilities: string = [
   css({

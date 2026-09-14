@@ -3,19 +3,36 @@
 //! engine, and engine `Update`s are applied to the window's properties from the
 //! event-loop thread. Also handles CLI path arguments and the file-open dialog.
 
-// What:     `slint::include_modules!()` is a MACRO (the `!` marks a macro call)
-//           that pastes in the Rust code generated from `ui/app.slint` by
-//           `build.rs`, bringing the `AppWindow` type into scope.
-// Why:      Without it the compiled-from-markup component is invisible to Rust.
-// Gotcha:   a `name!(...)` call is a macro, NOT a function: it runs at COMPILE
-//           time and can paste in whole declarations. TS has no equivalent; the
-//           closest mental model is a build-step codegen import.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AppWindow } from "./generated/app.slint"; // produced by a build step
-// ```
-slint::include_modules!();
+/// What:     `mod slint_generated { ... }` creates a private namespace around
+///           Rust emitted by Slint. The lint attribute applies only inside that
+///           namespace, while package-owned Rust remains under the manifest's
+///           denied `implicit_return` lint.
+/// Why:      Slint 1.17 emits tail-expression returns and already marks generated
+///           output as exempt from several Clippy groups. This extra exemption
+///           covers the restriction lint until Slint includes it itself.
+/// Gotcha:   The direct attribute on `slint::include_modules!()` is ignored by
+///           rustc; a module boundary is required for the lint level to apply.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// namespace SlintGenerated {
+///   export * from './app.slint.generated';
+/// }
+/// ```
+#[allow(clippy::implicit_return)]
+mod slint_generated {
+    // What:     `slint::include_modules!()` includes build-time generated Rust.
+    // Why:      `AppWindow` and related UI bindings come from Slint markup.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // export * from './app.slint.generated';
+    // ```
+    slint::include_modules!();
+}
+
+/// Imports every public Slint binding from the generated-only lint boundary.
+use slint_generated::*;
 
 /// What:     `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
 ///           binary crate.
@@ -38,6 +55,9 @@ mod ui_progress;
 /// ```
 mod ui_page;
 
+/// Playback mode conversion and displayed-page scope projection.
+mod ui_playback;
+
 /// What:     `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
 /// Why:      The OS-font-tracking scale handler uses the generated `AppWindow`, so it
 ///           belongs beside `main.rs`; splitting it out also keeps `main.rs` under the
@@ -48,6 +68,26 @@ mod ui_page;
 /// import * as uiFontScale from "./ui_font_scale";
 /// ```
 mod ui_font_scale;
+
+/// What:     `mod ui_led_rows;` loads measured LED row-membership adapter.
+/// Why:      Slint owns full-width plate paint while Rust derives cap end corners from
+///           actual wrapped positions through generated `LedRowGeometry` interface.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiLedRows from "./ui_led_rows";
+/// ```
+mod ui_led_rows;
+
+/// What:     `mod ui_led_palette;` loads runtime LED pigment derivation.
+/// Why:      Slint delegates color-coordinate changes to Rust so every derived pigment
+///           is mixed in OKLCH rather than RGB or HSV.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiLedPalette from "./ui_led_palette";
+/// ```
+mod ui_led_palette;
 
 /// What:     `mod ui_page_style;` loads the sibling settings-persistence bridge.
 /// Why:      Page-control preference wiring uses generated `AppWindow` methods and stays
@@ -163,7 +203,7 @@ use std::sync::{Arc, Mutex};
 /// ```
 use std::time::Instant;
 
-/// What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
+/// What:     `use music_player::command::{Command, PlaybackMode, Update};`. The
 ///           message types from our library crate. The package is `music-player`
 ///           but a Rust crate identifier cannot contain `-`, so the lib crate is
 ///           `music_player` (the hyphen becomes an underscore).
@@ -171,9 +211,9 @@ use std::time::Instant;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { Command, ShuffleMode, Update } from "music-player/command";
+/// import { Command, PlaybackMode, Update } from "music-player/command";
 /// ```
-use music_player::command::{Command, ShuffleMode, Update};
+use music_player::command::{Command, Update};
 
 /// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
 ///           from our library crate (its fields are `start_playing` and `paths`).
@@ -293,104 +333,8 @@ use slint::{ComponentHandle, Model, SharedString, VecModel};
 /// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
 /// ```
 use ui_page::{set_now_playing, set_queue_model, PageNav};
-
-/// What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
-///           integer the UI property uses (Off=0, WithinPage=1, All=2). `i32` is a
-///           32-bit signed integer; siblings: `u32` (unsigned), `i64`/`usize`.
-/// Why:      Slint has no Rust enum; it stores the mode as an `int` (which is `i32`
-///           on the Rust side) the radio group compares against, so `i32` matches
-///           the generated property type exactly.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function shuffleToInt(mode: ShuffleMode): number { ... }
-/// ```
-fn shuffle_to_int(mode: ShuffleMode) -> i32 {
-    // What:     `match mode { ... }`. Pattern-match each enum variant to its number.
-    //           `match` is exhaustive: the compiler rejects it if a variant is
-    //           unhandled, so adding a `ShuffleMode` later forces an update here.
-    // Why:      Stable encoding shared with the .slint file.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // switch (mode) { ... }
-    // ```
-    match mode {
-        // What:     `ShuffleMode::Off => 0`. The `Variant => value` arm: when `mode`
-        //           is the path-qualified variant `ShuffleMode::Off`, the arm yields
-        //           `0`. No trailing `;`, so the arm's value becomes the `match`'s
-        //           value, which (being the function tail) is returned.
-        // Why:      Off is 0.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "off": return 0;
-        // ```
-        ShuffleMode::Off => 0,
-        // What:     `ShuffleMode::WithinPage => 1`. The within-page variant -> `1`.
-        // Why:      WithinPage is 1.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "withinPage": return 1;
-        // ```
-        ShuffleMode::WithinPage => 1,
-        // What:     `ShuffleMode::All => 2`. The all variant -> `2`.
-        // Why:      All is 2.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "all": return 2;
-        // ```
-        ShuffleMode::All => 2,
-    }
-}
-
-/// What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above:
-///           the UI radio's selected `i32` back into a `ShuffleMode` enum value.
-/// Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function intToShuffle(value: number): ShuffleMode { ... }
-/// ```
-fn int_to_shuffle(value: i32) -> ShuffleMode {
-    // What:     `match value { 1 => WithinPage, 2 => All, _ => Off }`. The wildcard
-    //           `_` arm matches anything not matched above (including 0 and any
-    //           out-of-range int) and maps it to Off.
-    // Why:      Defensive default to Off for any unexpected integer.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return value === 1 ? "withinPage" : value === 2 ? "all" : "off";
-    // ```
-    match value {
-        // What:     `1 => ShuffleMode::WithinPage`. Integer literal arm -> variant.
-        // Why:      1 is WithinPage.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case 1: return "withinPage";
-        // ```
-        1 => ShuffleMode::WithinPage,
-        // What:     `2 => ShuffleMode::All`. Integer literal arm -> variant.
-        // Why:      2 is All.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case 2: return "all";
-        // ```
-        2 => ShuffleMode::All,
-        // What:     `_ => ShuffleMode::Off`. The catch-all wildcard arm.
-        // Why:      Default for every other integer.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // default: return "off";
-        // ```
-        _ => ShuffleMode::Off,
-    }
-}
+/// Playback-mode conversion and displayed-page scope helpers.
+use ui_playback::{int_to_playback_mode, kept_page, page_scope, playback_mode_to_int};
 
 /// What:     `fn format_time(secs: f64) -> String`. Format seconds as "m:ss".
 ///           `f64` is a 64-bit float (sibling: `f32`); `String` is an owned heap
@@ -430,7 +374,7 @@ pub(crate) fn format_time(secs: f64) -> String {
     // ```ts
     // return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
     // ```
-    format!("{}:{:02}", whole / 60, whole % 60)
+    return format!("{}:{:02}", whole / 60, whole % 60)
 }
 
 /// What:     `fn refresh_page(app: &AppWindow, target: PageNav)`. Rebuild the
@@ -462,7 +406,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // ```ts
     // const names: string[] = [...app.queue];
     // ```
-    let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();
+    let names: Vec<String> = app.get_queue().iter().map(|s| return s.to_string()).collect();
     // What:     `let pages = pagination::paginate(&names);`. Call the module function,
     //           passing `&names` which BORROWS the vector (lends it read-only without
     //           giving up ownership). Returns the grouped pages (folder pages, then
@@ -475,6 +419,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // const pages = pagination.paginate(names);
     // ```
     let pages = pagination::paginate(&names);
+    let kept_page = kept_page(app, &pages);
 
     // What:     `let labels: Vec<SharedString> = pages.iter().map(|page| SharedString::from(page.label.as_str())).collect();`.
     //           `.iter()` borrows each `page`; the closure takes its `label` (a
@@ -489,7 +434,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // ```
     let labels: Vec<SharedString> = pages
         .iter()
-        .map(|page| SharedString::from(page.label.as_str()))
+        .map(|page| return SharedString::from(page.label.as_str()))
         .collect();
     // What:     `app.set_page_labels(Rc::new(VecModel::from(labels)).into());`.
     //           `VecModel::from(labels)` wraps the vector in a list model;
@@ -532,7 +477,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
         // ```ts
         // if (target.kind === "keep") return app.selectedPage;
         // ```
-        PageNav::Keep => app.get_selected_page(),
+        PageNav::Keep => kept_page,
         // What:     `PageNav::Follow => { ... }`. The follow arm; its `{ ... }` block computes
         //           the page to follow the current track.
         // Why:      Keep the playing row visible after a track change.
@@ -651,7 +596,7 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
         Some(page) => page
             .entries
             .iter()
-            .map(|entry| PageItem {
+            .map(|entry| return PageItem {
                 name: pagination::row_display(&page.label, &entry.name).into(),
                 index: entry.index as i32,
             })
@@ -676,6 +621,8 @@ fn refresh_page(app: &AppWindow, target: PageNav) {
     // app.pageItems = items;
     // ```
     app.set_page_items(Rc::new(VecModel::from(items)).into());
+    let selected_page_key = pages.get(clamped as usize).map(pagination::page_identity).unwrap_or_default();
+    app.set_selected_page_key(selected_page_key.into());
     // What:     `app.set_selected_page(clamped);`. Set the `selected-page` property
     //           to mark which tab is active.
     // Why:      Highlight the visible tab.
@@ -862,8 +809,8 @@ fn apply_update(app: &AppWindow, update: &Update) {
         // case "volume": app.volume = v; break;
         // ```
         Update::Volume(v) => app.set_volume(*v),
-        // What:     `Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode))`.
-        //           Bind the `ShuffleMode`, encode it to an int via the helper, and
+        // What:     `Update::Shuffle(mode) => app.set_playback_mode_mode(playback_mode_to_int(mode))`.
+        //           Bind the `PlaybackMode`, encode it to an int via the helper, and
         //           set the radio group's property.
         // Why:      Highlight the selected shuffle radio.
         //
@@ -871,16 +818,7 @@ fn apply_update(app: &AppWindow, update: &Update) {
         // ```ts
         // case "shuffle": app.shuffleMode = shuffleToInt(mode); break;
         // ```
-        Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(*mode)),
-        // What:     `Update::RepeatTrack(on) => app.set_repeat_track(on)`. Bind the
-        //           repeat-track boolean and set the checkbox property.
-        // Why:      Check/uncheck the repeat-track box.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "repeatTrack": app.repeatTrack = on; break;
-        // ```
-        Update::RepeatTrack(on) => app.set_repeat_track(*on),
+        Update::PlaybackMode(mode) => app.set_playback_mode(playback_mode_to_int(*mode)),
     }
 }
 
@@ -1000,7 +938,7 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     // ```ts
     // return trimmed;
     // ```
-    Some(PathBuf::from(trimmed))
+    return Some(PathBuf::from(trimmed))
 }
 
 /// What:     `#[cfg(not(unix))] fn xdg_user_dir_music() -> Option<PathBuf>`. The
@@ -1057,7 +995,7 @@ fn music_dir() -> Option<PathBuf> {
     // return (process.env.XDG_MUSIC_DIR ?? userDirs()?.audioDir ?? xdgUserDirMusic())
     //   ?.let((p) => isDir(p) ? p : null) ?? null;
     // ```
-    std::env::var_os("XDG_MUSIC_DIR")
+    return std::env::var_os("XDG_MUSIC_DIR")
         // What:     `.map(PathBuf::from)`. On `Some(osStr)`, convert the `OsString`
         //           into an owned `PathBuf`; passing `PathBuf::from` (the function
         //           itself) is the closure shorthand. `None` stays `None`.
@@ -1094,8 +1032,8 @@ fn music_dir() -> Option<PathBuf> {
             // ```ts
             // userDirs()?.audioDir;
             // ```
-            directories::UserDirs::new()
-                .and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))
+            return directories::UserDirs::new()
+                .and_then(|dirs| return dirs.audio_dir().map(|p| return p.to_path_buf()))
         })
         // What:     `.or_else(xdg_user_dir_music)`. If both the env var and the
         //           user-dirs file came up empty, fall back to the `xdg-user-dir`
@@ -1118,7 +1056,7 @@ fn music_dir() -> Option<PathBuf> {
         // ```ts
         // // ?.let((p) => isDir(p) ? p : null)
         // ```
-        .filter(|p| p.is_dir())
+        .filter(|p| return p.is_dir())
 }
 
 /// What:     `fn main() -> Result<()>`. The entry point. The return type is
@@ -1215,7 +1153,7 @@ fn main() -> Result<()> {
         // const forceSoftware = (process.env.SLINT_BACKEND ?? "").includes("software");
         // ```
         let force_software = std::env::var("SLINT_BACKEND")
-            .map(|value| value.contains("software"))
+            .map(|value| return value.contains("software"))
             .unwrap_or(false);
         // What:     `if force_software { builder = builder.with_renderer_name("software"); }`.
         //           Reassign `builder` (allowed because it is `mut`) to one pinned to
@@ -1297,6 +1235,19 @@ fn main() -> Result<()> {
     // applyOsFontScale(app);
     // ```
     ui_font_scale::apply_os_font_scale(&app);
+
+    // What:     `ui_led_rows::apply(&app);` derives measured cap row membership.
+    // Why:      Full-width plate paint stays in Slint while Rust marks physical first and
+    //           last caps so exposed ends retain source corner geometry.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // applyLedRowGeometry(app);
+    // ```
+    ui_led_rows::apply(&app);
+
+    // Derive every runtime LED pigment through OKLCH coordinates.
+    ui_led_palette::apply(&app);
 
     // Restore page-control preference and register settings persistence.
     ui_page_style::apply(&app);
@@ -1594,7 +1545,7 @@ fn main() -> Result<()> {
         move |v| engine.send(Command::SetVolume(v))
     });
 
-    // What:     `app.on_set_shuffle_mode({ ... })`. Register the shuffle radio
+    // What:     `app.on_set_playback_mode_mode({ ... })`. Register the shuffle radio
     //           handler; the clicked radio passes its mode integer `m: i32` (0/1/2).
     //           Map it back to the enum and send. No property read needed: the radio
     //           carries the target mode directly.
@@ -1602,57 +1553,20 @@ fn main() -> Result<()> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // app.onSetShuffleMode((m) => engine.send(Command.SetShuffle(intToShuffle(m))));
+    // app.onSetPlaybackMode((m) => engine.send(Command.SetPlaybackMode(intToShuffle(m))));
     // ```
-    app.on_set_shuffle_mode({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
+    app.on_set_playback_mode({
         let engine = engine.clone();
-        // What:     `move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))`. A
-        //           move closure taking the mode int `m`, decoding it to the enum via
-        //           `int_to_shuffle`, and forwarding it.
-        // Why:      One radio click -> one shuffle-mode command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (m) => engine.send(Command.SetShuffle(intToShuffle(m)))
-        // ```
-        move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))
-    });
-
-    // What:     `app.on_set_repeat_track({ ... })`. Register the repeat-track checkbox
-    //           handler; the checkbox passes the desired boolean `on: bool`.
-    // Why:      Toggling the box sets the flag directly.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSetRepeatTrack((on) => engine.send(Command.SetRepeatTrack(on)));
-    // ```
-    app.on_set_repeat_track({
-        // What:     `let engine = engine.clone();`. Clone the `Rc<Engine>` for this
-        //           handler's closure.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let engine = engine.clone();
-        // What:     `move |on| engine.send(Command::SetRepeatTrack(on))`. A move
-        //           closure taking the desired boolean `on` and forwarding it.
-        // Why:      One checkbox toggle -> one repeat-track command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (on) => engine.send(Command.SetRepeatTrack(on))
-        // ```
-        move |on| engine.send(Command::SetRepeatTrack(on))
+        let weak = app.as_weak();
+        move |mode| {
+            if let Some(app) = weak.upgrade() {
+                engine.send(Command::SetPageScope(page_scope(
+                    &app,
+                    app.get_selected_page(),
+                )));
+                engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
+            }
+        }
     });
 
     // What:     `app.on_select_index({ ... })`. Register the row-select handler; its
@@ -1708,6 +1622,7 @@ fn main() -> Result<()> {
         // const w = app; // WeakRef so the closure does not keep the window alive
         // ```
         let weak = app.as_weak();
+        let engine = engine.clone();
         // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, PageNav::Show(p)); } }`.
         //           A move closure taking the page `p`; `weak.upgrade()` yields
         //           `Option<AppWindow>`, the `if let Some(app)` runs only if the window
@@ -1722,6 +1637,7 @@ fn main() -> Result<()> {
         move |p| {
             if let Some(app) = weak.upgrade() {
                 refresh_page(&app, PageNav::Show(p));
+                engine.send(Command::SetPageScope(page_scope(&app, p)));
             }
         }
     });
@@ -1854,8 +1770,8 @@ fn main() -> Result<()> {
                 // ```
                 let root = path
                     .parent()
-                    .map(|p| p.to_path_buf())
-                    .unwrap_or_else(|| PathBuf::from("."));
+                    .map(|p| return p.to_path_buf())
+                    .unwrap_or_else(|| return PathBuf::from("."));
                 engine.send(Command::OpenRoot {
                     root,
                     select: Some(path),
@@ -1890,7 +1806,7 @@ fn main() -> Result<()> {
             // ```ts
             // const root = (session.sourceRoot && isDir(session.sourceRoot)) ? session.sourceRoot : null;
             // ```
-            let root = session.source_root.clone().filter(|r| r.is_dir());
+            let root = session.source_root.clone().filter(|r| return r.is_dir());
             // What:     `if let Some(root) = root { ... } else if let Some(music_dir) = music_dir() { ... }`.
             //           Restore the saved root with its Selected Track and position, else
             //           restore the music directory carrying the saved settings but no
@@ -1909,8 +1825,7 @@ fn main() -> Result<()> {
                     selected: session.selected,
                     position: session.position_secs,
                     volume: session.volume,
-                    shuffle: session.shuffle,
-                    repeat_track: session.repeat_track,
+                    playback_mode: session.playback_mode,
                 });
             } else if let Some(music_dir) = music_dir() {
                 engine.send(Command::Restore {
@@ -1918,8 +1833,7 @@ fn main() -> Result<()> {
                     selected: None,
                     position: 0.0,
                     volume: session.volume,
-                    shuffle: session.shuffle,
-                    repeat_track: session.repeat_track,
+                    playback_mode: session.playback_mode,
                 });
             }
         }
@@ -1940,5 +1854,5 @@ fn main() -> Result<()> {
     // return;
     // ```
     app.run()?;
-    Ok(())
+    return Ok(())
 }

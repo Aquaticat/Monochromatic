@@ -17,12 +17,12 @@ import {
 } from '../dist/final/node/testing.mjs';
 
 /**
- * Fixture adapter construction input.
- *
- * @example
- * ```ts
- * const input: FixtureInput = { platform: 'linux', commandResults: ['uuid'] };
- * ```
+ Fixture adapter construction input.
+ 
+ @example
+ ```ts
+ const input: FixtureInput = { platform: 'linux', commandResults: ['uuid'] };
+ ```
  */
 type FixtureInput = {
   readonly platform: NodeJS.Platform;
@@ -32,12 +32,12 @@ type FixtureInput = {
 };
 
 /**
- * Observable fixture state.
- *
- * @example
- * ```ts
- * fixture.commands.length;
- * ```
+ Observable fixture state.
+ 
+ @example
+ ```ts
+ fixture.commands.length;
+ ```
  */
 type Fixture = {
   readonly adapters: FsIdResolverAdapters;
@@ -46,20 +46,20 @@ type Fixture = {
 };
 
 /**
- * Returns queued value or throws queued error.
- *
- * @param values - Fixture result queue
- *
- * @param index - Result index
- *
- * @returns String result
- *
- * @throws queued error or exhaustion error
- *
- * @example
- * ```ts
- * fixtureValue({ values: ['ok'], index: 0 }); // 'ok'
- * ```
+ Returns queued value or throws queued error.
+ 
+ @param values - Fixture result queue
+ 
+ @param index - Result index
+ 
+ @returns String result
+ 
+ @throws queued error or exhaustion error
+ 
+ @example
+ ```ts
+ fixtureValue({ values: ['ok'], index: 0 }); // 'ok'
+ ```
  */
 function fixtureValue({
   values,
@@ -69,7 +69,7 @@ function fixtureValue({
   readonly index: number;
 },): string {
   /**
-   * Queued result before error narrowing.
+   Queued result before error narrowing.
    */
   const value = values[index];
   if (value === undefined)
@@ -80,22 +80,22 @@ function fixtureValue({
 }
 
 /**
- * Creates deterministic platform adapters with observable commands and warnings.
- *
- * @param platform - Platform branch
- *
- * @param commandResults - Ordered subprocess results
- *
- * @param deviceResults - Ordered Node-stat results
- *
- * @param canonicalPaths - Optional canonicalization map
- *
- * @returns Fixture adapters and observations
- *
- * @example
- * ```ts
- * const fixture = createFixture({ platform: 'linux', commandResults: ['uuid'] });
- * ```
+ Creates deterministic platform adapters with observable commands and warnings.
+ 
+ @param platform - Platform branch
+ 
+ @param commandResults - Ordered subprocess results
+ 
+ @param deviceResults - Ordered Node-stat results
+ 
+ @param canonicalPaths - Optional canonicalization map
+ 
+ @returns Fixture adapters and observations
+ 
+ @example
+ ```ts
+ const fixture = createFixture({ platform: 'linux', commandResults: ['uuid'] });
+ ```
  */
 function createFixture({
   platform,
@@ -104,22 +104,22 @@ function createFixture({
   canonicalPaths = {},
 }: FixtureInput,): Fixture {
   /**
-   * Captured subprocess calls.
+   Captured subprocess calls.
    */
   const commands: FsIdCommand[] = [];
   /**
-   * Captured mandatory degraded warnings.
+   Captured mandatory degraded warnings.
    */
   const warnings: { readonly path: string; readonly reason: string; }[] = [];
   /**
-   * Mutable fixture queue cursors kept in one test-state object.
+   Mutable fixture queue cursors kept in one test-state object.
    */
   const indexes = {
     command: 0,
     device: 0,
   };
   /**
-   * Effect adapters under test.
+   Effect adapters under test.
    */
   const adapters: FsIdResolverAdapters = {
     platform: () => platform,
@@ -127,10 +127,10 @@ function createFixture({
     run: async (command,) => {
       commands.push(command,);
       /**
-       * Queued command result selected before increment.
+       Queued command result selected before increment.
        */
       /**
-       * Current command result index advanced before queued error can throw.
+       Current command result index advanced before queued error can throw.
        */
       const index = indexes.command;
       indexes.command += 1;
@@ -141,10 +141,10 @@ function createFixture({
     },
     deviceNumber: async () => {
       /**
-       * Queued device result selected before increment.
+       Queued device result selected before increment.
        */
       /**
-       * Current device result index advanced before queued error can throw.
+       Current device result index advanced before queued error can throw.
        */
       const index = indexes.device;
       indexes.device += 1;
@@ -169,11 +169,11 @@ await describe({
       name: 'resolves stable Linux filesystem UUID',
       fn: async () => {
         /**
-         * Stable Linux fixture.
+         Stable Linux fixture.
          */
         const fixture = createFixture({ platform: 'linux', commandResults: ['ABCD-1234\n',], },);
         /**
-         * Resolved identity.
+         Resolved identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result,).toEqual({ value: 'fs-uuid_abcd-1234', stable: true, source: 'fs-uuid', },);
@@ -188,14 +188,14 @@ await describe({
       name: 'degrades Linux failure to warned f_fsid',
       fn: async () => {
         /**
-         * Linux fallback fixture.
+         Linux fallback fixture.
          */
         const fixture = createFixture({
           platform: 'linux',
           commandResults: [new Error('findmnt failed',), 'A281DFD5\n',],
         },);
         /**
-         * Degraded identity.
+         Degraded identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result.value,).toBe('f-fsid_a281dfd5',);
@@ -209,14 +209,14 @@ await describe({
       name: 'throws when Linux preferred and degraded mechanisms fail',
       fn: async () => {
         /**
-         * Total Linux failure fixture.
+         Total Linux failure fixture.
          */
         const fixture = createFixture({
           platform: 'linux',
           commandResults: [new Error('preferred',), new Error('fallback',),],
         },);
         /**
-         * Captured total failure.
+         Captured total failure.
          */
         let caught: unknown;
         try {
@@ -237,7 +237,7 @@ await describe({
       name: 'resolves stable macOS Volume UUID',
       fn: async () => {
         /**
-         * Stable macOS fixture.
+         Stable macOS fixture.
          */
         const fixture = createFixture({
           platform: 'darwin',
@@ -247,7 +247,7 @@ await describe({
           ],
         },);
         /**
-         * Stable identity.
+         Stable identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result,).toEqual({ value: 'volume-uuid_abcd-1234', stable: true, source: 'volume-uuid', },);
@@ -261,7 +261,7 @@ await describe({
       name: 'degrades macOS missing UUID to warned device number',
       fn: async () => {
         /**
-         * macOS fallback fixture.
+         macOS fallback fixture.
          */
         const fixture = createFixture({
           platform: 'darwin',
@@ -272,7 +272,7 @@ await describe({
           ],
         },);
         /**
-         * Degraded identity.
+         Degraded identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: '/repo', },);
         expect(result.value,).toBe('device-number_2049',);
@@ -285,14 +285,14 @@ await describe({
       name: 'throws when macOS preferred and degraded mechanisms fail',
       fn: async () => {
         /**
-         * Total macOS failure fixture.
+         Total macOS failure fixture.
          */
         const fixture = createFixture({
           platform: 'darwin',
           commandResults: [new Error('preferred',), new Error('fallback',),],
         },);
         /**
-         * Captured total failure.
+         Captured total failure.
          */
         let caught: unknown;
         try {
@@ -313,14 +313,14 @@ await describe({
       name: 'resolves stable Windows volume serial with safe command text',
       fn: async () => {
         /**
-         * Stable Windows fixture.
+         Stable Windows fixture.
          */
         const fixture = createFixture({
           platform: 'win32',
           commandResults: ['1A2B-3C4D\r\n',],
         },);
         /**
-         * Stable identity.
+         Stable identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'c:\\repo', },);
         expect(result,).toEqual({
@@ -344,7 +344,7 @@ await describe({
       name: 'degrades Windows serial failure to warned device number',
       fn: async () => {
         /**
-         * Windows fallback fixture.
+         Windows fallback fixture.
          */
         const fixture = createFixture({
           platform: 'win32',
@@ -352,7 +352,7 @@ await describe({
           deviceResults: ['99',],
         },);
         /**
-         * Degraded identity.
+         Degraded identity.
          */
         const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'C:\\repo', },);
         expect(result.value,).toBe('device-number_99',);
@@ -364,7 +364,7 @@ await describe({
       name: 'rejects zero Windows device fallback that cannot distinguish volumes',
       fn: async () => {
         /**
-         * Unusable Windows device fixture.
+         Unusable Windows device fixture.
          */
         const fixture = createFixture({
           platform: 'win32',
@@ -372,7 +372,7 @@ await describe({
           deviceResults: ['0',],
         },);
         /**
-         * Captured unusable fallback.
+         Captured unusable fallback.
          */
         let caught: unknown;
         try {
@@ -389,7 +389,7 @@ await describe({
       name: 'throws when Windows preferred and degraded mechanisms fail',
       fn: async () => {
         /**
-         * Total Windows failure fixture.
+         Total Windows failure fixture.
          */
         const fixture = createFixture({
           platform: 'win32',
@@ -397,7 +397,7 @@ await describe({
           deviceResults: [new Error('fallback',),],
         },);
         /**
-         * Captured total failure.
+         Captured total failure.
          */
         let caught: unknown;
         try {
@@ -418,11 +418,11 @@ await describe({
       name: 'throws on unsupported platform without spawning',
       fn: async () => {
         /**
-         * Unsupported fixture.
+         Unsupported fixture.
          */
         const fixture = createFixture({ platform: 'aix', commandResults: [], },);
         /**
-         * Captured unsupported-platform error.
+         Captured unsupported-platform error.
          */
         let caught: unknown;
         try {
@@ -439,7 +439,7 @@ await describe({
       name: 'resolves aliases and distinct mount paths independently',
       fn: async () => {
         /**
-         * Two-mount fixture with one alias.
+         Two-mount fixture with one alias.
          */
         const fixture = createFixture({
           platform: 'linux',
@@ -451,19 +451,19 @@ await describe({
           },
         },);
         /**
-         * Memoized resolver.
+         Memoized resolver.
          */
         const resolver = createFsIdResolver({ adapters: fixture.adapters, },);
         /**
-         * Alias resolution.
+         Alias resolution.
          */
         const alias = await resolver({ path: '/alias-a', },);
         /**
-         * Canonical duplicate resolution.
+         Canonical duplicate resolution.
          */
         const duplicate = await resolver({ path: '/mount/a', },);
         /**
-         * Distinct mount resolution.
+         Distinct mount resolution.
          */
         const other = await resolver({ path: '/mount/b', },);
         expect(alias,).toEqual(duplicate,);
@@ -475,22 +475,22 @@ await describe({
       name: 'observes a replacement volume mounted at same canonical path',
       fn: async () => {
         /**
-         * Same-path replacement fixture.
+         Same-path replacement fixture.
          */
         const fixture = createFixture({
           platform: 'linux',
           commandResults: ['UUID-A', 'UUID-B',],
         },);
         /**
-         * Fresh resolver.
+         Fresh resolver.
          */
         const resolver = createFsIdResolver({ adapters: fixture.adapters, },);
         /**
-         * Identity before simulated replacement.
+         Identity before simulated replacement.
          */
         const before = await resolver({ path: '/mount', },);
         /**
-         * Identity after simulated replacement.
+         Identity after simulated replacement.
          */
         const after = await resolver({ path: '/mount', },);
         expect(before.value,).toBe('fs-uuid_uuid-a',);
@@ -502,14 +502,14 @@ await describe({
       name: 'retries failed resolution on later call',
       fn: async () => {
         /**
-         * Failure then success fixture.
+         Failure then success fixture.
          */
         const fixture = createFixture({
           platform: 'linux',
           commandResults: [new Error('preferred',), new Error('fallback',), 'RECOVERED',],
         },);
         /**
-         * Memoized resolver.
+         Memoized resolver.
          */
         const resolver = createFsIdResolver({ adapters: fixture.adapters, },);
         try {
@@ -519,7 +519,7 @@ await describe({
           expect(error,).toBeInstanceOf(FsIdResolutionError,);
         }
         /**
-         * Successful retry.
+         Successful retry.
          */
         const recovered = await resolver({ path: '/repo', },);
         expect(recovered.value,).toBe('fs-uuid_recovered',);
@@ -535,7 +535,7 @@ await describe({
       name: 'resolves current repository through built production artifact',
       fn: async () => {
         /**
-         * Real host resolution.
+         Real host resolution.
          */
         const result = await resolveFsId({ path: process.cwd(), },);
         expect(isFsId(result.value,),).toBe(true,);

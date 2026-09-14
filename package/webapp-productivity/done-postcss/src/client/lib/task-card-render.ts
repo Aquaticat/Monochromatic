@@ -1,7 +1,7 @@
 /**
- * DOM construction and chip building for `\<task-card\>`.
- *
- * Extracted from task-card.ts to keep each file under the line-count limit.
+ DOM construction and chip building for `\<task-card\>`.
+ 
+ Extracted from task-card.ts to keep each file under the line-count limit.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
@@ -9,39 +9,39 @@ import { formatRunningTrackedTime, } from './format-tracked-time.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
 /**
- * Configuration for a `\<task-card\>` instance, passed via `createTaskCard`.
+ Configuration for a `\<task-card\>` instance, passed via `createTaskCard`.
  */
 export type TaskCardOptions = {
   /**
-   * Whether to show a red "blocked" badge chip.
+   Whether to show a red "blocked" badge chip.
    */
   readonly showBlockedBadge?: boolean;
   /**
-   * Callback when the card body is clicked (navigates to task detail).
+   Callback when the card body is clicked (navigates to task detail).
    */
   readonly onOpen: (taskId: string,) => void;
   /**
-   * Callback when the checkbox is clicked (completes the task).
+   Callback when the checkbox is clicked (completes the task).
    */
   readonly onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
 /**
- * Collects all metadata chip labels for a task.
- *
- * @param task - Task whose metadata to extract
- *
- * @returns Array of chip label strings
- *
- * @example
- * ```ts
- * const chips = buildChipTexts(task);
- * // ['# shopping, errands', 'tracked: 1h30min0s', 'priority: high']
- * ```
+ Collects all metadata chip labels for a task.
+ 
+ @param task - Task whose metadata to extract
+ 
+ @returns Array of chip label strings
+ 
+ @example
+ ```ts
+ const chips = buildChipTexts(task);
+ // ['# shopping, errands', 'tracked: 1h30min0s', 'priority: high']
+ ```
  */
 export function buildChipTexts(task: Task,): string[] {
   /**
-   * Chip strings accumulated in display order; each block below pushes conditionally.
+   Chip strings accumulated in display order; each block below pushes conditionally.
    */
   const chips: string[] = [];
   if (task.tags
@@ -79,18 +79,18 @@ export function buildChipTexts(task: Task,): string[] {
 }
 
 /**
- * Renders the full card content into the shadow root.
- *
- * @param shadow - Shadow root to render into
- *
- * @param task - Task data to display
- *
- * @param options - Callbacks and display flags
- *
- * @example
- * ```ts
- * renderTaskCardContent({ shadow, task, options: { onOpen: openTask } });
- * ```
+ Renders the full card content into the shadow root.
+ 
+ @param shadow - Shadow root to render into
+ 
+ @param task - Task data to display
+ 
+ @param options - Callbacks and display flags
+ 
+ @example
+ ```ts
+ renderTaskCardContent({ shadow, task, options: { onOpen: openTask } });
+ ```
  */
 export function renderTaskCardContent(
   {
@@ -104,7 +104,7 @@ export function renderTaskCardContent(
   },
 ): void {
   /**
-   * Rendered chip elements; the optional blocked badge is appended below when requested.
+   Rendered chip elements; the optional blocked badge is appended below when requested.
    */
   const chipElements: HTMLElement[] = buildChipTexts(task,)
     .map(
@@ -146,7 +146,7 @@ export function renderTaskCardContent(
             click: function onCheckboxClick(event,): void {
               event.stopPropagation();
               /**
-               * Caller-supplied complete handler; the click is a no-op when not provided.
+               Caller-supplied complete handler; the click is a no-op when not provided.
                */
               const { onToggleComplete, } = options;
               if (onToggleComplete !== undefined) {

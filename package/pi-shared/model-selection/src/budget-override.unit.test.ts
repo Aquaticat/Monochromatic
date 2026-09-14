@@ -1,7 +1,7 @@
 /**
- * Unit tests for budget-model override resolution.
- *
- * @module
+ Unit tests for budget-model override resolution.
+ 
+ @module
  */
 
 import {
@@ -14,12 +14,12 @@ import {
   NO_OVERRIDE_MODEL,
   NoBudgetModelError,
   resolveBudgetModelOverride,
-} from './budget.ts';
+  type BudgetModelAuth,
+} from '../dist/final/node/index.mjs';
 import {
   captureAsyncError,
   fixtureModel,
 } from './test-fixtures.ts';
-import type { BudgetModelAuth, } from './types.ts';
 
 //region Fixtures
 
@@ -33,13 +33,13 @@ const overrideModel = fixtureModel({
 const auth: BudgetModelAuth = { apiKey: 'test-key', };
 
 /**
- * Find fixture model by provider/id.
- *
- * @param provider - provider slug
- *
- * @param modelId - model id
- *
- * @returns fixture model, or {@link NO_OVERRIDE_MODEL} when unmatched
+ Find fixture model by provider/id.
+ 
+ @param provider - provider slug
+ 
+ @param modelId - model id
+ 
+ @returns fixture model, or {@link NO_OVERRIDE_MODEL} when unmatched
  */
 function findModel(
   {
@@ -56,9 +56,9 @@ function findModel(
 }
 
 /**
- * Resolve fixture auth.
- *
- * @returns fixture auth
+ Resolve fixture auth.
+ 
+ @returns fixture auth
  */
 async function resolveAuth(): Promise<BudgetModelAuth> {
   return auth;

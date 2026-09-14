@@ -1,7 +1,7 @@
 /**
- * Unit tests for shared shell-command analyzer.
- *
- * @module
+ Unit tests for shared shell-command analyzer.
+ 
+ @module
  */
 
 import {

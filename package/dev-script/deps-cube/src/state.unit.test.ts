@@ -1,15 +1,15 @@
 /**
- * Tests for URL-hash state serialisation, defaults, and range
- * extent computation.
- *
- * Covers the round-trip path, fallback-on-corrupt-hash behaviour,
- * and indirectly exercises the same `extractDim`-based extent
- * computation used by `computeSceneBounds` in `deck-config.ts`,
- * which cannot be imported here because of the upstream
- * `@loaders.gl/schema-utils` → `@math.gl/types` runtime resolver
- * bug (see `deck-config.unit.test.ts`).
- *
- * @module
+ Tests for URL-hash state serialisation, defaults, and range
+ extent computation.
+ 
+ Covers the round-trip path, fallback-on-corrupt-hash behaviour,
+ and indirectly exercises the same `extractDim`-based extent
+ computation used by `computeSceneBounds` in `deck-config.ts`,
+ which cannot be imported here because of the upstream
+ `@loaders.gl/schema-utils` → `@math.gl/types` runtime resolver
+ bug (see `deck-config.unit.test.ts`).
+ 
+ @module
  */
 
 import {
@@ -32,8 +32,8 @@ import {
 } from './script/state.ts';
 
 /**
- * Three probes spanning the data range so extent computations have
- * something non-degenerate to measure.
+ Three probes spanning the data range so extent computations have
+ something non-degenerate to measure.
  */
 const PROBES: readonly PackageProbe[] = [
   {

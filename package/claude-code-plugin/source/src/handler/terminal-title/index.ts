@@ -22,12 +22,12 @@ import { TOOL_TITLES, } from './tool-titles.ts';
 //region Logging
 
 /**
- * Logger root for terminal-title handler.
+ Logger root for terminal-title handler.
  */
 const parentLogger = tagged({ tag: 'claude-terminal-title', },);
 
 /**
- * Module logger for terminal-title handler.
+ Module logger for terminal-title handler.
  */
 const moduleLogger = tagged({
   tag: 'handler',
@@ -37,40 +37,40 @@ const moduleLogger = tagged({
 //endregion Logging
 
 /**
- * Prefix prepended to every terminal title to identify Claude Code activity.
+ Prefix prepended to every terminal title to identify Claude Code activity.
  */
 const TITLE_PREFIX = '✳';
 
 /**
- * OSC sequence prefix for setting terminal title text.
+ OSC sequence prefix for setting terminal title text.
  */
 const OSC_TITLE_SEQUENCE_PREFIX = '\u001B]0;';
 
 /**
- * OSC string terminator used after terminal title payload text.
+ OSC string terminator used after terminal title payload text.
  */
 const OSC_STRING_TERMINATOR = '\u0007';
 
 //region Tool titles
 
 /**
- * Builds a human-readable title body from a tool-use event.
- *
- * @param event - PreToolUse or PostToolUse hook event payload
- *
- * @returns descriptive lifecycle title without prefix
- *
+ Builds a human-readable title body from a tool-use event.
+ 
+ @param event - PreToolUse or PostToolUse hook event payload
+ 
+ @returns descriptive lifecycle title without prefix
+ 
  */
 function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,): string {
   /**
-   * Tool name and input pulled from hook event for downstream formatting.
+   Tool name and input pulled from hook event for downstream formatting.
    */
   const {
     tool_name: toolName,
     tool_input: input,
   } = event;
   /**
-   * Tense selected from hook lifecycle.
+   Tense selected from hook lifecycle.
    */
   const tense = event.hook_event_name === 'PreToolUse'
     ? 'pre'
@@ -89,11 +89,11 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
 //region Event title bodies
 
 /**
- * Formats title text for notification hooks.
- *
- * @param event - notification hook payload
- *
- * @returns notification title body
+ Formats title text for notification hooks.
+ 
+ @param event - notification hook payload
+ 
+ @returns notification title body
  */
 function notificationTitle(
   event: ReadonlyDeep<Extract<HookInput, { hook_event_name: 'Notification' }>>,
@@ -102,11 +102,11 @@ function notificationTitle(
 }
 
 /**
- * Throws for hook variants not handled by titleForEvent.
- *
- * @param hookEvent - impossible hook event after exhaustive narrowing
- *
- * @throws when a new hook event reaches runtime without a title mapping
+ Throws for hook variants not handled by titleForEvent.
+ 
+ @param hookEvent - impossible hook event after exhaustive narrowing
+ 
+ @throws when a new hook event reaches runtime without a title mapping
  */
 function unexpectedHookEvent(hookEvent: never,): never {
   void hookEvent;
@@ -114,12 +114,12 @@ function unexpectedHookEvent(hookEvent: never,): never {
 }
 
 /**
- * Builds a human-readable title body from any hook event.
- *
- * @param hookEvent - parsed hook event payload
- *
- * @returns short descriptive title body for terminal tab
- *
+ Builds a human-readable title body from any hook event.
+ 
+ @param hookEvent - parsed hook event payload
+ 
+ @returns short descriptive title body for terminal tab
+ 
  */
 function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
   if ((hookEvent.hook_event_name === 'PreToolUse')
@@ -173,15 +173,15 @@ function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
 //region Terminal title output
 
 /**
- * Writes an OSC 0 escape sequence to `/dev/tty` to set the terminal tab title.
- * Fails silently if `/dev/tty` is unavailable.
- *
- * @param titlePayload - already-safe title payload text placed between OSC delimiters
+ Writes an OSC 0 escape sequence to `/dev/tty` to set the terminal tab title.
+ Fails silently if `/dev/tty` is unavailable.
+ 
+ @param titlePayload - already-safe title payload text placed between OSC delimiters
  */
 async function setTerminalTitlePayload(titlePayload: string,): Promise<void> {
   try {
     /**
-     * Write-mode file handle for `/dev/tty`; closed by async disposal on scope exit.
+     Write-mode file handle for `/dev/tty`; closed by async disposal on scope exit.
      */
     await using tty = await open(
       '/dev/tty',
@@ -195,22 +195,22 @@ async function setTerminalTitlePayload(titlePayload: string,): Promise<void> {
 }
 
 /**
- * Output is `void`: the handler writes its OSC sequence to `/dev/tty` and emits no stdout.
+ Output is `void`: the handler writes its OSC sequence to `/dev/tty` and emits no stdout.
  */
 type TerminalTitleOutput = void;
 
 /**
- * Builds final safe title payload text for a Claude Code hook event.
- *
- * @param event - parsed hook event from Claude Code
- *
- * @returns prefixed title payload text safe to place inside an OSC 0 sequence
- *
- *
- * @example
- * ```ts
- * terminalTitleForEvent({ hook_event_name: 'Stop', session_id: 's', transcript_path: 't', cwd: '.' });
- * ```
+ Builds final safe title payload text for a Claude Code hook event.
+ 
+ @param event - parsed hook event from Claude Code
+ 
+ @returns prefixed title payload text safe to place inside an OSC 0 sequence
+ 
+ 
+ @example
+ ```ts
+ terminalTitleForEvent({ hook_event_name: 'Stop', session_id: 's', transcript_path: 't', cwd: '.' });
+ ```
  */
 function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
   return safeTerminalTitlePayload({
@@ -222,17 +222,17 @@ function terminalTitleForEvent(event: ReadonlyDeep<HookInput>,): string {
 }
 
 /**
- * Builds title payload for hook event and writes OSC 0 sequence to `/dev/tty`.
- *
- * @param event - parsed hook event from Claude Code
- *
- * @returns nothing; title is set as side effect via `/dev/tty`
- *
- *
- * @example
- * ```ts
- * await terminalTitleHandler(event);
- * ```
+ Builds title payload for hook event and writes OSC 0 sequence to `/dev/tty`.
+ 
+ @param event - parsed hook event from Claude Code
+ 
+ @returns nothing; title is set as side effect via `/dev/tty`
+ 
+ 
+ @example
+ ```ts
+ await terminalTitleHandler(event);
+ ```
  */
 async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<TerminalTitleOutput> {
   await setTerminalTitlePayload(terminalTitleForEvent(event,),);
@@ -243,16 +243,16 @@ async function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): Promise<Te
 //region Runtime adapter
 
 /**
- * Parses raw stdin as a hook event union.
- *
- * @param raw - JSON payload from Claude Code stdin
- *
- * @returns parsed hook event union
- *
- * @example
- * ```ts
- * terminalTitleParser('{"hook_event_name":"Stop"}');
- * ```
+ Parses raw stdin as a hook event union.
+ 
+ @param raw - JSON payload from Claude Code stdin
+ 
+ @returns parsed hook event union
+ 
+ @example
+ ```ts
+ terminalTitleParser('{"hook_event_name":"Stop"}');
+ ```
  */
 function terminalTitleParser(raw: string,): HookInput {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
@@ -260,16 +260,16 @@ function terminalTitleParser(raw: string,): HookInput {
 }
 
 /**
- * Returns {@link NO_STDOUT}; title output is written directly to `/dev/tty`.
- *
- * @param _output - ignored handler result
- *
- * @returns sentinel instructing runtime to emit no stdout bytes
- *
- * @example
- * ```ts
- * terminalTitleWriter();
- * ```
+ Returns {@link NO_STDOUT}; title output is written directly to `/dev/tty`.
+ 
+ @param _output - ignored handler result
+ 
+ @returns sentinel instructing runtime to emit no stdout bytes
+ 
+ @example
+ ```ts
+ terminalTitleWriter();
+ ```
  */
 function terminalTitleWriter(_output: TerminalTitleOutput,): WriterOutput {
   return NO_STDOUT;

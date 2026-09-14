@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor configuration loading.
- *
- * @module
+ Unit tests for Advisor configuration loading.
+ 
+ @module
  */
 
 import {
@@ -22,6 +22,9 @@ import { loadMergedConfig, } from '../dist/final/node/index.mjs';
 
 /** User-selected default operation timeout. */
 const EXPECTED_DEFAULT_TIMEOUT_MS = 600_000;
+
+/** User-selected default Advisor output token budget. */
+const EXPECTED_DEFAULT_OUTPUT_TOKENS = 32_000;
 
 /** Global timeout fixture. */
 const GLOBAL_TIMEOUT_MS = 10;
@@ -53,6 +56,7 @@ await describe({
         },);
         expect(config.enabled,).toBe(true,);
         expect(config.timeoutMs,).toBe(EXPECTED_DEFAULT_TIMEOUT_MS,);
+        expect(config.maxAdvisorOutputTokens,).toBe(EXPECTED_DEFAULT_OUTPUT_TOKENS,);
       },
     },),
     it({

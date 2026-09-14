@@ -1,7 +1,7 @@
 /**
- * Unit tests for budget-model strategy selection.
- *
- * @module
+ Unit tests for budget-model strategy selection.
+ 
+ @module
  */
 
 import {
@@ -14,13 +14,13 @@ import {
   NO_AUTH,
   NoBudgetModelError,
   selectBudgetModel,
-} from './budget.ts';
+  type BudgetModelAuth,
+} from '../dist/final/node/index.mjs';
 import {
   captureAsyncError,
   fixtureModel,
   fixtureSlug,
 } from './test-fixtures.ts';
-import type { BudgetModelAuth, } from './types.ts';
 
 //region Fixtures
 
@@ -89,11 +89,11 @@ const allModelsWithSpeed = [
 const auth: BudgetModelAuth = { apiKey: 'test-key', };
 
 /**
- * Build authenticated slug callbacks for budget tests.
- *
- * @param authenticatedSlugs - slugs that should resolve auth
- *
- * @returns auth callbacks for shared budget selection
+ Build authenticated slug callbacks for budget tests.
+ 
+ @param authenticatedSlugs - slugs that should resolve auth
+ 
+ @returns auth callbacks for shared budget selection
  */
 function authCallbacks(
   authenticatedSlugs: readonly string[],

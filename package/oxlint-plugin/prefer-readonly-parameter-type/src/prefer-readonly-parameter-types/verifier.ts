@@ -1,7 +1,7 @@
 /**
- * Diagnostic comparison for readonly parameter types and mutation contracts.
- *
- * @module
+ Diagnostic comparison for readonly parameter types and mutation contracts.
+ 
+ @module
  */
 
 import type { ParsedMutationContractBlock, } from '@monochromatic-dev/oxlint-plugin-shared/ts';
@@ -15,6 +15,7 @@ import { opaqueEffectReport, } from './opaque-effect-diagnostic.ts';
 import type { ReadonlyCallableEvidence, } from './readonly-callable-evidence.ts';
 import type { ReadonlyRuleCategory, } from './readonly-rule-category.ts';
 import { reportRedundantForeignBorrowed, } from './redundant-marker-report.ts';
+import { readonlyMutableReason, } from './readonly-classification-model.ts';
 import { readonlyPreferenceGuidance, } from './readonly-preference-guidance.ts';
 import { readonlyParameterSuggestions, } from './readonly-suggestions.ts';
 
@@ -24,17 +25,17 @@ import {
 } from './semantic-location.ts';
 
 /**
- * Reports stale mutation block with verified removal suggestion.
- *
- * @param context - Rule context receiving diagnostic.
- *
- * @param block - Shared parsed mutation block.
- *
- * @param parameterSubject - Stable one-line subject for targeted parameter.
- *
- * @param commentBodyStartOffset - Absolute source start of comment body.
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports stale mutation block with verified removal suggestion.
+ 
+ @param context - Rule context receiving diagnostic.
+ 
+ @param block - Shared parsed mutation block.
+ 
+ @param parameterSubject - Stable one-line subject for targeted parameter.
+ 
+ @param commentBodyStartOffset - Absolute source start of comment body.
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportStaleContract({
   context,
@@ -48,7 +49,7 @@ function reportStaleContract({
   readonly commentBodyStartOffset: number;
 }>,): void {
   /**
-   * Absolute Oxlint range for complete stale block.
+   Absolute Oxlint range for complete stale block.
    */
   const range: [
     number,
@@ -66,7 +67,7 @@ function reportStaleContract({
     },),
   ];
   /**
-   * Replacement preserving closing-comment indentation for final block.
+   Replacement preserving closing-comment indentation for final block.
    */
   const replacement = context.sourceCode
     .text
@@ -101,20 +102,20 @@ function reportStaleContract({
 }
 
 /**
- * Reports one policy category from shared callable evidence.
- *
- * @param context - Rule context receiving selected diagnostics.
- *
- * @param evidence - Category-neutral facts for one callable.
- *
- * @param category - Public rule policy selecting applicable facts.
- *
- * @example
- * ```ts
- * reportReadonlyCallableEvidence({ context, evidence, category: 'preference' });
- * ```
- *
- * @mutates context - Emits selected diagnostics through foreign rule context.
+ Reports one policy category from shared callable evidence.
+ 
+ @param context - Rule context receiving selected diagnostics.
+ 
+ @param evidence - Category-neutral facts for one callable.
+ 
+ @param category - Public rule policy selecting applicable facts.
+ 
+ @example
+ ```ts
+ reportReadonlyCallableEvidence({ context, evidence, category: 'preference' });
+ ```
+ 
+ @mutates context - Emits selected diagnostics through foreign rule context.
  */
 export function reportReadonlyCallableEvidence({
   context,
@@ -126,7 +127,7 @@ export function reportReadonlyCallableEvidence({
   readonly category: ReadonlyRuleCategory;
 }>,): void {
   /**
-   * Shared semantic values used by every category reporter.
+   Shared semantic values used by every category reporter.
    */
   const {
     declaration,
@@ -137,13 +138,13 @@ export function reportReadonlyCallableEvidence({
     foreignBorrowedParameters,
   } = evidence;
   /**
-   * Source file owning callable and authored parameter ranges.
+   Source file owning callable and authored parameter ranges.
    */
   const sourceFile = declaration.getSourceFile();
 
   parameterFacts.forEach(function reportParameter(facts,): void {
     /**
-     * Parameter-level facts consumed by category branches.
+     Parameter-level facts consumed by category branches.
      */
     const {
       parameter,
@@ -166,11 +167,11 @@ export function reportReadonlyCallableEvidence({
       redundantMarkerPossible,
     } = facts;
     /**
-     * Whether exact ownership-marker provenance reaches current parameter.
+     Whether exact ownership-marker provenance reaches current parameter.
      */
     const foreignBorrowed = foreignBorrowedParameters.has(parameterIndex,);
     /**
-     * Report location spanning parameter binding.
+     Report location spanning parameter binding.
      */
     const loc = semanticLocation({
       context,
@@ -187,7 +188,7 @@ export function reportReadonlyCallableEvidence({
         && (!foreignBorrowed)
         && (classification.kind === 'mutable')) {
         /**
-         * Verified semantic type suggestions available for current syntax.
+         Verified semantic type suggestions available for current syntax.
          */
         const suggestions = readonlyParameterSuggestions({
           context,
@@ -201,10 +202,11 @@ export function reportReadonlyCallableEvidence({
           messageId: 'shouldBeReadonly',
           data: {
             parameterSubject,
-            reason: classification.reason,
+            reason: readonlyMutableReason(classification,),
             guidance: readonlyPreferenceGuidance({
               suggestions,
               originEvidence,
+              classification,
             },),
           },
           ...suggestions.length === 0 ? {} : { suggest: suggestions, },

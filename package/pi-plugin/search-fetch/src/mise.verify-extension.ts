@@ -1,7 +1,7 @@
 /**
- * Verifies built Pi Search Fetch extension registers expected Pi resources.
- *
- * @module
+ Verifies built Pi Search Fetch extension registers expected Pi resources.
+ 
+ @module
  */
 
 import { mkdtemp, } from 'node:fs/promises';
@@ -17,12 +17,12 @@ import {
 //region Constants
 
 /**
- * Built extension path consumed by Pi.
+ Built extension path consumed by Pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected resource registrations from the extension entry point.
+ Expected resource registrations from the extension entry point.
  */
 const EXPECTED_REGISTRATIONS = [
   'tool:web_search',
@@ -30,7 +30,7 @@ const EXPECTED_REGISTRATIONS = [
 ] as const;
 
 /**
- * Temp home prefix for isolated config loading.
+ Temp home prefix for isolated config loading.
  */
 const TEMP_HOME_PREFIX = 'pi-search-fetch-verify-';
 
@@ -39,11 +39,11 @@ const TEMP_HOME_PREFIX = 'pi-search-fetch-verify-';
 //region Types
 
 /**
- * Built Pi Search Fetch extension module shape.
+ Built Pi Search Fetch extension module shape.
  */
 type LinkupExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   readonly default: ExtensionFactory;
 };
@@ -53,15 +53,15 @@ type LinkupExtensionModule = {
 //region Verification
 
 /**
- * Verify built extension registers expected Pi resources.
- *
- * @returns verification result text
- *
- * @throws when built extension import or registration fails
+ Verify built extension registers expected Pi resources.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import or registration fails
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Temp home directory avoiding real user config during verification.
+   Temp home directory avoiding real user config during verification.
    */
   const tempHome = await mkdtemp(join(
     tmpdir(),
@@ -71,24 +71,24 @@ async function verifyBuiltExtension(): Promise<string> {
     .HOME = tempHome;
 
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isLinkupExtensionModule(mod,))
     throw new Error('built Pi Search Fetch extension does not export a default extension factory');
 
   /**
-   * Fake Pi API and its registration call log.
+   Fake Pi API and its registration call log.
    */
   const fakeApi = fakePiApi();
   await mod.default(fakeApi.api,);
 
   /**
-   * Snapshot of recorded registration calls.
+   Snapshot of recorded registration calls.
    */
   const registrations = fakeApi.registrations();
   /**
-   * Expected registrations not observed.
+   Expected registrations not observed.
    */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
@@ -97,7 +97,7 @@ async function verifyBuiltExtension(): Promise<string> {
     throw new Error(`missing Pi Search Fetch registrations: ${missing.join(', ',)}`,);
 
   /**
-   * Unexpected registrations observed.
+   Unexpected registrations observed.
    */
   const unexpected = registrations.filter(function isUnexpected(registration,) {
     return !isExpectedRegistration(registration,);
@@ -109,11 +109,11 @@ async function verifyBuiltExtension(): Promise<string> {
 }
 
 /**
- * Detect built Pi Search Fetch extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports an extension factory
+ Detect built Pi Search Fetch extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module exports an extension factory
  */
 function isLinkupExtensionModule(value: unknown,): value is LinkupExtensionModule {
   if ((value === null) || ((typeof value) !== 'object'))
@@ -123,11 +123,11 @@ function isLinkupExtensionModule(value: unknown,): value is LinkupExtensionModul
 }
 
 /**
- * Return whether a registration key belongs to this extension.
- *
- * @param registration - registration key recorded from fake Pi API
- *
- * @returns whether registration is expected
+ Return whether a registration key belongs to this extension.
+ 
+ @param registration - registration key recorded from fake Pi API
+ 
+ @returns whether registration is expected
  */
 function isExpectedRegistration(registration: string,): boolean {
   return EXPECTED_REGISTRATIONS.some(function isExpected(expected,) {
@@ -136,20 +136,20 @@ function isExpectedRegistration(registration: string,): boolean {
 }
 
 /**
- * Build fake Pi API used to verify extension registration.
- *
- * @returns fake Pi extension API and registrations accessor
+ Build fake Pi API used to verify extension registration.
+ 
+ @returns fake Pi extension API and registrations accessor
  */
 function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: () => readonly string[];
 } {
   /**
-   * Locally owned registration log accessed through closures.
+   Locally owned registration log accessed through closures.
    */
   const registrations: string[] = [];
   /**
-   * Fake extension API that records registration calls into the closure.
+   Fake extension API that records registration calls into the closure.
    */
   const api: ExtensionAPI = {
     on(event: string,) {

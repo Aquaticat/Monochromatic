@@ -1,18 +1,18 @@
 /**
- * DOM reconciliation for the sticky-flow pane strip.
- *
- * The strip is rendered as normal-flow HTML: one flex row of columns, each
- * column a block stack of rail wrappers, each wrapper holding one
- * `position: sticky` pane. All pane movement during scrolling is done by the
- * browser's sticky positioning; this module only diffs DOM structure against
- * the model and writes the flow margins and heights computed by `bands.ts`.
- *
- * @example
- * ```ts
- * renderStrip({ handlers, stores, strip, stripElement });
- * ```
- *
- * @packageDocumentation
+ DOM reconciliation for the sticky-flow pane strip.
+ 
+ The strip is rendered as normal-flow HTML: one flex row of columns, each
+ column a block stack of rail wrappers, each wrapper holding one
+ `position: sticky` pane. All pane movement during scrolling is done by the
+ browser's sticky positioning; this module only diffs DOM structure against
+ the model and writes the flow margins and heights computed by `bands.ts`.
+ 
+ @example
+ ```ts
+ renderStrip({ handlers, stores, strip, stripElement });
+ ```
+ 
+ @packageDocumentation
  */
 
 import { computeColumnLayouts, } from './bands.js';
@@ -25,61 +25,61 @@ import {
 } from './strip.js';
 
 /**
- * Mutable renderer-side stores keyed by pane identity.
- *
- * @example
- * ```ts
- * const stores = createRendererStores();
- * ```
+ Mutable renderer-side stores keyed by pane identity.
+ 
+ @example
+ ```ts
+ const stores = createRendererStores();
+ ```
  */
 export type RendererStores = {
   /**
-   * Column container elements in left-to-right order.
+   Column container elements in left-to-right order.
    */
   readonly columnElements: HTMLElement[];
 
   /**
-   * Fetched directory listings by pane id.
+   Fetched directory listings by pane id.
    */
   readonly listings: Map<PaneId, readonly BridgeFileEntry[]>;
 
   /**
-   * Pane section elements by pane id.
+   Pane section elements by pane id.
    */
   readonly paneElements: Map<PaneId, HTMLElement>;
 
   /**
-   * Rail wrapper elements by pane id.
+   Rail wrapper elements by pane id.
    */
   readonly railElements: Map<PaneId, HTMLElement>;
 
   /**
-   * Selected entry index per directory pane.
+   Selected entry index per directory pane.
    */
   readonly selections: Map<PaneId, number>;
 };
 
 /**
- * Renderer callbacks invoked from pane DOM events.
- *
- * @example
- * ```ts
- * const handlers: PaneEventHandlers = {
- *   onEntryOpen: () => {},
- *   onPaneClose: () => {},
- *   onPaneFocus: () => {},
- * };
- * ```
+ Renderer callbacks invoked from pane DOM events.
+ 
+ @example
+ ```ts
+ const handlers: PaneEventHandlers = {
+   onEntryOpen: () => {},
+   onPaneClose: () => {},
+   onPaneFocus: () => {},
+ };
+ ```
  */
 export type PaneEventHandlers = {
   /**
-   * Opens an entry of a pane (descend into a directory or preview a file).
-   *
-   * @param entry - Clicked listing entry.
-   *
-   * @param forceDuplicate - Whether a modifier requested a duplicate pane.
-   *
-   * @param paneId - Pane the entry belongs to.
+   Opens an entry of a pane (descend into a directory or preview a file).
+   
+   @param entry - Clicked listing entry.
+   
+   @param forceDuplicate - Whether a modifier requested a duplicate pane.
+   
+   @param paneId - Pane the entry belongs to.
    */
   readonly onEntryOpen: (options: {
     readonly entry: BridgeFileEntry;
@@ -88,29 +88,29 @@ export type PaneEventHandlers = {
   },) => void;
 
   /**
-   * Closes one pane.
-   *
-   * @param paneId - Pane to close.
+   Closes one pane.
+   
+   @param paneId - Pane to close.
    */
   readonly onPaneClose: (options: { readonly paneId: PaneId; },) => void;
 
   /**
-   * Focuses one pane.
-   *
-   * @param paneId - Pane to focus.
+   Focuses one pane.
+   
+   @param paneId - Pane to focus.
    */
   readonly onPaneFocus: (options: { readonly paneId: PaneId; },) => void;
 };
 
 /**
- * Builds empty renderer stores for one strip element.
- *
- * @returns Fresh mutable stores.
- *
- * @example
- * ```ts
- * const stores = createRendererStores();
- * ```
+ Builds empty renderer stores for one strip element.
+ 
+ @returns Fresh mutable stores.
+ 
+ @example
+ ```ts
+ const stores = createRendererStores();
+ ```
  */
 export function createRendererStores(): RendererStores {
   return {
@@ -123,20 +123,20 @@ export function createRendererStores(): RendererStores {
 }
 
 /**
- * Final path segment of a location path, for the pane header.
- *
- * @param path - Absolute location path.
- *
- * @returns Basename, or the path itself for a filesystem root.
- *
- * @example
- * ```ts
- * basenameOf({ path: '/home/docs' });
- * ```
+ Final path segment of a location path, for the pane header.
+ 
+ @param path - Absolute location path.
+ 
+ @returns Basename, or the path itself for a filesystem root.
+ 
+ @example
+ ```ts
+ basenameOf({ path: '/home/docs' });
+ ```
  */
 function basenameOf({ path, }: { readonly path: string; },): string {
   /**
-   * Path segments with empty tails (trailing separators) dropped.
+   Path segments with empty tails (trailing separators) dropped.
    */
   const segments = path
     .split('/',)
@@ -148,18 +148,18 @@ function basenameOf({ path, }: { readonly path: string; },): string {
 }
 
 /**
- * Builds one pane section element with header, close control, and body.
- *
- * @param handlers - Renderer callbacks for pane events.
- *
- * @param pane - Model pane the element renders.
- *
- * @returns Pane section element.
- *
- * @example
- * ```ts
- * buildPaneElement({ pane, handlers });
- * ```
+ Builds one pane section element with header, close control, and body.
+ 
+ @param handlers - Renderer callbacks for pane events.
+ 
+ @param pane - Model pane the element renders.
+ 
+ @returns Pane section element.
+ 
+ @example
+ ```ts
+ buildPaneElement({ pane, handlers });
+ ```
  */
 function buildPaneElement(
   {
@@ -171,7 +171,7 @@ function buildPaneElement(
   },
 ): HTMLElement {
   /**
-   * Sticky pane container.
+   Sticky pane container.
    */
   const section = document.createElement('section',);
   section.className = (pane.location
@@ -189,13 +189,13 @@ function buildPaneElement(
   );
 
   /**
-   * Header row with the location basename and a close control.
+   Header row with the location basename and a close control.
    */
   const header = document.createElement('header',);
   header.className = 'pane-header';
 
   /**
-   * Location basename label.
+   Location basename label.
    */
   const title = document.createElement('span',);
   title.className = 'pane-title';
@@ -204,7 +204,7 @@ function buildPaneElement(
   header.append(title,);
 
   /**
-   * Close control removing this pane.
+   Close control removing this pane.
    */
   const close = document.createElement('button',);
   close.className = 'pane-close';
@@ -228,7 +228,7 @@ function buildPaneElement(
     .kind
     === 'directory') {
     /**
-     * Listing body filled once the directory listing arrives.
+     Listing body filled once the directory listing arrives.
      */
     const list = document.createElement('ul',);
     list.className = 'pane-list';
@@ -236,7 +236,7 @@ function buildPaneElement(
   }
   else {
     /**
-     * Preview body naming the previewed file.
+     Preview body naming the previewed file.
      */
     const preview = document.createElement('p',);
     preview.className = 'pane-preview-body';
@@ -249,20 +249,20 @@ function buildPaneElement(
 }
 
 /**
- * Fills a directory pane's list body from its fetched listing, once.
- *
- * @param handlers - Renderer callbacks for entry events.
- *
- * @param pane - Model pane owning the list.
- *
- * @param paneElement - Pane section element to fill.
- *
- * @param stores - Renderer stores holding the listing.
- *
- * @example
- * ```ts
- * fillPaneListing({ handlers, pane, paneElement, stores });
- * ```
+ Fills a directory pane's list body from its fetched listing, once.
+ 
+ @param handlers - Renderer callbacks for entry events.
+ 
+ @param pane - Model pane owning the list.
+ 
+ @param paneElement - Pane section element to fill.
+ 
+ @param stores - Renderer stores holding the listing.
+ 
+ @example
+ ```ts
+ fillPaneListing({ handlers, pane, paneElement, stores });
+ ```
  */
 function fillPaneListing(
   {
@@ -278,7 +278,7 @@ function fillPaneListing(
   },
 ): void {
   /**
-   * List body element of the pane, absent for preview panes.
+   List body element of the pane, absent for preview panes.
    */
   const list = paneElement.querySelector<HTMLUListElement>('.pane-list',);
 
@@ -288,7 +288,7 @@ function fillPaneListing(
     return;
 
   /**
-   * Fetched listing entries for this pane, absent while loading.
+   Fetched listing entries for this pane, absent while loading.
    */
   const entries = stores.listings
     .get(pane.id,);
@@ -303,7 +303,7 @@ function fillPaneListing(
     index,
   ): void {
     /**
-     * One listing row.
+     One listing row.
      */
     const item = document.createElement('li',);
     item.className = (entry.kind === 'directory')
@@ -327,18 +327,18 @@ function fillPaneListing(
 }
 
 /**
- * Updates the selected-entry highlight of one directory pane.
- *
- * @param pane - Model pane owning the list.
- *
- * @param paneElement - Pane section element to update.
- *
- * @param stores - Renderer stores holding the selection.
- *
- * @example
- * ```ts
- * updateSelectionHighlight({ pane, paneElement, stores });
- * ```
+ Updates the selected-entry highlight of one directory pane.
+ 
+ @param pane - Model pane owning the list.
+ 
+ @param paneElement - Pane section element to update.
+ 
+ @param stores - Renderer stores holding the selection.
+ 
+ @example
+ ```ts
+ updateSelectionHighlight({ pane, paneElement, stores });
+ ```
  */
 function updateSelectionHighlight(
   {
@@ -352,7 +352,7 @@ function updateSelectionHighlight(
   },
 ): void {
   /**
-   * Selected entry index of this pane, defaulting to the first entry.
+   Selected entry index of this pane, defaulting to the first entry.
    */
   const selected = stores.selections
     .get(pane.id,)
@@ -372,22 +372,22 @@ function updateSelectionHighlight(
 }
 
 /**
- * Reconciles the strip DOM to the model: grows/shrinks columns, creates
- * missing rails and panes, writes flow margins and rail heights, removes stale
- * elements, fills arrived listings, and refreshes highlights.
- *
- * @param handlers - Renderer callbacks for pane events.
- *
- * @param stores - Mutable renderer stores.
- *
- * @param strip - Model snapshot to render.
- *
- * @param stripElement - Scroller element hosting the columns.
- *
- * @example
- * ```ts
- * renderStrip({ handlers, stores, strip, stripElement });
- * ```
+ Reconciles the strip DOM to the model: grows/shrinks columns, creates
+ missing rails and panes, writes flow margins and rail heights, removes stale
+ elements, fills arrived listings, and refreshes highlights.
+ 
+ @param handlers - Renderer callbacks for pane events.
+ 
+ @param stores - Mutable renderer stores.
+ 
+ @param strip - Model snapshot to render.
+ 
+ @param stripElement - Scroller element hosting the columns.
+ 
+ @example
+ ```ts
+ renderStrip({ handlers, stores, strip, stripElement });
+ ```
  */
 export function renderStrip(
   {
@@ -403,7 +403,7 @@ export function renderStrip(
   },
 ): void {
   /**
-   * Per-column flow stacks computed from the placement snapshot.
+   Per-column flow stacks computed from the placement snapshot.
    */
   const layouts = computeColumnLayouts({ panes: strip.panes, },);
 
@@ -411,7 +411,7 @@ export function renderStrip(
     .length
     < layouts.length) {
     /**
-     * New column container appended at the right edge.
+     New column container appended at the right edge.
      */
     const column = document.createElement('div',);
     column.className = 'column';
@@ -428,7 +428,7 @@ export function renderStrip(
       ?.remove();
 
   /**
-   * Live pane ids, for stale-element removal.
+   Live pane ids, for stale-element removal.
    */
   const live = new Set(strip.panes
     .map(function idOf(pane,): PaneId {
@@ -456,7 +456,7 @@ export function renderStrip(
 
   layouts.forEach(function renderColumn(layout,): void {
     /**
-     * Column container this layout renders into.
+     Column container this layout renders into.
      */
     const column = stores.columnElements[layout.column];
 
@@ -466,7 +466,7 @@ export function renderStrip(
     layout.rails
       .forEach(function renderRail(rail,): void {
         /**
-         * Model pane behind this rail.
+         Model pane behind this rail.
          */
         const pane = paneById({
           id: rail.id,
@@ -477,19 +477,19 @@ export function renderStrip(
           return;
 
         /**
-         * Existing rail wrapper, or a fresh one holding a new pane element.
+         Existing rail wrapper, or a fresh one holding a new pane element.
          */
         const railElement = stores.railElements
           .get(rail.id,)
           ?? (function createRail(): HTMLElement {
           /**
-           * New rail wrapper the pane sticks within.
+           New rail wrapper the pane sticks within.
            */
           const wrapper = document.createElement('div',);
           wrapper.className = 'rail';
 
           /**
-           * New sticky pane element.
+           New sticky pane element.
            */
           const paneElement = buildPaneElement({
             handlers,
@@ -516,7 +516,7 @@ export function renderStrip(
         column.append(railElement,);
 
         /**
-         * Pane element inside the rail wrapper.
+         Pane element inside the rail wrapper.
          */
         const paneElement = stores.paneElements
           .get(rail.id,);

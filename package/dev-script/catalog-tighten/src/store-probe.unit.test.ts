@@ -1,10 +1,10 @@
 /**
- * Unit tests for pnpm virtual-store classification probing.
- *
- * Builds a throwaway `.pnpm` store on disk so the probe runs against a real
- * directory layout, including the scope-mangled directory names pnpm emits.
- *
- * @module
+ Unit tests for pnpm virtual-store classification probing.
+ 
+ Builds a throwaway `.pnpm` store on disk so the probe runs against a real
+ directory layout, including the scope-mangled directory names pnpm emits.
+ 
+ @module
  */
 
 import {
@@ -32,30 +32,30 @@ import {
 } from './store-probe.ts';
 
 /**
- * Throwaway monorepo root that removes itself when its `await using` scope ends,
- * so tests never leak temp directories and never reach for a banned `finally`.
+ Throwaway monorepo root that removes itself when its `await using` scope ends,
+ so tests never leak temp directories and never reach for a banned `finally`.
  */
 type TempRoot = AsyncDisposable & {
   /**
-   * Absolute path to the throwaway monorepo root.
+   Absolute path to the throwaway monorepo root.
    */
   readonly root: string;
 };
 
 /**
- * Creates a disposable throwaway monorepo root under the OS temp directory.
- *
- * @returns disposable holding the root path; disposal removes the tree
- *
- * @example
- * ```ts
- * await using temp = await makeTempRoot();
- * // use temp.root ...
- * ```
+ Creates a disposable throwaway monorepo root under the OS temp directory.
+ 
+ @returns disposable holding the root path; disposal removes the tree
+ 
+ @example
+ ```ts
+ await using temp = await makeTempRoot();
+ // use temp.root ...
+ ```
  */
 async function makeTempRoot(): Promise<TempRoot> {
   /**
-   * Freshly created throwaway root path.
+   Freshly created throwaway root path.
    */
   const root = await mkdtemp(join(
     tmpdir(),
@@ -76,21 +76,21 @@ async function makeTempRoot(): Promise<TempRoot> {
 }
 
 /**
- * Writes one store copy at
- * `<root>/node_modules/.pnpm/<mangled>@<version>/node_modules/<name>/package.json`.
- *
- * @param root - throwaway monorepo root
- *
- * @param mangled - scope-mangled store directory prefix, e.g. `\@types+mdx`
- *
- * @param name - real npm name (unmangled) for the inner directory, e.g. `\@types/mdx`
- *
- * @param version - version to write into the manifest
- *
- * @example
- * ```ts
- * await writeStoreCopy({ root, mangled: "openai", name: "openai", version: "6.26.0" });
- * ```
+ Writes one store copy at
+ `<root>/node_modules/.pnpm/<mangled>@<version>/node_modules/<name>/package.json`.
+ 
+ @param root - throwaway monorepo root
+ 
+ @param mangled - scope-mangled store directory prefix, e.g. `\@types+mdx`
+ 
+ @param name - real npm name (unmangled) for the inner directory, e.g. `\@types/mdx`
+ 
+ @param version - version to write into the manifest
+ 
+ @example
+ ```ts
+ await writeStoreCopy({ root, mangled: "openai", name: "openai", version: "6.26.0" });
+ ```
  */
 async function writeStoreCopy(
   {
@@ -106,7 +106,7 @@ async function writeStoreCopy(
   },
 ): Promise<void> {
   /**
-   * Inner package directory holding the manifest, under the mangled store entry.
+   Inner package directory holding the manifest, under the mangled store entry.
    */
   const pkgDir = join(
     root,

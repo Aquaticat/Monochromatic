@@ -16,20 +16,20 @@ import type { OsFamily, } from './registry.ts';
 //region CDROM type
 
 /**
- * Path to a CDROM ISO to attach as an IDE device.
- *
- * @example
- * ```ts
- * const cdroms: ReadonlyArray<CdromSpec> = [
- *
- *   { path: '/path/to/windows.iso' },
- *   { path: '/path/to/virtio-win.iso' },
- * ];
- * ```
+ Path to a CDROM ISO to attach as an IDE device.
+ 
+ @example
+ ```ts
+ const cdroms: ReadonlyArray<CdromSpec> = [
+ 
+   { path: '/path/to/windows.iso' },
+   { path: '/path/to/virtio-win.iso' },
+ ];
+ ```
  */
 export type CdromSpec = {
   /**
-   * Absolute path to the ISO file.
+   Absolute path to the ISO file.
    */
   readonly path: string;
 };
@@ -39,56 +39,56 @@ export type CdromSpec = {
 //region Domain XML generator
 
 /**
- * Generates a libvirt domain XML definition for a KVM virtual machine.
- * Supports both Linux and Windows guests with OS-specific optimizations,
- * assembled from {@link commonDevices} plus the builders below.
- *
- * For Linux guests: configures virtio disk and NIC, serial console,
- * and an optional cloud-init seed CDROM.
- *
- * For Windows guests: adds Hyper-V enlightenments via {@link hypervFeatures},
- * a localtime clock via {@link clockElement}, and optional IDE CDROMs via
- * {@link ideCdromDevices} for installation media (Windows ISO, autounattend,
- * virtio-win ISO).
- *
- *   OS family, boot device, and additional CDROMs
- *
- * @param bootDev - Boot device: `hd` or `cdrom`
- *
- * @param cdroms - Additional IDE CDROMs
- *
- * @param diskBus - Bus type for the primary disk (`virtio` or `sata`)
- *
- * @param diskPath - Absolute path to the VM disk image
- *
- * @param name - VM name without the mvm- prefix
- *
- * @param osFamily - Guest OS family
- *
- * @param seedIsoPath - Absolute path to the cloud-init seed ISO
- *
- * @returns Complete libvirt domain XML string
- *
- * @example
- * ```ts
- * // Linux VM with cloud-init seed
- * domainXml({ name: 'dev', diskPath: '/path/disk.qcow2', seedIsoPath: '/path/seed.iso' });
- *
- * // Windows VM (normal boot)
- * domainXml({ name: 'win', diskPath: '/path/disk.qcow2', osFamily: 'windows' });
- *
- * // Windows template creation (boot from ISO)
- * domainXml({
- *
- *   name: 'template',
- *   diskPath: '/path/disk.qcow2',
- *
- *   osFamily: 'windows',
- *   bootDev: 'cdrom',
- *
- *   cdroms: [{ path: '/path/win.iso' }, { path: '/path/autounattend.iso' }, { path: '/path/virtio.iso' }],
- * });
- * ```
+ Generates a libvirt domain XML definition for a KVM virtual machine.
+ Supports both Linux and Windows guests with OS-specific optimizations,
+ assembled from {@link commonDevices} plus the builders below.
+ 
+ For Linux guests: configures virtio disk and NIC, serial console,
+ and an optional cloud-init seed CDROM.
+ 
+ For Windows guests: adds Hyper-V enlightenments via {@link hypervFeatures},
+ a localtime clock via {@link clockElement}, and optional IDE CDROMs via
+ {@link ideCdromDevices} for installation media (Windows ISO, autounattend,
+ virtio-win ISO).
+ 
+   OS family, boot device, and additional CDROMs
+ 
+ @param bootDev - Boot device: `hd` or `cdrom`
+ 
+ @param cdroms - Additional IDE CDROMs
+ 
+ @param diskBus - Bus type for the primary disk (`virtio` or `sata`)
+ 
+ @param diskPath - Absolute path to the VM disk image
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @param osFamily - Guest OS family
+ 
+ @param seedIsoPath - Absolute path to the cloud-init seed ISO
+ 
+ @returns Complete libvirt domain XML string
+ 
+ @example
+ ```ts
+ // Linux VM with cloud-init seed
+ domainXml({ name: 'dev', diskPath: '/path/disk.qcow2', seedIsoPath: '/path/seed.iso' });
+ 
+ // Windows VM (normal boot)
+ domainXml({ name: 'win', diskPath: '/path/disk.qcow2', osFamily: 'windows' });
+ 
+ // Windows template creation (boot from ISO)
+ domainXml({
+ 
+   name: 'template',
+   diskPath: '/path/disk.qcow2',
+ 
+   osFamily: 'windows',
+   bootDev: 'cdrom',
+ 
+   cdroms: [{ path: '/path/win.iso' }, { path: '/path/autounattend.iso' }, { path: '/path/virtio.iso' }],
+ });
+ ```
  */
 export function domainXml(
   {
@@ -102,57 +102,57 @@ export function domainXml(
     sharedDir,
   }: {
     /**
-     * Boot device: `hd` for normal operation, `cdrom` for ISO-based installation.
+     Boot device: `hd` for normal operation, `cdrom` for ISO-based installation.
      */
     readonly bootDev?: 'cdrom' | 'hd';
     /**
-     * Additional IDE CDROMs (Windows ISO, autounattend, virtio-win).
+     Additional IDE CDROMs (Windows ISO, autounattend, virtio-win).
      */
     readonly cdroms?: readonly CdromSpec[];
     /**
-     * Bus type for the primary disk.
-     * Use `virtio` for production VMs (best performance).
-     * Use `sata` during Windows template creation to avoid the Server 2025
-     * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
-     * appear offline in WinPE, blocking unattended installation.
+     Bus type for the primary disk.
+     Use `virtio` for production VMs (best performance).
+     Use `sata` during Windows template creation to avoid the Server 2025
+     SAN policy (policy 4: offline shared bus) which makes VirtIO disks
+     appear offline in WinPE, blocking unattended installation.
      */
     readonly diskBus?: 'sata' | 'virtio';
     /**
-     * Absolute path to the VM disk image.
+     Absolute path to the VM disk image.
      */
     readonly diskPath: string;
     /**
-     * VM name without the mvm- prefix.
+     VM name without the mvm- prefix.
      */
     readonly name: string;
     /**
-     * Guest OS family for platform-specific optimizations.
+     Guest OS family for platform-specific optimizations.
      */
     readonly osFamily?: OsFamily;
     /**
-     * Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows).
+     Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows).
      */
     readonly seedIsoPath?: string;
     /**
-     * Absolute path to a host directory shared via virtiofs.
+     Absolute path to a host directory shared via virtiofs.
      */
     readonly sharedDir?: string;
   },
 ): string {
   /**
-   * Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI.
+   Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI.
    */
   const features = [h({ tag: 'acpi', },),];
   if (osFamily === 'windows')
     features.push(hypervFeatures(),);
 
   /**
-   * Device name prefix depends on bus type: vda for virtio, sda for sata.
+   Device name prefix depends on bus type: vda for virtio, sda for sata.
    */
   const diskDev = diskBus === 'virtio' ? 'vda' : 'sda';
 
   /**
-   * Mutable buffer because optional seed, virtiofs, and CDROM blocks extend the base disk.
+   Mutable buffer because optional seed, virtiofs, and CDROM blocks extend the base disk.
    */
   const devices: string[] = [
     h({
@@ -252,7 +252,7 @@ export function domainXml(
   );
 
   /**
-   * Top-level domain children before devices.
+   Top-level domain children before devices.
    */
   const domainChildren: string[] = [
     h({

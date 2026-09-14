@@ -36,7 +36,7 @@ pub(crate) fn build_window(app: &Application) -> StripController {
     controller.wire_window_map(&window);
     window.present();
     tracing::info!(path = %start.display(), "presented top-level window");
-    controller
+    return controller
 }
 
 /// What: choose the directory the app opens on: `FM_STICKY_START_DIR`, else `$HOME`, else the
@@ -49,5 +49,5 @@ fn start_directory() -> PathBuf {
     if let Some(home) = std::env::var_os("HOME") {
         return PathBuf::from(home);
     }
-    std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+    return std::env::current_dir().unwrap_or_else(|_| return PathBuf::from("."))
 }

@@ -1,5 +1,5 @@
 /**
- * Shared HTTP response utilities for API handlers.
+ Shared HTTP response utilities for API handlers.
  */
 
 import { HTTP_OK, } from '@monochromatic-dev/module-const/ts';
@@ -14,19 +14,19 @@ export {
 } from '@monochromatic-dev/module-const/ts';
 
 /**
- * Wraps a payload in a JSON `Response` with the correct content type.
- *
- * @param options - Serializable payload and HTTP status.
- *
- * @returns JSON response with content-type header
- *
- * @mutates options - `Fetch commit 586cd2a4 Response.json serializes data and reads response initialization`
- * may invoke serialization hooks reachable from `options.payload`.
- *
- * @example
- * ```ts
- * return jsonResponse({ payload: { ok: true }, status: 200 });
- * ```
+ Wraps a payload in a JSON `Response` with the correct content type.
+ 
+ @param options - Serializable payload and HTTP status.
+ 
+ @returns JSON response with content-type header
+ 
+ @mutates options - `Fetch commit 586cd2a4 Response.json serializes data and reads response initialization`
+ may invoke serialization hooks reachable from `options.payload`.
+ 
+ @example
+ ```ts
+ return jsonResponse({ payload: { ok: true }, status: 200 });
+ ```
  */
 export function jsonResponse(
   options: {
@@ -35,7 +35,7 @@ export function jsonResponse(
   },
 ): Response {
   /**
-   * Response fields separated after boundary contract attaches to their containing input.
+   Response fields separated after boundary contract attaches to their containing input.
    */
   const {
     payload,

@@ -19,17 +19,17 @@ const BULK_ADD_CASES: readonly string[] = [
 ];
 
 /**
- * Captures synchronous error from add-explicit invocation.
- *
- * @param args - Git argv to pass through add-explicit rule.
- *
- * @returns Error thrown by rule, or `undefined` when rule passes.
- *
- * @example
- * ```ts
- * const caught = catchAddExplicitError(['add', '.']);
- * expect(caught).toBeInstanceOf(Error);
- * ```
+ Captures synchronous error from add-explicit invocation.
+ 
+ @param args - Git argv to pass through add-explicit rule.
+ 
+ @returns Error thrown by rule, or `undefined` when rule passes.
+ 
+ @example
+ ```ts
+ const caught = catchAddExplicitError(['add', '.']);
+ expect(caught).toBeInstanceOf(Error);
+ ```
  */
 function catchAddExplicitError(args: readonly string[],): unknown {
   try {

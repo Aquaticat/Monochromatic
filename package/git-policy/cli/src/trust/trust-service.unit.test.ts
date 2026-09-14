@@ -19,7 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { discoverConfig, CONFIG_ABSENT, } from './config-discovery.ts';
 import { TrustedConfigError, } from './config-loader.ts';
 import { ensurePrivateRegistryDirectory, } from './registry-directory.ts';
@@ -40,7 +40,7 @@ import {
   untrustConfig,
 } from './trust-service.ts';
 import { captureTrustCandidate, } from './candidate.ts';
-import type { TrustWarning, } from './types.ts';
+import type { TrustConsentAdapters, TrustWarning, } from './types.ts';
 
 /** Real Git binary for disposable fixtures. */
 const REAL_GIT = await resolveGit();
@@ -76,11 +76,11 @@ type TrustFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git repository and private registry.
- *
- * @param source - MJS config source
- *
- * @returns disposable trust fixture
+ Creates disposable real Git repository and private registry.
+ 
+ @param source - MJS config source
+ 
+ @returns disposable trust fixture
  */
 async function createTrustFixture(source: string = VALID_CONFIG,): Promise<TrustFixture> {
   /** Disposable fixture root. */
@@ -108,11 +108,11 @@ async function createTrustFixture(source: string = VALID_CONFIG,): Promise<Trust
 }
 
 /**
- * Discovers fixture config and rejects impossible absence.
- *
- * @param fixture - disposable fixture
- *
- * @returns discovered MJS config
+ Discovers fixture config and rejects impossible absence.
+ 
+ @param fixture - disposable fixture
+ 
+ @returns discovered MJS config
  */
 async function fixtureConfig(fixture: TrustFixture,) {
   const discovered = await discoverConfig(['-C', fixture.repository, 'future-command',],);
@@ -122,19 +122,19 @@ async function fixtureConfig(fixture: TrustFixture,) {
 }
 
 /**
- * Creates deterministic noninteractive trust adapters.
- *
- * @param disclosures - captured disclosure output
- *
- * @returns trust consent adapters
+ Creates deterministic noninteractive trust adapters.
+ 
+ @param disclosures - captured disclosure output
+ 
+ @returns trust consent adapters
  */
-function trustAdapters(disclosures: string[],) {
+function trustAdapters(disclosures: string[],): TrustConsentAdapters {
   return {
     disclose: function captureDisclosure(text: string,) {
       disclosures.push(text,);
     },
     prompt: function rejectUnexpectedPrompt() {
-      return Promise.resolve(false,);
+      return Promise.resolve('declined',);
     },
     now: function fixedAuditTime() {
       return new Date('2026-07-10T00:00:00.000Z',);

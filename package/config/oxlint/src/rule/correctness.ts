@@ -1,19 +1,19 @@
 /**
- * Correctness, typescript, and performance rule configuration.
- *
- * Groups rules that prevent bugs, enforce correct TypeScript usage,
- * suppress leaked jest rules, and flag performance anti-patterns.
- *
- * @example
- * ```typescript
- * import { correctnessRules } from './rule/correctness.ts';
- * ```
+ Correctness, typescript, and performance rule configuration.
+ 
+ Groups rules that prevent bugs, enforce correct TypeScript usage,
+ suppress leaked jest rules, and flag performance anti-patterns.
+ 
+ @example
+ ```typescript
+ import { correctnessRules } from './rule/correctness.ts';
+ ```
  */
 
 import type { DummyRuleMap, } from 'oxlint';
 
 /**
- * Correctness, typescript, and performance rules.
+ Correctness, typescript, and performance rules.
  */
 export const correctnessRules: DummyRuleMap = {
   //region jest: Suppress leaked jest rules from vitest plugin internals.

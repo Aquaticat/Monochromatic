@@ -20,39 +20,39 @@ import { coerceArg, } from './coerce.ts';
 import { resolveSpecifier, } from './resolve.ts';
 
 /**
- * Logger root for cli-fy after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for cli-fy after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'cli-fy', },);
 
-export {};
+
 
 //region Arg parsing: positional: <specifier> <export> [args...]
 
 /**
- * TODO: deprecate Optique
- * Value parser for the import specifier, displayed as SPECIFIER in help
+ TODO: deprecate Optique
+ Value parser for the import specifier, displayed as SPECIFIER in help
  */
 const specifierParser = string({ metavar: 'SPECIFIER', },);
 
 /**
- * TODO: deprecate Optique
- * Value parser for the export name, displayed as EXPORT in help
+ TODO: deprecate Optique
+ Value parser for the export name, displayed as EXPORT in help
  */
 const exportParser = string({ metavar: 'EXPORT', },);
 
 /**
- * TODO: deprecate Optique
- * Value parser for trailing call arguments, displayed as ARG in help
+ TODO: deprecate Optique
+ Value parser for trailing call arguments, displayed as ARG in help
  */
 const argParser = string({ metavar: 'ARG', },);
 
 /**
- * Parsed CLI arguments
+ Parsed CLI arguments
  */
 type CliArgs = {
   readonly specifier: string;
@@ -61,8 +61,8 @@ type CliArgs = {
 };
 
 /**
- * TODO: deprecate Optique
- * Top-level parser: <specifier> <export> [args...]
+ TODO: deprecate Optique
+ Top-level parser: <specifier> <export> [args...]
  */
 const parser = map(
   object({
@@ -76,8 +76,8 @@ const parser = map(
 );
 
 /**
- * TODO: deprecate Optique
- * Parsed result from process.argv
+ TODO: deprecate Optique
+ Parsed result from process.argv
  */
 const args = run(
   parser,
@@ -98,7 +98,7 @@ const args = run(
 //region Main execution: resolve, import, call, print
 
 /**
- * Tagged logger for the main execution flow.
+ Tagged logger for the main execution flow.
  */
 const rl = tagged({
   tag: 'main',
@@ -114,25 +114,25 @@ rl.info(
 );
 
 /**
- * Resolved file path for the import specifier
+ Resolved file path for the import specifier
  */
 const resolvedPath = await resolveSpecifier({ specifier: args.specifier, },);
 rl.info(`resolved to ${resolvedPath}`,);
 
 /**
- * Dynamically imported module
+ Dynamically imported module
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic import yields unknown module shape
 const mod = await import(resolvedPath) as Record<string, unknown>;
 
 /**
- * Target export value from the module
+ Target export value from the module
  */
 const exportValue: unknown = mod[args.exportName];
 
 if (exportValue === undefined) {
   /**
-   * Available export names for error message
+   Available export names for error message
    */
   const available = Object.keys(mod,)
     .join(', ',);
@@ -144,7 +144,7 @@ if (exportValue === undefined) {
 
 if ((typeof exportValue) === 'function') {
   /**
-   * Coerced arguments for the function call
+   Coerced arguments for the function call
    */
   const coercedArgs = args.callArgs
     .map(function coerceCallArg(arg,) {
@@ -154,7 +154,7 @@ if ((typeof exportValue) === 'function') {
     .join(', ',)})`,);
 
   /**
-   * Return value from calling the exported function
+   Return value from calling the exported function
    */
   const result: unknown =
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic module call with unknown signature

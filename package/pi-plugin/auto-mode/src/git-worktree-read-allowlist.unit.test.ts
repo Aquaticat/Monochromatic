@@ -1,8 +1,8 @@
 /**
- * Tests for linked git worktree read allowlisting.
- *
- * Exercises disposable real git repositories so auto-mode reads can cross from
- * main worktree to linked worktree without weakening write guards.
+ Tests for linked git worktree read allowlisting.
+ 
+ Exercises disposable real git repositories so auto-mode reads can cross from
+ main worktree to linked worktree without weakening write guards.
  */
 
 import {
@@ -18,6 +18,7 @@ import type {
   ExtensionAPI,
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
+import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
@@ -26,10 +27,7 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import autoMode from './index.ts';
-import {
-  linkedWorktreeReadAllowlistedDirs,
-  resolveRealGit,
-} from './git-worktree-read-allowlist.ts';
+import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { shouldFlag, } from './signals.ts';
 import type { SignalContext, } from './types.ts';
 
@@ -77,14 +75,14 @@ type HandlerFn = (first: unknown, second: unknown) => unknown;
 type RegistrationMap = Map<string, HandlerFn[]>;
 
 /**
- * Creates disposable temporary directory for real git fixtures.
- *
- * @returns Temporary directory that removes itself after test exits.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * ```
+ Creates disposable temporary directory for real git fixtures.
+ 
+ @returns Temporary directory that removes itself after test exits.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -108,18 +106,18 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs real git binary for fixture setup.
- *
- * @param cwd - Working directory for subprocess.
- *
- * @param args - Git arguments after executable name.
- *
- * @returns Nothing after git command succeeds.
- *
- * @example
- * ```ts
- * await runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
- * ```
+ Runs real git binary for fixture setup.
+ 
+ @param cwd - Working directory for subprocess.
+ 
+ @param args - Git arguments after executable name.
+ 
+ @returns Nothing after git command succeeds.
+ 
+ @example
+ ```ts
+ await runRealGit({ cwd: '/repo', args: ['init', '--quiet'] });
+ ```
  */
 async function runRealGit({
   cwd,
@@ -136,16 +134,16 @@ async function runRealGit({
 }
 
 /**
- * Initializes disposable real git repository.
- *
- * @param repoPath - Repository path to create and initialize.
- *
- * @returns Nothing after repository is initialized.
- *
- * @example
- * ```ts
- * await initializeRepository({ repoPath: '/tmp/repo' });
- * ```
+ Initializes disposable real git repository.
+ 
+ @param repoPath - Repository path to create and initialize.
+ 
+ @returns Nothing after repository is initialized.
+ 
+ @example
+ ```ts
+ await initializeRepository({ repoPath: '/tmp/repo' });
+ ```
  */
 async function initializeRepository({
   repoPath,
@@ -183,16 +181,16 @@ async function initializeRepository({
 }
 
 /**
- * Creates initial empty commit in repository.
- *
- * @param repoPath - Repository path to seed.
- *
- * @returns Nothing after initial commit exists.
- *
- * @example
- * ```ts
- * await createInitialCommit({ repoPath: '/tmp/repo' });
- * ```
+ Creates initial empty commit in repository.
+ 
+ @param repoPath - Repository path to seed.
+ 
+ @returns Nothing after initial commit exists.
+ 
+ @example
+ ```ts
+ await createInitialCommit({ repoPath: '/tmp/repo' });
+ ```
  */
 async function createInitialCommit({
   repoPath,
@@ -213,18 +211,18 @@ async function createInitialCommit({
 }
 
 /**
- * Creates detached linked worktree for repository HEAD.
- *
- * @param repoPath - Main worktree root.
- *
- * @param linkedPath - Linked worktree root to create.
- *
- * @returns Nothing after linked worktree exists.
- *
- * @example
- * ```ts
- * await createLinkedWorktree({ repoPath: '/repo', linkedPath: '/linked' });
- * ```
+ Creates detached linked worktree for repository HEAD.
+ 
+ @param repoPath - Main worktree root.
+ 
+ @param linkedPath - Linked worktree root to create.
+ 
+ @returns Nothing after linked worktree exists.
+ 
+ @example
+ ```ts
+ await createLinkedWorktree({ repoPath: '/repo', linkedPath: '/linked' });
+ ```
  */
 async function createLinkedWorktree({
   repoPath,
@@ -248,16 +246,16 @@ async function createLinkedWorktree({
 }
 
 /**
- * Creates repository fixture with one linked worktree and one readable file.
- *
- * @param tempPath - Parent temporary directory.
- *
- * @returns Main root, linked root, and linked source file path.
- *
- * @example
- * ```ts
- * const fixture = await createWorktreeFixture({ tempPath: '/tmp/case' });
- * ```
+ Creates repository fixture with one linked worktree and one readable file.
+ 
+ @param tempPath - Parent temporary directory.
+ 
+ @returns Main root, linked root, and linked source file path.
+ 
+ @example
+ ```ts
+ const fixture = await createWorktreeFixture({ tempPath: '/tmp/case' });
+ ```
  */
 async function createWorktreeFixture({
   tempPath,
@@ -304,14 +302,14 @@ async function createWorktreeFixture({
 //region Mock ExtensionAPI helpers
 
 /**
- * Creates minimal mock ExtensionAPI that records event registrations.
- *
- * @returns Mock API and registration map.
- *
- * @example
- * ```ts
- * const { api, registrations } = createMockApi();
- * ```
+ Creates minimal mock ExtensionAPI that records event registrations.
+ 
+ @returns Mock API and registration map.
+ 
+ @example
+ ```ts
+ const { api, registrations } = createMockApi();
+ ```
  */
 function createMockApi(): {
   readonly api: ExtensionAPI;
@@ -356,20 +354,20 @@ function createMockApi(): {
 }
 
 /**
- * Retrieves registered handler for a given event.
- *
- * @param registrations - Mock registration map.
- *
- * @param event - Event name to look up.
- *
- * @returns Registered handler.
- *
- * @throws When event was not registered.
- *
- * @example
- * ```ts
- * const handler = getHandler({ registrations, event: 'tool_call' });
- * ```
+ Retrieves registered handler for a given event.
+ 
+ @param registrations - Mock registration map.
+ 
+ @param event - Event name to look up.
+ 
+ @returns Registered handler.
+ 
+ @throws When event was not registered.
+ 
+ @example
+ ```ts
+ const handler = getHandler({ registrations, event: 'tool_call' });
+ ```
  */
 function getHandler({
   registrations,
@@ -409,6 +407,37 @@ await describe({
 
         expect(readAllowlistedDirs,).toContain(fixture.linkedPath,);
         expect(readAllowlistedDirs.includes(fixture.repoPath,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'refreshes linked roots after another worktree is created',
+      fn: async function refreshesLinkedRootsAfterCreation() {
+        await using tempDirectory = await createTempDirectory();
+        /** Disposable repository with initial linked worktree. */
+        const fixture = await createWorktreeFixture({ tempPath: tempDirectory.path, },);
+        /** Initial allowlist before another linked worktree exists. */
+        const initialReadAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
+          cwd: fixture.repoPath,
+        },);
+        /** Second linked worktree created during same process lifetime. */
+        const secondLinkedPath = join(
+          tempDirectory.path,
+          'linked-second',
+        );
+        await createLinkedWorktree({
+          repoPath: fixture.repoPath,
+          linkedPath: secondLinkedPath,
+        },);
+        /** Refreshed allowlist after repository metadata changes. */
+        const refreshedReadAllowlistedDirs = await linkedWorktreeReadAllowlistedDirs({
+          cwd: fixture.repoPath,
+        },);
+
+        expect(initialReadAllowlistedDirs,).toContain(fixture.linkedPath,);
+        expect(initialReadAllowlistedDirs.includes(secondLinkedPath,),).toBe(false,);
+        expect(refreshedReadAllowlistedDirs,).toContain(fixture.linkedPath,);
+        expect(refreshedReadAllowlistedDirs,).toContain(secondLinkedPath,);
       },
     },),
 
@@ -515,7 +544,7 @@ await describe({
           registrations,
           event: 'tool_call',
         },);
-        /** Handler result for read into linked worktree. */
+        /** Handler result for first read into linked worktree. */
         const result = await toolCallHandler(
           {
             type: 'tool_call',
@@ -529,8 +558,23 @@ await describe({
             cwd: fixture.repoPath,
           },
         );
+        /** Handler result for repeated read using cached executable and fresh metadata. */
+        const repeatedResult = await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-linked-worktree-through-index-again',
+            input: {
+              path: fixture.linkedFile,
+            },
+          },
+          {
+            cwd: fixture.repoPath,
+          },
+        );
 
         expect(result,).toBeUndefined();
+        expect(repeatedResult,).toBeUndefined();
       },
     },),
   ],

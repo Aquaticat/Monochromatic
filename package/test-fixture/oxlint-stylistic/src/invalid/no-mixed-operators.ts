@@ -23,10 +23,16 @@ const r4 = a & b + c;
 // Logical and-or mix
 const r5 = x && y || z;
 
+// Right-associative exponentiation without explicit grouping
+const r6 = 2 ** 3 ** 2;
+const r7 = 2 ** 3 ** 2 ** 1;
+
 export {
   r1,
   r2,
   r3,
   r4,
   r5,
+  r6,
+  r7,
 };

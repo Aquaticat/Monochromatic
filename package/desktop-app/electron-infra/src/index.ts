@@ -1,12 +1,12 @@
 /**
- * Reusable no-Vite Electron app build, distribution, and Wayland-test helpers.
- *
- * @example
- * ```ts
- * import { stageElectronApp } from '@monochromatic-dev/desktop-app-electron-infra/ts';
- * ```
- *
- * @packageDocumentation
+ Reusable no-Vite Electron app build, distribution, and Wayland-test helpers.
+ 
+ @example
+ ```ts
+ import { stageElectronApp } from '@monochromatic-dev/desktop-app-electron-infra/ts';
+ ```
+ 
+ @packageDocumentation
  */
 
 export {

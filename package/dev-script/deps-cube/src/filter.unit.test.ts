@@ -1,12 +1,12 @@
 /**
- * Tests for the pure filter logic.
- *
- * Exercised against a small fixture probe set that covers leaves,
- * non-leaves, TS-majority and non-TS, recent and stale, known and
- * unknown sources. Composition is asserted to make sure conjunctive
- * filters behave like AND, not OR.
- *
- * @module
+ Tests for the pure filter logic.
+ 
+ Exercised against a small fixture probe set that covers leaves,
+ non-leaves, TS-majority and non-TS, recent and stale, known and
+ unknown sources. Composition is asserted to make sure conjunctive
+ filters behave like AND, not OR.
+ 
+ @module
  */
 
 import {
@@ -29,7 +29,7 @@ import {
 } from './script/filter.ts';
 
 /**
- * Default dim mapping mirroring the plan's recommended channel binding.
+ Default dim mapping mirroring the plan's recommended channel binding.
  */
 const DEFAULT_MAPPING: DimMapping = {
   x: 'logSourceBytes',
@@ -41,7 +41,7 @@ const DEFAULT_MAPPING: DimMapping = {
 };
 
 /**
- * Default "don't care" toggle state; every filter inactive.
+ Default "don't care" toggle state; every filter inactive.
  */
 const ANY_TOGGLES: ToggleState = {
   isLeaf: 'any',
@@ -54,7 +54,7 @@ const ANY_TOGGLES: ToggleState = {
 };
 
 /**
- * Wide-open ranges, large enough to admit every fixture.
+ Wide-open ranges, large enough to admit every fixture.
  */
 const WIDE_RANGES: RangeState = {
   x: [-10, 10,],
@@ -66,7 +66,7 @@ const WIDE_RANGES: RangeState = {
 };
 
 /**
- * Healthy TS-majority leaf, GitHub-hosted, recent commits.
+ Healthy TS-majority leaf, GitHub-hosted, recent commits.
  */
 const TS_LEAF: PackageProbe = {
   catalogKey: 'preact',
@@ -86,7 +86,7 @@ const TS_LEAF: PackageProbe = {
   isMonorepoHoused: false,};
 
 /**
- * Non-leaf, JavaScript-majority, stale, copyleft, GitHub-hosted.
+ Non-leaf, JavaScript-majority, stale, copyleft, GitHub-hosted.
  */
 const JS_NON_LEAF_STALE: PackageProbe = {
   catalogKey: 'ms',
@@ -106,7 +106,7 @@ const JS_NON_LEAF_STALE: PackageProbe = {
   isMonorepoHoused: false,};
 
 /**
- * Monorepo-housed entry: TS ratio + stale days unknown.
+ Monorepo-housed entry: TS ratio + stale days unknown.
  */
 const MONOREPO_UNKNOWN: PackageProbe = {
   catalogKey: '@lezer/common',
@@ -125,8 +125,8 @@ const MONOREPO_UNKNOWN: PackageProbe = {
 };
 
 /**
- * Permissive leaf with a recent commit, not TS-majority; sits in
- * the audit-target band.
+ Permissive leaf with a recent commit, not TS-majority; sits in
+ the audit-target band.
  */
 const AUDIT_TARGET: PackageProbe = {
   catalogKey: 'etag',

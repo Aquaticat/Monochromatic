@@ -1,16 +1,16 @@
 /**
- * Local re-implementations of pi-coding-agent helpers used by morph-compact.
- *
- * The upstream `convertToLlm` and `serializeConversation` are pure
- * transformations with no external runtime deps. Vendoring them here lets the
- * extension treat `@earendil-works/pi-coding-agent` (and its dependency
- * subtree) as a type-only package, so pnpm doesn't have to install
- * `@aws-sdk/client-bedrock-runtime`, `chalk`, `marked`, `cli-highlight`, and
- * the rest of the upstream's runtime closure.
- *
- * The LLM wire-format types live in {@link ./pi-message-types.ts}.
- *
- * @module
+ Local re-implementations of pi-coding-agent helpers used by morph-compact.
+ 
+ The upstream `convertToLlm` and `serializeConversation` are pure
+ transformations with no external runtime deps. Vendoring them here lets the
+ extension treat `@earendil-works/pi-coding-agent` (and its dependency
+ subtree) as a type-only package, so pnpm doesn't have to install
+ `@aws-sdk/client-bedrock-runtime`, `chalk`, `marked`, `cli-highlight`, and
+ the rest of the upstream's runtime closure.
+ 
+ The LLM wire-format types live in {@link ./pi-message-types.ts}.
+ 
+ @module
  */
 
 import type {
@@ -24,35 +24,35 @@ import type {
 //region Summary text wrappers
 
 /**
- * Prefix prepended to compaction summaries when they reappear as a `user`
- * message in LLM context. Mirrors pi-coding-agent's `COMPACTION_SUMMARY_PREFIX`
- * verbatim so summaries produced here remain interchangeable with summaries
- * produced by pi's default compaction path.
+ Prefix prepended to compaction summaries when they reappear as a `user`
+ message in LLM context. Mirrors pi-coding-agent's `COMPACTION_SUMMARY_PREFIX`
+ verbatim so summaries produced here remain interchangeable with summaries
+ produced by pi's default compaction path.
  */
 const COMPACTION_SUMMARY_PREFIX =
   'The conversation history before this point was compacted into the following summary:\n\n<summary>\n';
 
 /**
- * Suffix paired with {@link COMPACTION_SUMMARY_PREFIX}. Matches upstream.
+ Suffix paired with {@link COMPACTION_SUMMARY_PREFIX}. Matches upstream.
  */
 const COMPACTION_SUMMARY_SUFFIX = '\n</summary>';
 
 /**
- * Prefix for a branch-summary user message. Matches upstream.
+ Prefix for a branch-summary user message. Matches upstream.
  */
 const BRANCH_SUMMARY_PREFIX =
   'The following is a summary of a branch that this conversation came back from:\n\n<summary>\n';
 
 /**
- * Suffix paired with {@link BRANCH_SUMMARY_PREFIX}. Matches upstream.
+ Suffix paired with {@link BRANCH_SUMMARY_PREFIX}. Matches upstream.
  */
 const BRANCH_SUMMARY_SUFFIX = '</summary>';
 
 /**
- * Maximum characters retained when serializing a `toolResult` content into
- * summary text. Excess characters are truncated with a marker. Matches
- * upstream's `TOOL_RESULT_MAX_CHARS` (2000) so summaries are byte-identical to
- * what pi's default compaction would produce.
+ Maximum characters retained when serializing a `toolResult` content into
+ summary text. Excess characters are truncated with a marker. Matches
+ upstream's `TOOL_RESULT_MAX_CHARS` (2000) so summaries are byte-identical to
+ what pi's default compaction would produce.
  */
 const TOOL_RESULT_MAX_CHARS = 2_000;
 
@@ -61,33 +61,33 @@ const TOOL_RESULT_MAX_CHARS = 2_000;
 //region BashExecution and tool-result helpers
 
 /**
- * Convert a bash-execution message into the user-visible text shown to the
- * LLM in summarized form.
- *
- * @param msg - bash execution message
- *
- * @returns formatted multi-line string with command, output, and any
- *   exit-code or truncation annotations
- *
- * @example
- * ```typescript
- * bashExecutionToText({
- *   role: 'bashExecution',
- *   command: 'ls',
- *   output: 'a\\nb',
- *   exitCode: 0,
- *   cancelled: false,
- *   truncated: false,
- *   timestamp: 0,
- * });
- * // 'Ran `ls`\\n```\\na\\nb\\n```'
- * ```
+ Convert a bash-execution message into the user-visible text shown to the
+ LLM in summarized form.
+ 
+ @param msg - bash execution message
+ 
+ @returns formatted multi-line string with command, output, and any
+   exit-code or truncation annotations
+ 
+ @example
+ ```typescript
+ bashExecutionToText({
+   role: 'bashExecution',
+   command: 'ls',
+   output: 'a\\nb',
+   exitCode: 0,
+   cancelled: false,
+   truncated: false,
+   timestamp: 0,
+ });
+ // 'Ran `ls`\\n```\\na\\nb\\n```'
+ ```
  */
 function bashExecutionToText(
   msg: BashExecutionAgentMessage,
 ): string {
   /**
-   * Per-section pieces joined with newlines to produce the final summary text.
+   Per-section pieces joined with newlines to produce the final summary text.
    */
   const sections: string[] = [
     `Ran \`${msg.command}\``,
@@ -119,21 +119,21 @@ function bashExecutionToText(
 }
 
 /**
- * Truncate text to the given character budget, appending a notice describing
- * how many characters were dropped.
- *
- * @param text - input text
- *
- * @param maxChars - inclusive maximum length to keep verbatim
- *
- * @returns text unchanged when within budget, otherwise the first `maxChars`
- *   characters followed by `[... N more characters truncated]`
- *
- * @example
- * ```typescript
- * truncateForSummary({ text: 'hello world', maxChars: 5 });
- * // 'hello\\n\\n[... 6 more characters truncated]'
- * ```
+ Truncate text to the given character budget, appending a notice describing
+ how many characters were dropped.
+ 
+ @param text - input text
+ 
+ @param maxChars - inclusive maximum length to keep verbatim
+ 
+ @returns text unchanged when within budget, otherwise the first `maxChars`
+   characters followed by `[... N more characters truncated]`
+ 
+ @example
+ ```typescript
+ truncateForSummary({ text: 'hello world', maxChars: 5 });
+ // 'hello\\n\\n[... 6 more characters truncated]'
+ ```
  */
 function truncateForSummary({
   text,
@@ -146,7 +146,7 @@ function truncateForSummary({
     <= maxChars)
     return text;
   /**
-   * Dropped-character count surfaced in the truncation marker.
+   Dropped-character count surfaced in the truncation marker.
    */
   const truncatedChars = text.length
     - maxChars;
@@ -163,23 +163,23 @@ function truncateForSummary({
 //region convertToLlm
 
 /**
- * Sentinel returned by {@link toLlmMessage} when a message is excluded from
- * LLM context. A unique symbol rather than `undefined` so the no-nullish-union
- * rule is satisfied while {@link convertToLlm} can filter it out.
+ Sentinel returned by {@link toLlmMessage} when a message is excluded from
+ LLM context. A unique symbol rather than `undefined` so the no-nullish-union
+ rule is satisfied while {@link convertToLlm} can filter it out.
  */
 const OMIT = Symbol('morph compact message omitted from context',);
 
 /**
- * Map an extended `AgentMessage` (possibly carrying pi-coding-agent's custom
- * roles) into a base LLM-compatible {@link Message}, or {@link OMIT} if the
- * message should be omitted from LLM context.
- *
- * @param m - agent message to convert
- *
- * @returns LLM-compatible message, or {@link OMIT} when the message is excluded
- *   from context (e.g. `bashExecution` with `excludeFromContext`)
- *
- * @mutates m - `JSON.stringify` may invoke hooks when an unsupported message is reported.
+ Map an extended `AgentMessage` (possibly carrying pi-coding-agent's custom
+ roles) into a base LLM-compatible {@link Message}, or {@link OMIT} if the
+ message should be omitted from LLM context.
+ 
+ @param m - agent message to convert
+ 
+ @returns LLM-compatible message, or {@link OMIT} when the message is excluded
+   from context (e.g. `bashExecution` with `excludeFromContext`)
+ 
+ @mutates m - `JSON.stringify` may invoke hooks when an unsupported message is reported.
  */
 function toLlmMessage(
   m: AgentMessage,
@@ -201,7 +201,7 @@ function toLlmMessage(
   if (m.role
     === 'custom') {
     /**
-     * Normalized content array; raw strings are wrapped before forwarding.
+     Normalized content array; raw strings are wrapped before forwarding.
      */
     const content = ((typeof m.content) === 'string')
       ? [{
@@ -251,34 +251,34 @@ function toLlmMessage(
 }
 
 /**
- * Transform extended `AgentMessage[]` (which may include pi-coding-agent's
- * custom roles like `bashExecution`, `custom`, `branchSummary`,
- * `compactionSummary`) into base LLM-compatible {@link Message | Messages}.
- *
- * Bit-for-bit compatible with pi-coding-agent's `convertToLlm` so summaries
- * fed to Morph Compact match what pi's default compaction would feed to its
- * summarization model.
- *
- * @param messages - extended agent messages
- *
- * @returns filtered list of LLM-compatible messages
- *
- * @mutates messages - `JSON.stringify` may invoke hooks when unsupported messages are reported.
- *
- * @example
- * ```typescript
- * convertToLlm(branchEntries.map(e => e.message));
- * // [{ role: 'user', content: [...], timestamp: ... }, ...]
- * ```
+ Transform extended `AgentMessage[]` (which may include pi-coding-agent's
+ custom roles like `bashExecution`, `custom`, `branchSummary`,
+ `compactionSummary`) into base LLM-compatible {@link Message | Messages}.
+ 
+ Bit-for-bit compatible with pi-coding-agent's `convertToLlm` so summaries
+ fed to Morph Compact match what pi's default compaction would feed to its
+ summarization model.
+ 
+ @param messages - extended agent messages
+ 
+ @returns filtered list of LLM-compatible messages
+ 
+ @mutates messages - `JSON.stringify` may invoke hooks when unsupported messages are reported.
+ 
+ @example
+ ```typescript
+ convertToLlm(branchEntries.map(e => e.message));
+ // [{ role: 'user', content: [...], timestamp: ... }, ...]
+ ```
  */
 export function convertToLlm(messages: AgentMessage[],): Message[] {
   /**
-   * Converted messages retained after omission filtering.
+   Converted messages retained after omission filtering.
    */
   const converted: Message[] = [];
   for (const message of messages) {
     /**
-     * Converted message or omission sentinel for current input.
+     Converted message or omission sentinel for current input.
      */
     const candidate = toLlmMessage(message,);
     if (candidate !== OMIT)
@@ -292,14 +292,14 @@ export function convertToLlm(messages: AgentMessage[],): Message[] {
 //region serializeConversation
 
 /**
- * Extract concatenated text from a `user`-message content field, which may be
- * a raw string or a structured array of {@link TextContent} or
- * {@link ImageContent} blocks. Image blocks are dropped because Morph Compact
- * operates on text only.
- *
- * @param content - user message content (raw or structured)
- *
- * @returns concatenated text or empty string when no text was present
+ Extract concatenated text from a `user`-message content field, which may be
+ a raw string or a structured array of {@link TextContent} or
+ {@link ImageContent} blocks. Image blocks are dropped because Morph Compact
+ operates on text only.
+ 
+ @param content - user message content (raw or structured)
+ 
+ @returns concatenated text or empty string when no text was present
  */
 function userTextFromContent(
   content: string | readonly (TextContent | ImageContent)[],
@@ -318,36 +318,36 @@ function userTextFromContent(
 }
 
 /**
- * Serialize an LLM-compatible conversation into the bracketed
- * `[Role]: text` text format that pi's compaction summarizer expects. Tool
- * results are truncated to {@link TOOL_RESULT_MAX_CHARS} per call to keep the
- * summarization request within reasonable token budgets.
- *
- * Bit-for-bit compatible with pi-coding-agent's `serializeConversation`.
- *
- * @param messages - LLM-compatible messages, typically the output of
- *   {@link convertToLlm}
- *
- * @returns multi-paragraph string suitable as Morph Compact input
- *
- * @mutates messages - `JSON.stringify` may invoke hooks on tool-call argument values.
- *
- * @example
- * ```typescript
- * serializeConversation(convertToLlm(allMessages));
- * // '[User]: hello\\n\\n[Assistant]: hi'
- * ```
+ Serialize an LLM-compatible conversation into the bracketed
+ `[Role]: text` text format that pi's compaction summarizer expects. Tool
+ results are truncated to {@link TOOL_RESULT_MAX_CHARS} per call to keep the
+ summarization request within reasonable token budgets.
+ 
+ Bit-for-bit compatible with pi-coding-agent's `serializeConversation`.
+ 
+ @param messages - LLM-compatible messages, typically the output of
+   {@link convertToLlm}
+ 
+ @returns multi-paragraph string suitable as Morph Compact input
+ 
+ @mutates messages - `JSON.stringify` may invoke hooks on tool-call argument values.
+ 
+ @example
+ ```typescript
+ serializeConversation(convertToLlm(allMessages));
+ // '[User]: hello\\n\\n[Assistant]: hi'
+ ```
  */
 export function serializeConversation(messages: Message[],): string {
   /**
-   * Top-level accumulator joined into the final serialized transcript.
+   Top-level accumulator joined into the final serialized transcript.
    */
   const parts: string[] = [];
   for (const msg of messages) {
     if (msg.role
       === 'user') {
       /**
-       * User-role text harvested from raw string or structured content.
+       User-role text harvested from raw string or structured content.
        */
       const content = userTextFromContent(msg.content,);
       if (content)
@@ -357,15 +357,15 @@ export function serializeConversation(messages: Message[],): string {
     if (msg.role
       === 'assistant') {
       /**
-       * Per-message accumulator for visible assistant text blocks.
+       Per-message accumulator for visible assistant text blocks.
        */
       const textParts: string[] = [];
       /**
-       * Per-message accumulator for hidden reasoning blocks.
+       Per-message accumulator for hidden reasoning blocks.
        */
       const thinkingParts: string[] = [];
       /**
-       * Per-message accumulator for formatted tool-call signatures.
+       Per-message accumulator for formatted tool-call signatures.
        */
       const toolCalls: string[] = [];
       for (const block of msg.content) {
@@ -382,23 +382,23 @@ export function serializeConversation(messages: Message[],): string {
         if (block.type
           === 'toolCall') {
           /**
-           * Human-readable argument string injected into the tool-call signature.
+           Human-readable argument string injected into the tool-call signature.
            */
           const argsStr = Object
             .entries(block.arguments,)
             .map(
               /**
-               * Formats one tool argument for transcript output.
-               *
-               * @param entry - Tool argument key and potentially effectful value.
-               *
-               * @returns key and serialized value text.
-               *
-               * @mutates entry - `JSON.stringify` may invoke hooks on argument value.
+               Formats one tool argument for transcript output.
+               
+               @param entry - Tool argument key and potentially effectful value.
+               
+               @returns key and serialized value text.
+               
+               @mutates entry - `JSON.stringify` may invoke hooks on argument value.
                */
               function fmtArg(entry,) {
                 /**
-                 * Tool argument key and value.
+                 Tool argument key and value.
                  */
                 const [key, value,] = entry;
                 return `${key}=${JSON.stringify(value,)}`;
@@ -422,7 +422,7 @@ export function serializeConversation(messages: Message[],): string {
     if (msg.role
       === 'toolResult') {
       /**
-       * Concatenated text payload after filtering out image blocks.
+       Concatenated text payload after filtering out image blocks.
        */
       const content = msg
         .content

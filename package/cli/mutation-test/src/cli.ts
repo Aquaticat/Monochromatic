@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Host CLI entrypoint for the yuku-based mutation tester.
- *
- * @example
- * ```bash
- * mutation-test --package package/module/fs-path
- * mutation-test --package package/module/fs-path --dry-run src/trim.ts
- * ```
+ Host CLI entrypoint for the yuku-based mutation tester.
+ 
+ @example
+ ```bash
+ mutation-test --package package/module/fs-path
+ mutation-test --package package/module/fs-path --dry-run src/trim.ts
+ ```
  */
 
 import { writeFile, } from 'node:fs/promises';
@@ -28,27 +28,27 @@ import {
 } from './host/report.ts';
 
 /**
- * Module logger for the CLI entrypoint.
+ Module logger for the CLI entrypoint.
  */
 const l = tagged({ tag: 'mutation-test', },);
 
 /**
- * Runs the CLI flow for parsed options.
- *
- * @param options - Parsed CLI options.
- *
- * @throws Error on infra failure (red baseline, unresolved mutants).
- *
- * @mutates options - `JSON.stringify` may invoke hooks on report data derived from options.
- *
- * @example
- * ```ts
- * await runCli(parseCliOptions(['--package', 'package/module/fs-path']));
- * ```
+ Runs the CLI flow for parsed options.
+ 
+ @param options - Parsed CLI options.
+ 
+ @throws Error on infra failure (red baseline, unresolved mutants).
+ 
+ @mutates options - `JSON.stringify` may invoke hooks on report data derived from options.
+ 
+ @example
+ ```ts
+ await runCli(parseCliOptions(['--package', 'package/module/fs-path']));
+ ```
  */
 export async function runCli(options: CliOptions,): Promise<void> {
   /**
-   * Logger scoped to this invocation.
+   Logger scoped to this invocation.
    */
   const rl = tagged({
     tag: runCli.name,
@@ -57,7 +57,7 @@ export async function runCli(options: CliOptions,): Promise<void> {
 
   if (options.dryRun) {
     /**
-     * Enumeration-only view for the dry run.
+     Enumeration-only view for the dry run.
      */
     const {
       groups,
@@ -80,18 +80,18 @@ export async function runCli(options: CliOptions,): Promise<void> {
   }
 
   /**
-   * Full orchestration outcome.
+   Full orchestration outcome.
    */
   const outcome = await orchestrateRun(options,);
   /**
-   * Native JSON run report.
+   Native JSON run report.
    */
   const report = buildRunReport({
     outcome,
     packagePath: options.packagePath,
   },);
   /**
-   * Report destination, defaulting beside the current directory.
+   Report destination, defaulting beside the current directory.
    */
   const reportFile = options.reportFile === ''
     ? join(

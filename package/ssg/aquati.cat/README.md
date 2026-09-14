@@ -134,6 +134,15 @@ a 99.4% net reduction in total transfer size for syntax highlighting.
 Built files go to `dist/` as flat HTML with Caddy `try_files` providing clean URLs.
 Cache manifest lives at `.cache/build-manifest.json`.
 
+## CloudFront mirror
+
+`aws.aquati.cat` reaches the primary Caddy origin through a native origin Host/SNI override.
+The independently deployed function,
+verification results,
+and rollback boundary are documented in
+[`cloudfront/README.md`](cloudfront/README.md).
+The site build does not deploy this CloudFront function.
+
 ## Images
 
 Each photo lives under `src/content/` as a raster source paired with an AVIF counterpart

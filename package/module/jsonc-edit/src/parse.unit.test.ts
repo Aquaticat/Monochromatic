@@ -1,8 +1,8 @@
 /**
- * Tests for the JSONC parser: the fast-path, comment attachment to keys and
- * values, merged stacked comments, trailing-comma tolerance, and error cases.
- *
- * @module
+ Tests for the JSONC parser: the fast-path, comment attachment to keys and
+ values, merged stacked comments, trailing-comma tolerance, and error cases.
+ 
+ @module
  */
 
 import {
@@ -11,15 +11,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   COMMENT_ABSENT,
   jsoncGetComment,
   jsoncGetKeyComment,
   jsoncGetValue,
   parseJsonc,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

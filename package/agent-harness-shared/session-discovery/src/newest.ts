@@ -1,7 +1,7 @@
 /**
- * Newest PID mapping fallback for session discovery.
- *
- * @module
+ Newest PID mapping fallback for session discovery.
+ 
+ @module
  */
 
 import { join, } from 'node:path';
@@ -24,7 +24,7 @@ import type {
 //region Logger
 
 /**
- * Module logger for newest mapping fallback reads.
+ Module logger for newest mapping fallback reads.
  */
 const l = tagged({ tag: 'agent-harnesses:session-discovery:newest', },);
 
@@ -33,22 +33,22 @@ const l = tagged({ tag: 'agent-harnesses:session-discovery:newest', },);
 //region Candidate reads
 
 /**
- * Reads one mapping file with its modification time for newest fallback.
- *
- * @param filename - mapping filename under `byPidDir`
- *
- * @param byPidDir - directory containing PID mapping files
- *
- * @param io - optional test IO seam
- *
- * @param parseMapping - host-owned parser for mapping file contents
- *
- * @returns mapping candidate, or {@link SESSION_NOT_FOUND} when unreadable
- *
- * @example
- * ```ts
- * await readMappingCandidate({ filename: '1234', byPidDir, parseMapping });
- * ```
+ Reads one mapping file with its modification time for newest fallback.
+ 
+ @param filename - mapping filename under `byPidDir`
+ 
+ @param byPidDir - directory containing PID mapping files
+ 
+ @param io - optional test IO seam
+ 
+ @param parseMapping - host-owned parser for mapping file contents
+ 
+ @returns mapping candidate, or {@link SESSION_NOT_FOUND} when unreadable
+ 
+ @example
+ ```ts
+ await readMappingCandidate({ filename: '1234', byPidDir, parseMapping });
+ ```
  */
 async function readMappingCandidate<TMapping>(
   {
@@ -60,14 +60,14 @@ async function readMappingCandidate<TMapping>(
 ): Promise<MappingCandidate<TMapping> | typeof SESSION_NOT_FOUND> {
   try {
     /**
-     * Candidate mapping file path.
+     Candidate mapping file path.
      */
     const filePath = join(
       byPidDir,
       filename,
     );
     /**
-     * File metadata and contents read concurrently.
+     File metadata and contents read concurrently.
      */
     const [stats, raw,] = await Promise.all([
       readFileStat({
@@ -99,20 +99,20 @@ async function readMappingCandidate<TMapping>(
 //region Fallback scan
 
 /**
- * Finds newest mapping as fallback for sandboxed process trees.
- *
- * @param byPidDir - directory containing PID mapping files
- *
- * @param io - optional test IO seam
- *
- * @param parseMapping - host-owned parser for mapping file contents
- *
- * @returns newest parsed mapping, or {@link SESSION_NOT_FOUND}
- *
- * @example
- * ```ts
- * await findByMostRecent({ byPidDir, parseMapping });
- * ```
+ Finds newest mapping as fallback for sandboxed process trees.
+ 
+ @param byPidDir - directory containing PID mapping files
+ 
+ @param io - optional test IO seam
+ 
+ @param parseMapping - host-owned parser for mapping file contents
+ 
+ @returns newest parsed mapping, or {@link SESSION_NOT_FOUND}
+ 
+ @example
+ ```ts
+ await findByMostRecent({ byPidDir, parseMapping });
+ ```
  */
 async function findByMostRecent<TMapping>(
   {
@@ -122,7 +122,7 @@ async function findByMostRecent<TMapping>(
   }: FindByMostRecentOptions<TMapping>,
 ): Promise<TMapping | typeof SESSION_NOT_FOUND> {
   /**
-   * Mapping directory entries to inspect.
+   Mapping directory entries to inspect.
    */
   const entries = await readByPidDir({
     byPidDir,
@@ -132,7 +132,7 @@ async function findByMostRecent<TMapping>(
     return SESSION_NOT_FOUND;
 
   /**
-   * Candidate mappings read concurrently, one slot per directory entry.
+   Candidate mappings read concurrently, one slot per directory entry.
    */
   const candidates = await Promise.all(entries.map(
     function readCandidate(filename,): Promise<MappingCandidate<TMapping> | typeof SESSION_NOT_FOUND> {
@@ -146,7 +146,7 @@ async function findByMostRecent<TMapping>(
   ),);
 
   /**
-   * Most recent readable mapping across PID files.
+   Most recent readable mapping across PID files.
    */
   const newest = candidates.reduce<MappingCandidate<TMapping> | typeof SESSION_NOT_FOUND>(
     function pickNewer(

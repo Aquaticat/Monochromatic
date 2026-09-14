@@ -1,17 +1,17 @@
 /**
- * Main terminal resolution algorithm.
- * Dispatches to platform-specific resolution:
- *
- * **Linux/FreeBSD** (XDG):
- * 1. Explicit entries from `xdg-terminals.list` config files
- * 2. KDE `kdeglobals` TerminalService fallback (when no explicit entries exist)
- * 3. All `TerminalEmulator`-category desktop entries as fallback
- *
- * **Windows**:
- * 1. Windows Terminal (`wt.exe`)
- * 2. `cmd.exe`
- *
- * @module
+ Main terminal resolution algorithm.
+ Dispatches to platform-specific resolution:
+ 
+ **Linux/FreeBSD** (XDG):
+ 1. Explicit entries from `xdg-terminals.list` config files
+ 2. KDE `kdeglobals` TerminalService fallback (when no explicit entries exist)
+ 3. All `TerminalEmulator`-category desktop entries as fallback
+ 
+ **Windows**:
+ 1. Windows Terminal (`wt.exe`)
+ 2. `cmd.exe`
+ 
+ @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -38,17 +38,17 @@ import {
 } from './xdg-paths.ts';
 
 /**
- * Logger root for terminal-exec after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for terminal-exec after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'terminal-exec', },);
 
 /**
- * Tagged logger for this module.
+ Tagged logger for this module.
  */
 const l = tagged({
   tag: 'resolve',
@@ -56,28 +56,28 @@ const l = tagged({
 },);
 
 /**
- * Successful terminal resolution result.
+ Successful terminal resolution result.
  */
 export type ResolvedTerminal = ValidatedEntry & {
   /**
-   * Desktop entry ID (Linux) or executable name (Windows) that was selected.
+   Desktop entry ID (Linux) or executable name (Windows) that was selected.
    */
   readonly entryId: string;
 };
 
 /* oxlint-disable require-await -- resolveTerminal delegates to async resolveXdgTerminal; async needed for uniform Promise return */
 /**
- * Resolves the preferred terminal emulator for the current platform,
- * dispatching to {@link resolveXdgTerminal} or {@link resolveWindowsTerminal}.
- *
- * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
- *
- * @example
- * ```ts
- * const terminal = await resolveTerminal()
- * // Linux: terminal.entryId === 'com.mitchellh.ghostty.desktop'
- * // Windows: terminal.entryId === 'wt.exe'
- * ```
+ Resolves the preferred terminal emulator for the current platform,
+ dispatching to {@link resolveXdgTerminal} or {@link resolveWindowsTerminal}.
+ 
+ @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
+ 
+ @example
+ ```ts
+ const terminal = await resolveTerminal()
+ // Linux: terminal.entryId === 'com.mitchellh.ghostty.desktop'
+ // Windows: terminal.entryId === 'wt.exe'
+ ```
  */
 export async function resolveTerminal(): Promise<ResolvedTerminal | typeof NO_TERMINAL> {
   if (process.platform
@@ -92,34 +92,34 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | typeof NO_TE
 /* oxlint-enable require-await */
 
 /**
- * Resolves the terminal emulator using the XDG Desktop Entry Specification.
- * Used on Linux, FreeBSD, and other Unix-like systems. Merges
- * {@link parseConfigFiles} preferences with a {@link scanEntries} fallback
- * scan, computing the explicit candidate order via {@link resolveExplicitIds}
- * and validating each candidate through {@link tryEntry}.
- *
- * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
+ Resolves the terminal emulator using the XDG Desktop Entry Specification.
+ Used on Linux, FreeBSD, and other Unix-like systems. Merges
+ {@link parseConfigFiles} preferences with a {@link scanEntries} fallback
+ scan, computing the explicit candidate order via {@link resolveExplicitIds}
+ and validating each candidate through {@link tryEntry}.
+ 
+ @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  */
 async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMINAL> {
   /**
-   * Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below.
+   Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below.
    */
   const desktops = currentDesktops();
   /**
-   * Ordered config file paths; later parseConfigFiles reads in priority order.
+   Ordered config file paths; later parseConfigFiles reads in priority order.
    */
   const configs = configPaths({ desktops, },);
   /**
-   * Merged config across all files; consumed for entry preferences and execarg defaults.
+   Merged config across all files; consumed for entry preferences and execarg defaults.
    */
   const config = await parseConfigFiles({ paths: configs, },);
 
   /**
-   * Ascending-priority application directory list.
+   Ascending-priority application directory list.
    */
   const dirs = applicationDirs();
   /**
-   * Destructure the scan result: registry maps ids to paths; fallbackIds is the priority-ordered scan list.
+   Destructure the scan result: registry maps ids to paths; fallbackIds is the priority-ordered scan list.
    */
   const {
     registry,
@@ -128,12 +128,12 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
   /**
-   * Config preferences, or KDE TerminalService when config has no entries.
+   Config preferences, or KDE TerminalService when config has no entries.
    */
   const explicitIds = await resolveExplicitIds({ configEntryIds: config.entryIds, },);
 
   /**
-   * Fallback IDs with exclusions applied.
+   Fallback IDs with exclusions applied.
    */
   const filteredFallbackIds = fallbackIds.filter(function notExcluded(id,) {
     return !config.excludedIds
@@ -145,7 +145,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
   for (const entryId of explicitIds) {
     /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
     /**
-     * Per-entry validation attempt; first non-null wins.
+     Per-entry validation attempt; first non-null wins.
      */
     const result = await tryEntry({
       entryId,
@@ -168,7 +168,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
   for (const entryId of filteredFallbackIds) {
     /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
     /**
-     * Per-entry validation attempt against the fallback list; first non-null wins.
+     Per-entry validation attempt against the fallback list; first non-null wins.
      */
     const result = await tryEntry({
       entryId,
@@ -192,17 +192,17 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
 }
 
 /**
- * Resolves the explicit entry id list: config preferences when present, otherwise the KDE TerminalService fallback.
- *
- * @param configEntryIds - Explicit entries from parsed xdg-terminals.list config.
- *
- * @returns Ordered list of entry ids to try as explicit candidates; empty when neither source provided one.
- *
- * @example
- * ```ts
- * const ids = await resolveExplicitIds({ configEntryIds: [] })
- * // ['com.mitchellh.ghostty.desktop'] when kdeglobals has TerminalService set
- * ```
+ Resolves the explicit entry id list: config preferences when present, otherwise the KDE TerminalService fallback.
+ 
+ @param configEntryIds - Explicit entries from parsed xdg-terminals.list config.
+ 
+ @returns Ordered list of entry ids to try as explicit candidates; empty when neither source provided one.
+ 
+ @example
+ ```ts
+ const ids = await resolveExplicitIds({ configEntryIds: [] })
+ // ['com.mitchellh.ghostty.desktop'] when kdeglobals has TerminalService set
+ ```
  */
 async function resolveExplicitIds(
   { configEntryIds, }: { readonly configEntryIds: readonly string[]; },
@@ -213,7 +213,7 @@ async function resolveExplicitIds(
 
   l.debug('no explicit entries in config, checking kdeglobals',);
   /**
-   * KDE fallback used only when explicit entries are empty.
+   KDE fallback used only when explicit entries are empty.
    */
   const kdeId = await kdeTerminalService();
   if (kdeId === NO_KDE_TERMINAL)
@@ -224,19 +224,19 @@ async function resolveExplicitIds(
 }
 
 /**
- * Attempts to resolve a single entry ID into a validated terminal.
- *
- * @param entryId - Desktop entry ID to try.
- *
- * @param registry - Entry registry from scanning.
- *
- * @param desktops - Current desktop names.
- *
- * @param isFallback - Whether this is a fallback entry.
- *
- * @param config - Parsed config for execarg defaults.
- *
- * @returns Validated entry or {@link NO_TERMINAL}.
+ Attempts to resolve a single entry ID into a validated terminal.
+ 
+ @param entryId - Desktop entry ID to try.
+ 
+ @param registry - Entry registry from scanning.
+ 
+ @param desktops - Current desktop names.
+ 
+ @param isFallback - Whether this is a fallback entry.
+ 
+ @param config - Parsed config for execarg defaults.
+ 
+ @returns Validated entry or {@link NO_TERMINAL}.
  */
 async function tryEntry({
   entryId,
@@ -255,7 +255,7 @@ async function tryEntry({
   readonly config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
 },): Promise<ValidatedEntry | typeof NO_TERMINAL> {
   /**
-   * Registry lookup; missing id means we cannot resolve this preference.
+   Registry lookup; missing id means we cannot resolve this preference.
    */
   const reg = registry.get(entryId,);
   if (reg === undefined) {
@@ -264,7 +264,7 @@ async function tryEntry({
   }
 
   /**
-   * Parsed desktop entry contents; DESKTOP_ENTRY_UNREADABLE on read failure.
+   Parsed desktop entry contents; DESKTOP_ENTRY_UNREADABLE on read failure.
    */
   const entry = await parseDesktopEntry({ path: reg.path, },);
   if (entry === DESKTOP_ENTRY_UNREADABLE)

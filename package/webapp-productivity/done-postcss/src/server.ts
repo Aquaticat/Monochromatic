@@ -1,12 +1,12 @@
 /**
- * Application entry point.
- *
- * Boot sequence:
- * 1. Side-effect import of `./lib/db.ts` opens the SQLite database and runs migrations
- * 2. CSS is compiled from `src/client/styles.css` -\> `dist/css/styles.css`
- * 3. Start h3 HTTP server with page routes and API routes
- *
- * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
+ Application entry point.
+ 
+ Boot sequence:
+ 1. Side-effect import of `./lib/db.ts` opens the SQLite database and runs migrations
+ 2. CSS is compiled from `src/client/styles.css` -\> `dist/css/styles.css`
+ 3. Start h3 HTTP server with page routes and API routes
+ 
+ Client JS bundles are built separately via `mise run build:js:client` (tsdown).
  */
 import { buildCss, } from '@monochromatic-dev/build-tool-css/ts';
 import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const/ts';
@@ -43,38 +43,38 @@ import { taskDetailsPage, } from './server/page/task-details.ts';
 import { staticHandler, } from './server/static.ts';
 
 /**
- * Default HTTP port when neither `--port=` nor `PORT` env var is provided.
+ Default HTTP port when neither `--port=` nor `PORT` env var is provided.
  */
 const DEFAULT_PORT = 3_000;
 
 /**
- * Radix for decimal integer parsing.
+ Radix for decimal integer parsing.
  */
 const DECIMAL_RADIX = 10;
 
 /**
- * Resolves the HTTP listen port from CLI arguments, environment, or default.
- *
- * @returns Resolved port number
+ Resolves the HTTP listen port from CLI arguments, environment, or default.
+ 
+ @returns Resolved port number
  */
 function resolvePort(): number {
   /**
-   * Port supplied via `--port=` CLI flag, if present.
+   Port supplied via `--port=` CLI flag, if present.
    */
   const argumentPort = getArgumentValue('port',);
   /**
-   * Port from `PORT` environment variable, used when no CLI flag is given.
+   Port from `PORT` environment variable, used when no CLI flag is given.
    */
   const environmentPort = process.env
     .PORT;
   /**
-   * Whichever source (CLI takes precedence) provided a value, or `undefined`.
+   Whichever source (CLI takes precedence) provided a value, or `undefined`.
    */
   const rawPort = argumentPort === ARGUMENT_ABSENT ? environmentPort : argumentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
   /**
-   * Numeric port after `parseInt`; `NaN` falls back to {@link DEFAULT_PORT}.
+   Numeric port after `parseInt`; `NaN` falls back to {@link DEFAULT_PORT}.
    */
   const parsedPort = Number.parseInt(
     rawPort,
@@ -84,20 +84,20 @@ function resolvePort(): number {
 }
 
 /**
- * Extracts a required route parameter, throwing 400 if missing.
- *
- * @param event - h3 event
- *
- * @param name - Parameter name from the route pattern
- *
- * @returns Parameter value
- *
- * @throws {@link HTTPError} 400 when parameter is missing
- *
- * @example
- * ```ts
- * const id = requireParam({ event, name: 'id' });
- * ```
+ Extracts a required route parameter, throwing 400 if missing.
+ 
+ @param event - h3 event
+ 
+ @param name - Parameter name from the route pattern
+ 
+ @returns Parameter value
+ 
+ @throws {@link HTTPError} 400 when parameter is missing
+ 
+ @example
+ ```ts
+ const id = requireParam({ event, name: 'id' });
+ ```
  */
 function requireParam(
   {
@@ -109,7 +109,7 @@ function requireParam(
   },
 ): string {
   /**
-   * Raw parameter value from h3's router; `undefined` when missing.
+   Raw parameter value from h3's router; `undefined` when missing.
    */
   const value = getRouterParam(
     event,
@@ -130,7 +130,7 @@ await buildCss({
 },);
 
 /**
- * h3 application instance routing HTTP requests to handlers.
+ h3 application instance routing HTTP requests to handlers.
  */
 const app = new H3();
 
@@ -245,7 +245,7 @@ app.get(
 );
 
 /**
- * Running HTTP server instance.
+ Running HTTP server instance.
  */
 const server = serve(
   app,

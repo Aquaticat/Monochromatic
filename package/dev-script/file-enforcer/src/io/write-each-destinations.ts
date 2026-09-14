@@ -4,28 +4,28 @@ import type { StalenessDestination, } from './staleness.ts';
 import type { WriteIfChanged, } from './write-lazy.ts';
 
 /**
- * Destination mapped from a glob result.
+ Destination mapped from a glob result.
  */
 export type GlobDestination = StalenessDestination & {
   /**
-   * Source file path used in write logs.
+   Source file path used in write logs.
    */
   readonly sourcePath: string;
 };
 
 /**
- * Maps glob results to concrete destination paths using {@link mirrorGlobPath}.
- *
- * @param destGlob - Destination glob pattern.
- *
- * @param files - Source glob results.
- *
- * @returns Concrete destinations with source paths for logging.
- *
- * @example
- * ```ts
- * const destinations = destinationsForFiles({ destGlob, files });
- * ```
+ Maps glob results to concrete destination paths using {@link mirrorGlobPath}.
+ 
+ @param destGlob - Destination glob pattern.
+ 
+ @param files - Source glob results.
+ 
+ @returns Concrete destinations with source paths for logging.
+ 
+ @example
+ ```ts
+ const destinations = destinationsForFiles({ destGlob, files });
+ ```
  */
 export function destinationsForFiles(
   {
@@ -50,25 +50,25 @@ export function destinationsForFiles(
 }
 
 /**
- * Asserts glob mirroring produced one writer per destination path.
- *
- * @param destinations - Concrete destinations to inspect before writing.
- *
- * @throws When multiple sources map to the same destination.
- *
- * @example
- * ```ts
- * assertUniqueDestinations([{ path: './out/a.txt', content: 'a', sourcePath: './src/a.txt' }]);
- * ```
+ Asserts glob mirroring produced one writer per destination path.
+ 
+ @param destinations - Concrete destinations to inspect before writing.
+ 
+ @throws When multiple sources map to the same destination.
+ 
+ @example
+ ```ts
+ assertUniqueDestinations([{ path: './out/a.txt', content: 'a', sourcePath: './src/a.txt' }]);
+ ```
  */
 function assertUniqueDestinations(destinations: readonly GlobDestination[],): void {
   /**
-   * First source path seen for each destination path.
+   First source path seen for each destination path.
    */
   const sourcePathByDestination = new Map<string, string>();
   destinations.forEach(function assertUniqueDestination(destination,): void {
     /**
-     * Source path that already claimed this destination, when present.
+     Source path that already claimed this destination, when present.
      */
     const existingSourcePath = sourcePathByDestination.get(destination.path,);
     if (existingSourcePath !== undefined) {
@@ -84,21 +84,21 @@ function assertUniqueDestinations(destinations: readonly GlobDestination[],): vo
 }
 
 /**
- * Reconciles concrete glob destinations after rejecting duplicates with
- * {@link assertUniqueDestinations}.
- *
- * @param destinations - Concrete destinations with content.
- *
- * @param writeIfChanged - {@link WriteIfChanged} reconciliation function.
- *
- * @param manifestPath - Resolved staleness manifest path.
- *
- * @param recordStaleness - Whether each destination write should record eager staleness metadata.
- *
- * @example
- * ```ts
- * await writeGlobDestinations({ destinations, writeIfChanged, manifestPath });
- * ```
+ Reconciles concrete glob destinations after rejecting duplicates with
+ {@link assertUniqueDestinations}.
+ 
+ @param destinations - Concrete destinations with content.
+ 
+ @param writeIfChanged - {@link WriteIfChanged} reconciliation function.
+ 
+ @param manifestPath - Resolved staleness manifest path.
+ 
+ @param recordStaleness - Whether each destination write should record eager staleness metadata.
+ 
+ @example
+ ```ts
+ await writeGlobDestinations({ destinations, writeIfChanged, manifestPath });
+ ```
  */
 export async function writeGlobDestinations(
   {

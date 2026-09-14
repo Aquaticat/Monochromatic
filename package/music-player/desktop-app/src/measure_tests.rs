@@ -26,11 +26,11 @@ fn temp_cache(tag: &str) -> PathBuf {
     // Why:      Avoid collisions across tests/runs.
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system clock should be after Unix epoch")
         .as_nanos();
     // What:     build the path under the system temp dir. Tail -> return.
     // Why:      Disposable location.
-    std::env::temp_dir().join(format!(
+    return std::env::temp_dir().join(format!(
         "mp-measure-{}-{}-{}.db",
         std::process::id(),
         nanos,

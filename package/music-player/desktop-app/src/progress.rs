@@ -135,7 +135,7 @@ impl ProgressDebouncer {
         // ```ts
         // return new ProgressDebouncer();
         // ```
-        Self::default()
+        return Self::default()
     }
 
     /// What:     `pub fn should_surface(&mut self, now: Duration, kind: ProgressUpdateKind) -> bool`.
@@ -246,7 +246,7 @@ impl ProgressDebouncer {
         // ```ts
         // return intervalElapsed;
         // ```
-        interval_elapsed
+        return interval_elapsed
     }
 }
 

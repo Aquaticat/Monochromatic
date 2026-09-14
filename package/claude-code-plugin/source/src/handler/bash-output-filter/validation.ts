@@ -1,7 +1,7 @@
 /**
- * Command validation predicates for Bash output filter hook.
- *
- * @module
+ Command validation predicates for Bash output filter hook.
+ 
+ @module
  */
 
 import {
@@ -13,21 +13,21 @@ import {
 //region Allowlist
 
 /**
- * Non-alphanumeric characters that are still safe as a command's leading char.
+ Non-alphanumeric characters that are still safe as a command's leading char.
  */
 const ALLOW_LEADING_PUNCT = '_/.~"\'-';
 
 /**
- * Whether character is ASCII alphanumeric.
- *
- * @param c - one-character string to inspect
- *
- * @returns whether character is alphanumeric
- *
- * @example
- * ```ts
- * isAlphaNum('a');
- * ```
+ Whether character is ASCII alphanumeric.
+ 
+ @param c - one-character string to inspect
+ 
+ @returns whether character is alphanumeric
+ 
+ @example
+ ```ts
+ isAlphaNum('a');
+ ```
  */
 function isAlphaNum(c: string,): boolean {
   return ((c >= 'A') && (c <= 'Z'))
@@ -36,22 +36,22 @@ function isAlphaNum(c: string,): boolean {
 }
 
 /**
- * Whether `command` starts with an allowlisted leading character.
- *
- * @param command - full Bash command string
- *
- * @returns whether leading char is allowlisted
- *
- * @example
- * ```ts
- * startsWithSafeChar('git status');
- * ```
+ Whether `command` starts with an allowlisted leading character.
+ 
+ @param command - full Bash command string
+ 
+ @returns whether leading char is allowlisted
+ 
+ @example
+ ```ts
+ startsWithSafeChar('git status');
+ ```
  */
 function startsWithSafeChar(command: string,): boolean {
   if (command.length === 0)
     return false;
   /**
-   * Leading char to test against allow-list set.
+   Leading char to test against allow-list set.
    */
   const c = command.charAt(0,);
   return isAlphaNum(c,)
@@ -59,16 +59,16 @@ function startsWithSafeChar(command: string,): boolean {
 }
 
 /**
- * Whether command looks like normal text command that is safe to pipe.
- *
- * @param command - full Bash command string from tool input
- *
- * @returns `true` if command matches allowlist predicate
- *
- * @example
- * ```ts
- * isAllowed('git status');
- * ```
+ Whether command looks like normal text command that is safe to pipe.
+ 
+ @param command - full Bash command string from tool input
+ 
+ @returns `true` if command matches allowlist predicate
+ 
+ @example
+ ```ts
+ isAllowed('git status');
+ ```
  */
 function isAllowed(command: string,): boolean {
   return startsWithSafeChar(command,);
@@ -79,7 +79,7 @@ function isAllowed(command: string,): boolean {
 //region Denylist helpers
 
 /**
- * Binary-handling tools whose output would be mangled by filter pipeline.
+ Binary-handling tools whose output would be mangled by filter pipeline.
  */
 const BINARY_TOOL_NAMES: ReadonlySet<string> = new Set([
   'xxd',
@@ -97,7 +97,7 @@ const BINARY_TOOL_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Detachment wrapper utilities that take child off controlling terminal.
+ Detachment wrapper utilities that take child off controlling terminal.
  */
 const DETACH_WRAPPER_NAMES: ReadonlySet<string> = new Set([
   'nohup',
@@ -105,7 +105,7 @@ const DETACH_WRAPPER_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Container runtimes whose `exec` and `run` subcommands may attach TTY.
+ Container runtimes whose `exec` and `run` subcommands may attach TTY.
  */
 const CONTAINER_RUNTIMES: ReadonlySet<string> = new Set([
   'docker',
@@ -113,7 +113,7 @@ const CONTAINER_RUNTIMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Container subcommands that accept TTY flags.
+ Container subcommands that accept TTY flags.
  */
 const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
   'exec',
@@ -121,7 +121,7 @@ const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Shell builtins that change shell state in ways filter cannot follow.
+ Shell builtins that change shell state in ways filter cannot follow.
  */
 const STATE_BUILTIN_NAMES: ReadonlySet<string> = new Set([
   'cd',
@@ -134,12 +134,12 @@ const STATE_BUILTIN_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Marker emitted by filter to indicate end-of-filter execution.
+ Marker emitted by filter to indicate end-of-filter execution.
  */
 const BOF_MARKER = '___BOF_EC:';
 
 /**
- * Filter script basenames that must not be recursively piped.
+ Filter script basenames that must not be recursively piped.
  */
 const FILTER_SCRIPT_NAMES: ReadonlySet<string> = new Set([
   'filter.mjs',
@@ -147,16 +147,16 @@ const FILTER_SCRIPT_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Whether token names one of the filter scripts.
- *
- * @param token - parsed command word
- *
- * @returns whether token is filter script path or basename
- *
- * @example
- * ```ts
- * isFilterScriptToken('./filter.mjs');
- * ```
+ Whether token names one of the filter scripts.
+ 
+ @param token - parsed command word
+ 
+ @returns whether token is filter script path or basename
+ 
+ @example
+ ```ts
+ isFilterScriptToken('./filter.mjs');
+ ```
  */
 function isFilterScriptToken(token: string,): boolean {
   for (const scriptName of FILTER_SCRIPT_NAMES) {
@@ -169,16 +169,16 @@ function isFilterScriptToken(token: string,): boolean {
 }
 
 /**
- * Command name plus argument words.
- *
- * @param command - parsed command info
- *
- * @returns command words in source order
- *
- * @example
- * ```ts
- * commandWords(command);
- * ```
+ Command name plus argument words.
+ 
+ @param command - parsed command info
+ 
+ @returns command words in source order
+ 
+ @example
+ ```ts
+ commandWords(command);
+ ```
  */
 function commandWords(command: ShellCommandInfo,): readonly string[] {
   return [
@@ -188,22 +188,22 @@ function commandWords(command: ShellCommandInfo,): readonly string[] {
 }
 
 /**
- * Whether token is short CLI flag containing `i` or `t`.
- *
- * @param token - parsed command argument
- *
- * @returns whether token is TTY-style short flag
- *
- * @example
- * ```ts
- * isTtyFlag('-it');
- * ```
+ Whether token is short CLI flag containing `i` or `t`.
+ 
+ @param token - parsed command argument
+ 
+ @returns whether token is TTY-style short flag
+ 
+ @example
+ ```ts
+ isTtyFlag('-it');
+ ```
  */
 function isTtyFlag(token: string,): boolean {
   if ((!token.startsWith('-',)) || (token.startsWith('--',)))
     return false;
   /**
-   * Flag body after leading dash.
+   Flag body after leading dash.
    */
   const body = token.slice(1,);
   if (body.length === 0)
@@ -217,22 +217,22 @@ function isTtyFlag(token: string,): boolean {
 }
 
 /**
- * Whether parsed command invokes container runtime with TTY flag.
- *
- * @param command - parsed command info
- *
- * @returns whether command attaches container TTY
- *
- * @example
- * ```ts
- * commandHasTtyContainerInvoke(command);
- * ```
+ Whether parsed command invokes container runtime with TTY flag.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command attaches container TTY
+ 
+ @example
+ ```ts
+ commandHasTtyContainerInvoke(command);
+ ```
  */
 function commandHasTtyContainerInvoke(command: ShellCommandInfo,): boolean {
   if (!CONTAINER_RUNTIMES.has(command.name,))
     return false;
   /**
-   * Container subcommand after runtime name.
+   Container subcommand after runtime name.
    */
   const subcommand = command.args[0]
     ?? '';
@@ -246,16 +246,16 @@ function commandHasTtyContainerInvoke(command: ShellCommandInfo,): boolean {
 }
 
 /**
- * Whether parsed command has output file redirect.
- *
- * @param command - parsed command info
- *
- * @returns whether command writes to redirected file target
- *
- * @example
- * ```ts
- * commandHasOutputRedirect(command);
- * ```
+ Whether parsed command has output file redirect.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command writes to redirected file target
+ 
+ @example
+ ```ts
+ commandHasOutputRedirect(command);
+ ```
  */
 function commandHasOutputRedirect(command: ShellCommandInfo,): boolean {
   return command.redirects
@@ -265,16 +265,16 @@ function commandHasOutputRedirect(command: ShellCommandInfo,): boolean {
 }
 
 /**
- * Whether parsed command invokes `bun build` directly.
- *
- * @param command - parsed command info
- *
- * @returns whether command is `bun build`
- *
- * @example
- * ```ts
- * commandIsBunBuild(command);
- * ```
+ Whether parsed command invokes `bun build` directly.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command is `bun build`
+ 
+ @example
+ ```ts
+ commandIsBunBuild(command);
+ ```
  */
 function commandIsBunBuild(command: ShellCommandInfo,): boolean {
   return (command.name === 'bun')
@@ -282,16 +282,16 @@ function commandIsBunBuild(command: ShellCommandInfo,): boolean {
 }
 
 /**
- * Whether parsed command invokes filter helper script.
- *
- * @param command - parsed command info
- *
- * @returns whether command words reference filter script
- *
- * @example
- * ```ts
- * commandInvokesFilterScript(command);
- * ```
+ Whether parsed command invokes filter helper script.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command words reference filter script
+ 
+ @example
+ ```ts
+ commandInvokesFilterScript(command);
+ ```
  */
 function commandInvokesFilterScript(command: ShellCommandInfo,): boolean {
   return commandWords(command,)
@@ -301,48 +301,48 @@ function commandInvokesFilterScript(command: ShellCommandInfo,): boolean {
 }
 
 /**
- * Whether parsed command invokes a state-changing builtin.
- *
- * @param command - parsed command info
- *
- * @returns whether command changes shell state
- *
- * @example
- * ```ts
- * commandIsStateBuiltin(command);
- * ```
+ Whether parsed command invokes a state-changing builtin.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command changes shell state
+ 
+ @example
+ ```ts
+ commandIsStateBuiltin(command);
+ ```
  */
 function commandIsStateBuiltin(command: ShellCommandInfo,): boolean {
   return STATE_BUILTIN_NAMES.has(command.name,);
 }
 
 /**
- * Whether parsed command invokes a binary-handling tool.
- *
- * @param command - parsed command info
- *
- * @returns whether command output should not be piped through text filter
- *
- * @example
- * ```ts
- * commandIsBinaryTool(command);
- * ```
+ Whether parsed command invokes a binary-handling tool.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command output should not be piped through text filter
+ 
+ @example
+ ```ts
+ commandIsBinaryTool(command);
+ ```
  */
 function commandIsBinaryTool(command: ShellCommandInfo,): boolean {
   return BINARY_TOOL_NAMES.has(command.name,);
 }
 
 /**
- * Whether parsed command invokes a detachment wrapper.
- *
- * @param command - parsed command info
- *
- * @returns whether command detaches from terminal
- *
- * @example
- * ```ts
- * commandIsDetachWrapper(command);
- * ```
+ Whether parsed command invokes a detachment wrapper.
+ 
+ @param command - parsed command info
+ 
+ @returns whether command detaches from terminal
+ 
+ @example
+ ```ts
+ commandIsDetachWrapper(command);
+ ```
  */
 function commandIsDetachWrapper(command: ShellCommandInfo,): boolean {
   return DETACH_WRAPPER_NAMES.has(command.name,);
@@ -353,16 +353,16 @@ function commandIsDetachWrapper(command: ShellCommandInfo,): boolean {
 //region Public denylist
 
 /**
- * Whether parsed analysis has any command-level skip reason.
- *
- * @param analysis - parsed command analysis
- *
- * @returns whether command should not be piped through filter
- *
- * @example
- * ```ts
- * analysisHasCommandSkip(analysis);
- * ```
+ Whether parsed analysis has any command-level skip reason.
+ 
+ @param analysis - parsed command analysis
+ 
+ @returns whether command should not be piped through filter
+ 
+ @example
+ ```ts
+ analysisHasCommandSkip(analysis);
+ ```
  */
 function analysisHasCommandSkip(analysis: ShellCommandAnalysis,): boolean {
   return analysis.commands
@@ -379,23 +379,23 @@ function analysisHasCommandSkip(analysis: ShellCommandAnalysis,): boolean {
 }
 
 /**
- * Whether command should be skipped instead of piped through filter.
- *
- * @param command - full Bash command string from tool input
- *
- * @returns `true` if command matches any denylist predicate
- *
- * @example
- * ```ts
- * shouldSkip('xxd file.bin');
- * ```
+ Whether command should be skipped instead of piped through filter.
+ 
+ @param command - full Bash command string from tool input
+ 
+ @returns `true` if command matches any denylist predicate
+ 
+ @example
+ ```ts
+ shouldSkip('xxd file.bin');
+ ```
  */
 function shouldSkip(command: string,): boolean {
   if (command.includes(BOF_MARKER,))
     return true;
 
   /**
-   * Parsed shell command analysis from shared analyzer.
+   Parsed shell command analysis from shared analyzer.
    */
   const analysis = analyzeShellCommand(command,);
   if (!analysis.parsed)

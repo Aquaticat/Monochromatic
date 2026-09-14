@@ -26,7 +26,7 @@ export { readManifestFromDisk, } from './staleness-manifest-parse.ts';
 //region Atomic write constants
 
 /**
- * Suffix appended to manifest path for atomic-write temp files.
+ Suffix appended to manifest path for atomic-write temp files.
  */
 const TEMP_FILE_SUFFIX = '.tmp';
 
@@ -35,19 +35,19 @@ const TEMP_FILE_SUFFIX = '.tmp';
 //region Atomic write and inter-process merge
 
 /**
- * Writes and fsyncs manifest temp file before rename, serializing with
- * {@link serializeManifest} and durably writing via {@link writeTempFileDurably}.
- *
- * @param tempPath - Same-directory temp path.
- *
- * @param manifest - Manifest to serialize.
- *
- * @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
- *
- * @example
- * ```ts
- * await writeManifestTempFile({ tempPath, manifest });
- * ```
+ Writes and fsyncs manifest temp file before rename, serializing with
+ {@link serializeManifest} and durably writing via {@link writeTempFileDurably}.
+ 
+ @param tempPath - Same-directory temp path.
+ 
+ @param manifest - Manifest to serialize.
+ 
+ @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
+ 
+ @example
+ ```ts
+ await writeManifestTempFile({ tempPath, manifest });
+ ```
  */
 async function writeManifestTempFile(
   {
@@ -65,19 +65,19 @@ async function writeManifestTempFile(
 }
 
 /**
- * Writes manifest through same-directory temp file via {@link writeManifestTempFile}
- * and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @param manifest - Manifest to persist.
- *
- * @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
- *
- * @example
- * ```ts
- * await writeManifestAtomically({ manifestPath, manifest });
- * ```
+ Writes manifest through same-directory temp file via {@link writeManifestTempFile}
+ and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @param manifest - Manifest to persist.
+ 
+ @mutates manifest - `JSON.stringify` may invoke hooks on manifest entries.
+ 
+ @example
+ ```ts
+ await writeManifestAtomically({ manifestPath, manifest });
+ ```
  */
 async function writeManifestAtomically(
   {
@@ -89,7 +89,7 @@ async function writeManifestAtomically(
   },
 ): Promise<void> {
   /**
-   * Directory containing manifest and same-directory temp files.
+   Directory containing manifest and same-directory temp files.
    */
   const manifestDirectory = dirname(manifestPath,);
   await mkdir(
@@ -97,11 +97,11 @@ async function writeManifestAtomically(
     { recursive: true, },
   );
   /**
-   * Same-directory temp path used for atomic replacement.
+   Same-directory temp path used for atomic replacement.
    */
   const tempPath = `${manifestPath}.${String(process.pid,)}.${randomUUID()}${TEMP_FILE_SUFFIX}`;
   /**
-   * Cleanup handle for temp file when write or rename fails.
+   Cleanup handle for temp file when write or rename fails.
    */
   await using _tempCleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -123,21 +123,21 @@ async function writeManifestAtomically(
 }
 
 /**
- * Merges cached entries with latest disk state under a lock from
- * {@link acquireManifestLock}, reading the existing manifest via
- * {@link readManifestFromDisk}, then writes atomically with
- * {@link writeManifestAtomically}.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @param manifest - Cached manifest changes to persist.
- *
- * @returns Merged manifest written to disk.
- *
- * @example
- * ```ts
- * const merged = await writeMergedManifest({ manifestPath, manifest });
- * ```
+ Merges cached entries with latest disk state under a lock from
+ {@link acquireManifestLock}, reading the existing manifest via
+ {@link readManifestFromDisk}, then writes atomically with
+ {@link writeManifestAtomically}.
+ 
+ @param manifestPath - Absolute manifest path.
+ 
+ @param manifest - Cached manifest changes to persist.
+ 
+ @returns Merged manifest written to disk.
+ 
+ @example
+ ```ts
+ const merged = await writeMergedManifest({ manifestPath, manifest });
+ ```
  */
 export async function writeMergedManifest(
   {
@@ -149,15 +149,15 @@ export async function writeMergedManifest(
   },
 ): Promise<StalenessManifest> {
   /**
-   * Lock handle released after merged manifest has been written.
+   Lock handle released after merged manifest has been written.
    */
   await using _lock = await acquireManifestLock(manifestPath,);
   /**
-   * Latest manifest state from disk while lock is held.
+   Latest manifest state from disk while lock is held.
    */
   const existingManifest = await readManifestFromDisk(manifestPath,);
   /**
-   * Manifest preserving entries from disk plus this process's changes.
+   Manifest preserving entries from disk plus this process's changes.
    */
   const mergedManifest: StalenessManifest = {
     version: MANIFEST_VERSION,

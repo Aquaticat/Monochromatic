@@ -26,16 +26,16 @@ fn extracts_vt_text_and_bold_style() -> Result<(), TerminalError> {
     let bold_cell = snapshot
         .cells
         .iter()
-        .find(|cell| cell.text == "B")
+        .find(|cell| return cell.text == "B")
         .expect("rendered bold B cell");
     assert!(bold_cell.bold);
     let plain_cell = snapshot
         .cells
         .iter()
-        .find(|cell| cell.text == "p")
+        .find(|cell| return cell.text == "p")
         .expect("rendered plain p cell");
     assert!(!plain_cell.bold);
-    Ok(())
+    return Ok(())
 }
 
 #[test]
@@ -53,9 +53,9 @@ fn scrolls_to_scrollback_top() -> Result<(), TerminalError> {
     let top_text: String = snapshot
         .cells
         .iter()
-        .filter(|cell| cell.row == 0)
-        .map(|cell| cell.text.as_str())
+        .filter(|cell| return cell.row == 0)
+        .map(|cell| return cell.text.as_str())
         .collect();
     assert!(top_text.contains("one"));
-    Ok(())
+    return Ok(())
 }

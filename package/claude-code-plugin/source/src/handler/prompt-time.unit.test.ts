@@ -14,12 +14,12 @@ import {
 } from './prompt-time.ts';
 
 /**
- * Builds a minimal `UserPromptSubmitInput` so the handler tests do not have to
- * carry the full Claude Code envelope when only the event shape matters.
- *
- * @param prompt - text to place in the event's `prompt` field
- *
- * @returns a populated `UserPromptSubmitInput`
+ Builds a minimal `UserPromptSubmitInput` so the handler tests do not have to
+ carry the full Claude Code envelope when only the event shape matters.
+ 
+ @param prompt - text to place in the event's `prompt` field
+ 
+ @returns a populated `UserPromptSubmitInput`
  */
 function makeEvent(prompt: string,): UserPromptSubmitInput {
   return {
@@ -105,17 +105,17 @@ await describe({
             );
             expect(middle.charAt(2,),).toBe(':',);
             /**
-             * Predicate that the four numeric positions of the middle slice
-             * are ASCII digits.
-             *
-             * @param c - single character from the middle slice
-             *
-             * @returns whether `c` is `[0-9]`
-             *
-             * @example
-             * ```ts
-             * isAsciiDigit('4'); // true
-             * ```
+             Predicate that the four numeric positions of the middle slice
+             are ASCII digits.
+             
+             @param c - single character from the middle slice
+             
+             @returns whether `c` is `[0-9]`
+             
+             @example
+             ```ts
+             isAsciiDigit('4'); // true
+             ```
              */
             function isAsciiDigit(c: string,): boolean {
               return (c >= '0') && (c <= '9');

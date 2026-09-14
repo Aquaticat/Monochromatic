@@ -13,25 +13,25 @@ import type {
 import { extFilter, } from './ext.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Builds a minimal {@link WatchCtx}; extFilter ignores everything but
- * `event.ext`, so a default-everything ctx is sufficient.
- *
- * @returns context object suitable for handing to extFilter
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; extFilter ignores everything but
+ `event.ext`, so a default-everything ctx is sufficient.
+ 
+ @returns context object suitable for handing to extFilter
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -42,18 +42,18 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent} from overrides; defaults give a `change`
- * to `/abs/file.ts`. The `ext` override is the only field the tests
- * vary.
- *
- * @param overrides - partial event fields to merge over the default
- *
- * @returns fully-populated event
- *
- * @example
- * ```ts
- * const event = makeEvent({ ext: '.css', },);
- * ```
+ Builds a {@link WatchEvent} from overrides; defaults give a `change`
+ to `/abs/file.ts`. The `ext` override is the only field the tests
+ vary.
+ 
+ @param overrides - partial event fields to merge over the default
+ 
+ @returns fully-populated event
+ 
+ @example
+ ```ts
+ const event = makeEvent({ ext: '.css', },);
+ ```
  */
 function makeEvent(
   overrides: {

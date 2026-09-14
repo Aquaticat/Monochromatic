@@ -1,7 +1,7 @@
 /**
- * Fast judge-model strategy selection with injected auth callbacks.
- *
- * @module
+ Fast judge-model strategy selection with injected auth callbacks.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -23,16 +23,16 @@ import {
 } from './types.ts';
 
 /**
- * Sentinel returned by {@link findFastestCandidate} when no provider yields a
- * candidate (empty registry). A `unique symbol`; narrowed with
- * `=== NO_CANDIDATE`. Exported because {@link findFastestCandidate} is public.
+ Sentinel returned by {@link findFastestCandidate} when no provider yields a
+ candidate (empty registry). A `unique symbol`; narrowed with
+ `=== NO_CANDIDATE`. Exported because {@link findFastestCandidate} is public.
  */
 export const NO_CANDIDATE: unique symbol = Symbol('model selection fast candidate absent after version filtering',);
 
 //region Internal types
 
 /**
- * Options shared by concrete budget-model strategy helpers.
+ Options shared by concrete budget-model strategy helpers.
  */
 type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
   BudgetModelSelectionOptions<TModel>,
@@ -44,27 +44,27 @@ type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
 //region Public API
 
 /**
- * Find the fastest authenticated judge model for configured strategy.
- *
- * @param options - active model, model list, strategy, major versions, and auth callbacks
- *
- * @returns selected budget model with auth
- *
- * @mutates options - strategy helpers invoke supplied `resolveAuth` and `hasConfiguredAuth` callbacks
- *
- * @throws {@link NoBudgetModelError} when no suitable model is found
- *
- * @example
- * ```typescript
- * const budget = await selectBudgetModel({
- *   activeModel,
- *   allModels,
- *   strategy,
- *   majorVersions,
- *   resolveAuth,
- *   hasConfiguredAuth,
- * });
- * ```
+ Find the fastest authenticated judge model for configured strategy.
+ 
+ @param options - active model, model list, strategy, major versions, and auth callbacks
+ 
+ @returns selected budget model with auth
+ 
+ @mutates options - strategy helpers invoke supplied `resolveAuth` and `hasConfiguredAuth` callbacks
+ 
+ @throws {@link NoBudgetModelError} when no suitable model is found
+ 
+ @example
+ ```typescript
+ const budget = await selectBudgetModel({
+   activeModel,
+   allModels,
+   strategy,
+   majorVersions,
+   resolveAuth,
+   hasConfiguredAuth,
+ });
+ ```
  */
 export async function selectBudgetModel<TModel extends ModelPricing,>(
   options: BudgetModelSelectionOptions<TModel>,
@@ -89,22 +89,22 @@ export async function selectBudgetModel<TModel extends ModelPricing,>(
 }
 
 /**
- * Find the single fastest model across all providers for error context.
- *
- * @param allModels - registry model list
- *
- * @param majorVersions - major-version families to search
- *
- * @param hasConfiguredAuth - host auth predicate for reporting
- *
- * @returns fastest candidate when present
- *
- * @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for selected model
- *
- * @example
- * ```typescript
- * const candidate = findFastestCandidate({ allModels, majorVersions, hasConfiguredAuth });
- * ```
+ Find the single fastest model across all providers for error context.
+ 
+ @param allModels - registry model list
+ 
+ @param majorVersions - major-version families to search
+ 
+ @param hasConfiguredAuth - host auth predicate for reporting
+ 
+ @returns fastest candidate when present
+ 
+ @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for selected model
+ 
+ @example
+ ```typescript
+ const candidate = findFastestCandidate({ allModels, majorVersions, hasConfiguredAuth });
+ ```
  */
 export function findFastestCandidate<TModel extends ModelPricing,>(
   {
@@ -118,12 +118,12 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
   }>>,
 ): BudgetModelCandidate | typeof NO_CANDIDATE {
   /**
-   * Provider name to its list of models.
+   Provider name to its list of models.
    */
   const byProvider = groupModelsByProvider(allModels,);
 
   /**
-   * Fastest per-provider head for every provider that yielded a candidate.
+   Fastest per-provider head for every provider that yielded a candidate.
    */
   const providerHeads: {
     readonly model: TModel;
@@ -131,7 +131,7 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
   }[] = [];
   for (const [provider, models,] of byProvider) {
     /**
-     * Per-provider candidates already sorted by speed, cost, then version.
+     Per-provider candidates already sorted by speed, cost, then version.
      */
     const firstCandidate = findFastestInMajorVersions({
       models,
@@ -147,7 +147,7 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
   }
 
   /**
-   * Overall fastest provider head by speed heuristic.
+   Overall fastest provider head by speed heuristic.
    */
   const best = providerHeads.toSorted(function bySpeed(
     left,
@@ -169,15 +169,15 @@ export function findFastestCandidate<TModel extends ModelPricing,>(
 }
 
 /**
- * Backwards-compatible name for {@link findFastestCandidate}.
- *
- * @deprecated Use {@link findFastestCandidate}; automatic judge selection now
- * ranks by speed heuristic before cost.
- *
- * @example
- * ```typescript
- * findCheapestCandidate({ allModels, majorVersions: 1, hasConfiguredAuth });
- * ```
+ Backwards-compatible name for {@link findFastestCandidate}.
+ 
+ @deprecated Use {@link findFastestCandidate}; automatic judge selection now
+ ranks by speed heuristic before cost.
+ 
+ @example
+ ```typescript
+ findCheapestCandidate({ allModels, majorVersions: 1, hasConfiguredAuth });
+ ```
  */
 export const findCheapestCandidate: typeof findFastestCandidate = findFastestCandidate;
 
@@ -186,25 +186,25 @@ export const findCheapestCandidate: typeof findFastestCandidate = findFastestCan
 //region Same-provider strategy
 
 /**
- * Find fastest model in the same provider as active model.
- *
- * @param activeModel - active model used for provider reference
- *
- * @param allModels - registry model list
- *
- * @param majorVersions - major-version families to search
- *
- * @param resolveAuth - host auth resolver
- *
- * @param hasConfiguredAuth - host auth predicate for reporting
- *
- * @returns selected budget model
- *
- * @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
- *
- * @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for error context
- *
- * @throws {@link NoBudgetModelError} when no suitable same-provider model is found
+ Find fastest model in the same provider as active model.
+ 
+ @param activeModel - active model used for provider reference
+ 
+ @param allModels - registry model list
+ 
+ @param majorVersions - major-version families to search
+ 
+ @param resolveAuth - host auth resolver
+ 
+ @param hasConfiguredAuth - host auth predicate for reporting
+ 
+ @returns selected budget model
+ 
+ @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
+ 
+ @mutates hasConfiguredAuth - invokes supplied auth-availability predicate for error context
+ 
+ @throws {@link NoBudgetModelError} when no suitable same-provider model is found
  */
 async function findSameProvider<TModel extends ModelPricing,>(
   {
@@ -216,11 +216,11 @@ async function findSameProvider<TModel extends ModelPricing,>(
   }: BudgetStrategyOptions<TModel>,
 ): Promise<BudgetModel<TModel>> {
   /**
-   * Active provider name used to filter registry.
+   Active provider name used to filter registry.
    */
   const activeProvider = activeModel.provider;
   /**
-   * Subset of all models sharing active provider.
+   Subset of all models sharing active provider.
    */
   const providerModels = allModels.filter(function sameProvider(model,) {
     return model.provider
@@ -228,15 +228,15 @@ async function findSameProvider<TModel extends ModelPricing,>(
   },);
 
   /**
-   * Lazily find fastest candidate across all providers.
-   *
-   * @returns error-context object carrying fastestOverall only when found
+   Lazily find fastest candidate across all providers.
+   
+   @returns error-context object carrying fastestOverall only when found
    */
   function fastestOverallContext(): {
     readonly fastestOverall?: BudgetModelCandidate;
   } {
     /**
-     * Fastest cross-provider candidate result.
+     Fastest cross-provider candidate result.
      */
     const candidate = findFastestCandidate({
       allModels,
@@ -257,7 +257,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
   }
 
   /**
-   * Same-provider candidates ranked by speed, cost, then version.
+   Same-provider candidates ranked by speed, cost, then version.
    */
   const candidates = findFastestInMajorVersions({
     models: providerModels,
@@ -273,7 +273,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
   }
 
   /**
-   * Fastest same-provider candidate.
+   Fastest same-provider candidate.
    */
   const fastestCandidate = candidates.at(0,);
   if (fastestCandidate === undefined) {
@@ -285,7 +285,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
   for (const candidate of candidates) {
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
     /**
-     * Resolved auth for current candidate.
+     Resolved auth for current candidate.
      */
     const auth = await resolveAuth({ model: candidate, },);
     /* oxlint-enable no-await-in-loop */
@@ -298,7 +298,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
   }
 
   /**
-   * Same-provider report row after every candidate failed auth.
+   Same-provider report row after every candidate failed auth.
    */
   const sameProvider = toBudgetModelCandidate({
     model: fastestCandidate,
@@ -318,19 +318,19 @@ async function findSameProvider<TModel extends ModelPricing,>(
 //region Any-provider strategy
 
 /**
- * Find fastest model across all providers.
- *
- * @param allModels - registry model list
- *
- * @param majorVersions - major-version families to search
- *
- * @param resolveAuth - host auth resolver
- *
- * @returns selected budget model
- *
- * @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
- *
- * @throws {@link NoBudgetModelError} when no suitable model is found across any provider
+ Find fastest model across all providers.
+ 
+ @param allModels - registry model list
+ 
+ @param majorVersions - major-version families to search
+ 
+ @param resolveAuth - host auth resolver
+ 
+ @returns selected budget model
+ 
+ @mutates resolveAuth - invokes supplied async auth resolver for ranked candidates
+ 
+ @throws {@link NoBudgetModelError} when no suitable model is found across any provider
  */
 async function findAnyProvider<TModel extends ModelPricing,>(
   {
@@ -340,12 +340,12 @@ async function findAnyProvider<TModel extends ModelPricing,>(
   }: BudgetStrategyOptions<TModel>,
 ): Promise<BudgetModel<TModel>> {
   /**
-   * Provider name to its list of models.
+   Provider name to its list of models.
    */
   const byProvider = groupModelsByProvider(allModels,);
 
   /**
-   * Flat union of every provider's top candidates.
+   Flat union of every provider's top candidates.
    */
   const allCandidates: TModel[] = [];
   for (const [, models,] of byProvider) {
@@ -355,7 +355,7 @@ async function findAnyProvider<TModel extends ModelPricing,>(
     },),);
   }
   /**
-   * Cross-provider candidates sorted by speed heuristic.
+   Cross-provider candidates sorted by speed heuristic.
    */
   const sortedCandidates = allCandidates.toSorted(function bySpeed(
     left,
@@ -370,7 +370,7 @@ async function findAnyProvider<TModel extends ModelPricing,>(
   for (const model of sortedCandidates) {
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
     /**
-     * Resolved auth for current candidate.
+     Resolved auth for current candidate.
      */
     const auth = await resolveAuth({ model, },);
     /* oxlint-enable no-await-in-loop */
@@ -392,22 +392,22 @@ async function findAnyProvider<TModel extends ModelPricing,>(
 //region Helpers
 
 /**
- * Group models by provider.
- *
- * @param models - models to group
- *
- * @returns provider to model list map
+ Group models by provider.
+ 
+ @param models - models to group
+ 
+ @returns provider to model list map
  */
 function groupModelsByProvider<TModel extends ModelPricing,>(
   models: readonly TModel[],
 ): Map<string, TModel[]> {
   /**
-   * Provider name to models.
+   Provider name to models.
    */
   const byProvider = new Map<string, TModel[]>();
   for (const model of models) {
     /**
-     * Provider name keying grouping map.
+     Provider name keying grouping map.
      */
     const { provider, } = model;
     if (!byProvider.has(provider,)) {
@@ -417,7 +417,7 @@ function groupModelsByProvider<TModel extends ModelPricing,>(
       );
     }
     /**
-     * Bucket current model goes into.
+     Bucket current model goes into.
      */
     const list = byProvider.get(provider,);
     if (list !== undefined)

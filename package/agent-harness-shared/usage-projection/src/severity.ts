@@ -1,7 +1,7 @@
 /**
- * Rate-limit severity selection and styling.
- *
- * @module
+ Rate-limit severity selection and styling.
+ 
+ @module
  */
 
 import {
@@ -19,16 +19,16 @@ import type {
 //region Severity helpers
 
 /**
- * Computes remaining percentage for display.
- *
- * @param snapshot - current limiter sample
- *
- * @returns remaining percentage clamped to zero
- *
- * @example
- * ```ts
- * remainingPercent(snapshot);
- * ```
+ Computes remaining percentage for display.
+ 
+ @param snapshot - current limiter sample
+ 
+ @returns remaining percentage clamped to zero
+ 
+ @example
+ ```ts
+ remainingPercent(snapshot);
+ ```
  */
 function remainingPercent(snapshot: RateLimitSnapshot,): number {
   return Math.max(
@@ -38,18 +38,18 @@ function remainingPercent(snapshot: RateLimitSnapshot,): number {
 }
 
 /**
- * Selects rate-limit severity from remaining capacity and projection.
- *
- * @param remaining - remaining percentage
- *
- * @param projectedPercent - projected end-of-window usage percentage
- *
- * @returns selected severity
- *
- * @example
- * ```ts
- * rateLimitSeverity({ remaining: 12, projectedPercent: 0 });
- * ```
+ Selects rate-limit severity from remaining capacity and projection.
+ 
+ @param remaining - remaining percentage
+ 
+ @param projectedPercent - projected end-of-window usage percentage
+ 
+ @returns selected severity
+ 
+ @example
+ ```ts
+ rateLimitSeverity({ remaining: 12, projectedPercent: 0 });
+ ```
  */
 function rateLimitSeverity({
   remaining,
@@ -66,20 +66,20 @@ function rateLimitSeverity({
 }
 
 /**
- * Styles text with the selected rate-limit severity callback.
- *
- * @param text - text to style
- *
- * @param severity - selected severity
- *
- * @param style - host style callbacks
- *
- * @returns styled text
- *
- * @example
- * ```ts
- * styleBySeverity({ text: '50% left', severity: 'green', style });
- * ```
+ Styles text with the selected rate-limit severity callback.
+ 
+ @param text - text to style
+ 
+ @param severity - selected severity
+ 
+ @param style - host style callbacks
+ 
+ @returns styled text
+ 
+ @example
+ ```ts
+ styleBySeverity({ text: '50% left', severity: 'green', style });
+ ```
  */
 function styleBySeverity({
   text,

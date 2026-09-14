@@ -1,12 +1,12 @@
 /**
- * Equivalence tests for `expandEscapes`.
- *
- * Capture the pre-refactor behavior of the desktop-entry escape expander
- * so the linear-pass rewrite stays behavior-identical: each escape map
- * entry, unknown escapes passing through as the literal next char, a
- * trailing lone backslash emitted verbatim, and a long repeated run.
- *
- * @module
+ Equivalence tests for `expandEscapes`.
+ 
+ Capture the pre-refactor behavior of the desktop-entry escape expander
+ so the linear-pass rewrite stays behavior-identical: each escape map
+ entry, unknown escapes passing through as the literal next char, a
+ trailing lone backslash emitted verbatim, and a long repeated run.
+ 
+ @module
  */
 
 import {

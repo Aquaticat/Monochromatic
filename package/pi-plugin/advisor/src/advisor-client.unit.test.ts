@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor provider client wiring.
- *
- * @module
+ Unit tests for Advisor provider client wiring.
+ 
+ @module
  */
 
 import {
@@ -43,6 +43,9 @@ const TIMEOUT_MS = 1_000;
 /** Fixture Advisor output token budget. */
 const ADVISOR_OUTPUT_TOKENS = 100;
 
+/** Advertised endpoint capacity below Advisor requirement. */
+const INELIGIBLE_MAX_TOKENS = ADVISOR_OUTPUT_TOKENS - 1;
+
 /** Focused question fixture. */
 const FOCUS_QUESTION = 'Which assumption is weakest?';
 
@@ -50,17 +53,18 @@ const FOCUS_QUESTION = 'Which assumption is weakest?';
 const RETRY_PROVIDER_CALL_COUNT = 2;
 
 /**
- * Build Advisor model fixture with selected reasoning capabilities.
- *
- * @param overrides - fixture identity and reasoning overrides
- *
- * @returns complete Advisor model fixture
+ Build Advisor model fixture with selected reasoning capabilities.
+ 
+ @param overrides - fixture identity and reasoning overrides
+ 
+ @returns complete Advisor model fixture
  */
 function createFixtureModel(
   overrides: Readonly<{
     id: string;
     reasoning: boolean;
     thinkingLevelMap?: Model<Api>['thinkingLevelMap'];
+    maxTokens?: number;
   }>,
 ): Model<Api> {
   return {
@@ -80,7 +84,8 @@ function createFixtureModel(
       cacheWrite: 0,
     },
     contextWindow: CONTEXT_WINDOW,
-    maxTokens: MAX_TOKENS,
+    maxTokens: overrides.maxTokens
+      ?? MAX_TOKENS,
   };
 }
 
@@ -230,11 +235,11 @@ const extensionContext: ExtensionContext = {
 //region Helpers
 
 /**
- * Build fake complete implementation capturing provider contexts.
- *
- * @param contexts - mutable capture sink for provider contexts
- *
- * @returns fake complete implementation
+ Build fake complete implementation capturing provider contexts.
+ 
+ @param contexts - mutable capture sink for provider contexts
+ 
+ @returns fake complete implementation
  */
 function createCapturingCompleteModel(
   {
@@ -256,13 +261,13 @@ function createCapturingCompleteModel(
 }
 
 /**
- * Build fake complete implementation returning responses in call order.
- *
- * @param contexts - mutable capture sink for provider contexts
- *
- * @param responses - provider responses returned in order
- *
- * @returns fake complete implementation
+ Build fake complete implementation returning responses in call order.
+ 
+ @param contexts - mutable capture sink for provider contexts
+ 
+ @param responses - provider responses returned in order
+ 
+ @returns fake complete implementation
  */
 function createSequencedCompleteModel(
   {
@@ -276,7 +281,7 @@ function createSequencedCompleteModel(
   },
 ): CompleteAdvisorModel {
   /**
-   * Queue of provider responses not yet returned.
+   Queue of provider responses not yet returned.
    */
   const remainingResponses = [...responses,];
   return async function completeModel(
@@ -294,7 +299,7 @@ function createSequencedCompleteModel(
       options.push(providerOptions,);
     }
     /**
-     * Response selected for this provider invocation.
+     Response selected for this provider invocation.
      */
     const response = remainingResponses.shift();
     if (response === undefined)
@@ -303,11 +308,71 @@ function createSequencedCompleteModel(
   };
 }
 
+/**
+ Capture rejection from async test action.
+ 
+ @param action - async operation expected to reject
+ 
+ @returns caught rejection value
+ 
+ @example
+ ```typescript
+ const error = await captureAsyncError(async function fail() { throw new Error('x'); });
+ ```
+ */
+async function captureAsyncError(
+  action: () => Promise<unknown>,
+): Promise<unknown> {
+  try {
+    await action();
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected async action to throw',);
+}
+
 //endregion Helpers
 
 await describe({
   name: completeAdvisor.name,
   children: [
+    it({
+      name: 'refuses insufficient endpoint capacity at provider boundary',
+      fn: async function testProviderBoundaryOutputCapacity() {
+        /** Provider contexts that remain empty when boundary guard rejects. */
+        const contexts: Readonly<Context>[] = [];
+        /** Fake provider completion whose invocation would record context. */
+        const completeModel = createCapturingCompleteModel({ contexts, });
+        /** Model whose endpoint advertises less than configured requirement. */
+        const ineligibleModel = createFixtureModel({
+          id: 'limited-reviewer',
+          reasoning: false,
+          maxTokens: INELIGIBLE_MAX_TOKENS,
+        },);
+        /** Eligibility error returned before provider completion. */
+        const caught = await captureAsyncError(
+          async function dispatchIneligibleModel() {
+            return await completeAdvisor({
+              ctx: extensionContext,
+              model: ineligibleModel,
+              config: advisorConfig,
+              advisorContext,
+              completeModel,
+            },);
+          },
+        );
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `requires ${String(ADVISOR_OUTPUT_TOKENS,)} output tokens`,
+        );
+        expect((caught as Error).message,).toContain(
+          `advertises ${String(INELIGIBLE_MAX_TOKENS,)} output tokens`,
+        );
+        expect(contexts,).toHaveLength(0,);
+      },
+    },),
     it({
       name: 'dispatches highest reasoning through registered custom provider',
       fn: async function testRegisteredCustomProvider() {

@@ -14,34 +14,34 @@ import type {
 import { walk, } from '../walk.ts';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD040';
 
 /**
- * Parameters for {@link languageInsertOffset}.
+ Parameters for {@link languageInsertOffset}.
  */
 type LanguageInsertOffsetParams = {
   /**
-   * Code node whose opening fence needs a language label.
+   Code node whose opening fence needs a language label.
    */
   readonly node: Code;
   /**
-   * Original source.
+   Original source.
    */
   readonly source: string;
 };
 
 /**
- * Measure the run of opening fence marker characters.
- *
- * @param markerAndRest - opening line from the first fence marker onward
- *
- * @returns number of marker characters in the opening fence
+ Measure the run of opening fence marker characters.
+ 
+ @param markerAndRest - opening line from the first fence marker onward
+ 
+ @returns number of marker characters in the opening fence
  */
 function fenceMarkerLength(markerAndRest: string,): number {
   /**
-   * Fence marker character, either backtick or tilde.
+   Fence marker character, either backtick or tilde.
    */
   const marker = markerAndRest.charAt(0,);
   for (let offset = 0; offset < markerAndRest.length; offset += 1) {
@@ -53,32 +53,32 @@ function fenceMarkerLength(markerAndRest: string,): number {
 }
 
 /**
- * Offset immediately after the opening fence marker. The info string belongs
- * there, before any trailing whitespace on the opening line.
- *
- * @param node - code node whose opening fence needs a language label
- *
- * @param source - original source
- *
- * @returns source offset where the default language should be inserted
+ Offset immediately after the opening fence marker. The info string belongs
+ there, before any trailing whitespace on the opening line.
+ 
+ @param node - code node whose opening fence needs a language label
+ 
+ @param source - original source
+ 
+ @returns source offset where the default language should be inserted
  */
 function languageInsertOffset({
   node,
   source,
 }: ReadonlyDeep<LanguageInsertOffsetParams>,): number {
   /**
-   * Opening fence start offset.
+   Opening fence start offset.
    */
   const { start, } = offsetsOf(node,);
   /**
-   * End offset of the opening fence line.
+   End offset of the opening fence line.
    */
   const lineEnd = source.indexOf(
     '\n',
     start,
   );
   /**
-   * Opening fence line without its trailing newline.
+   Opening fence line without its trailing newline.
    */
   const opener = source.slice(
     start,
@@ -87,17 +87,17 @@ function languageInsertOffset({
       : lineEnd,
   );
   /**
-   * Number of indentation characters before the fence marker.
+   Number of indentation characters before the fence marker.
    */
   const indentLength = opener.length
     - opener.trimStart()
     .length;
   /**
-   * Opening line from the first fence marker onward.
+   Opening line from the first fence marker onward.
    */
   const markerAndRest = opener.slice(indentLength,);
   /**
-   * Full marker length; CommonMark allows fences longer than three chars.
+   Full marker length; CommonMark allows fences longer than three chars.
    */
   const markerLength = fenceMarkerLength(markerAndRest,);
   return start
@@ -106,22 +106,22 @@ function languageInsertOffset({
 }
 
 /**
- * Flag fenced code blocks with no language label. Indented code blocks carry no
- * language and are never flagged. The fixer inserts a conservative `text` info
- * string, matching markdownlint's common default for unknown/plain snippets.
- *
- * @param tree - mdast tree under lint
- *
- * @param source - original source, to tell fenced from indented blocks
- *
- * @returns one diagnostic per unlabeled fenced block
+ Flag fenced code blocks with no language label. Indented code blocks carry no
+ language and are never flagged. The fixer inserts a conservative `text` info
+ string, matching markdownlint's common default for unknown/plain snippets.
+ 
+ @param tree - mdast tree under lint
+ 
+ @param source - original source, to tell fenced from indented blocks
+ 
+ @returns one diagnostic per unlabeled fenced block
  */
 function checkFencedCodeLanguage({
   tree,
   source,
 }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Diagnostics collected across the walk.
+   Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
   for (const { node, } of walk(tree,)) {
@@ -138,7 +138,7 @@ function checkFencedCodeLanguage({
       continue;
     }
     /**
-     * Offset where the default language label should be inserted.
+     Offset where the default language label should be inserted.
      */
     const insertAt = languageInsertOffset({
       node,
@@ -159,8 +159,8 @@ function checkFencedCodeLanguage({
 }
 
 /**
- * MD040 fenced-code-language: fenced code blocks must declare a language.
- * Fixable by inserting `text` for unknown/plain snippets.
+ MD040 fenced-code-language: fenced code blocks must declare a language.
+ Fixable by inserting `text` for unknown/plain snippets.
  */
 export const fencedCodeLanguage: Rule = {
   id: ID,

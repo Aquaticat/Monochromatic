@@ -109,9 +109,7 @@ managed by mise.
    },);
    ```
 
-   The shared config already inlines `@monochromatic-dev/**`,
-    `find-up`,
-   `nano-spawn`.
+   The shared config already inlines `@monochromatic-dev/**` and `nano-spawn`.
     Add anything else you want self-contained.
 
 2. Add build mise tasks to the package's `mise.toml`.

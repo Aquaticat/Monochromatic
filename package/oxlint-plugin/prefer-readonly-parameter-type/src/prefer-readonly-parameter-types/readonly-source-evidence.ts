@@ -19,12 +19,12 @@ import {
 import { openSemanticFile, } from './typescript-sync-adapter.ts';
 
 /**
- * Rule-independent evidence for one semantic source snapshot.
- *
- * @example
- * ```ts
- * evidence.callables.forEach(reportCallable);
- * ```
+ Rule-independent evidence for one semantic source snapshot.
+ 
+ @example
+ ```ts
+ evidence.callables.forEach(reportCallable);
+ ```
  */
 export type ReadonlySourceEvidence = {
   readonly project: ReturnType<typeof openSemanticFile>['project'];
@@ -34,12 +34,12 @@ export type ReadonlySourceEvidence = {
 };
 
 /**
- * Process-local evidence-cache measurements.
- *
- * @example
- * ```ts
- * const before = readonlySourceEvidenceCacheStats();
- * ```
+ Process-local evidence-cache measurements.
+ 
+ @example
+ ```ts
+ const before = readonlySourceEvidenceCacheStats();
+ ```
  */
 export type ReadonlySourceEvidenceCacheStats = {
   readonly computations: number;
@@ -48,12 +48,12 @@ export type ReadonlySourceEvidenceCacheStats = {
 };
 
 /**
- * Rule lifecycle logger.
+ Rule lifecycle logger.
  */
 const l = tagged({ tag: 'readonly-source-evidence', },);
 
 /**
- * Evidence keyed by exact immutable semantic source object.
+ Evidence keyed by exact immutable semantic source object.
  */
 const evidenceBySourceFile = new WeakMap<
   ReturnType<typeof openSemanticFile>['sourceFile'],
@@ -61,7 +61,7 @@ const evidenceBySourceFile = new WeakMap<
 >();
 
 /**
- * Mutable cache counters exposed as immutable snapshots.
+ Mutable cache counters exposed as immutable snapshots.
  */
 const cacheCounters = {
   computations: 0,
@@ -70,30 +70,30 @@ const cacheCounters = {
 };
 
 /**
- * Returns process-local evidence cache measurements.
- *
- * @returns immutable counter snapshot.
- *
- * @example
- * ```ts
- * readonlySourceEvidenceCacheStats();
- * ```
+ Returns process-local evidence cache measurements.
+ 
+ @returns immutable counter snapshot.
+ 
+ @example
+ ```ts
+ readonlySourceEvidenceCacheStats();
+ ```
  */
 export function readonlySourceEvidenceCacheStats(): ReadonlySourceEvidenceCacheStats {
   return { ...cacheCounters, };
 }
 
 /**
- * Opens current semantic snapshot and computes parameter evidence at most once.
- *
- * @param context - Current rule context supplying exact source overlay.
- *
- * @returns category-neutral evidence shared by every split reporter.
- *
- * @example
- * ```ts
- * const evidence = readonlySourceEvidence({ context });
- * ```
+ Opens current semantic snapshot and computes parameter evidence at most once.
+ 
+ @param context - Current rule context supplying exact source overlay.
+ 
+ @returns category-neutral evidence shared by every split reporter.
+ 
+ @example
+ ```ts
+ const evidence = readonlySourceEvidence({ context });
+ ```
  */
 export function readonlySourceEvidence({
   context,
@@ -101,7 +101,7 @@ export function readonlySourceEvidence({
   readonly context: Context;
 }>,): ReadonlySourceEvidence {
   /**
-   * Semantic file session for current Oxlint source overlay.
+   Semantic file session for current Oxlint source overlay.
    */
   const session = openSemanticFile({
     fileName: context.filename,
@@ -111,7 +111,7 @@ export function readonlySourceEvidence({
       .hasBOM,
   },);
   /**
-   * Evidence previously completed for exact immutable source snapshot.
+   Evidence previously completed for exact immutable source snapshot.
    */
   const cached = evidenceBySourceFile.get(session.sourceFile,);
   if (cached !== undefined) {
@@ -120,14 +120,14 @@ export function readonlySourceEvidence({
   }
   cacheCounters.misses += 1;
   /**
-   * Whole-project callable effect summaries.
+   Whole-project callable effect summaries.
    */
   const effectIndex = buildEffectSummaryIndex({
     project: session.project,
     activeSourceFile: session.sourceFile,
   },);
   /**
-   * Implemented callables whose complete summaries and facts are available.
+   Implemented callables whose complete summaries and facts are available.
    */
   const callables = collectAstNodes(session.sourceFile,)
     .flatMap(function collectEvidence(semanticNode,): readonly ReadonlyCallableEvidence[] {
@@ -136,7 +136,7 @@ export function readonlySourceEvidence({
         || (semanticNode.body === undefined))
         return [];
       /**
-       * Effect summary for current callable declaration.
+       Effect summary for current callable declaration.
        */
       const effectSummary = effectIndex.get(semanticNode,);
       if (effectSummary === NO_EFFECT_SUMMARY) {
@@ -149,9 +149,9 @@ export function readonlySourceEvidence({
           effectSummary,
           project: session.project,
           /**
-           * Demands complete foreign-ownership proof only when callable evidence reads it.
-           *
-           * @returns parameters held under foreign ownership.
+           Demands complete foreign-ownership proof only when callable evidence reads it.
+           
+           @returns parameters held under foreign ownership.
            */
           proveForeignBorrowed(): ReturnType<typeof effectIndex.proveForeignBorrowed> {
             return effectIndex.proveForeignBorrowed(semanticNode,);
@@ -160,7 +160,7 @@ export function readonlySourceEvidence({
       ];
     },);
   /**
-   * Completed immutable evidence safe for cross-rule reuse.
+   Completed immutable evidence safe for cross-rule reuse.
    */
   const evidence: ReadonlySourceEvidence = {
     project: session.project,

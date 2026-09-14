@@ -9,12 +9,12 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 //region Constants
 
 /**
- * Global constructor name used by both `new RegExp()` and `RegExp()`.
+ Global constructor name used by both `new RegExp()` and `RegExp()`.
  */
 const REGEXP_CONSTRUCTOR_NAME = 'RegExp';
 
 /**
- * String methods whose first argument accepts a regular expression.
+ String methods whose first argument accepts a regular expression.
  */
 const REGEX_ACCEPTING_STRING_METHODS = [
   'match',
@@ -26,10 +26,10 @@ const REGEX_ACCEPTING_STRING_METHODS = [
 ] as const;
 
 /**
- * Sentinel returned by {@link getStaticMethodName} when a member expression's
- * property is computed dynamically and carries no static string name. A named
- * sentinel keeps the "no static name" signal out of a `string | undefined`
- * union, which {@link noNullishUnion} bans.
+ Sentinel returned by {@link getStaticMethodName} when a member expression's
+ property is computed dynamically and carries no static string name. A named
+ sentinel keeps the "no static name" signal out of a `string | undefined`
+ union, which {@link noNullishUnion} bans.
  */
 const NO_STATIC_METHOD_NAME = Symbol('member property computed without a static name',);
 
@@ -38,16 +38,16 @@ const NO_STATIC_METHOD_NAME = Symbol('member property computed without a static 
 //region AST helpers
 
 /**
- * Checks whether an AST node is a regular expression literal.
- *
- * @param node - AST node to inspect
- *
- * @returns whether node is a RegExp literal
- *
- * @example
- * ```ts
- * isRegExpLiteral(node); // true for /token/g
- * ```
+ Checks whether an AST node is a regular expression literal.
+ 
+ @param node - AST node to inspect
+ 
+ @returns whether node is a RegExp literal
+ 
+ @example
+ ```ts
+ isRegExpLiteral(node); // true for /token/g
+ ```
  */
 function isRegExpLiteral(node: ForeignBorrowed<ESTree.Node>,): node is ESTree.RegExpLiteral {
   if (node.type
@@ -60,19 +60,19 @@ function isRegExpLiteral(node: ForeignBorrowed<ESTree.Node>,): node is ESTree.Re
 }
 
 /**
- * Checks whether a node calls the global RegExp constructor.
- *
- * Covers both `new RegExp(...)` and `RegExp(...)` because both compile a
- * regular expression from runtime inputs.
- *
- * @param node - AST node to inspect
- *
- * @returns whether node is a RegExp constructor expression
- *
- * @example
- * ```ts
- * isRegExpConstructorExpression(node); // true for new RegExp(source)
- * ```
+ Checks whether a node calls the global RegExp constructor.
+ 
+ Covers both `new RegExp(...)` and `RegExp(...)` because both compile a
+ regular expression from runtime inputs.
+ 
+ @param node - AST node to inspect
+ 
+ @returns whether node is a RegExp constructor expression
+ 
+ @example
+ ```ts
+ isRegExpConstructorExpression(node); // true for new RegExp(source)
+ ```
  */
 function isRegExpConstructorExpression(
   node: ForeignBorrowed<ESTree.Node>,
@@ -90,16 +90,16 @@ function isRegExpConstructorExpression(
 }
 
 /**
- * Extracts statically-known member method names.
- *
- * @param node - member expression to inspect
- *
- * @returns property name, or {@link NO_STATIC_METHOD_NAME} when computed dynamically
- *
- * @example
- * ```ts
- * getStaticMethodName({ node: call.callee }); // "match" for text.match(...)
- * ```
+ Extracts statically-known member method names.
+ 
+ @param node - member expression to inspect
+ 
+ @returns property name, or {@link NO_STATIC_METHOD_NAME} when computed dynamically
+ 
+ @example
+ ```ts
+ getStaticMethodName({ node: call.callee }); // "match" for text.match(...)
+ ```
  */
 function getStaticMethodName(
   { node, }: ForeignBorrowed<{ readonly node: ESTree.MemberExpression; }>,
@@ -124,17 +124,17 @@ function getStaticMethodName(
 }
 
 /**
- * Checks whether a method name accepts regex as its first argument, by
- * membership in {@link REGEX_ACCEPTING_STRING_METHODS}.
- *
- * @param methodName - statically-known method name
- *
- * @returns whether method accepts regex input
- *
- * @example
- * ```ts
- * isRegexAcceptingStringMethod({ methodName: 'match' }); // true
- * ```
+ Checks whether a method name accepts regex as its first argument, by
+ membership in {@link REGEX_ACCEPTING_STRING_METHODS}.
+ 
+ @param methodName - statically-known method name
+ 
+ @returns whether method accepts regex input
+ 
+ @example
+ ```ts
+ isRegexAcceptingStringMethod({ methodName: 'match' }); // true
+ ```
  */
 function isRegexAcceptingStringMethod(
   { methodName, }: { readonly methodName: string; },
@@ -147,17 +147,17 @@ function isRegexAcceptingStringMethod(
 }
 
 /**
- * Checks whether an expression is inline regex syntax, via
- * {@link isRegExpLiteral} or {@link isRegExpConstructorExpression}.
- *
- * @param node - expression node to inspect
- *
- * @returns whether expression is a regex literal or RegExp constructor
- *
- * @example
- * ```ts
- * isInlineRegexExpression(node); // true for /x/ and new RegExp('x')
- * ```
+ Checks whether an expression is inline regex syntax, via
+ {@link isRegExpLiteral} or {@link isRegExpConstructorExpression}.
+ 
+ @param node - expression node to inspect
+ 
+ @returns whether expression is a regex literal or RegExp constructor
+ 
+ @example
+ ```ts
+ isInlineRegexExpression(node); // true for /x/ and new RegExp('x')
+ ```
  */
 function isInlineRegexExpression(node: ForeignBorrowed<ESTree.Node>,): boolean {
   return isRegExpLiteral(node,)
@@ -165,23 +165,23 @@ function isInlineRegexExpression(node: ForeignBorrowed<ESTree.Node>,): boolean {
 }
 
 /**
- * Checks whether a call expression is a string-style method call with an
- * inline regex first argument: the method name is read via
- * {@link getStaticMethodName}, tested via {@link isRegexAcceptingStringMethod},
- * and the first argument tested via {@link isInlineRegexExpression}.
- *
- * Type information is unavailable in oxlint JS plugins, so this rule treats
- * any `.match(...)`, `.replace(...)`, `.search(...)`, or `.split(...)` shape
- * with an inline regex as string-method regex usage.
- *
- * @param node - call expression to inspect
- *
- * @returns whether call should receive the string-method message
- *
- * @example
- * ```ts
- * isStringMethodRegexCall({ node }); // true for text.match(/x/)
- * ```
+ Checks whether a call expression is a string-style method call with an
+ inline regex first argument: the method name is read via
+ {@link getStaticMethodName}, tested via {@link isRegexAcceptingStringMethod},
+ and the first argument tested via {@link isInlineRegexExpression}.
+ 
+ Type information is unavailable in oxlint JS plugins, so this rule treats
+ any `.match(...)`, `.replace(...)`, `.search(...)`, or `.split(...)` shape
+ with an inline regex as string-method regex usage.
+ 
+ @param node - call expression to inspect
+ 
+ @returns whether call should receive the string-method message
+ 
+ @example
+ ```ts
+ isStringMethodRegexCall({ node }); // true for text.match(/x/)
+ ```
  */
 function isStringMethodRegexCall({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): boolean {
   if (node.callee
@@ -189,7 +189,7 @@ function isStringMethodRegexCall({ node, }: ForeignBorrowed<{ readonly node: EST
     !== 'MemberExpression')
     return false;
   /**
-   * Method name resolved from static or string-literal member syntax.
+   Method name resolved from static or string-literal member syntax.
    */
   const methodName = getStaticMethodName({ node: node.callee, },);
   if ((typeof methodName) === 'symbol')
@@ -197,7 +197,7 @@ function isStringMethodRegexCall({ node, }: ForeignBorrowed<{ readonly node: EST
   if (!isRegexAcceptingStringMethod({ methodName, },))
     return false;
   /**
-   * First call argument; only this position accepts regex for targeted methods.
+   First call argument; only this position accepts regex for targeted methods.
    */
   const [firstArgument,] = node.arguments;
   if (firstArgument === undefined)
@@ -206,17 +206,17 @@ function isStringMethodRegexCall({ node, }: ForeignBorrowed<{ readonly node: EST
 }
 
 /**
- * Returns method name, read via {@link getStaticMethodName}, for a
- * previously classified string regex call.
- *
- * @param node - call expression already accepted by {@link isStringMethodRegexCall}
- *
- * @returns method name for diagnostic data
- *
- * @example
- * ```ts
- * stringRegexMethodName({ node }); // "replace"
- * ```
+ Returns method name, read via {@link getStaticMethodName}, for a
+ previously classified string regex call.
+ 
+ @param node - call expression already accepted by {@link isStringMethodRegexCall}
+ 
+ @returns method name for diagnostic data
+ 
+ @example
+ ```ts
+ stringRegexMethodName({ node }); // "replace"
+ ```
  */
 function stringRegexMethodName({ node, }: ForeignBorrowed<{ readonly node: ESTree.CallExpression; }>,): string {
   if (node.callee
@@ -224,7 +224,7 @@ function stringRegexMethodName({ node, }: ForeignBorrowed<{ readonly node: ESTre
     !== 'MemberExpression')
     return 'unknown';
   /**
-   * Static method name, or the sentinel when the member is computed dynamically.
+   Static method name, or the sentinel when the member is computed dynamically.
    */
   const methodName = getStaticMethodName({ node: node.callee, },);
   if ((typeof methodName) === 'symbol')
@@ -233,22 +233,22 @@ function stringRegexMethodName({ node, }: ForeignBorrowed<{ readonly node: ESTre
 }
 
 /**
- * Checks whether a regex expression is already covered by a more specific
- * parent diagnostic, via {@link isStringMethodRegexCall} or
- * {@link isRegExpConstructorExpression}.
- *
- * @param node - regex literal or constructor node
- *
- * @returns whether parent call reports same regex usage
- *
- * @example
- * ```ts
- * isCoveredByParentRegexDiagnostic({ node }); // true for /x/ in text.match(/x/)
- * ```
+ Checks whether a regex expression is already covered by a more specific
+ parent diagnostic, via {@link isStringMethodRegexCall} or
+ {@link isRegExpConstructorExpression}.
+ 
+ @param node - regex literal or constructor node
+ 
+ @returns whether parent call reports same regex usage
+ 
+ @example
+ ```ts
+ isCoveredByParentRegexDiagnostic({ node }); // true for /x/ in text.match(/x/)
+ ```
  */
 function isCoveredByParentRegexDiagnostic({ node, }: ForeignBorrowed<{ readonly node: ESTree.Node; }>,): boolean {
   /**
-   * Parent expression that may own the more specific diagnostic.
+   Parent expression that may own the more specific diagnostic.
    */
   const { parent, } = node;
   if (parent === null)
@@ -263,27 +263,27 @@ function isCoveredByParentRegexDiagnostic({ node, }: ForeignBorrowed<{ readonly 
 //endregion AST helpers
 
 /**
- * Requires regex usage to go through a scoped disable with justification.
- *
- * Regex can be the right abstraction for grammar-like matching, capture
- * extraction, and user-supplied patterns, but it also hides parser state,
- * input bounds, and backtracking cost. This rule reports every regex site;
- * necessary sites use `oxlint-disable-next-line` with a justification so the
- * exception stays visible at the point of use.
- *
- * `RegExp(...)` and `new RegExp(...)` checks are intentionally syntactic:
- * a local binding named `RegExp` still reports. False positives are cheaper
- * than allowing dynamic regex construction to slip through silently.
- *
- * @example
- * ```ts
- * // Bad: unreviewed regex usage.
- * const suffix = /foo$/;
- *
- * // Good: reviewer can inspect why regex is the right tool here.
- * // oxlint-disable-next-line no-restricted-syntax/no-regex -- fixed token grammar over one CLI argument; no nested quantifiers, so linear.
- * const token = /^[a-z]+:[0-9]+$/;
- * ```
+ Requires regex usage to go through a scoped disable with justification.
+ 
+ Regex can be the right abstraction for grammar-like matching, capture
+ extraction, and user-supplied patterns, but it also hides parser state,
+ input bounds, and backtracking cost. This rule reports every regex site;
+ necessary sites use `oxlint-disable-next-line` with a justification so the
+ exception stays visible at the point of use.
+ 
+ `RegExp(...)` and `new RegExp(...)` checks are intentionally syntactic:
+ a local binding named `RegExp` still reports. False positives are cheaper
+ than allowing dynamic regex construction to slip through silently.
+ 
+ @example
+ ```ts
+ // Bad: unreviewed regex usage.
+ const suffix = /foo$/;
+ 
+ // Good: reviewer can inspect why regex is the right tool here.
+ // oxlint-disable-next-line no-restricted-syntax/no-regex -- fixed token grammar over one CLI argument; no nested quantifiers, so linear.
+ const token = /^[a-z]+:[0-9]+$/;
+ ```
  */
 export const noRegex: CreateOnceRule = {
   meta: {
@@ -303,16 +303,16 @@ export const noRegex: CreateOnceRule = {
     },
   },
   /**
-   * Handles foreign Oxlint callback.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles foreign Oxlint callback.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {

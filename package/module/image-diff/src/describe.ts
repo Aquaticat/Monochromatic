@@ -12,27 +12,27 @@ import { toImageUri, } from './encoding.uri.ts';
 import type { ImageInput, } from './types.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * OpenRouter chat completions endpoint URL.
+ OpenRouter chat completions endpoint URL.
  */
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /**
- * Model ID for Gemini 3.1 Pro Preview on OpenRouter.
+ Model ID for Gemini 3.1 Pro Preview on OpenRouter.
  */
 const MODEL = 'google/gemini-3.1-pro-preview';
 
 /**
- * Prompt instructing the model to describe visual differences between two images.
+ Prompt instructing the model to describe visual differences between two images.
  */
 const DESCRIBE_PROMPT =
   `Compare these two images and describe all visual differences in detail.
@@ -43,7 +43,7 @@ Image A is the first image, Image B is the second.`;
 //region OpenRouter API types
 
 /**
- * Vision chat message: one user turn carrying interleaved text and image parts.
+ Vision chat message: one user turn carrying interleaved text and image parts.
  */
 type VisionMessage = {
   readonly role: Extract<ChatRole, 'user'>;
@@ -51,7 +51,7 @@ type VisionMessage = {
 };
 
 /**
- * Request body for the OpenRouter chat completions API.
+ Request body for the OpenRouter chat completions API.
  */
 type ChatCompletionRequest = {
   readonly model: string;
@@ -61,28 +61,28 @@ type ChatCompletionRequest = {
 //endregion OpenRouter API types
 
 /**
- * Resolve the OpenRouter API key from the environment.
- * Returns `null` when no key is available, allowing callers
- * to skip the description gracefully.
- *
- * @returns resolved API key, or {@link ABSENT} if not configured
- *
- * @example
- * ```ts
- * const key = resolveOpenRouterApiKey();
- * if (key === ABSENT) return ABSENT;
- * ```
+ Resolve the OpenRouter API key from the environment.
+ Returns `null` when no key is available, allowing callers
+ to skip the description gracefully.
+ 
+ @returns resolved API key, or {@link ABSENT} if not configured
+ 
+ @example
+ ```ts
+ const key = resolveOpenRouterApiKey();
+ if (key === ABSENT) return ABSENT;
+ ```
  */
 function resolveOpenRouterApiKey(): string | typeof ABSENT {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: resolveOpenRouterApiKey.name,
     l,
   },);
   /**
-   * Resolved API key from preferred-then-fallback env var; treated as missing when blank.
+   Resolved API key from preferred-then-fallback env var; treated as missing when blank.
    */
   const key = process.env
     .IMAGE_DIFF_OPENROUTER_API_KEY
@@ -98,26 +98,26 @@ function resolveOpenRouterApiKey(): string | typeof ABSENT {
 }
 
 /**
- * Describe visual differences between two images using the native Gemini API
- * (preferred) or OpenRouter as a fallback. Returns {@link ABSENT} when no API key
- * is configured for either backend.
- *
- * @param imageA - first image (before)
- *
- * @param imageB - second image (after)
- *
- * @returns detailed description of visual differences, or {@link ABSENT} when no API key is configured
- *
- * @throws when the API call itself fails (key is present but request errors)
- *
- * @example
- * ```ts
- * const description = await describeImageDifference({
- *   imageA: { path: './before.png' },
- *   imageB: { path: './after.png' },
- * });
- * if (description !== ABSENT) console.log(description);
- * ```
+ Describe visual differences between two images using the native Gemini API
+ (preferred) or OpenRouter as a fallback. Returns {@link ABSENT} when no API key
+ is configured for either backend.
+ 
+ @param imageA - first image (before)
+ 
+ @param imageB - second image (after)
+ 
+ @returns detailed description of visual differences, or {@link ABSENT} when no API key is configured
+ 
+ @throws when the API call itself fails (key is present but request errors)
+ 
+ @example
+ ```ts
+ const description = await describeImageDifference({
+   imageA: { path: './before.png' },
+   imageB: { path: './after.png' },
+ });
+ if (description !== ABSENT) console.log(description);
+ ```
  */
 export async function describeImageDifference({
   imageA,
@@ -127,7 +127,7 @@ export async function describeImageDifference({
   readonly imageB: ImageInput;
 },): Promise<string | typeof ABSENT> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: describeImageDifference.name,
@@ -136,7 +136,7 @@ export async function describeImageDifference({
 
   // Prefer the native Gemini API: avoids the OpenRouter proxy overhead
   /**
-   * Description from the preferred Gemini backend; `null` when no Gemini key is configured.
+   Description from the preferred Gemini backend; `null` when no Gemini key is configured.
    */
   const geminiResult = await describeViaGemini({
     imageA,
@@ -149,7 +149,7 @@ export async function describeImageDifference({
 
   // Fall back to OpenRouter when no Gemini API key is available
   /**
-   * OpenRouter credential; absence triggers an early {@link ABSENT} return so callers can skip the description step.
+   OpenRouter credential; absence triggers an early {@link ABSENT} return so callers can skip the description step.
    */
   const apiKey = resolveOpenRouterApiKey();
   if (apiKey === ABSENT)
@@ -157,7 +157,7 @@ export async function describeImageDifference({
 
   rl.debug('describing image differences via Gemini 3.1 Pro Preview on OpenRouter',);
   /**
-   * Both images encoded as data URIs in parallel so the request body can embed them inline.
+   Both images encoded as data URIs in parallel so the request body can embed them inline.
    */
   const [uriA, uriB,] = await Promise.all([
     toImageUri(imageA,),
@@ -165,7 +165,7 @@ export async function describeImageDifference({
   ],);
 
   /**
-   * OpenRouter chat-completions payload pairing the diff prompt with the two image URIs.
+   OpenRouter chat-completions payload pairing the diff prompt with the two image URIs.
    */
   const requestBody: ChatCompletionRequest = {
     model: MODEL,
@@ -193,7 +193,7 @@ export async function describeImageDifference({
   rl.debug(`calling OpenRouter API with model ${MODEL}`,);
 
   /**
-   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
    */
   const response = await fetch(
     OPENROUTER_API_URL,
@@ -209,7 +209,7 @@ export async function describeImageDifference({
 
   if (!response.ok) {
     /**
-     * Raw response body captured for both the log line and the thrown error message.
+     Raw response body captured for both the log line and the thrown error message.
      */
     const errorBody = await response.text();
     rl.error(`OpenRouter API returned ${String(response.status,)}: ${errorBody}`,);
@@ -217,18 +217,18 @@ export async function describeImageDifference({
   }
 
   /**
-   * Parsed chat-completion payload; structure validated by the discriminating-empty-choices check below.
+   Parsed chat-completion payload; structure validated by the discriminating-empty-choices check below.
    */
   const result = await response.json() as ChatCompletionResponse;
   /**
-   * First choice destructured for content access; guarded against the empty-choices case.
+   First choice destructured for content access; guarded against the empty-choices case.
    */
   const [choice,] = result.choices;
   if (choice === undefined)
     throw new Error('OpenRouter API returned no choices',);
 
   /**
-   * Model's textual diff description; returned directly to the caller after a debug-log of its length.
+   Model's textual diff description; returned directly to the caller after a debug-log of its length.
    */
   const description = choice.message
     .content;

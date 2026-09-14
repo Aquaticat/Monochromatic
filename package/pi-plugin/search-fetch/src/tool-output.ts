@@ -1,7 +1,7 @@
 /**
- * Tool-result content helpers for Pi Search Fetch.
- *
- * @module
+ Tool-result content helpers for Pi Search Fetch.
+ 
+ @module
  */
 
 import { randomBytes, } from 'node:crypto';
@@ -29,39 +29,39 @@ import type {
 import { modelTextForLinkupResponse, } from './tool-output-format.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ ```
  */
 const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
 /**
- * Prefix used for temp directories that hold full response output.
+ Prefix used for temp directories that hold full response output.
  */
 const TEMP_RESPONSE_DIR_PREFIX = 'pi-search-fetch-response-';
 
 /**
- * Number of random bytes added to temp directory prefix.
+ Number of random bytes added to temp directory prefix.
  */
 const TEMP_RANDOM_BYTES = 4;
 
 /**
- * Bytes in one kibibyte, matching Pi's byte-limit size formatting.
+ Bytes in one kibibyte, matching Pi's byte-limit size formatting.
  */
 const BYTES_PER_KIBIBYTE = 1_024;
 
 /**
- * Linkup response kibibytes visible to the model before temp-file fallback.
+ Linkup response kibibytes visible to the model before temp-file fallback.
  */
 const LINKUP_VISIBLE_JSON_MAX_KIBIBYTES = 100;
 
 /**
- * Linkup response bytes visible to the model before temp-file fallback.
+ Linkup response bytes visible to the model before temp-file fallback.
  */
 const LINKUP_VISIBLE_JSON_MAX_BYTES: number = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES * BYTES_PER_KIBIBYTE;
 
@@ -70,149 +70,149 @@ const LINKUP_VISIBLE_JSON_MAX_BYTES: number = LINKUP_VISIBLE_JSON_MAX_KIBIBYTES 
 //region Types
 
 /**
- * Text content item returned by a Pi tool.
+ Text content item returned by a Pi tool.
  */
 type TextContentItem = {
   /**
-   * Content item type.
+   Content item type.
    */
   readonly type: 'text';
   /**
-   * Text visible to the model.
+   Text visible to the model.
    */
   readonly text: string;
 };
 
 /**
- * Details stored by Linkup tool results.
+ Details stored by Linkup tool results.
  */
 type LinkupToolDetails = {
   /**
-   * Model-visible Linkup-shaped response.
+   Model-visible Linkup-shaped response.
    */
   readonly linkupResponse: unknown;
   /**
-   * Untouched upstream provider response.
+   Untouched upstream provider response.
    */
   readonly rawLinkupResponse: unknown;
   /**
-   * Provider that produced response.
+   Provider that produced response.
    */
   readonly provider?: SearchFetchProvider;
   /**
-   * Fallback metadata when fallback provider produced response.
+   Fallback metadata when fallback provider produced response.
    */
   readonly fallback?: ProviderFallback;
   /**
-   * Ignored compatibility keys, when supplied.
+   Ignored compatibility keys, when supplied.
    */
   readonly ignoredKeys?: readonly string[];
   /**
-   * Blocked search result URLs removed locally, when any were removed.
+   Blocked search result URLs removed locally, when any were removed.
    */
   readonly removedBlockedUrls?: readonly string[];
   /**
-   * Full response temp-file path, kept under this field for compatibility.
+   Full response temp-file path, kept under this field for compatibility.
    */
   readonly fullJsonPath?: string;
   /**
-   * Truncation metadata, when visible response text was truncated.
+   Truncation metadata, when visible response text was truncated.
    */
   readonly truncation?: TruncationResult;
 };
 
 /**
- * Options for creating response content items.
+ Options for creating response content items.
  */
 type JsonContentOptions = {
   /**
-   * Linkup response value to render.
+   Linkup response value to render.
    */
   readonly value: unknown;
   /**
-   * Whether accepted search result envelopes should render as JSONL.
+   Whether accepted search result envelopes should render as JSONL.
    */
   readonly renderResultsArrayAsJsonl?: boolean;
   /**
-   * Optional truncation limits, primarily for tests.
+   Optional truncation limits, primarily for tests.
    */
   readonly truncationOptions?: Readonly<TruncationOptions>;
 };
 
 /**
- * Response content item plus temp-file metadata.
+ Response content item plus temp-file metadata.
  */
 type JsonContentResult = {
   /**
-   * Text content item visible to the model.
+   Text content item visible to the model.
    */
   readonly content: TextContentItem;
   /**
-   * Full response temp-file path when truncation occurred.
+   Full response temp-file path when truncation occurred.
    */
   readonly fullJsonPath?: string;
   /**
-   * Truncation metadata when truncation occurred.
+   Truncation metadata when truncation occurred.
    */
   readonly truncation?: TruncationResult;
 };
 
 /**
- * Options for warning content text.
+ Options for warning content text.
  */
 type WarningContentOptions = {
   /**
-   * Tool name reporting ignored keys.
+   Tool name reporting ignored keys.
    */
   readonly toolName: string;
   /**
-   * Ignored compatibility keys.
+   Ignored compatibility keys.
    */
   readonly ignoredKeys: readonly string[];
   /**
-   * Fixed behavior explanation.
+   Fixed behavior explanation.
    */
   readonly fixedBehavior: string;
 };
 
 /**
- * Options for full Linkup tool output.
+ Options for full Linkup tool output.
  */
 type LinkupToolOutputOptions = {
   /**
-   * Tool name reporting warnings.
+   Tool name reporting warnings.
    */
   readonly toolName: string;
   /**
-   * Model-visible response object.
+   Model-visible response object.
    */
   readonly linkupResponse: unknown;
   /**
-   * Untouched upstream provider response object.
+   Untouched upstream provider response object.
    */
   readonly rawLinkupResponse: unknown;
   /**
-   * Ignored compatibility keys.
+   Ignored compatibility keys.
    */
   readonly ignoredKeys: readonly string[];
   /**
-   * Provider that produced response.
+   Provider that produced response.
    */
   readonly provider?: SearchFetchProvider;
   /**
-   * Fallback metadata when fallback provider produced response.
+   Fallback metadata when fallback provider produced response.
    */
   readonly fallback?: ProviderFallback;
   /**
-   * Fixed behavior explanation for ignored-key warning.
+   Fixed behavior explanation for ignored-key warning.
    */
   readonly fixedBehavior: string;
   /**
-   * Whether accepted search result envelopes should render as JSONL.
+   Whether accepted search result envelopes should render as JSONL.
    */
   readonly renderResultsArrayAsJsonl?: boolean;
   /**
-   * Blocked search result URLs removed locally.
+   Blocked search result URLs removed locally.
    */
   readonly removedBlockedUrls?: readonly string[];
 };
@@ -220,7 +220,7 @@ type LinkupToolOutputOptions = {
 //endregion Types
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'tool-output',
@@ -230,37 +230,37 @@ const l = tagged({
 //region Public API
 
 /**
- * Create complete Linkup tool output with optional ignored-key warning.
- *
- * @param options - response, raw response, and warning metadata
- *
- * @returns Pi tool result with response content and structured details
- *
- * @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
- *
- * @example
- * ```ts
- * await createLinkupToolOutput({
- *   toolName: 'linkup_web_search',
- *   linkupResponse: { results: [] },
- *   rawLinkupResponse: { results: [] },
- *   ignoredKeys: [],
- *   fixedBehavior: 'This extension always uses fixed search behavior.',
- * });
- * ```
+ Create complete Linkup tool output with optional ignored-key warning.
+ 
+ @param options - response, raw response, and warning metadata
+ 
+ @returns Pi tool result with response content and structured details
+ 
+ @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
+ 
+ @example
+ ```ts
+ await createLinkupToolOutput({
+   toolName: 'linkup_web_search',
+   linkupResponse: { results: [] },
+   rawLinkupResponse: { results: [] },
+   ignoredKeys: [],
+   fixedBehavior: 'This extension always uses fixed search behavior.',
+ });
+ ```
  */
 async function createLinkupToolOutput(
   options: LinkupToolOutputOptions,
 ): Promise<AgentToolResult<LinkupToolDetails>> {
   /**
-   * Model-visible content item and truncation metadata.
+   Model-visible content item and truncation metadata.
    */
   const modelContent = await createJsonContent({
     value: options.linkupResponse,
     renderResultsArrayAsJsonl: options.renderResultsArrayAsJsonl === true,
   },);
   /**
-   * Warning content item, when compatibility keys were ignored.
+   Warning content item, when compatibility keys were ignored.
    */
   const warningContent = options.ignoredKeys
     .length
@@ -272,7 +272,7 @@ async function createLinkupToolOutput(
       fixedBehavior: options.fixedBehavior,
     },);
   /**
-   * Model-visible content items in final result order.
+   Model-visible content items in final result order.
    */
   const content = warningContent === undefined
     ? [modelContent.content,]
@@ -303,29 +303,29 @@ async function createLinkupToolOutput(
 }
 
 /**
- * Create a model-visible text content item, truncating and writing full response text to temp when needed.
- *
- * @param options - value and optional truncation limits
- *
- * @returns content item and truncation metadata
- *
- * @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
- *
- * @example
- * ```ts
- * await createJsonContent({ value: { ok: true } });
- * ```
+ Create a model-visible text content item, truncating and writing full response text to temp when needed.
+ 
+ @param options - value and optional truncation limits
+ 
+ @returns content item and truncation metadata
+ 
+ @mutates options - `JSON.stringify` may invoke hooks on response value stored in options.
+ 
+ @example
+ ```ts
+ await createJsonContent({ value: { ok: true } });
+ ```
  */
 async function createJsonContent(options: JsonContentOptions,): Promise<JsonContentResult> {
   /**
-   * Model-visible response text and format metadata.
+   Model-visible response text and format metadata.
    */
   const modelText = modelTextForLinkupResponse({
     value: options.value,
     renderResultsArrayAsJsonl: options.renderResultsArrayAsJsonl === true,
   },);
   /**
-   * Truncation result using Linkup byte cap and Pi line cap unless tests override limits.
+   Truncation result using Linkup byte cap and Pi line cap unless tests override limits.
    */
   const truncation = truncateHead(
     modelText.text,
@@ -347,14 +347,14 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
     };
 
   /**
-   * Temp file path containing the full response text.
+   Temp file path containing the full response text.
    */
   const fullJsonPath = await writeFullResponseToTemp({
     responseText: modelText.text,
     filename: modelText.tempFilename,
   },);
   /**
-   * Visible text with truncation notice appended.
+   Visible text with truncation notice appended.
    */
   const visibleText = [
     truncation.content,
@@ -373,16 +373,16 @@ async function createJsonContent(options: JsonContentOptions,): Promise<JsonCont
 }
 
 /**
- * Create model-visible warning for ignored compatibility keys.
- *
- * @param options - tool name, ignored keys, and fixed behavior text
- *
- * @returns warning text content item
- *
- * @example
- * ```ts
- * createWarningContent({ toolName: 'linkup_web_search', ignoredKeys: ['depth'], fixedBehavior: 'Fixed.' });
- * ```
+ Create model-visible warning for ignored compatibility keys.
+ 
+ @param options - tool name, ignored keys, and fixed behavior text
+ 
+ @returns warning text content item
+ 
+ @example
+ ```ts
+ createWarningContent({ toolName: 'linkup_web_search', ignoredKeys: ['depth'], fixedBehavior: 'Fixed.' });
+ ```
  */
 function createWarningContent(options: WarningContentOptions,): TextContentItem {
   return {
@@ -400,13 +400,13 @@ function createWarningContent(options: WarningContentOptions,): TextContentItem 
 //region Helpers
 
 /**
- * Write full response text to a temp file.
- *
- * @param responseText - response text to write
- *
- * @param filename - temp file basename
- *
- * @returns temp file path
+ Write full response text to a temp file.
+ 
+ @param responseText - response text to write
+ 
+ @param filename - temp file basename
+ 
+ @returns temp file path
  */
 async function writeFullResponseToTemp(
   {
@@ -418,19 +418,19 @@ async function writeFullResponseToTemp(
   },
 ): Promise<string> {
   /**
-   * Random suffix to avoid temp directory collisions.
+   Random suffix to avoid temp directory collisions.
    */
   const randomSuffix = randomBytes(TEMP_RANDOM_BYTES,)
     .toString('hex',);
   /**
-   * Temp directory dedicated to this response.
+   Temp directory dedicated to this response.
    */
   const tempDir = await mkdtemp(join(
     tmpdir(),
     `${TEMP_RESPONSE_DIR_PREFIX}${randomSuffix}-`,
   ),);
   /**
-   * Temp file path storing full response text.
+   Temp file path storing full response text.
    */
   const tempFile = join(
     tempDir,

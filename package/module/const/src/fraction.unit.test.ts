@@ -1,7 +1,7 @@
 /**
- * Tests for fractional constants.
- *
- * @module
+ Tests for fractional constants.
+ 
+ @module
  */
 
 import {

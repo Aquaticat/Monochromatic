@@ -12,7 +12,8 @@ It keeps the package focused on suite and assertion primitives.
   and aggregate execution belong to the root `mise` `test:unit` template.
   This is recorded in `doc/adr/0001-module-test-suite-primitive.md`.
 - Scheduling stays numeric through `describe({ concurrency })`.
-  Shared-state meaning remains caller-owned documentation and test structure.
+  Node method replacement through `ctx.sinon` has attempt-owned isolation under issue #481.
+  Other shared-state meaning remains caller-owned documentation and test structure.
 - Matcher declarations stay explicit across `MatcherSet`,
   matcher builders,
   key lists,
@@ -24,6 +25,29 @@ It keeps the package focused on suite and assertion primitives.
   `.rejects`,
   and `.resolves` remain the compatibility surface.
 - The accepted deepening is a runner-owned failure reporter Module.
+
+## Context-owned method replacement
+
+The accepted #481 implementation keeps the existing test syntax and numeric scheduling API.
+`it-attempt.ts` owns a fresh sandbox generation for each body attempt,
+including repeats and timed-out bodies.
+It irreversibly completes ownership before cleanup.
+
+`sandbox.ts` exposes the test capability and retains runner-owned restoration separately.
+The operation adapter delegates actual fake creation to Sinon on private method facades.
+A realm-shared registry selects those facades using the existing Node async execution context.
+The target's getter returns the current reader's fake or its original method;
+it does not dispatch to another fake at invocation time.
+
+Only own,
+configurable,
+writable data methods receive contextual isolation.
+Other mutation families retain ordinary semantics with collision preflight and lifetime guards.
+Browsers retain ordinary Sinon method replacement rather than a claimed browser async-context implementation.
+
+The supported behavior and deliberate reflection/assignment boundaries are documented in
+[`README.md`](README.md#stubs-and-spies).
+This addition does not implement or supersede the failure-reporter work in this plan.
 
 ## Accepted deepening: failure reporter Module
 

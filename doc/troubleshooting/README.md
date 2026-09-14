@@ -85,6 +85,15 @@ Security guardrail false positives and judge model selection:
    NixOS)
 - pi-budget-model fails to find a judge model when the active model is the latest major version
 
+### [Pi auto-mode repeated Git path probes](pi-auto-mode-repeated-git-path-probes.md)
+
+Why guarded reads emit missing-Git debug records for expected workspace bin paths:
+
+- auto-mode probes every `PATH` directory concurrently before selecting real Git
+- linked-worktree allowlist discovery repeats resolution for each guarded read
+- broad workspace-bin `PATH` inheritance is expected and needed,
+   not the defect
+
 ### [Pi goal stale global blocker](pi-goal-stale-global-blocker.md)
 
 Retired `@narumitw/pi-goal` behavior and migration:
@@ -208,9 +217,14 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 - `2>&1 > file` splits stderr and stdout instead of merging them,
    producing interleaved output that misrepresents execution order
 - rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
+- [Clack note formatter snapshots need newer nested `styleText()` behavior](clack-note-nested-styletext-node-floor.md)
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
 - [A `pgrep --full` wait loop matches its own shell and never exits](pgrep-wait-loop-matches-itself.md),
    so the step it was gating silently never runs
+- [GitHub REST Issue creation should be serial and paced](github-issue-creation-concurrency.md)
+- [GitHub REST omits its Issue title length limit](github-issue-title-length.md)
+- [nano-spawn timeout is not a hard child-process deadline](nano-spawn-timeout-is-not-a-hard-deadline.md)
+- [OpenCodeReview does not create regular GitHub Issues from findings](open-code-review-github-issue-routing.md)
 
 ### [CLI bin entries](cli-bin.md)
 
@@ -292,6 +306,8 @@ For common issues:
   ** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
 - **GitHub issue commands fail in the repository's Git wrapper?
   ** → [Pass explicit repository context](gh-implicit-repository-git-wrapper.md)
+- **Need to route OpenCodeReview findings into GitHub Issues?
+  ** → [Add a fail-closed adapter](open-code-review-github-issue-routing.md)
 - **`pi update` reintroduces `@google/genai`,
    `koffi`,
    or `protobufjs`?
@@ -303,6 +319,27 @@ For common issues:
 - **labwc VM uses virgl but has no hardware Vulkan?
   ** →
   [Add virtio-gpu host-memory capsets](qemu-11-virtio-gpu-hostmem-capsets.md)
+- **Slint nested Wayland client still inherits host dark or light preference?
+  ** →
+  [Serve a private XDG Settings portal](slint-nested-color-scheme-portal.md)
+- **Mise inline TypeScript task reports an already-declared imported binding?
+  ** →
+  [Keep interpolated imports in one scope owner](mise-inline-task-import-collision.md)
+- **Mise inline Node task receives no declared usage arguments?
+  ** →
+  [Parse mise's `usage_args` value](mise-usage-args-inline-node.md)
+- **Nested Wayland quit makes hosted winit client report broken pipes?
+  ** →
+  [Close the client before stopping the compositor](nested-wayland-client-shutdown-order.md)
+- **Escape does not reach applications inside Ghostty?
+  ** →
+  [Distinguish keybind consumption from PTY encoding](ghostty-escape-keybind-consumption.md)
+- **Escape fails across Firefox and Ghostty after agent input automation?
+  ** →
+  [Reset interrupted ydotool virtual-key state](ydotool-interrupted-key-release.md)
+- **Android `uiautomator dump` cannot get idle state while an app loads?
+  ** →
+  [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)
 
 ## Contributing
 

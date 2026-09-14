@@ -1,12 +1,12 @@
 /**
- * Page-scoped CSS for the Inbox page controls.
- *
- * Separated from inbox.ts to keep the entry script focused on
- * hydration logic rather than style declarations.
+ Page-scoped CSS for the Inbox page controls.
+ 
+ Separated from inbox.ts to keep the entry script focused on
+ hydration logic rather than style declarations.
  */
 
 /**
- * Inbox-specific styles for task children, controls, and location options.
+ Inbox-specific styles for task children, controls, and location options.
  */
 export const inboxStyles = `
 .task-children {

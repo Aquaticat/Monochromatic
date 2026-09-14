@@ -1,7 +1,7 @@
 /**
- * Tests for `createObservableAsync`.
- *
- * @module
+ Tests for `createObservableAsync`.
+ 
+ @module
  */
 
 import {

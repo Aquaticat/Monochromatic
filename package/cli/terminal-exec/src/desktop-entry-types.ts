@@ -1,61 +1,61 @@
 /**
- * Types and constants for desktop entry parsing.
- *
- * @module
+ Types and constants for desktop entry parsing.
+ 
+ @module
  */
 
 /**
- * Parsed result from a `.desktop` file containing terminal-relevant fields.
+ Parsed result from a `.desktop` file containing terminal-relevant fields.
  */
 export type DesktopEntry = {
   /**
-   * Raw Exec value from the desktop entry.
+   Raw Exec value from the desktop entry.
    */
   readonly exec: string;
   /**
-   * Whether `TerminalEmulator` appears in Categories.
+   Whether `TerminalEmulator` appears in Categories.
    */
   readonly isTerminal: boolean;
   /**
-   * Hidden flag.
+   Hidden flag.
    */
   readonly hidden: boolean;
   /**
-   * TryExec binary path, if specified.
+   TryExec binary path, if specified.
    */
   readonly tryExec: string;
   /**
-   * OnlyShowIn desktop list.
+   OnlyShowIn desktop list.
    */
   readonly onlyShowIn: readonly string[];
   /**
-   * NotShowIn desktop list.
+   NotShowIn desktop list.
    */
   readonly notShowIn: readonly string[];
   /**
-   * X-TerminalArgExec or TerminalArgExec value.
+   X-TerminalArgExec or TerminalArgExec value.
    */
   readonly execArg: string;
   /**
-   * X-TerminalArgAppId or TerminalArgAppId value.
+   X-TerminalArgAppId or TerminalArgAppId value.
    */
   readonly appIdArg: string;
   /**
-   * X-TerminalArgTitle or TerminalArgTitle value.
+   X-TerminalArgTitle or TerminalArgTitle value.
    */
   readonly titleArg: string;
   /**
-   * X-TerminalArgDir or TerminalArgDir value.
+   X-TerminalArgDir or TerminalArgDir value.
    */
   readonly dirArg: string;
   /**
-   * X-TerminalArgHold or TerminalArgHold value.
+   X-TerminalArgHold or TerminalArgHold value.
    */
   readonly holdArg: string;
 };
 
 /**
- * Desktop entry string escapes per the spec.
+ Desktop entry string escapes per the spec.
  */
 export const ESCAPE_MAP: Record<string, string> = {
   s: ' ',
@@ -66,7 +66,7 @@ export const ESCAPE_MAP: Record<string, string> = {
 };
 
 /**
- * Mutable version of {@link DesktopEntry} used during parsing.
+ Mutable version of {@link DesktopEntry} used during parsing.
  */
 export type MutableDesktopEntry = {
   exec: string;
@@ -83,41 +83,41 @@ export type MutableDesktopEntry = {
 };
 
 /**
- * Expands desktop entry string escapes (`\s`, `\n`, `\t`, `\r`, `\\`).
- *
- * Walks `s` character by character: on backslash, consumes the next
- * character and looks it up in {@link ESCAPE_MAP}; otherwise emits the
- * character verbatim. A trailing lone backslash is emitted as-is.
- *
- * @param s - Raw value from a desktop entry key.
- *
- * @returns Expanded string with escapes resolved.
- *
- * @example
- * ```ts
- * expandEscapes({ s: 'hello\\sworld' }) // → 'hello world'
- * ```
+ Expands desktop entry string escapes (`\s`, `\n`, `\t`, `\r`, `\\`).
+ 
+ Walks `s` character by character: on backslash, consumes the next
+ character and looks it up in {@link ESCAPE_MAP}; otherwise emits the
+ character verbatim. A trailing lone backslash is emitted as-is.
+ 
+ @param s - Raw value from a desktop entry key.
+ 
+ @returns Expanded string with escapes resolved.
+ 
+ @example
+ ```ts
+ expandEscapes({ s: 'hello\\sworld' }) // → 'hello world'
+ ```
  */
 export function expandEscapes({ s, }: { readonly s: string; },): string {
   return (function build(): string {
     /**
-     * Output segments in order; joined once at the end so the build is O(n) time.
+     Output segments in order; joined once at the end so the build is O(n) time.
      */
     const out: string[] = [];
     /**
-     * Scan cursor; advances by 2 across a resolved escape, by 1 otherwise.
+     Scan cursor; advances by 2 across a resolved escape, by 1 otherwise.
      */
     let idx = 0;
     while (idx < s
       .length) {
       /**
-       * Current character under the cursor.
+       Current character under the cursor.
        */
       const c = s.charAt(idx,);
       if ((c === '\\') && ((idx + 1) < s
         .length)) {
         /**
-         * Character following the backslash; looked up in the escape map.
+         Character following the backslash; looked up in the escape map.
          */
         const next = s.charAt(idx + 1,);
         out.push(ESCAPE_MAP[next]
@@ -134,15 +134,15 @@ export function expandEscapes({ s, }: { readonly s: string; },): string {
 }
 
 /**
- * Creates a fresh mutable desktop entry with default values.
- *
- * @returns Empty mutable desktop entry
- *
- * @example
- * ```ts
- * const entry = createEmptyEntry();
- * entry.exec = '/usr/bin/xterm';
- * ```
+ Creates a fresh mutable desktop entry with default values.
+ 
+ @returns Empty mutable desktop entry
+ 
+ @example
+ ```ts
+ const entry = createEmptyEntry();
+ entry.exec = '/usr/bin/xterm';
+ ```
  */
 export function createEmptyEntry(): MutableDesktopEntry {
   return {

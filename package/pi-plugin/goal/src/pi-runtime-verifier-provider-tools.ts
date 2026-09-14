@@ -1,7 +1,7 @@
 /**
- * Scripted tool batches for real AgentSession interruption verification.
- *
- * @module
+ Scripted tool batches for real AgentSession interruption verification.
+ 
+ @module
  */
 
 import type {
@@ -10,18 +10,19 @@ import type {
 } from '@earendil-works/pi-ai';
 
 /**
- * Script stage notifications and observations exposed to driver.
+ Script stage notifications and observations exposed to driver.
  */
 type ScriptedProvider = {
   readonly model: Model<Api>;
   readonly firstTurnStarted: Promise<void>;
+  readonly errorTurnStarted: Promise<void>;
   readonly finalTurnStarted: Promise<void>;
   readonly clearFinalTurnStarted: Promise<void>;
   readonly invocationCount: () => number;
 };
 
 /**
- * Tool call specification for one scripted assistant batch.
+ Tool call specification for one scripted assistant batch.
  */
 type ScriptedToolCall = {
   readonly name: string;
@@ -29,26 +30,26 @@ type ScriptedToolCall = {
 };
 
 /**
- * Build scripted ordinary-tool batch for one interruption boundary.
- *
- * @param phase - interruption whose recovery is under test
- *
- * @returns ordered built-in and custom tool calls
- *
- * @example
- * ```ts
- * interruptionToolCalls('abort');
- * ```
+ Build scripted ordinary-tool batch for one interruption boundary.
+ 
+ @param phase - interruption whose recovery is under test
+ 
+ @returns ordered built-in and custom tool calls
+ 
+ @example
+ ```ts
+ interruptionToolCalls('abort');
+ ```
  */
 function interruptionToolCalls(
   phase: 'abort' | 'clear' | 'error',
 ): readonly ScriptedToolCall[] {
   /**
-   * Whether first recovery round follows user abort.
+   Whether first recovery round follows user abort.
    */
   const afterAbort = phase === 'abort';
   /**
-   * Whether second recovery round follows model error.
+   Whether second recovery round follows model error.
    */
   const afterError = phase === 'error';
   return [

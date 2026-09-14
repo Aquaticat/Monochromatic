@@ -1,7 +1,7 @@
 /**
- * Global stylesheet assembled from token, layout, and panel modules.
- *
- * Imported by page entry scripts and passed to `injectCSS()`.
+ Global stylesheet assembled from token, layout, and panel modules.
+ 
+ Imported by page entry scripts and passed to `injectCSS()`.
  */
 import {
   layoutShell,
@@ -16,7 +16,7 @@ import {
 import { utilities, } from './styles-utilities.ts';
 
 /**
- * Complete global stylesheet string.
+ Complete global stylesheet string.
  */
 export const globalStyles: string = [
   primitiveTokens,

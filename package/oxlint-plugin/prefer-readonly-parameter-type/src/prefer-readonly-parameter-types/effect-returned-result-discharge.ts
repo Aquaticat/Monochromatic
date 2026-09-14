@@ -1,7 +1,7 @@
 /**
- * Whether a returned result's callers can all be seen to substitute for it.
- *
- * @module
+ Whether a returned result's callers can all be seen to substitute for it.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -42,30 +42,30 @@ import {
 import { isEffectCallableDeclaration, } from './effect-summary-model.ts';
 
 /**
- * Returned-result discharge logger.
+ Returned-result discharge logger.
  */
 const l = tagged({ tag: 'effect-returned-result-discharge', },);
 
 /**
- * Tests whether a call's result is a verified piece of its own receiver's state.
- *
- * Either relation answers it, and the two are the same claim at different arity: a container
- * result holds the receiver's elements and a direct result is one of them. The receiver-chain
- * descent needs only that the receiver governs what comes back, so both qualify and neither
- * alone does.
- *
- * @param project - TypeScript project proving default-library ownership.
- *
- * @param checker - TypeScript checker resolving signature and types.
- *
- * @param call - Call whose result provenance is in question.
- *
- * @returns whether a verified relation names the receiver as the result's source.
- *
- * @example
- * ```ts
- * callResultIsReceiverState({ project, checker, call });
- * ```
+ Tests whether a call's result is a verified piece of its own receiver's state.
+ 
+ Either relation answers it, and the two are the same claim at different arity: a container
+ result holds the receiver's elements and a direct result is one of them. The receiver-chain
+ descent needs only that the receiver governs what comes back, so both qualify and neither
+ alone does.
+ 
+ @param project - TypeScript project proving default-library ownership.
+ 
+ @param checker - TypeScript checker resolving signature and types.
+ 
+ @param call - Call whose result provenance is in question.
+ 
+ @returns whether a verified relation names the receiver as the result's source.
+ 
+ @example
+ ```ts
+ callResultIsReceiverState({ project, checker, call });
+ ```
  */
 function callResultIsReceiverState({
   project,
@@ -89,42 +89,42 @@ function callResultIsReceiverState({
 }
 
 /**
- * Tests whether every caller of the callable owning a body is one this analysis can see.
- *
- * The precondition `effect-result-escape.ts` names. Returning parameter-reachable state is
- * benign by accepted policy, but the escape charge stands "until a caller substitutes
- * through `directReturned`", so discharging it requires knowing every caller is one the
- * fixed point will reach.
- *
- * Asked here rather than through `completeForeignBorrowedGraph`, which answers the same
- * question while building an ownership fixed point this decision does not need. The
- * underlying query is one checker call, measured at roughly one to two milliseconds per
- * declaration on workspace source, so asking it directly costs a fraction of that graph and
- * needs none of its state threaded into this layer.
- *
- * Completeness means what it means for that graph, and what that is changed. Both used to
- * read "every usage TypeScript can enumerate resolves" as completeness, which is true of an
- * exported callable with one in-program caller while consumers outside the program go
- * unenumerated. The argument for keeping it was that the two mechanisms must agree about
- * identical callables.
- *
- * That argument was wrong in a way worth recording, because it is nearly right. The two do
- * have to share a notion, but the one they shared was sound for only one of them: the
- * ownership graph over-approximates and adds charges, while this under-approximates and
- * removes one, and an enumeration that may be missing callers is safe to trust only in the
- * first direction. So the shared predicate was strengthened rather than forked, and
- * `callersAreEnumerable` is now asked by both.
- *
- * @param project - TypeScript project enumerating signature usage.
- *
- * @param body - Body of the callable whose callers are in question.
- *
- * @returns whether every enumerable usage resolves.
- *
- * @example
- * ```ts
- * callersAllResolve({ project, body });
- * ```
+ Tests whether every caller of the callable owning a body is one this analysis can see.
+ 
+ The precondition `effect-result-escape.ts` names. Returning parameter-reachable state is
+ benign by accepted policy, but the escape charge stands "until a caller substitutes
+ through `directReturned`", so discharging it requires knowing every caller is one the
+ fixed point will reach.
+ 
+ Asked here rather than through `completeForeignBorrowedGraph`, which answers the same
+ question while building an ownership fixed point this decision does not need. The
+ underlying query is one checker call, measured at roughly one to two milliseconds per
+ declaration on workspace source, so asking it directly costs a fraction of that graph and
+ needs none of its state threaded into this layer.
+ 
+ Completeness means what it means for that graph, and what that is changed. Both used to
+ read "every usage TypeScript can enumerate resolves" as completeness, which is true of an
+ exported callable with one in-program caller while consumers outside the program go
+ unenumerated. The argument for keeping it was that the two mechanisms must agree about
+ identical callables.
+ 
+ That argument was wrong in a way worth recording, because it is nearly right. The two do
+ have to share a notion, but the one they shared was sound for only one of them: the
+ ownership graph over-approximates and adds charges, while this under-approximates and
+ removes one, and an enumeration that may be missing callers is safe to trust only in the
+ first direction. So the shared predicate was strengthened rather than forked, and
+ `callersAreEnumerable` is now asked by both.
+ 
+ @param project - TypeScript project enumerating signature usage.
+ 
+ @param body - Body of the callable whose callers are in question.
+ 
+ @returns whether every enumerable usage resolves.
+ 
+ @example
+ ```ts
+ callersAllResolve({ project, body });
+ ```
  */
 function callersAllResolve({
   project,
@@ -134,7 +134,7 @@ function callersAllResolve({
   readonly body: Node;
 },): boolean {
   /**
-   * Callable owning this body, which is what usage is enumerated for.
+   Callable owning this body, which is what usage is enumerated for.
    */
   const declaration = body.parent;
   if (!isEffectCallableDeclaration(declaration,))
@@ -150,7 +150,7 @@ function callersAllResolve({
     return false;
   try {
     /**
-     * Every usage of this callable's signature the project can enumerate.
+     Every usage of this callable's signature the project can enumerate.
      */
     const usages = project.checker
       .getSignatureUsage(declaration,);
@@ -167,7 +167,7 @@ function callersAllResolve({
     return usages
       .every(function usageResolves(usage,): boolean {
         /**
-         * Call this usage stands for, absent when it is not one this project resolves.
+         Call this usage stands for, absent when it is not one this project resolves.
          */
         const resolved = usage.call
           ?.resolve(project,);
@@ -183,45 +183,45 @@ function callersAllResolve({
 }
 
 /**
- * Tests whether a returned result's escape charge is answered by its callers.
- *
- * Returning is the one escape whose destination this analysis can follow, and only where it
- * can see everyone who receives it. Three conditions, each added for a measured case rather
- * than for symmetry.
- *
- * Returning must be the result's only escape, which is what the position condition became.
- * It began as a syntactic test for `return rows.slice(0,);` exactly, and that is the narrowest
- * case of the question rather than the question: a call bound to a `const` and then returned,
- * or wrapped in an assertion, hands the caller the same value by the same route. Asking the
- * escape test with this body's returns attributed answers all of them at once, and refuses a
- * result that also leaves by a route no caller substitutes for, such as a store into module
- * state.
- *
- * Every caller must be enumerable and resolvable, because a caller the fixed point never
- * visits never substitutes, and the returned fact would then be recorded and read by nobody.
- *
- * And the receiver must not carry foreign-borrowed state, which is the condition
- * enumeration found rather than reasoning. Discharging without it silenced
- * `filterForeignFixtureTree`, `filterAliasedForeignFixtureTree` and `sortForeignFixtureTree`,
- * and `effect-opaque-boundary.ts` records the first two as having "lost their finding
- * entirely" once already, diagnosed as a defect and fixed. `ForeignBorrowed` marks an
- * ownership boundary, and a container returned out of foreign-owned state is not something
- * an in-program caller accounts for however completely it enumerates: what the caller
- * substitutes is provenance, and the effects on that side of the boundary are what this
- * analysis does not model.
- *
- * @param project - TypeScript project resolving usage and ownership.
- *
- * @param call - Call whose result carries the escape charge.
- *
- * @param body - Body of the callable returning it.
- *
- * @returns whether the charge is answered and may be discharged.
- *
- * @example
- * ```ts
- * returnedResultDischargeable({ project, call, body });
- * ```
+ Tests whether a returned result's escape charge is answered by its callers.
+ 
+ Returning is the one escape whose destination this analysis can follow, and only where it
+ can see everyone who receives it. Three conditions, each added for a measured case rather
+ than for symmetry.
+ 
+ Returning must be the result's only escape, which is what the position condition became.
+ It began as a syntactic test for `return rows.slice(0,);` exactly, and that is the narrowest
+ case of the question rather than the question: a call bound to a `const` and then returned,
+ or wrapped in an assertion, hands the caller the same value by the same route. Asking the
+ escape test with this body's returns attributed answers all of them at once, and refuses a
+ result that also leaves by a route no caller substitutes for, such as a store into module
+ state.
+ 
+ Every caller must be enumerable and resolvable, because a caller the fixed point never
+ visits never substitutes, and the returned fact would then be recorded and read by nobody.
+ 
+ And the receiver must not carry foreign-borrowed state, which is the condition
+ enumeration found rather than reasoning. Discharging without it silenced
+ `filterForeignFixtureTree`, `filterAliasedForeignFixtureTree` and `sortForeignFixtureTree`,
+ and `effect-opaque-boundary.ts` records the first two as having "lost their finding
+ entirely" once already, diagnosed as a defect and fixed. `ForeignBorrowed` marks an
+ ownership boundary, and a container returned out of foreign-owned state is not something
+ an in-program caller accounts for however completely it enumerates: what the caller
+ substitutes is provenance, and the effects on that side of the boundary are what this
+ analysis does not model.
+ 
+ @param project - TypeScript project resolving usage and ownership.
+ 
+ @param call - Call whose result carries the escape charge.
+ 
+ @param body - Body of the callable returning it.
+ 
+ @returns whether the charge is answered and may be discharged.
+ 
+ @example
+ ```ts
+ returnedResultDischargeable({ project, call, body });
+ ```
  */
 export function returnedResultDischargeable({
   project,
@@ -272,13 +272,13 @@ export function returnedResultDischargeable({
    * immediate receiver answered no and discharged all three foreign cases anyway. Measured
    * before and after adding this descent. */
   /**
-   * Base of the receiver chain, with composed member calls descended.
+   Base of the receiver chain, with composed member calls descended.
    */
   const base: { current: Node | typeof NO_MEMBER_RECEIVER; } = {
     current: memberCallReceiver({ call, },),
   };
   /**
-   * Expressions already descended through, so an alias cycle cannot spin this.
+   Expressions already descended through, so an alias cycle cannot spin this.
    */
   const visited = new Set<Node>();
   while (base.current !== NO_MEMBER_RECEIVER) {
@@ -315,7 +315,7 @@ export function returnedResultDischargeable({
      * that must not be offered, pinned by `localAssertedRepointedElements`. A structural test
      * is only as good as its ability to see what it is testing. */
     /**
-     * Inner expression, when this base is a wrapper whose value is exactly its operand's.
+     Inner expression, when this base is a wrapper whose value is exactly its operand's.
      */
     const unwrapped = transparentOperand({ node: base.current, },);
     if (unwrapped !== NOTHING_WRAPPED) {
@@ -368,7 +368,7 @@ export function returnedResultDischargeable({
     },))
       return false;
     /**
-     * Value this name was declared with, when it names one local declaration.
+     Value this name was declared with, when it names one local declaration.
      */
     const declared = bindingDeclarationInitializer({
       project,

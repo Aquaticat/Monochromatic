@@ -18,10 +18,10 @@ import { promisify, } from 'node:util';
 const execAsync = promisify(exec,);
 
 /**
- * Creates a fresh throwaway test directory under `dist/temp/test` and returns the
- * source CLI path plus that directory.
- *
- * @returns Absolute path to the source `tsc-filter.ts` and a unique scratch directory
+ Creates a fresh throwaway test directory under `dist/temp/test` and returns the
+ source CLI path plus that directory.
+ 
+ @returns Absolute path to the source `tsc-filter.ts` and a unique scratch directory
  */
 function setup() {
   const testFileDir = import.meta.dirname;
@@ -40,9 +40,9 @@ function setup() {
 }
 
 /**
- * Removes a throwaway test directory created by {@link setup}.
- *
- * @param testDir - Scratch directory to delete
+ Removes a throwaway test directory created by {@link setup}.
+ 
+ @param testDir - Scratch directory to delete
  */
 function teardown({ testDir, }: { testDir: string; },) {
   if (existsSync(testDir,))

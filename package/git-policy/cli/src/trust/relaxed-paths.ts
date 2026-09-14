@@ -1,5 +1,5 @@
 /**
- * Exact CLI_GIT_NO_PARANOID path grammar. @module
+ Exact CLI_GIT_NO_PARANOID path grammar. @module
  */
 import {
   isAbsolute,
@@ -12,25 +12,25 @@ import type {
 } from './types.ts';
 
 /**
- * Percent plus two hexadecimal digits.
+ Percent plus two hexadecimal digits.
  */
 const ESCAPED_SEQUENCE_LENGTH = 3;
 
 /**
- * Decodes exact percent grammar for one raw entry.
- *
- * @param rawEntry - comma-delimited raw entry
- *
- * @returns decoded entry
+ Decodes exact percent grammar for one raw entry.
+ 
+ @param rawEntry - comma-delimited raw entry
+ 
+ @returns decoded entry
  */
 function decodeEntry(rawEntry: string,): string {
   /**
-   * Decoded scalar chunks.
+   Decoded scalar chunks.
    */
   const decoded: string[] = [];
   for (let index = 0; index < rawEntry.length; index += 1) {
     /**
-     * Current source character.
+     Current source character.
      */
     const character = rawEntry[index];
     if (character !== '%') {
@@ -38,7 +38,7 @@ function decodeEntry(rawEntry: string,): string {
       continue;
     }
     /**
-     * Exact two-digit escape payload.
+     Exact two-digit escape payload.
      */
     const escape = rawEntry.slice(
       index + 1,
@@ -57,15 +57,15 @@ function decodeEntry(rawEntry: string,): string {
 }
 
 /**
- * Reports whether one decoded entry matches current identity.
- *
- * @param entry - decoded candidate entry
- *
- * @param identity - current exact identity
- *
- * @param warn - prominent malformed or planted-entry warning
- *
- * @returns whether entry enables relaxed behavior
+ Reports whether one decoded entry matches current identity.
+ 
+ @param entry - decoded candidate entry
+ 
+ @param identity - current exact identity
+ 
+ @param warn - prominent malformed or planted-entry warning
+ 
+ @returns whether entry enables relaxed behavior
  */
 function entryMatches({
   entry,
@@ -77,7 +77,7 @@ function entryMatches({
   readonly warn: (warning: TrustWarning,) => void;
 },): boolean {
   /**
-   * First identity/path separator.
+   First identity/path separator.
    */
   const separator = entry.indexOf(':',);
   if ((separator <= 0) || (separator === (entry.length
@@ -89,14 +89,14 @@ function entryMatches({
     return false;
   }
   /**
-   * Source-qualified filesystem ID.
+   Source-qualified filesystem ID.
    */
   const filesystemId = entry.slice(
     0,
     separator,
   );
   /**
-   * Canonical path candidate.
+   Canonical path candidate.
    */
   const canonicalPath = entry.slice(separator + 1,);
   if ((!isFsId(filesystemId,)) || (!isAbsolute(canonicalPath,))
@@ -120,20 +120,20 @@ function entryMatches({
 }
 
 /**
- * Parses relaxed-mode entries and matches exact current identity.
- *
- * @param raw - complete environment value
- *
- * @param identity - current exact identity
- *
- * @param warn - one prominent warning sink per invalid entry
- *
- * @returns whether current identity is explicitly relaxed
- *
- * @example
- * ```ts
- * relaxedPathMatches({ raw: `${identity.filesystemId}:${identity.canonicalConfigPath}`, identity, warn });
- * ```
+ Parses relaxed-mode entries and matches exact current identity.
+ 
+ @param raw - complete environment value
+ 
+ @param identity - current exact identity
+ 
+ @param warn - one prominent warning sink per invalid entry
+ 
+ @returns whether current identity is explicitly relaxed
+ 
+ @example
+ ```ts
+ relaxedPathMatches({ raw: `${identity.filesystemId}:${identity.canonicalConfigPath}`, identity, warn });
+ ```
  */
 export function relaxedPathMatches({
   raw,

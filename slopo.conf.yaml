@@ -5,6 +5,8 @@ source_dir: .
 # Paths to exclude from indexing, as a YAML list of .gitignore-style patterns
 source_dir_exclude:
 - '**/test/**'
+# TODO: The plural spelling shouldn't exist anyway.
+- '**/tests/**'
 - '**/test-fixture/**'
 - '*.test.ts'
 - '*_test.rs'
@@ -39,10 +41,10 @@ source_dir_exclude:
 - '*.old'
 - 'done-*'
 
-# Embedding model in LiteLLM format, e.g. "voyage/voyage-code-3"
+# Approved embedding model in LiteLLM format.
 # For all supported providers see
 # https://docs.litellm.ai/docs/embedding/supported_embedding
-embedding_model: voyage/voyage-code-3
+embedding_model: voyage/voyage-code-4
 
 # Output dimensions of the embedding model.
 embedding_dimensions: 1024

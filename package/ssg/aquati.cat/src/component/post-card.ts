@@ -1,11 +1,11 @@
 /**
- * Post card component.
- *
- * Renders a single blog post as a card with title, description,
- * tags, and date range inside a `<post-card>` custom element.
- * Styles and template are colocated so internal class names
- * (`.overlay`, `.description`, `.tags`, `.date`, `.tag-link`)
- * are scoped to this file.
+ Post card component.
+ 
+ Renders a single blog post as a card with title, description,
+ tags, and date range inside a `<post-card>` custom element.
+ Styles and template are colocated so internal class names
+ (`.overlay`, `.description`, `.tags`, `.date`, `.tag-link`)
+ are scoped to this file.
  */
 import {
   cssInt,
@@ -26,14 +26,14 @@ import { prettyDate, } from '../template/pretty-date.ts';
 //region CSS
 
 /**
- * Card layout and internal element styles.
- *
- * @returns CSS string for the `<post-card>` element
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Card layout and internal element styles.
+ 
+ @returns CSS string for the `<post-card>` element
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -104,20 +104,20 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders a post card inside a `<post-card>` custom element.
- *
- * @param post - post data to render
- *
- * @returns HTML string for the post card
- *
- * @example
- * ```ts
- * const markup = html(post);
- * ```
+ Renders a post card inside a `<post-card>` custom element.
+ 
+ @param post - post data to render
+ 
+ @returns HTML string for the post card
+ 
+ @example
+ ```ts
+ const markup = html(post);
+ ```
  */
 export function html(post: Post,): string {
   /**
-   * Pre-rendered tag list injected into the card body so the JSX structure stays flat.
+   Pre-rendered tag list injected into the card body so the JSX structure stays flat.
    */
   const tagItems = post.data
     .tags

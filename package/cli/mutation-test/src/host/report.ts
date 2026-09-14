@@ -1,13 +1,13 @@
 /**
- * Final run report: native JSON schema plus terminal findings.
- *
- * No mutation score anywhere by design; the report carries raw totals,
- * per-mutant records with provenance, and infra errors.
- *
- * @example
- * ```ts
- * const report = buildRunReport({ outcome, packagePath: 'package/module/fs-path' });
- * ```
+ Final run report: native JSON schema plus terminal findings.
+ 
+ No mutation score anywhere by design; the report carries raw totals,
+ per-mutant records with provenance, and infra errors.
+ 
+ @example
+ ```ts
+ const report = buildRunReport({ outcome, packagePath: 'package/module/fs-path' });
+ ```
  */
 
 import type {
@@ -17,12 +17,12 @@ import type { MutantStatus, } from '../engine/types.ts';
 import type { RunOutcome, } from './orchestrate.ts';
 
 /**
- * Current run-report schema version.
+ Current run-report schema version.
  */
 export const RUN_REPORT_SCHEMA_VERSION = 1;
 
 /**
- * Raw totals per final status plus suppressions.
+ Raw totals per final status plus suppressions.
  */
 export type RunTotals = {
   readonly killed: number;
@@ -34,7 +34,7 @@ export type RunTotals = {
 };
 
 /**
- * One mutant record in the final report.
+ One mutant record in the final report.
  */
 export type RunMutantRecord = {
   readonly id: string;
@@ -52,7 +52,7 @@ export type RunMutantRecord = {
 };
 
 /**
- * Complete native run report.
+ Complete native run report.
  */
 export type RunReport = {
   readonly schemaVersion: typeof RUN_REPORT_SCHEMA_VERSION;
@@ -65,23 +65,23 @@ export type RunReport = {
 };
 
 /**
- * Builds the native JSON run report from an orchestration outcome.
- *
- * @param options - Outcome and package identity.
- *
- * @returns Serialisable run report.
- *
- * @example
- * ```ts
- * const report = buildRunReport({ outcome, packagePath });
- * ```
+ Builds the native JSON run report from an orchestration outcome.
+ 
+ @param options - Outcome and package identity.
+ 
+ @returns Serialisable run report.
+ 
+ @example
+ ```ts
+ const report = buildRunReport({ outcome, packagePath });
+ ```
  */
 export function buildRunReport(options: {
   readonly outcome: RunOutcome;
   readonly packagePath: string;
 },): RunReport {
   /**
-   * Totals accumulated across final results.
+   Totals accumulated across final results.
    */
   const totals = options.outcome
     .results
@@ -153,20 +153,20 @@ export function buildRunReport(options: {
 }
 
 /**
- * Formats terminal output: totals plus survivor and timeout findings.
- *
- * @param report - Completed run report.
- *
- * @returns Human-readable multi-line summary.
- *
- * @example
- * ```ts
- * console.log(formatTerminalSummary(report));
- * ```
+ Formats terminal output: totals plus survivor and timeout findings.
+ 
+ @param report - Completed run report.
+ 
+ @returns Human-readable multi-line summary.
+ 
+ @example
+ ```ts
+ console.log(formatTerminalSummary(report));
+ ```
  */
 export function formatTerminalSummary(report: RunReport,): string {
   /**
-   * Actionable findings: survivors and timeouts.
+   Actionable findings: survivors and timeouts.
    */
   const findings = report.mutants
     .filter(function actionable(record,): boolean {
@@ -180,7 +180,7 @@ export function formatTerminalSummary(report: RunReport,): string {
       }`;
     },);
   /**
-   * Infra error lines, when any.
+   Infra error lines, when any.
    */
   const infra = report.infraErrors
     .map(function toLine(message,): string {

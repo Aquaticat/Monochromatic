@@ -1,18 +1,18 @@
 /**
- * Tests for the HTML composer.
- *
- * The controller bundler is injected through `renderHtml`'s `bundle`
- * seam so the test stays fast (a real rolldown build would take
- * multiple seconds). Structural assertions verify
- * the composed page is self-contained:
- *
- * - no external `<link rel="stylesheet">` or `<script src="…">` references
- * - the probe array is inlined as `globalThis.__PROBES__`
- * - the control panel HTML is embedded inside the document
- * - the stubbed bundle text appears inside a `<script>` block
- * - the document is properly tagged (doctype, charset, viewport, title)
- *
- * @module
+ Tests for the HTML composer.
+ 
+ The controller bundler is injected through `renderHtml`'s `bundle`
+ seam so the test stays fast (a real rolldown build would take
+ multiple seconds). Structural assertions verify
+ the composed page is self-contained:
+ 
+ - no external `<link rel="stylesheet">` or `<script src="…">` references
+ - the probe array is inlined as `globalThis.__PROBES__`
+ - the control panel HTML is embedded inside the document
+ - the stubbed bundle text appears inside a `<script>` block
+ - the document is properly tagged (doctype, charset, viewport, title)
+ 
+ @module
  */
 
 import {
@@ -27,25 +27,25 @@ import { renderHtml, } from './render-html.ts';
 const FIXTURE_BUNDLE = 'console.log("stubbed-controller");';
 
 /**
- * Returns true when `htmlLower` contains a `<script ... src=...>` opening
- * tag (case-insensitive on the tag name; the caller pre-lowercases the
- * HTML). Replaces a `/<script\s+[^>]*\bsrc=/i` test with a linear
- * `indexOf` walk: each `<script` is paired with the next `>`, and the
- * intervening attribute span is scanned for the `src=` token preceded by a
- * whitespace boundary.
- *
- * @param htmlLower - lower-cased HTML document
- *
- * @returns whether any `<script>` tag carries a `src=` attribute
+ Returns true when `htmlLower` contains a `<script ... src=...>` opening
+ tag (case-insensitive on the tag name; the caller pre-lowercases the
+ HTML). Replaces a `/<script\s+[^>]*\bsrc=/i` test with a linear
+ `indexOf` walk: each `<script` is paired with the next `>`, and the
+ intervening attribute span is scanned for the `src=` token preceded by a
+ whitespace boundary.
+ 
+ @param htmlLower - lower-cased HTML document
+ 
+ @returns whether any `<script>` tag carries a `src=` attribute
  */
 function hasScriptSrcAttribute(htmlLower: string,): boolean {
   /**
-   * Recursive walker that scans every `<script` opening tag and gives up
-   * on the first one that carries a whitespace-bounded `src=` attribute.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @returns true on the first matching tag
+   Recursive walker that scans every `<script` opening tag and gives up
+   on the first one that carries a whitespace-bounded `src=` attribute.
+   
+   @param from - cursor index for the next `indexOf` call
+   
+   @returns true on the first matching tag
    */
   function scan(from: number,): boolean {
     /** Position of the next `<script`; `-1` ends the search. */
@@ -98,14 +98,14 @@ function hasScriptSrcAttribute(htmlLower: string,): boolean {
 }
 
 /**
- * Returns true when `html` contains a non-empty `<style>...</style>`
- * block. Replaces `/<style>[\s\S]+<\/style>/` with a linear `indexOf`
- * walk: the first `<style>` is paired with the next `</style>`, and the
- * intervening span must hold at least one character.
- *
- * @param html - HTML document
- *
- * @returns whether at least one non-empty style block exists
+ Returns true when `html` contains a non-empty `<style>...</style>`
+ block. Replaces `/<style>[\s\S]+<\/style>/` with a linear `indexOf`
+ walk: the first `<style>` is paired with the next `</style>`, and the
+ intervening span must hold at least one character.
+ 
+ @param html - HTML document
+ 
+ @returns whether at least one non-empty style block exists
  */
 function hasNonEmptyStyleBlock(html: string,): boolean {
   /** Position of the first `<style>`; `-1` ends the search. */

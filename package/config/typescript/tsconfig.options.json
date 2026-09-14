@@ -41,6 +41,9 @@
       "@_/*": ["${configDir}/src/*"]
     },
     "outDir": "${configDir}/dist/final/types",
+    // Incremental build state lives outside dist/final so it never ships in a
+    // package tarball (issue #336); task-util/tsc-filter.ts cleans this path.
+    "tsBuildInfoFile": "${configDir}/.cache/typescript/tsconfig.tsbuildinfo",
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,

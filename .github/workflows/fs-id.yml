@@ -12,6 +12,10 @@ on:
     - 'package/module/fs-id/**'
     - '.github/workflows/fs-id.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

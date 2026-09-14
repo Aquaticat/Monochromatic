@@ -1,11 +1,11 @@
 /**
- * Tests for matrix test file discovery.
- *
- * Creates a temporary directory tree and verifies that
- * {@link discoverTestFiles} finds the right files and
- * skips excluded directories.
- *
- * @module
+ Tests for matrix test file discovery.
+ 
+ Creates a temporary directory tree and verifies that
+ {@link discoverTestFiles} finds the right files and
+ skips excluded directories.
+ 
+ @module
  */
 
 import {
@@ -29,7 +29,7 @@ import { discoverTestFiles, } from './discover.ts';
 const TEST_DIR_PREFIX = 'matrix-discover-test';
 
 /**
- * Disposable temporary directory that cleans itself up via `Symbol.asyncDispose`.
+ Disposable temporary directory that cleans itself up via `Symbol.asyncDispose`.
  */
 type TempDir = {
   /** Absolute path to the temp directory. */
@@ -38,12 +38,12 @@ type TempDir = {
 };
 
 /**
- * Creates a disposable temporary directory for discovery tests.
- * Automatically removed when the `await using` binding goes out of scope.
- *
- * @param id - unique suffix for this test's directory
- *
- * @returns disposable temp directory handle
+ Creates a disposable temporary directory for discovery tests.
+ Automatically removed when the `await using` binding goes out of scope.
+ 
+ @param id - unique suffix for this test's directory
+ 
+ @returns disposable temp directory handle
  */
 async function createTempDir(id: string,): Promise<TempDir> {
   const path = await mkdtemp(

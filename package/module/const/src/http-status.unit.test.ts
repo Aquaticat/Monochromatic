@@ -1,7 +1,7 @@
 /**
- * Tests for HTTP status code constants.
- *
- * @module
+ Tests for HTTP status code constants.
+ 
+ @module
  */
 
 import {

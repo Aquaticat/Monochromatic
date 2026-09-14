@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createIndexedDbSink, } from './indexed-db.ts';
+import { createIndexedDbSink, } from '@monochromatic-dev/module-logger/browser';
 
 // Node, Deno, and Bun expose no `indexedDB` (probed on Node 26, Deno 2.9,
 // Bun 1.3), so this file exercises the unavailable-backend fallback that the
@@ -11,7 +11,8 @@ import { createIndexedDbSink, } from './indexed-db.ts';
 // short-circuits on the missing global, and drained batches hit the
 // unset-connection guard. The available path lives in
 // `indexed-db.browser.test.ts`; the shared buffering policy is covered in
-// `record-buffer.unit.test.ts`.
+// `record-buffer.unit.test.ts`. The factory is reached through the
+// `./browser` subpath because the root entry no longer exports it.
 await describe({
   name: 'IndexedDB sink (node fallback)',
   children: [
@@ -31,7 +32,7 @@ await describe({
         // flush trigger fires.
         const sink = createIndexedDbSink();
         /**
-         * Resolved write result; the sink write contract is `Promise<void>`.
+         Resolved write result; the sink write contract is `Promise<void>`.
          */
         const result = await sink.write({
           level: 'info',
@@ -60,7 +61,7 @@ await describe({
           timestamp: 1,
         },);
         /**
-         * Resolved flush result; must settle even with no connection to write to.
+         Resolved flush result; must settle even with no connection to write to.
          */
         const result = await sink.flush?.();
         expect(result,)

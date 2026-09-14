@@ -345,7 +345,7 @@ impl Controller {
         //          spec: null, playing: false, volume: 1, trackGain: 1, peaks,
         //          positionFrames: 0, lastEmitSecs: 0, pending: [], pendingPos: 0 };
         // ```
-        Controller {
+        return Controller {
             on_update,
             output,
             queue: Queue::new(),
@@ -488,7 +488,7 @@ impl Controller {
         // ```ts
         // return true;
         // ```
-        true
+        return true
     }
 
     /// What:     `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
@@ -519,7 +519,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Ready(result) => {
                 self.pending_peak = None;
-                self.apply_peak_result(result)
+                return self.apply_peak_result(result)
             }
             // What:     `PendingPeakStatus::Pending => false`. No result yet.
             // Why:      Keep the pending handle and fallback gain unchanged.
@@ -528,7 +528,7 @@ impl Controller {
             // ```ts
             // return false;
             // ```
-            PendingPeakStatus::Pending => false,
+            PendingPeakStatus::Pending => return false,
             // What:     `PendingPeakStatus::Closed => { ... }`. Worker ended without
             //           a result.
             // Why:      Stop polling, and retain the fallback gain already in place.
@@ -540,7 +540,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Closed => {
                 self.pending_peak = None;
-                false
+                return false
             }
         }
     }
@@ -590,7 +590,7 @@ impl Controller {
         // ```ts
         // return this.handlePeakStatus(status);
         // ```
-        self.handle_peak_status(status)
+        return self.handle_peak_status(status)
     }
 
     /// What:     `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
@@ -803,7 +803,7 @@ impl Controller {
             .queue
             .tracks()
             .iter()
-            .filter(|path| current.as_ref() != Some(*path))
+            .filter(|path| return current.as_ref() != Some(*path))
             .cloned()
             .collect();
         // What:     `spawn_queue_measurement(tracks, self.peaks.clone());`. Spawn the
@@ -896,7 +896,7 @@ impl Controller {
                     // ```ts
                     // const idx = tracks.indexOf(sel);
                     // ```
-                    Some(sel) => match self.queue.tracks().iter().position(|p| *p == sel) {
+                    Some(sel) => match self.queue.tracks().iter().position(|p| return *p == sel) {
                         // What:     `Some(idx) => { ... }`. The file is in the scan: select,
                         //           load, and play only when `play` AND the load succeeded.
                         // Why:      A preselected file is cued; `--start-playing` plays it.
@@ -1098,57 +1098,19 @@ impl Controller {
                 // ```
                 self.emit(Update::Volume(v));
             }
-            // What:     `Command::SetShuffle(mode) => { ... }`. Set the shuffle mode.
+            // What:     `Command::SetPlaybackMode(mode) => { ... }`. Set the shuffle mode.
             // Why:      Shuffle radio group.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // case "setShuffle": { this.queue.setShuffle(command.mode); this.emit({ kind: "shuffle", mode: command.mode }); break; }
             // ```
-            Command::SetShuffle(mode) => {
-                // What:     `self.queue.set_shuffle(mode);`. Rebuild the playback
-                //           scope/order for the new mode, keeping the current track.
-                // Why:      Apply the shuffle mode (off / within-page / all).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.queue.setShuffle(mode);
-                // ```
-                self.queue.set_shuffle(mode);
-                // What:     `self.emit(Update::Shuffle(mode));`. Mirror state. `mode` is
-                //           `Copy`, so using it twice is fine.
-                // Why:      Radio-group visual.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.emit({ kind: "shuffle", mode });
-                // ```
-                self.emit(Update::Shuffle(mode));
+            Command::SetPlaybackMode(mode) => {
+                self.queue.set_playback_mode(mode);
+                self.emit(Update::PlaybackMode(mode));
             }
-            // What:     `Command::SetRepeatTrack(on) => { ... }`. Toggle "repeat track".
-            // Why:      Repeat-track checkbox.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // case "setRepeatTrack": { this.queue.setRepeatTrack(command.on); this.emit({ kind: "repeatTrack", on: command.on }); break; }
-            // ```
-            Command::SetRepeatTrack(on) => {
-                // What:     `self.queue.set_repeat_track(on);`. Apply it.
-                // Why:      Affects natural-end behaviour (replay current track).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.queue.setRepeatTrack(on);
-                // ```
-                self.queue.set_repeat_track(on);
-                // What:     `self.emit(Update::RepeatTrack(on));`. Mirror state.
-                // Why:      Checkbox visual.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.emit({ kind: "repeatTrack", on });
-                // ```
-                self.emit(Update::RepeatTrack(on));
+            Command::SetPageScope(indices) => {
+                self.queue.set_page_scope(indices);
             }
             // What:     `Command::Restore { tracks, current, position, volume, shuffle, repeat_track } => { ... }`.
             //           STRUCT-variant pattern destructuring all six saved fields. Reinstate
@@ -1165,8 +1127,7 @@ impl Controller {
                 selected,
                 position,
                 volume,
-                shuffle,
-                repeat_track,
+                playback_mode,
             } => {
                 // What:     `self.volume = volume;`. Restore the saved gain.
                 // Why:      Applied to decoded samples.
@@ -1176,15 +1137,6 @@ impl Controller {
                 // this.volume = volume;
                 // ```
                 self.volume = volume;
-                // What:     `self.queue.set_repeat_track(repeat_track);`. Restore the
-                //           "repeat track" flag.
-                // Why:      Affects auto-advance (replay current on natural end).
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.queue.setRepeatTrack(repeatTrack);
-                // ```
-                self.queue.set_repeat_track(repeat_track);
                 // What:     `self.scan_root_into_queue(root);`. Remember `root` as the Source
                 //           Root, re-point the watcher at it, and rebuild the queue by SCANNING
                 //           it fresh from disk (defined in `controller_audio.rs`), not from a
@@ -1198,14 +1150,8 @@ impl Controller {
                 // this.scanRootIntoQueue(root);
                 // ```
                 self.scan_root_into_queue(root);
-                // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle ordering.
-                // Why:      Restore shuffle state.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.queue.setShuffle(shuffle);
-                // ```
-                self.queue.set_shuffle(shuffle);
+                // Restore the single playback mode after the fresh queue scan.
+                self.queue.set_playback_mode(playback_mode);
                 // What:     `match selected { Some(sel) => ..., None => ... }`. Re-select the
                 //           saved track BY PATH: `Some(sel)` looks it up in the fresh scan,
                 //           `None` (nothing was cued) clears the anchored selection.
@@ -1218,7 +1164,7 @@ impl Controller {
                 // const idx = selected ? tracks.indexOf(selected) : -1;
                 // if (idx >= 0) this.queue.playIndex(idx); else this.queue.clearSelection();
                 // ```
-                match selected.and_then(|sel| self.queue.tracks().iter().position(|p| *p == sel)) {
+                match selected.and_then(|sel| return self.queue.tracks().iter().position(|p| return *p == sel)) {
                     // What:     `Some(idx) => { self.queue.play_index(idx); }`. The saved track
                     //           is present: select it (rebuilding the scope around it).
                     // Why:      Resume where the user left off.
@@ -1270,7 +1216,7 @@ impl Controller {
                 // this.emit({ kind: "volume", volume });
                 // ```
                 self.emit(Update::Volume(volume));
-                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_mode()));`. Mirror
+                // What:     `self.emit(Update::Shuffle(self.queue.playback_mode()));`. Mirror
                 //           the shuffle mode.
                 // Why:      Sync the radio group.
                 //
@@ -1278,16 +1224,7 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "shuffle", mode: this.queue.shuffleMode() });
                 // ```
-                self.emit(Update::Shuffle(self.queue.shuffle_mode()));
-                // What:     `self.emit(Update::RepeatTrack(self.queue.repeat_track()));`.
-                //           Mirror the "repeat track" flag.
-                // Why:      Sync the checkbox.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.emit({ kind: "repeatTrack", on: this.queue.repeatTrack() });
-                // ```
-                self.emit(Update::RepeatTrack(self.queue.repeat_track()));
+                self.emit(Update::PlaybackMode(self.queue.playback_mode()));
                 // What:     `self.playing = false;`. Restore PAUSED.
                 // Why:      Resuming should not blast audio on launch.
                 //
@@ -1415,7 +1352,7 @@ impl Controller {
                     // const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;
                     // ```
                     match selected_path
-                        .and_then(|p| self.queue.tracks().iter().position(|t| *t == p))
+                        .and_then(|p| return self.queue.tracks().iter().position(|t| return *t == p))
                     {
                         // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
                         //           the cursor at its new index (audio is decoder-owned, so it is
@@ -1429,7 +1366,7 @@ impl Controller {
                         // this.queue.playIndex(idx); this.emitReconciled();
                         // ```
                         Some(idx) => {
-                            self.queue.play_index(idx);
+                            self.queue.restore_index_preserving_page(idx);
                             self.emit_reconciled();
                         }
                         // What:     `None => { ... }`. The Selected Track is gone (or there was

@@ -1,13 +1,13 @@
 /**
- * Comment-preserving JSONC read, edit, and write.
- *
- * A free-function edit API over an immutable `JsoncEditState`, with a canonical
- * serializer that treats comments as first-class, queryable data. Sibling of
- * `@monochromatic-dev/module-toml-edit`; see
- * `doc/decision/jsonc-edit-parser-foundation.md` for why this package keeps a
- * hand-written parser rather than wrapping a library.
- *
- * @packageDocumentation
+ Comment-preserving JSONC read, edit, and write.
+ 
+ A free-function edit API over an immutable `JsoncEditState`, with a canonical
+ serializer that treats comments as first-class, queryable data. Sibling of
+ `@monochromatic-dev/module-toml-edit`; see
+ `doc/decision/jsonc-edit-parser-foundation.md` for why this package keeps a
+ hand-written parser rather than wrapping a library.
+ 
+ @packageDocumentation
  */
 
 //region Parse and serialize
@@ -46,6 +46,37 @@ export {
 } from './edit-comment.ts';
 export { mergeComments, } from './merge-comments.ts';
 //endregion Comment-as-data API
+
+//region Internal artifact-test surface
+export {
+  isJsonWhitespace,
+  matchKeyword,
+  scanBlockComment,
+  scanLineComment,
+  scanNumber,
+  scanString,
+} from './scan.ts';
+export {
+  appendComments,
+  captureTrailing,
+  prependComments,
+  skipTrivia,
+} from './parse-trivia.ts';
+export { parseScalar, } from './parse-scalar.ts';
+export {
+  isSingleLineComment,
+  leadingComment,
+  trailingComment,
+} from './emit-comment.ts';
+export {
+  emitPlainJson,
+  emitScalar,
+} from './emit-value.ts';
+export {
+  closeArray,
+  closeRecord,
+} from './parse-close.ts';
+//endregion Internal artifact-test surface
 
 //region Errors
 export {

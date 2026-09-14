@@ -1,0 +1,28 @@
+/* Baseline document styling for M3 surfaces. Opt-in: everything is scoped to
+   .md-surface-root or applied to :where() so it never fights host styles. */
+.md-surface-root {
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--md-sys-typescale-body-medium-font);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+  letter-spacing: var(--md-sys-typescale-body-medium-tracking);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--md-sys-color-primary); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--md-sys-color-on-primary-container); }
+a:active { color: var(--md-sys-color-on-primary-container); }
+a:focus-visible { outline: var(--md-sys-state-focus-indicator-thickness) solid var(--md-sys-color-secondary); outline-offset: var(--md-sys-state-focus-indicator-outer-offset); border-radius: var(--md-sys-shape-corner-extra-small); }
+[data-theme="dark"] a:hover { color: var(--md-sys-color-primary-fixed); }
+
+/* The state layer: an ::after scrim tinted with the component's "on-" colour. */
+.md-state-layer { position: relative; isolation: isolate; }
+.md-state-layer::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: currentColor; opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+.md-state-layer:hover::after { opacity: var(--md-sys-state-hover-state-layer-opacity); }
+.md-state-layer:focus-visible::after { opacity: var(--md-sys-state-focus-state-layer-opacity); }
+.md-state-layer:active::after { opacity: var(--md-sys-state-pressed-state-layer-opacity); }

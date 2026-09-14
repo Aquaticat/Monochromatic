@@ -1,7 +1,7 @@
 /**
- * Platform-specific preferred and degraded filesystem identity strategies.
- *
- * @module
+ Platform-specific preferred and degraded filesystem identity strategies.
+ 
+ @module
  */
 
 import { caughtValueText as caughtMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -20,18 +20,18 @@ import type {
 } from './types.ts';
 
 /**
- * Converts validated stable payload to resolution.
- *
- * @param source - Stable identity mechanism
- *
- * @param payload - Validated platform payload
- *
- * @returns Stable result
- *
- * @example
- * ```ts
- * stableResolution({ source: 'fs-uuid', payload: 'abcd' });
- * ```
+ Converts validated stable payload to resolution.
+ 
+ @param source - Stable identity mechanism
+ 
+ @param payload - Validated platform payload
+ 
+ @returns Stable result
+ 
+ @example
+ ```ts
+ stableResolution({ source: 'fs-uuid', payload: 'abcd' });
+ ```
  */
 function stableResolution({
   source,
@@ -51,20 +51,20 @@ function stableResolution({
 }
 
 /**
- * Converts degraded payload to warning-bearing resolution.
- *
- * @param source - Runtime identity mechanism
- *
- * @param payload - Validated platform payload
- *
- * @param reason - Why stable mechanism failed
- *
- * @returns Degraded result
- *
- * @example
- * ```ts
- * degradedResolution({ source: 'f-fsid', payload: '1', reason: 'UUID absent' });
- * ```
+ Converts degraded payload to warning-bearing resolution.
+ 
+ @param source - Runtime identity mechanism
+ 
+ @param payload - Validated platform payload
+ 
+ @param reason - Why stable mechanism failed
+ 
+ @returns Degraded result
+ 
+ @example
+ ```ts
+ degradedResolution({ source: 'f-fsid', payload: '1', reason: 'UUID absent' });
+ ```
  */
 function degradedResolution({
   source,
@@ -87,20 +87,20 @@ function degradedResolution({
 }
 
 /**
- * Requires safe payload from one fallback command.
- *
- * @param output - Captured output
- *
- * @param source - Mechanism named in error
- *
- * @returns Safe payload
- *
- * @throws when output has no safe identity
- *
- * @example
- * ```ts
- * requiredPayload({ output: '123', source: 'f_fsid' });
- * ```
+ Requires safe payload from one fallback command.
+ 
+ @param output - Captured output
+ 
+ @param source - Mechanism named in error
+ 
+ @returns Safe payload
+ 
+ @throws when output has no safe identity
+ 
+ @example
+ ```ts
+ requiredPayload({ output: '123', source: 'f_fsid' });
+ ```
  */
 function requiredPayload({
   output,
@@ -110,7 +110,7 @@ function requiredPayload({
   readonly source: string;
 },): string {
   /**
-   * Normalized command output.
+   Normalized command output.
    */
   try {
     return normalizeIdentityPayload(output,);
@@ -124,20 +124,20 @@ function requiredPayload({
 }
 
 /**
- * Resolves Linux filesystem UUID or degraded `f_fsid`.
- *
- * @param path - Canonical target path
- *
- * @param adapters - Subprocess and warning effects
- *
- * @returns Stable or degraded identity
- *
- * @throws when both commands fail
- *
- * @example
- * ```ts
- * await resolveLinuxFsId({ path: '/repo', adapters });
- * ```
+ Resolves Linux filesystem UUID or degraded `f_fsid`.
+ 
+ @param path - Canonical target path
+ 
+ @param adapters - Subprocess and warning effects
+ 
+ @returns Stable or degraded identity
+ 
+ @throws when both commands fail
+ 
+ @example
+ ```ts
+ await resolveLinuxFsId({ path: '/repo', adapters });
+ ```
  */
 export async function resolveLinuxFsId({
   path,
@@ -148,7 +148,7 @@ export async function resolveLinuxFsId({
 },): Promise<FsIdResolution> {
   try {
     /**
-     * Preferred UUID command output.
+     Preferred UUID command output.
      */
     const output = await adapters.run({
       command: 'findmnt',
@@ -160,7 +160,7 @@ export async function resolveLinuxFsId({
       ],
     },);
     /**
-     * Parsed UUID or absent sentinel.
+     Parsed UUID or absent sentinel.
      */
     const uuid = parseFindmntUuid(output,);
     adapters.debug?.({
@@ -179,7 +179,7 @@ export async function resolveLinuxFsId({
     },);
     try {
       /**
-       * Degraded GNU stat output.
+       Degraded GNU stat output.
        */
       const output = await adapters.run({
         command: 'stat',
@@ -213,20 +213,20 @@ export async function resolveLinuxFsId({
 }
 
 /**
- * Resolves macOS Volume UUID or degraded device number.
- *
- * @param path - Canonical target path
- *
- * @param adapters - Subprocess and warning effects
- *
- * @returns Stable or degraded identity
- *
- * @throws when both commands fail
- *
- * @example
- * ```ts
- * await resolveDarwinFsId({ path: '/repo', adapters });
- * ```
+ Resolves macOS Volume UUID or degraded device number.
+ 
+ @param path - Canonical target path
+ 
+ @param adapters - Subprocess and warning effects
+ 
+ @returns Stable or degraded identity
+ 
+ @throws when both commands fail
+ 
+ @example
+ ```ts
+ await resolveDarwinFsId({ path: '/repo', adapters });
+ ```
  */
 export async function resolveDarwinFsId({
   path,
@@ -237,7 +237,7 @@ export async function resolveDarwinFsId({
 },): Promise<FsIdResolution> {
   try {
     /**
-     * Portable mount report used to identify device accepted by diskutil.
+     Portable mount report used to identify device accepted by diskutil.
      */
     const mountOutput = await adapters.run({
       command: 'df',
@@ -247,11 +247,11 @@ export async function resolveDarwinFsId({
       ],
     },);
     /**
-     * Mounted device node from invariant first data field.
+     Mounted device node from invariant first data field.
      */
     const device = parseDfDevice(mountOutput,);
     /**
-     * Preferred structured diskutil output.
+     Preferred structured diskutil output.
      */
     const output = await adapters.run({
       command: 'diskutil',
@@ -262,7 +262,7 @@ export async function resolveDarwinFsId({
       ],
     },);
     /**
-     * Parsed UUID from plist.
+     Parsed UUID from plist.
      */
     const uuid = parseDiskutilVolumeUuid(output,);
     adapters.debug?.({
@@ -281,7 +281,7 @@ export async function resolveDarwinFsId({
     },);
     try {
       /**
-       * Degraded BSD stat device output.
+       Degraded BSD stat device output.
        */
       const output = await adapters.run({
         command: 'stat',
@@ -315,20 +315,20 @@ export async function resolveDarwinFsId({
 }
 
 /**
- * Resolves Windows volume serial or degraded runtime device number.
- *
- * @param path - Canonical target path
- *
- * @param adapters - Subprocess and device effects
- *
- * @returns Stable or degraded identity
- *
- * @throws when both mechanisms fail
- *
- * @example
- * ```ts
- * await resolveWindowsFsId({ path: 'C:\\repo', adapters });
- * ```
+ Resolves Windows volume serial or degraded runtime device number.
+ 
+ @param path - Canonical target path
+ 
+ @param adapters - Subprocess and device effects
+ 
+ @returns Stable or degraded identity
+ 
+ @throws when both mechanisms fail
+ 
+ @example
+ ```ts
+ await resolveWindowsFsId({ path: 'C:\\repo', adapters });
+ ```
  */
 export async function resolveWindowsFsId({
   path,
@@ -339,18 +339,18 @@ export async function resolveWindowsFsId({
 },): Promise<FsIdResolution> {
   try {
     /**
-     * Validated drive root safe for fixed PowerShell query text.
+     Validated drive root safe for fixed PowerShell query text.
      */
     const driveRoot = windowsDriveRoot(path,);
     /**
-     * Drive identifier without trailing separator.
+     Drive identifier without trailing separator.
      */
     const driveId = driveRoot.slice(
       0,
       2,
     );
     /**
-     * Preferred locale-invariant CIM property output.
+     Preferred locale-invariant CIM property output.
      */
     const output = await adapters.run({
       command: 'powershell.exe',
@@ -363,7 +363,7 @@ export async function resolveWindowsFsId({
       ],
     },);
     /**
-     * Safe normalized volume serial.
+     Safe normalized volume serial.
      */
     const payload = normalizeIdentityPayload(output,);
     adapters.debug?.({
@@ -382,11 +382,11 @@ export async function resolveWindowsFsId({
     },);
     try {
       /**
-       * Runtime device identity from Node stat.
+       Runtime device identity from Node stat.
        */
       const deviceNumber = await adapters.deviceNumber({ path, },);
       /**
-       * Validated nonzero runtime device identity.
+       Validated nonzero runtime device identity.
        */
       const payload = requiredPayload({
         output: deviceNumber,

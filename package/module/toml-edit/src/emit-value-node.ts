@@ -1,13 +1,13 @@
 /**
- * Render a {@link ValueNode} to TOML text.
- *
- * A clean child re-emits through {@link emitContentNode} so its original raw
- * spelling (hex integers, quote style, datetime text) survives even when a
- * sibling changed. A synthetic child renders canonically from its structure,
- * reusing the shared array/inline-table assemblers so layout matches the
- * from-scratch encoders.
- *
- * @module
+ Render a {@link ValueNode} to TOML text.
+ 
+ A clean child re-emits through {@link emitContentNode} so its original raw
+ spelling (hex integers, quote style, datetime text) survives even when a
+ sibling changed. A synthetic child renders canonically from its structure,
+ reusing the shared array/inline-table assemblers so layout matches the
+ from-scratch encoders.
+ 
+ @module
  */
 
 import type { ValueNode, } from './document.ts';
@@ -21,14 +21,14 @@ import type { CanonicalOptions, } from './types.ts';
 import { jsValueToTomlText, } from './values.ts';
 
 /**
- * Render `value` as TOML text at nesting `depth`.
- *
- * @returns Computed string.
- *
- * @example
- * ```ts
- * renderValueNode({ value: kv.value, options: edit.canonical, depth: 0, },);
- * ```
+ Render `value` as TOML text at nesting `depth`.
+ 
+ @returns Computed string.
+ 
+ @example
+ ```ts
+ renderValueNode({ value: kv.value, options: edit.canonical, depth: 0, },);
+ ```
  */
 export function renderValueNode(
   {
@@ -62,7 +62,7 @@ export function renderValueNode(
   if (value.kind
     === 'array') {
     /**
-     * Per-element text so the assembler can choose inline or multi-line layout.
+     Per-element text so the assembler can choose inline or multi-line layout.
      */
     const parts = value.elements
       .map(function each(el,) {
@@ -79,12 +79,12 @@ export function renderValueNode(
     },);
   }
   /**
-   * Per-entry `key = value` fragments for the inline-table assembler.
+   Per-entry `key = value` fragments for the inline-table assembler.
    */
   const parts = value.entries
     .map(function each(entry,) {
     /**
-     * Encoded dotted key so each segment reuses canonical key spelling.
+     Encoded dotted key so each segment reuses canonical key spelling.
      */
     const keyText = entry.keySegments
       .map(function eachSeg(seg,) {

@@ -19,9 +19,9 @@ use truepeak_core::peak_dbtp;
 /// Convert a linear peak to dBTP, treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
-        f64::NEG_INFINITY
+        return f64::NEG_INFINITY
     } else {
-        peak_dbtp(peak)
+        return peak_dbtp(peak)
     }
 }
 
@@ -43,7 +43,7 @@ fn sampled_max(track: &Track, coverage: f64, window_secs: f64) -> f64 {
     let count = ((coverage * track.duration_secs) / window_secs).round().max(1.0) as usize;
     let span = n.saturating_sub(window_bins);
     // Evenly spaced window starts, each covering `window_bins` bins; take the loudest bin.
-    (0..count)
+    return (0..count)
         .map(|index| {
             let start = if count <= 1 {
                 span / 2
@@ -51,12 +51,12 @@ fn sampled_max(track: &Track, coverage: f64, window_secs: f64) -> f64 {
                 ((index as f64 / (count - 1) as f64) * span as f64).round() as usize
             };
             let hi = (start + window_bins).min(n);
-            bins.get(start..hi)
+            return bins.get(start..hi)
                 .unwrap_or(&[])
                 .iter()
-                .fold(0.0_f32, |peak, &bin| peak.max(bin))
+                .fold(0.0_f32, |peak, &bin| return peak.max(bin))
         })
-        .fold(0.0_f64, |peak, window| peak.max(f64::from(window)))
+        .fold(0.0_f64, |peak, window| return peak.max(f64::from(window)))
 }
 
 /// Evaluate the proportional probe over the corpus.
@@ -91,15 +91,15 @@ pub fn evaluate_proportional(
             safe: safe_paths.contains(&track.path),
         });
     }
-    (decoded, under_reads)
+    return (decoded, under_reads)
 }
 
 /// The quantile value of a set of under-reads, sorted ascending.
 pub fn under_read_quantile(under_reads: &[UnderRead], fraction: f64) -> f64 {
-    let mut values: Vec<f64> = under_reads.iter().map(|u| u.under_read_db).collect();
+    let mut values: Vec<f64> = under_reads.iter().map(|u| return u.under_read_db).collect();
     values.sort_by(f64::total_cmp);
     let index = ((values.len() as f64 - 1.0) * fraction).round() as usize;
-    values.get(index).copied().unwrap_or(0.0)
+    return values.get(index).copied().unwrap_or(0.0)
 }
 
 /// One row of the margin/clamp tradeoff table.
@@ -123,18 +123,18 @@ pub struct MarginRow {
 /// the decision surface, worst-case too-quiet against the count of cold-start clamps.
 pub fn margin_clamp_table(under_reads: &[UnderRead], margins: &[f64], too_loud_db: f64) -> Vec<MarginRow> {
     // For each margin, count the tracks whose under-read the fixed margin cannot cover.
-    margins
+    return margins
         .iter()
         .map(|&margin_db| {
             let clamped: Vec<&UnderRead> = under_reads
                 .iter()
-                .filter(|u| u.under_read_db - margin_db > too_loud_db)
+                .filter(|u| return u.under_read_db - margin_db > too_loud_db)
                 .collect();
-            MarginRow {
+            return MarginRow {
                 margin_db,
                 worst_quiet_db: -margin_db,
                 clamped: clamped.len(),
-                clamped_safe: clamped.iter().filter(|u| u.safe).count(),
+                clamped_safe: clamped.iter().filter(|u| return u.safe).count(),
                 total: under_reads.len(),
             }
         })

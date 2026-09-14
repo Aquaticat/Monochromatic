@@ -6,7 +6,7 @@ import {
 } from './asn-network.ts';
 
 /**
- * Minimal IPinfo Lite record shape consumed by ASN filtering.
+ Minimal IPinfo Lite record shape consumed by ASN filtering.
  */
 type IpinfoLiteRecord = {
   readonly asn: string;
@@ -14,41 +14,41 @@ type IpinfoLiteRecord = {
 };
 
 /**
- * Unknown JSON object shape used before field guards run.
+ Unknown JSON object shape used before field guards run.
  */
 type UnknownRecord = Record<PropertyKey, unknown>;
 
 /**
- * Sentinel returned when NDJSON line has no matching network.
+ Sentinel returned when NDJSON line has no matching network.
  */
 const NO_MATCHING_NETWORK = Symbol('IPinfo line has no matching network',);
 
 /**
- * Type of {@link NO_MATCHING_NETWORK}.
+ Type of {@link NO_MATCHING_NETWORK}.
  */
 type NoMatchingNetwork = typeof NO_MATCHING_NETWORK;
 
 /**
- * IPinfo Lite database download endpoint.
+ IPinfo Lite database download endpoint.
  */
 const IPINFO_LITE_URL = 'https://ipinfo.io/data/ipinfo_lite.json.gz';
 
 /**
- * Module logger for streamed IPinfo access.
+ Module logger for streamed IPinfo access.
  */
 const l = tagged({ tag: 'asn-fetch', },);
 
 /**
- * Checks whether unknown value supports property guards.
- *
- * @param value - Candidate JSON value.
- *
- * @returns Whether value is object-like.
- *
- * @example
- * ```ts
- * isRecord({ asn: 'AS64500' }); // true
- * ```
+ Checks whether unknown value supports property guards.
+ 
+ @param value - Candidate JSON value.
+ 
+ @returns Whether value is object-like.
+ 
+ @example
+ ```ts
+ isRecord({ asn: 'AS64500' }); // true
+ ```
  */
 function isRecord(value: unknown,): value is UnknownRecord {
   return ((typeof value) === 'object')
@@ -56,16 +56,16 @@ function isRecord(value: unknown,): value is UnknownRecord {
 }
 
 /**
- * Checks whether unknown value carries consumed IPinfo fields.
- *
- * @param value - Candidate parsed record.
- *
- * @returns Whether value has ASN and network text.
- *
- * @example
- * ```ts
- * isIpinfoLiteRecord({ asn: 'AS64500', network: '192.0.2.0/24' }); // true
- * ```
+ Checks whether unknown value carries consumed IPinfo fields.
+ 
+ @param value - Candidate parsed record.
+ 
+ @returns Whether value has ASN and network text.
+ 
+ @example
+ ```ts
+ isIpinfoLiteRecord({ asn: 'AS64500', network: '192.0.2.0/24' }); // true
+ ```
  */
 function isIpinfoLiteRecord(value: unknown,): value is IpinfoLiteRecord {
   return isRecord(value,)
@@ -74,21 +74,21 @@ function isIpinfoLiteRecord(value: unknown,): value is IpinfoLiteRecord {
 }
 
 /**
- * Parses one IPinfo NDJSON line when ASN matches.
- *
- * @param line - NDJSON line.
- *
- * @param targetAsn - Normalized ASN to retain.
- *
- * @returns Matching validated network or non-match sentinel.
- *
- * @example
- * ```ts
- * parseMatchingNetwork({
- *   line: '{"asn":"AS64500","network":"192.0.2.0/24"}',
- *   targetAsn: 'AS64500',
- * });
- * ```
+ Parses one IPinfo NDJSON line when ASN matches.
+ 
+ @param line - NDJSON line.
+ 
+ @param targetAsn - Normalized ASN to retain.
+ 
+ @returns Matching validated network or non-match sentinel.
+ 
+ @example
+ ```ts
+ parseMatchingNetwork({
+   line: '{"asn":"AS64500","network":"192.0.2.0/24"}',
+   targetAsn: 'AS64500',
+ });
+ ```
  */
 function parseMatchingNetwork(
   {
@@ -102,7 +102,7 @@ function parseMatchingNetwork(
   if (!line.includes(targetAsn,))
     return NO_MATCHING_NETWORK;
   /**
-   * Parsed NDJSON value before runtime shape validation.
+   Parsed NDJSON value before runtime shape validation.
    */
   const entry: unknown = JSON.parse(line,);
   if (!isIpinfoLiteRecord(entry,)) {
@@ -122,24 +122,24 @@ function parseMatchingNetwork(
 }
 
 /**
- * Creates authenticated IPinfo Lite database URL.
- *
- * @param token - IPinfo access token.
- *
- * @returns Database URL carrying encoded token parameter.
- *
- * @throws {@link AsnDatabaseError} when token is empty.
- *
- * @example
- * ```ts
- * databaseUrl('token-value');
- * ```
+ Creates authenticated IPinfo Lite database URL.
+ 
+ @param token - IPinfo access token.
+ 
+ @returns Database URL carrying encoded token parameter.
+ 
+ @throws {@link AsnDatabaseError} when token is empty.
+ 
+ @example
+ ```ts
+ databaseUrl('token-value');
+ ```
  */
 function databaseUrl(token: string,): URL {
   if (token === '')
     throw new AsnDatabaseError('IPINFO_TOKEN is required to refresh ASN network caches.',);
   /**
-   * URL object encoding query-component syntax.
+   URL object encoding query-component syntax.
    */
   const url = new URL(IPINFO_LITE_URL,);
   url
@@ -152,18 +152,18 @@ function databaseUrl(token: string,): URL {
 }
 
 /**
- * Collects matching networks from complete decoded NDJSON lines.
- *
- * @param lines - Complete lines to inspect.
- *
- * @param targetAsn - Normalized ASN to retain.
- *
- * @param networks - Matching network accumulator.
- *
- * @example
- * ```ts
- * collectLines({ lines: [], targetAsn: 'AS64500', networks: [] });
- * ```
+ Collects matching networks from complete decoded NDJSON lines.
+ 
+ @param lines - Complete lines to inspect.
+ 
+ @param targetAsn - Normalized ASN to retain.
+ 
+ @param networks - Matching network accumulator.
+ 
+ @example
+ ```ts
+ collectLines({ lines: [], targetAsn: 'AS64500', networks: [] });
+ ```
  */
 function collectLines(
   {
@@ -178,7 +178,7 @@ function collectLines(
 ): void {
   for (const line of lines) {
     /**
-     * Network when line belongs to target ASN.
+     Network when line belongs to target ASN.
      */
     const network = parseMatchingNetwork({
       line,
@@ -190,20 +190,20 @@ function collectLines(
 }
 
 /**
- * Streams IPinfo Lite and collects networks assigned to one ASN.
- *
- * @param targetAsn - Normalized ASN to retain.
- *
- * @param token - IPinfo database token.
- *
- * @returns Matching network strings in database order.
- *
- * @throws {@link AsnDatabaseError} for rejected responses and absent bodies.
- *
- * @example
- * ```ts
- * await fetchAsnNetworks({ targetAsn: 'AS64500', token: 'token-value' });
- * ```
+ Streams IPinfo Lite and collects networks assigned to one ASN.
+ 
+ @param targetAsn - Normalized ASN to retain.
+ 
+ @param token - IPinfo database token.
+ 
+ @returns Matching network strings in database order.
+ 
+ @throws {@link AsnDatabaseError} for rejected responses and absent bodies.
+ 
+ @example
+ ```ts
+ await fetchAsnNetworks({ targetAsn: 'AS64500', token: 'token-value' });
+ ```
  */
 export async function fetchAsnNetworks(
   {
@@ -215,7 +215,7 @@ export async function fetchAsnNetworks(
   },
 ): Promise<readonly string[]> {
   /**
-   * Function-scoped logger for one streamed database request.
+   Function-scoped logger for one streamed database request.
    */
   const fl = tagged({
     tag: fetchAsnNetworks.name,
@@ -223,7 +223,7 @@ export async function fetchAsnNetworks(
   },);
   fl.debug(`requesting IPinfo Lite database for ${targetAsn}`,);
   /**
-   * HTTP response carrying gzip-encoded NDJSON.
+   HTTP response carrying gzip-encoded NDJSON.
    */
   const response = await fetch(databaseUrl(token,),);
   if (!response.ok) {
@@ -232,37 +232,37 @@ export async function fetchAsnNetworks(
     );
   }
   /**
-   * Nullable response body checked before decompression.
+   Nullable response body checked before decompression.
    */
   const { body, } = response;
   if (body === null)
     throw new AsnDatabaseError('IPinfo Lite database response did not include a body.',);
   /**
-   * Pull reader over decompressed NDJSON bytes.
+   Pull reader over decompressed NDJSON bytes.
    */
   const reader = body
     .pipeThrough(new DecompressionStream('gzip',),)
     .getReader();
   /**
-   * Decoder retained between chunks so split codepoints remain intact.
+   Decoder retained between chunks so split codepoints remain intact.
    */
   const decoder = new TextDecoder();
   /**
-   * Matching network accumulator.
+   Matching network accumulator.
    */
   const networks: string[] = [];
   /**
-   * Partial trailing line carried between chunks.
+   Partial trailing line carried between chunks.
    */
   const textState = { leftover: '', };
   /**
-   * Current sequential stream result.
+   Current sequential stream result.
    */
   const readState = { current: await reader.read(), };
   while (!(readState.current
     .done)) {
     /**
-     * Complete decoded text available for splitting.
+     Complete decoded text available for splitting.
      */
     const chunk = textState.leftover + decoder.decode(
       readState.current
@@ -270,7 +270,7 @@ export async function fetchAsnNetworks(
       { stream: true, },
     );
     /**
-     * Complete lines plus trailing partial line.
+     Complete lines plus trailing partial line.
      */
     const lines = chunk.split('\n',);
     textState.leftover = lines.pop() ?? '';
@@ -283,7 +283,7 @@ export async function fetchAsnNetworks(
     readState.current = await reader.read();
   }
   /**
-   * Final decoder flush and unterminated trailing line.
+   Final decoder flush and unterminated trailing line.
    */
   const finalLine = textState.leftover + decoder.decode();
   if (finalLine !== '') {

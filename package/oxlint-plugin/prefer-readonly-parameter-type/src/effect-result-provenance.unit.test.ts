@@ -14,49 +14,49 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Sentinel placed in a receiver, recognised only by identity.
- *
- * A value equal to nothing else, so a member handing back a structurally identical
- * copy fails the probe. Comparing shapes would pass for `structuredClone`.
+ Sentinel placed in a receiver, recognised only by identity.
+ 
+ A value equal to nothing else, so a member handing back a structurally identical
+ copy fails the probe. Comparing shapes would pass for `structuredClone`.
  */
 type Sentinel = { readonly marker: 'receiver-held'; };
 
 /**
- * Value only an observer can put into a result, recognised by identity.
- *
- * Distinct from the receiver's sentinel on purpose. A member claiming the observer-return
- * relation has to hand back what the observer produced and nothing the receiver held, and
- * one marker could not tell those apart.
+ Value only an observer can put into a result, recognised by identity.
+ 
+ Distinct from the receiver's sentinel on purpose. A member claiming the observer-return
+ relation has to hand back what the observer produced and nothing the receiver held, and
+ one marker could not tell those apart.
  */
 const OBSERVER_MARKER: { readonly marker: 'observer-returned'; } = {
   marker: 'observer-returned',
 };
 
 /**
- * Sentinel for a result that cannot be drained because it is not iterable.
+ Sentinel for a result that cannot be drained because it is not iterable.
  */
 const NOT_ITERABLE: unique symbol = Symbol(
   'member result is neither an array nor iterable',
 );
 
 /**
- * Drains an iterable result into the elements it yields.
- *
- * Separate from the array case because a member claiming the element relation may hand
- * back an iterator rather than a container, and the claim is the same either way: the
- * object is fresh and what it yields is what the receiver holds. A non-iterable result
- * cannot satisfy that claim at all, which is why it gets a sentinel rather than an empty
- * array; an empty array would fail the membership half for a reason that reads as a
- * missing sentinel instead of a wrong shape.
- *
- * @param result - Value the member handed back.
- *
- * @returns yielded elements, or sentinel when result cannot be iterated.
- *
- * @example
- * ```ts
- * iterableElements(new Map([['k', value,],],).values());
- * ```
+ Drains an iterable result into the elements it yields.
+ 
+ Separate from the array case because a member claiming the element relation may hand
+ back an iterator rather than a container, and the claim is the same either way: the
+ object is fresh and what it yields is what the receiver holds. A non-iterable result
+ cannot satisfy that claim at all, which is why it gets a sentinel rather than an empty
+ array; an empty array would fail the membership half for a reason that reads as a
+ missing sentinel instead of a wrong shape.
+ 
+ @param result - Value the member handed back.
+ 
+ @returns yielded elements, or sentinel when result cannot be iterated.
+ 
+ @example
+ ```ts
+ iterableElements(new Map([['k', value,],],).values());
+ ```
  */
 function iterableElements(
   result: unknown,
@@ -64,7 +64,7 @@ function iterableElements(
   if ((result === undefined) || (result === null))
     return NOT_ITERABLE;
   /**
-   * Iteration method the result exposes, when it exposes one.
+   Iteration method the result exposes, when it exposes one.
    */
   const iterate = (result as {
     readonly [Symbol.iterator]?: unknown;
@@ -75,18 +75,18 @@ function iterableElements(
 }
 
 /**
- * Builds one receiver of the named interface holding the sentinel.
- *
- * @param ownerName - Declaring default-library interface name.
- *
- * @param sentinel - Value to place inside the receiver.
- *
- * @returns receiver holding sentinel, and arguments reaching it.
- *
- * @example
- * ```ts
- * receiverHolding({ ownerName: 'Map', sentinel });
- * ```
+ Builds one receiver of the named interface holding the sentinel.
+ 
+ @param ownerName - Declaring default-library interface name.
+ 
+ @param sentinel - Value to place inside the receiver.
+ 
+ @returns receiver holding sentinel, and arguments reaching it.
+ 
+ @example
+ ```ts
+ receiverHolding({ ownerName: 'Map', sentinel });
+ ```
  */
 function receiverHolding({
   ownerName,
@@ -164,29 +164,29 @@ await describe({
       name: 'returns the identical value the receiver held, for every listed member',
       fn: async () => {
         /**
-         * Entries whose result was not identically the sentinel.
+         Entries whose result was not identically the sentinel.
          */
         const notIdentical: string[] = [];
         /**
-         * Container entries failing either half of their own probe.
+         Container entries failing either half of their own probe.
          */
         const notFreshCarrier: string[] = [];
         /**
-         * Observer-return entries whose result failed either half of their probe.
+         Observer-return entries whose result failed either half of their probe.
          */
         const notObserverDerived: string[] = [];
         /**
-         * Seeded-only entries whose condition turned out not to be load-bearing.
+         Seeded-only entries whose condition turned out not to be load-bearing.
          */
         const notConditional: string[] = [];
         /**
-         * Paired entries whose tuples did not hold the sentinel at their position.
+         Paired entries whose tuples did not hold the sentinel at their position.
          */
         const notPairedCarrier: string[] = [];
         for (const [ownerName, members,] of RESULT_PROVENANCE_BY_INTERFACE) {
           for (const [memberName, provenance,] of members) {
             /**
-             * Fresh sentinel per member, so one member cannot pass on another's value.
+             Fresh sentinel per member, so one member cannot pass on another's value.
              */
             const sentinel: Sentinel = { marker: 'receiver-held', };
             const { receiver, argumentsByMember, } = receiverHolding({
@@ -195,7 +195,7 @@ await describe({
               sentinel,
             },);
             /**
-             * Value the member handed back.
+             Value the member handed back.
              */
             const result = (
               (receiver as Record<string, unknown>)[memberName] as (
@@ -229,7 +229,7 @@ await describe({
                * relation unseeded, or the flag is decoration. */
               if (provenance.seededOnly === true) {
                 /**
-                 * What the same member hands back with no starting accumulator.
+                 What the same member hands back with no starting accumulator.
                  */
                 const unseeded = (
                   (receiver as Record<string, unknown>)[memberName] as (
@@ -317,7 +317,7 @@ await describe({
          * Driven through dynamic dispatch, so the assertion covers the whole
          * exclusion list and no member is spot-checked by a hand-written call. */
         /**
-         * Arguments letting each excluded member return without throwing.
+         Arguments letting each excluded member return without throwing.
          */
         const containerArguments: Readonly<Record<string, readonly unknown[]>> = {
           slice: [],
@@ -339,7 +339,7 @@ await describe({
           flat: [],
         };
         /**
-         * Excluded members whose result was the receiver, or lost its element.
+         Excluded members whose result was the receiver, or lost its element.
          */
         const notFreshContainer: string[] = [];
         for (const memberName of FRESH_CONTAINER_MEMBER_NAMES) {
@@ -347,15 +347,15 @@ await describe({
           for (const [, members,] of RESULT_PROVENANCE_BY_INTERFACE)
             expect(members.has(memberName,),).toBe(false,);
           /**
-           * Fresh sentinel, so no member can pass on a value another left behind.
+           Fresh sentinel, so no member can pass on a value another left behind.
            */
           const sentinel: Sentinel = { marker: 'receiver-held', };
           /**
-           * Receiver whose container identity is compared against the result's.
+           Receiver whose container identity is compared against the result's.
            */
           const values: Sentinel[] = [sentinel,];
           /**
-           * Container the member handed back.
+           Container the member handed back.
            */
           const result = (
             (values as unknown as Record<string, unknown>)[memberName] as (

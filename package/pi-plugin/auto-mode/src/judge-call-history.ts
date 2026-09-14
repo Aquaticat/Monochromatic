@@ -1,48 +1,48 @@
 /**
- * Session-local judge call outcome history and derived model blocklist.
- *
- * @module
+ Session-local judge call outcome history and derived model blocklist.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Number of recent logical judge calls required to blocklist one model.
+ Number of recent logical judge calls required to blocklist one model.
  */
 const NO_CONTENT_CALL_THRESHOLD = 3;
 
 /**
- * Outcome relevant to no-content model health.
+ Outcome relevant to no-content model health.
  */
 type JudgeCallOutcome = 'noContent' | 'other';
 
 /**
- * Encapsulated session-local judge call history.
- *
- * The blocklist is derived from each model's recent outcome window. Clearing
- * the history makes every model eligible again for a new session.
+ Encapsulated session-local judge call history.
+ 
+ The blocklist is derived from each model's recent outcome window. Clearing
+ the history makes every model eligible again for a new session.
  */
 type JudgeCallHistory = {
   /**
-   * Return models whose complete recent window contains only no-content calls.
-   *
-   * @returns canonical model slugs currently excluded from judge selection
+   Return models whose complete recent window contains only no-content calls.
+   
+   @returns canonical model slugs currently excluded from judge selection
    */
   readonly blocklistedModelSlugs: () => readonly string[];
   /**
-   * Clear every recorded model outcome at a session boundary.
-   *
-   * @returns nothing
+   Clear every recorded model outcome at a session boundary.
+   
+   @returns nothing
    */
   readonly clear: () => void;
   /**
-   * Record one completed logical call to one judge model.
-   *
-   * @param modelSlug - canonical provider and model identity
-   *
-   * @param outcome - whether complete judge call produced no content whatsoever
-   *
-   * @returns nothing
+   Record one completed logical call to one judge model.
+   
+   @param modelSlug - canonical provider and model identity
+   
+   @param outcome - whether complete judge call produced no content whatsoever
+   
+   @returns nothing
    */
   readonly record: (
     {
@@ -56,21 +56,21 @@ type JudgeCallHistory = {
 };
 
 /**
- * Judge health logger.
+ Judge health logger.
  */
 const l = tagged({ tag: 'auto-mode-judge-call-history', },);
 
 /**
- * Test whether consecutive no-content count requires blocklisting.
- *
- * @param noContentCallCount - bounded consecutive no-content call count
- *
- * @returns whether count reached temporary blocklist threshold
- *
- * @example
- * ```ts
- * isBlocklistedCallCount(3);
- * ```
+ Test whether consecutive no-content count requires blocklisting.
+ 
+ @param noContentCallCount - bounded consecutive no-content call count
+ 
+ @returns whether count reached temporary blocklist threshold
+ 
+ @example
+ ```ts
+ isBlocklistedCallCount(3);
+ ```
  */
 function isBlocklistedCallCount(
   noContentCallCount: number,
@@ -79,35 +79,35 @@ function isBlocklistedCallCount(
 }
 
 /**
- * Create isolated judge call history for one auto-mode extension instance.
- *
- * @returns mutable history facade with hidden outcome storage
- *
- * @example
- * ```ts
- * const history = createJudgeCallHistory();
- * history.record({ modelSlug: 'provider/model', outcome: 'noContent' });
- * ```
+ Create isolated judge call history for one auto-mode extension instance.
+ 
+ @returns mutable history facade with hidden outcome storage
+ 
+ @example
+ ```ts
+ const history = createJudgeCallHistory();
+ history.record({ modelSlug: 'provider/model', outcome: 'noContent' });
+ ```
  */
 function createJudgeCallHistory(): JudgeCallHistory {
   /**
-   * Bounded consecutive no-content counts keyed by canonical model slug.
+   Bounded consecutive no-content counts keyed by canonical model slug.
    */
   const noContentCallCounts = new Map<string, number>();
 
   /**
-   * Derive current model exclusions from recent call counts.
-   *
-   * @returns canonical blocklisted model slugs
-   *
-   * @example
-   * ```ts
-   * history.blocklistedModelSlugs();
-   * ```
+   Derive current model exclusions from recent call counts.
+   
+   @returns canonical blocklisted model slugs
+   
+   @example
+   ```ts
+   history.blocklistedModelSlugs();
+   ```
    */
   function blocklistedModelSlugs(): readonly string[] {
     /**
-     * Canonical slugs whose recent calls are wholly empty.
+     Canonical slugs whose recent calls are wholly empty.
      */
     const blocklisted: string[] = [];
     for (const [modelSlug, noContentCallCount,] of noContentCallCounts.entries()) {
@@ -118,12 +118,12 @@ function createJudgeCallHistory(): JudgeCallHistory {
   }
 
   /**
-   * Remove all model outcomes at a session boundary.
-   *
-   * @example
-   * ```ts
-   * history.clear();
-   * ```
+   Remove all model outcomes at a session boundary.
+   
+   @example
+   ```ts
+   history.clear();
+   ```
    */
   function clear(): void {
     if (noContentCallCounts.size > 0)
@@ -132,16 +132,16 @@ function createJudgeCallHistory(): JudgeCallHistory {
   }
 
   /**
-   * Append one outcome and retain bounded consecutive no-content count.
-   *
-   * @param modelSlug - canonical provider and model identity
-   *
-   * @param outcome - completed logical judge call classification
-   *
-   * @example
-   * ```ts
-   * history.record({ modelSlug: 'provider/model', outcome: 'other' });
-   * ```
+   Append one outcome and retain bounded consecutive no-content count.
+   
+   @param modelSlug - canonical provider and model identity
+   
+   @param outcome - completed logical judge call classification
+   
+   @example
+   ```ts
+   history.record({ modelSlug: 'provider/model', outcome: 'other' });
+   ```
    */
   function record(
     {
@@ -153,15 +153,15 @@ function createJudgeCallHistory(): JudgeCallHistory {
     },
   ): void {
     /**
-     * Previous consecutive no-content call count for selected model.
+     Previous consecutive no-content call count for selected model.
      */
     const previousCount = noContentCallCounts.get(modelSlug,) ?? 0;
     /**
-     * Whether model was excluded before current outcome.
+     Whether model was excluded before current outcome.
      */
     const wasBlocklisted = isBlocklistedCallCount(previousCount,);
     /**
-     * Bounded consecutive no-content count ending at current logical call.
+     Bounded consecutive no-content count ending at current logical call.
      */
     const recentCount = outcome === 'noContent'
       ? Math.min(
@@ -174,7 +174,7 @@ function createJudgeCallHistory(): JudgeCallHistory {
       recentCount,
     );
     /**
-     * Whether current recent call count now excludes model.
+     Whether current recent call count now excludes model.
      */
     const isBlocklisted = isBlocklistedCallCount(recentCount,);
     l.debug(`recorded ${outcome} outcome for ${modelSlug}`,);

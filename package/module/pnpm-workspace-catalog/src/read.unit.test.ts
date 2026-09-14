@@ -1,7 +1,7 @@
 /**
- * Unit tests for located workspace catalog reading.
- *
- * @module
+ Unit tests for located workspace catalog reading.
+ 
+ @module
  */
 
 import {
@@ -24,21 +24,21 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Temporary workspace fixture with automatic recursive cleanup.
- *
- * @returns disposable temporary directory
- *
- * @example
- * ```ts
- * await using workspace = await createWorkspace();
- * ```
+ Temporary workspace fixture with automatic recursive cleanup.
+ 
+ @returns disposable temporary directory
+ 
+ @example
+ ```ts
+ await using workspace = await createWorkspace();
+ ```
  */
 async function createWorkspace(): Promise<{
   dir: string;
   [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   /**
-   * Temporary root whose name cannot collide with another test fixture.
+   Temporary root whose name cannot collide with another test fixture.
    */
   const dir = await mkdtemp(join(tmpdir(), 'pnpm-workspace-catalog-',),);
   return {
@@ -57,12 +57,12 @@ await describe({
       fn: async () => {
         await using workspace = await createWorkspace();
         /**
-         * Nested directory that starts the upward search.
+         Nested directory that starts the upward search.
          */
         const nested = join(workspace.dir, 'package', 'app',);
         await mkdir(nested, { recursive: true, },);
         /**
-         * Exact source text used to verify raw-content preservation.
+         Exact source text used to verify raw-content preservation.
          */
         const content = [
           'packages:',
@@ -77,7 +77,7 @@ await describe({
           'utf8',
         );
         /**
-         * Located result returned from the nested search.
+         Located result returned from the nested search.
          */
         const result = await readCatalogFile({ startDir: nested, },);
         expect(result.path,).toBe(join(workspace.dir, 'pnpm-workspace.yaml',),);
@@ -91,7 +91,7 @@ await describe({
       fn: async () => {
         await using workspace = await createWorkspace();
         /**
-         * Captured failure from a search that cannot find the workspace file.
+         Captured failure from a search that cannot find the workspace file.
          */
         let caught: unknown;
         try {

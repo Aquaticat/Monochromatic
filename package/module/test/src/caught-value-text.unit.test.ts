@@ -1,7 +1,7 @@
 /**
- * Tests for caught-value diagnostic text.
- *
- * @module
+ Tests for caught-value diagnostic text.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ await describe({
       name: 'returns Error message text',
       fn: async () => {
         /**
-         * Error carrying expected message.
+         Error carrying expected message.
          */
         const error = new Error('offline',);
         expect(caughtValueText(error,),).toBe('offline',);
@@ -36,17 +36,17 @@ await describe({
       name: 'preserves caller-defined object text',
       fn: async () => {
         /**
-         * Number of caller conversion hooks invoked.
+         Number of caller conversion hooks invoked.
          */
         let conversionCount = 0;
         /**
-         * Thrown object carrying diagnostic conversion text.
+         Thrown object carrying diagnostic conversion text.
          */
         const thrownValue = {
           /**
-           * Supplies diagnostic text and records observable invocation.
-           *
-           * @returns caller-defined diagnostic text.
+           Supplies diagnostic text and records observable invocation.
+           
+           @returns caller-defined diagnostic text.
            */
           toString(): string {
             conversionCount++;
@@ -61,11 +61,11 @@ await describe({
       name: 'reads caller-defined Error message getter',
       fn: async () => {
         /**
-         * Error whose message is supplied by a getter.
+         Error whose message is supplied by a getter.
          */
         const error = new Error('replaced by getter',);
         /**
-         * Number of message getter invocations.
+         Number of message getter invocations.
          */
         let messageReadCount = 0;
         Object.defineProperty(
@@ -74,9 +74,9 @@ await describe({
           {
             configurable: true,
             /**
-             * Supplies diagnostic message and records observable access.
-             *
-             * @returns getter-provided message.
+             Supplies diagnostic message and records observable access.
+             
+             @returns getter-provided message.
              */
             get(): string {
               messageReadCount++;

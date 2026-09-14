@@ -1,7 +1,7 @@
 /**
- * Linkup HTTP request helpers.
- *
- * @module
+ Linkup HTTP request helpers.
+ 
+ @module
  */
 
 import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -23,17 +23,17 @@ import type {
 } from './client-types.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ ```
  */
 const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'client-http',
@@ -43,28 +43,28 @@ const l = tagged({
 //region Request helpers
 
 /**
- * POST JSON to Linkup and parse JSON response.
- *
- * @param runtime - client runtime dependencies
- *
- * @param endpoint - endpoint path
- *
- * @param body - JSON request body
- *
- * @param signal - optional cancellation signal
- *
- * @returns parsed JSON response
- *
- * @mutates runtime - `sendRequest` invokes configured fetch provider capability.
- *
- * @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
- *
- * @mutates signal - Configured fetch provider may retain signal and register abort listeners.
- *
- * @example
- * ```ts
- * await postJson({ runtime, endpoint: '/search', body: { q: 'docs' } });
- * ```
+ POST JSON to Linkup and parse JSON response.
+ 
+ @param runtime - client runtime dependencies
+ 
+ @param endpoint - endpoint path
+ 
+ @param body - JSON request body
+ 
+ @param signal - optional cancellation signal
+ 
+ @returns parsed JSON response
+ 
+ @mutates runtime - `sendRequest` invokes configured fetch provider capability.
+ 
+ @mutates body - `JSON.stringify` may invoke conversion hooks on request data.
+ 
+ @mutates signal - Configured fetch provider may retain signal and register abort listeners.
+ 
+ @example
+ ```ts
+ await postJson({ runtime, endpoint: '/search', body: { q: 'docs' } });
+ ```
  */
 async function postJson(
   {
@@ -77,18 +77,18 @@ async function postJson(
   },
 ): Promise<unknown> {
   /**
-   * API key validated for this endpoint.
+   API key validated for this endpoint.
    */
   const apiKey = apiKeyForEndpoint({
     ...(runtime.apiKey === undefined ? {} : { apiKey: runtime.apiKey, }),
     endpoint,
   },);
   /**
-   * Full Linkup request URL.
+   Full Linkup request URL.
    */
   const requestUrl = `${runtime.baseUrl}${endpoint}`;
   /**
-   * Fetch response from Linkup.
+   Fetch response from Linkup.
    */
   const response = await sendRequest({
     runtime,
@@ -99,7 +99,7 @@ async function postJson(
     ...(signal === undefined ? {} : { signal, }),
   },);
   /**
-   * Raw response text.
+   Raw response text.
    */
   const responseText = await response.text();
 
@@ -117,14 +117,14 @@ async function postJson(
 }
 
 /**
- * Send fetch request and normalize abort or network failures.
- *
- * @param request - Runtime capability and Linkup request values.
- *
- * @returns fetch response
- *
- * @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
- *   `JSON.stringify` may invoke hooks on `request.body`.
+ Send fetch request and normalize abort or network failures.
+ 
+ @param request - Runtime capability and Linkup request values.
+ 
+ @returns fetch response
+ 
+ @mutates request - `runtime.fetchImpl` may invoke provider behavior and retain request state;
+   `JSON.stringify` may invoke hooks on `request.body`.
  */
 async function sendRequest(
   request: {
@@ -137,7 +137,7 @@ async function sendRequest(
   },
 ): Promise<Response> {
   /**
-   * Request values extracted after naming provider effect boundary.
+   Request values extracted after naming provider effect boundary.
    */
   const {
     runtime,
@@ -149,7 +149,7 @@ async function sendRequest(
   } = request;
   try {
     /**
-     * Fetch request init without undefined optional properties.
+     Fetch request init without undefined optional properties.
      */
     const requestInit: RequestInit = {
       method: HTTP_POST,
@@ -183,13 +183,13 @@ async function sendRequest(
 }
 
 /**
- * Return API key or throw endpoint-specific missing-key error.
- *
- * @param apiKey - optional configured API key
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @returns configured API key
+ Return API key or throw endpoint-specific missing-key error.
+ 
+ @param apiKey - optional configured API key
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @returns configured API key
  */
 function apiKeyForEndpoint(
   {
@@ -212,15 +212,15 @@ function apiKeyForEndpoint(
 //region Response helpers
 
 /**
- * Parse successful Linkup JSON response text.
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param responseText - raw response text
- *
- * @returns parsed JSON response
- *
- * @throws when response is not valid JSON
+ Parse successful Linkup JSON response text.
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @param responseText - raw response text
+ 
+ @returns parsed JSON response
+ 
+ @throws when response is not valid JSON
  */
 function parseJsonResponse(
   {
@@ -243,15 +243,15 @@ function parseJsonResponse(
 }
 
 /**
- * Format non-2xx HTTP failures without exposing request secrets.
- *
- * @param endpoint - endpoint path for diagnostics
- *
- * @param response - Linkup response metadata
- *
- * @param responseText - raw response text
- *
- * @returns safe error message
+ Format non-2xx HTTP failures without exposing request secrets.
+ 
+ @param endpoint - endpoint path for diagnostics
+ 
+ @param response - Linkup response metadata
+ 
+ @param responseText - raw response text
+ 
+ @returns safe error message
  */
 function formatHttpError(
   {
@@ -265,7 +265,7 @@ function formatHttpError(
   },
 ): string {
   /**
-   * Status text with leading space, when present.
+   Status text with leading space, when present.
    */
   const statusText = response.statusText
     .trim()
@@ -273,11 +273,11 @@ function formatHttpError(
     ? ''
     : ` ${response.statusText}`;
   /**
-   * Linkup error message parsed from response body, when present.
+   Linkup error message parsed from response body, when present.
    */
   const linkupMessage = extractLinkupErrorMessage(responseText,);
   /**
-   * Linkup message suffix.
+   Linkup message suffix.
    */
   const messageSuffix = linkupMessage.found
     ? `: ${linkupMessage.message}`
@@ -286,15 +286,15 @@ function formatHttpError(
 }
 
 /**
- * Extract Linkup error message from a JSON error body.
- *
- * @param responseText - raw error response text
- *
- * @returns extraction result
+ Extract Linkup error message from a JSON error body.
+ 
+ @param responseText - raw error response text
+ 
+ @returns extraction result
  */
 function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorMessage {
   /**
-   * Logger tagged for this extraction call.
+   Logger tagged for this extraction call.
    */
   const innerL = tagged({
     tag: extractLinkupErrorMessage.name,
@@ -302,13 +302,13 @@ function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorM
   },);
   try {
     /**
-     * Parsed error response.
+     Parsed error response.
      */
     const parsed = JSON.parse(responseText,) as unknown;
     if (!isRecord(parsed,))
       return { found: false, };
     /**
-     * Linkup error payload, when present.
+     Linkup error payload, when present.
      */
     const { error, } = parsed;
     if (!isRecord(error,))
@@ -327,13 +327,13 @@ function extractLinkupErrorMessage(responseText: string,): ExtractedLinkupErrorM
 }
 
 /**
- * Return whether fetch failed because the request was aborted.
- *
- * @param error - thrown fetch error
- *
- * @param signal - optional abort signal
- *
- * @returns whether failure is an abort
+ Return whether fetch failed because the request was aborted.
+ 
+ @param error - thrown fetch error
+ 
+ @param signal - optional abort signal
+ 
+ @returns whether failure is an abort
  */
 function isAbortError(
   {
@@ -351,11 +351,11 @@ function isAbortError(
 }
 
 /**
- * Return whether value is a non-null object record.
- *
- * @param value - unknown value
- *
- * @returns whether value can be read by string keys
+ Return whether value is a non-null object record.
+ 
+ @param value - unknown value
+ 
+ @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)

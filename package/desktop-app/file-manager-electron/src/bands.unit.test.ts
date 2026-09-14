@@ -1,12 +1,12 @@
 /**
- * Unit tests for the sticky rail-band geometry.
- *
- * The decisive invariant is structural non-overlap: within every column, flow
- * margins between rail wrappers are never negative, so sibling rails can
- * never intersect no matter how the strip scrolls. Tests import from built
- * `dist/app` so they verify the artifact the renderer consumes.
- *
- * @module
+ Unit tests for the sticky rail-band geometry.
+ 
+ The decisive invariant is structural non-overlap: within every column, flow
+ margins between rail wrappers are never negative, so sibling rails can
+ never intersect no matter how the strip scrolls. Tests import from built
+ `dist/app` so they verify the artifact the renderer consumes.
+ 
+ @module
  */
 
 import {
@@ -36,9 +36,9 @@ const paneHeight = 520;
 const rowStride = 532;
 
 /**
- * Builds the strip used by most cases: a root with three children, the middle
- * child grown into a two-leaf subtree, mirroring the Rust model test
- * `a_later_sibling_is_pushed_below_a_grown_subtree`.
+ Builds the strip used by most cases: a root with three children, the middle
+ child grown into a two-leaf subtree, mirroring the Rust model test
+ `a_later_sibling_is_pushed_below_a_grown_subtree`.
  */
 function grownStrip(): Strip {
   const root = openRoot({
@@ -122,7 +122,7 @@ await describe({
           fn: async () => {
             const strip = grownStrip();
             /**
-             * Root pane at row 0 whose direct children sit at rows 0, 1, 3.
+             Root pane at row 0 whose direct children sit at rows 0, 1, 3.
              */
             const root = strip.panes
               .find(function isRoot(pane,): boolean {
@@ -145,8 +145,8 @@ await describe({
           fn: async () => {
             const strip = grownStrip();
             /**
-             * Pane b at row 1 whose direct children x, y sit at rows 1, 2;
-             * b's rail must not include c's row even though c sits below.
+             Pane b at row 1 whose direct children x, y sit at rows 1, 2;
+             b's rail must not include c's row even though c sits below.
              */
             const b = strip.panes
               .find(function isB(pane,): boolean {
@@ -182,7 +182,7 @@ await describe({
             expect(layouts.length,).toBe(3,);
 
             /**
-             * Column 1 rails: a (row 0), b (row 1), c (row 3).
+             Column 1 rails: a (row 0), b (row 1), c (row 3).
              */
             const [, columnOne,] = layouts;
             expect(columnOne === undefined,).toBe(false,);

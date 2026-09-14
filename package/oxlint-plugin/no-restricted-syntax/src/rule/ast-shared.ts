@@ -5,31 +5,31 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Sentinel for call-expression shapes that do not expose one ordinary argument.
+ Sentinel for call-expression shapes that do not expose one ordinary argument.
  */
 export const NO_SINGLE_ARGUMENT: unique symbol = Symbol('call expression does not have one ordinary argument');
 
 /**
- * Sentinel for member expressions without a readable static property name.
+ Sentinel for member expressions without a readable static property name.
  */
 export const NO_STATIC_MEMBER_NAME: unique symbol = Symbol('member expression has no static property name');
 
 /**
- * Sentinel for import-definition lookups that do not resolve to a declaration.
+ Sentinel for import-definition lookups that do not resolve to a declaration.
  */
 export const NO_IMPORT_DECLARATION: unique symbol = Symbol('definition does not resolve to import declaration');
 
 /**
- * Returns the only non-spread argument of a call expression.
- *
- * @param call - call expression to inspect
- *
- * @returns sole ordinary argument, or sentinel when shape is unsupported
- *
- * @example
- * ```ts
- * const argument = getSingleNonSpreadArgument({ call });
- * ```
+ Returns the only non-spread argument of a call expression.
+ 
+ @param call - call expression to inspect
+ 
+ @returns sole ordinary argument, or sentinel when shape is unsupported
+ 
+ @example
+ ```ts
+ const argument = getSingleNonSpreadArgument({ call });
+ ```
  */
 export function getSingleNonSpreadArgument(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
@@ -39,7 +39,7 @@ export function getSingleNonSpreadArgument(
     !== 1)
     return NO_SINGLE_ARGUMENT;
   /**
-   * Sole call argument.
+   Sole call argument.
    */
   const [argument,] = call.arguments;
   if (argument === undefined)
@@ -50,16 +50,16 @@ export function getSingleNonSpreadArgument(
 }
 
 /**
- * Extracts a static property name from a member expression.
- *
- * @param member - member expression to inspect
- *
- * @returns property name, or sentinel when property is private or dynamic
- *
- * @example
- * ```ts
- * const name = getStaticMemberName({ member: node.callee });
- * ```
+ Extracts a static property name from a member expression.
+ 
+ @param member - member expression to inspect
+ 
+ @returns property name, or sentinel when property is private or dynamic
+ 
+ @example
+ ```ts
+ const name = getStaticMemberName({ member: node.callee });
+ ```
  */
 export function getStaticMemberName(
   { member, }: ForeignBorrowed<{ readonly member: ESTree.MemberExpression; }>,
@@ -85,23 +85,23 @@ export function getStaticMemberName(
 }
 
 /**
- * Returns static member name for calls shaped like `receiver.method()`, via
- * {@link getStaticMemberName}.
- *
- * @param call - call expression to inspect
- *
- * @returns member name, or sentinel when call target is not static member access
- *
- * @example
- * ```ts
- * const method = getStaticCallMemberName({ call: node });
- * ```
+ Returns static member name for calls shaped like `receiver.method()`, via
+ {@link getStaticMemberName}.
+ 
+ @param call - call expression to inspect
+ 
+ @returns member name, or sentinel when call target is not static member access
+ 
+ @example
+ ```ts
+ const method = getStaticCallMemberName({ call: node });
+ ```
  */
 export function getStaticCallMemberName(
   { call, }: ForeignBorrowed<{ readonly call: ESTree.CallExpression; }>,
 ): string | typeof NO_STATIC_MEMBER_NAME {
   /**
-   * Call target; only member calls qualify.
+   Call target; only member calls qualify.
    */
   const { callee, } = call;
   if (callee.type !== 'MemberExpression')
@@ -112,22 +112,22 @@ export function getStaticCallMemberName(
 }
 
 /**
- * Resolves enclosing import declaration for an import definition.
- *
- * @param definition - scope-manager definition produced for an import binding
- *
- * @returns import declaration, or sentinel when scope metadata is unexpected
- *
- * @example
- * ```ts
- * const declaration = getImportDeclarationForDefinition({ definition });
- * ```
+ Resolves enclosing import declaration for an import definition.
+ 
+ @param definition - scope-manager definition produced for an import binding
+ 
+ @returns import declaration, or sentinel when scope metadata is unexpected
+ 
+ @example
+ ```ts
+ const declaration = getImportDeclarationForDefinition({ definition });
+ ```
  */
 export function getImportDeclarationForDefinition(
   { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
 ): ESTree.ImportDeclaration | typeof NO_IMPORT_DECLARATION {
   /**
-   * Definition node itself for whole-declaration imports, or parent for individual specifiers.
+   Definition node itself for whole-declaration imports, or parent for individual specifiers.
    */
   const declaration = definition.node
     .type

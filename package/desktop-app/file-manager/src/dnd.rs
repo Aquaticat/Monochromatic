@@ -43,7 +43,7 @@ use gtk4::GestureDrag;
 ///      operation is a later milestone, so this accepts and records rather than moves files.
 pub(crate) fn install_drop_target(widget: &impl IsA<Widget>) {
     let drop = DropTarget::new(FileList::static_type(), DragAction::COPY);
-    drop.connect_drop(|_, value, _, _| handle_drop(value));
+    drop.connect_drop(|_, value, _, _| return handle_drop(value));
     widget.add_controller(drop);
 }
 
@@ -55,11 +55,11 @@ fn handle_drop(value: &Value) -> bool {
             for file in files.files() {
                 tracing::info!(path = ?recover_path(&file), uri = %file.uri(), "inbound file drop");
             }
-            true
+            return true
         }
         Err(error) => {
             tracing::warn!(%error, "drop value was not a file list");
-            false
+            return false
         }
     }
 }
@@ -72,7 +72,7 @@ fn recover_path(file: &gio::File) -> Option<PathBuf> {
         return Some(path);
     }
     let fixed = glib::Uri::unescape_string(&file.uri(), None)?;
-    gio::File::for_uri(&fixed).path()
+    return gio::File::for_uri(&fixed).path()
 }
 
 /// What: make `widget` a drag source that offers `path` to the OS file manager (Wayland native

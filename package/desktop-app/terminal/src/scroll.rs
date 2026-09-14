@@ -143,7 +143,7 @@ pub fn map_pixel_scroll(
     // ```ts
     // return { pixelScroll: clampedPixel, wholeRowOffset, fractionalPx };
     // ```
-    ScrollMapping {
+    return ScrollMapping {
         pixel_scroll: clamped_pixel_scroll,
         whole_row_offset,
         fractional_px,

@@ -7,7 +7,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 /**
- * Production provider dispatch source.
+ Production provider dispatch source.
  */
 const PROVIDER_STREAMS_SOURCE = new URL(
   'provider-streams.ts',
@@ -21,7 +21,7 @@ await describe({
       name: 'uses only static Pi lazy provider modules',
       fn: async () => {
         /**
-         * Authored provider dispatch source text.
+         Authored provider dispatch source text.
          */
         const source = await readFile(
           PROVIDER_STREAMS_SOURCE,
@@ -29,7 +29,7 @@ await describe({
         );
         expect(source.includes('import(',),).toBe(false,);
         /**
-         * Pi provider API import lines.
+         Pi provider API import lines.
          */
         const providerImportLines = source
           .split('\n',)

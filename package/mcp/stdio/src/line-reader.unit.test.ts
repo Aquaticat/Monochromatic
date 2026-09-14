@@ -9,10 +9,10 @@ import { readLines, } from '@monochromatic-dev/mcp-stdio';
 //region helpers: create ReadableStream from string content
 
 /**
- * Creates a ReadableStream from a string, encoding it as a single UTF-8 chunk.
- *
- * @param content - Raw string to stream.
- * @returns ReadableStream yielding a single Uint8Array chunk.
+ Creates a ReadableStream from a string, encoding it as a single UTF-8 chunk.
+ 
+ @param content - Raw string to stream.
+ @returns ReadableStream yielding a single Uint8Array chunk.
  */
 function streamFromString(content: string,): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -25,11 +25,11 @@ function streamFromString(content: string,): ReadableStream<Uint8Array> {
 }
 
 /**
- * Creates a ReadableStream from multiple string chunks, each encoded separately.
- * Simulates data arriving in pieces across chunk boundaries.
- *
- * @param chunks - Strings to enqueue as separate chunks.
- * @returns ReadableStream yielding one Uint8Array per chunk.
+ Creates a ReadableStream from multiple string chunks, each encoded separately.
+ Simulates data arriving in pieces across chunk boundaries.
+ 
+ @param chunks - Strings to enqueue as separate chunks.
+ @returns ReadableStream yielding one Uint8Array per chunk.
  */
 function streamFromChunks(chunks: readonly string[],): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -43,10 +43,10 @@ function streamFromChunks(chunks: readonly string[],): ReadableStream<Uint8Array
 }
 
 /**
- * Collects all lines from a readLines async generator into an array.
- *
- * @param stream - Input byte stream.
- * @returns Array of yielded lines.
+ Collects all lines from a readLines async generator into an array.
+ 
+ @param stream - Input byte stream.
+ @returns Array of yielded lines.
  */
 async function collectLines(
   stream: ReadableStream<Uint8Array>,
@@ -130,12 +130,44 @@ await describe({
     it({
       name: 'handles JSON-RPC style messages',
       fn: async () => {
-        const message1 = '{"jsonrpc":"2.0","id":1,"method":"initialize"}';
-        const message2 = '{"jsonrpc":"2.0","method":"notifications/initialized"}';
+        const message1 = '{"jsonrpc":"2.0","id":1,"method":"server/discover"}';
+        const message2 = '{"jsonrpc":"2.0","method":"notifications/cancelled"}';
         const lines = await collectLines(
           streamFromString(`${message1}\n${message2}\n`,),
         );
         expect(lines,).toEqual([message1, message2,],);
+      },
+    },),
+    it({
+      name: 'stitches a multi-byte character split across a chunk boundary',
+      fn: async () => {
+        /** UTF-8 bytes of a snowman, split so neither chunk decodes on its own. */
+        const snowmanBytes = new TextEncoder().encode('☃',);
+        const stream = new ReadableStream<Uint8Array>({
+          start(controller: ReadableStreamDefaultController<Uint8Array>,) {
+            controller.enqueue(snowmanBytes.slice(0, 1,),);
+            controller.enqueue(snowmanBytes.slice(1,),);
+            controller.enqueue(new TextEncoder().encode('\n',),);
+            controller.close();
+          },
+        },);
+        const lines = await collectLines(stream,);
+        expect(lines,).toEqual(['☃',],);
+      },
+    },),
+    it({
+      name: 'flushes a multi-byte character truncated at end of stream',
+      fn: async () => {
+        /** Stream ends mid-character, so the decoder must flush a replacement character. */
+        const snowmanBytes = new TextEncoder().encode('☃',);
+        const stream = new ReadableStream<Uint8Array>({
+          start(controller: ReadableStreamDefaultController<Uint8Array>,) {
+            controller.enqueue(snowmanBytes.slice(0, 2,),);
+            controller.close();
+          },
+        },);
+        const lines = await collectLines(stream,);
+        expect(lines,).toEqual(['�',],);
       },
     },),
   ],

@@ -1,7 +1,7 @@
 /**
- * Penpot file metadata and export manifest builders.
- *
- * @module figma-to-penpot-manifest
+ Penpot file metadata and export manifest builders.
+ 
+ @module figma-to-penpot-manifest
  */
 
 import {
@@ -15,20 +15,20 @@ import type {
 } from './types.ts';
 
 /**
- * Build the Penpot file-level metadata object.
- *
- * @param fileId - file UUID
- *
- * @param fileName - display name
- *
- * @param now - ISO timestamp for created/modified
- *
- * @returns {@link PenpotFile} metadata
- *
- * @example
- * ```ts
- * const file = makeFile({ fileId, fileName, now, });
- * ```
+ Build the Penpot file-level metadata object.
+ 
+ @param fileId - file UUID
+ 
+ @param fileName - display name
+ 
+ @param now - ISO timestamp for created/modified
+ 
+ @returns {@link PenpotFile} metadata
+ 
+ @example
+ ```ts
+ const file = makeFile({ fileId, fileName, now, });
+ ```
  */
 export function makeFile(
   {
@@ -60,20 +60,20 @@ export function makeFile(
 }
 
 /**
- * Build the top-level Penpot export manifest.
- *
- * @param fileId - file UUID referenced by the manifest
- *
- * @param fileName - display name
- *
- * @param generatedBy - generator string
- *
- * @returns {@link PenpotManifest}
- *
- * @example
- * ```ts
- * const manifest = makeManifest({ fileId, fileName, generatedBy, });
- * ```
+ Build the top-level Penpot export manifest.
+ 
+ @param fileId - file UUID referenced by the manifest
+ 
+ @param fileName - display name
+ 
+ @param generatedBy - generator string
+ 
+ @returns {@link PenpotManifest}
+ 
+ @example
+ ```ts
+ const manifest = makeManifest({ fileId, fileName, generatedBy, });
+ ```
  */
 export function makeManifest(
   {

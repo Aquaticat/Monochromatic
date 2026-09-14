@@ -158,7 +158,7 @@ fn full_scan(source: &mut dyn TruePeakSource, channels: usize) -> Result<(f32, u
     // ```ts
     // return [meter.peak(), Math.floor(samples / channels)];
     // ```
-    Ok((meter.peak(), samples / channels as u64))
+    return Ok((meter.peak(), samples / channels as u64))
 }
 
 /// What:     `fn silence_decision(spec: AudioSpec) -> Decision`. The decision for a
@@ -182,7 +182,7 @@ fn silence_decision(spec: AudioSpec) -> Decision {
     // ```ts
     // return { gain: 1, kind: "fullScanExact", measuredPeak: 0, durationSecs: spec.durationSecs };
     // ```
-    Decision {
+    return Decision {
         gain: 1.0,
         kind: DecisionKind::FullScanExact,
         measured_peak: 0.0,
@@ -235,7 +235,7 @@ fn exact_decision(
     // ```ts
     // return { gain: normalizationGain(peak), kind: short ? "shortFullScan" : "fullScanExact", measuredPeak: peak, durationSecs: frames / spec.rate };
     // ```
-    Ok(Decision {
+    return Ok(Decision {
         gain: normalization_gain(peak),
         kind: if short { DecisionKind::ShortFullScan } else { DecisionKind::FullScanExact },
         measured_peak: peak,
@@ -295,7 +295,7 @@ pub fn resolve_full_scan(
     // ```ts
     // return exactDecision(policy, source, spec, channels);
     // ```
-    exact_decision(policy, source, spec, channels)
+    return exact_decision(policy, source, spec, channels)
 }
 
 /// What:     `pub fn resolve_decision(policy: &Policy, source: &mut dyn TruePeakSource) ->
@@ -322,7 +322,7 @@ pub fn resolve_decision(
     // ```ts
     // return resolveDecisionFor(policy, source, TrackProvenance.unknown(), null);
     // ```
-    resolve_decision_for(policy, source, TrackProvenance::unknown(), None)
+    return resolve_decision_for(policy, source, TrackProvenance::unknown(), None)
 }
 
 /// What:     `pub fn resolve_decision_for(policy: &Policy, source: &mut dyn
@@ -466,7 +466,7 @@ pub fn resolve_decision_for(
     // ```ts
     // return { gain: normalizationGain(estimated), kind: "probeEstimate", measuredPeak: sampledMax, durationSecs: spec.durationSecs };
     // ```
-    Ok(Decision {
+    return Ok(Decision {
         gain: normalization_gain(estimated),
         kind: DecisionKind::ProbeEstimate,
         measured_peak: sampled_max,

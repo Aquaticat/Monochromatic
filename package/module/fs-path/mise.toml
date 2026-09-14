@@ -7,6 +7,9 @@ extends = "build:js"
 [tasks.'build:js:browser']
 extends = "build:js:browser"
 
+[tasks.'build:js:node']
+extends = "build:js:node"
+
 [tasks.'watch:build']
 extends = "watch:build"
 
@@ -15,6 +18,9 @@ extends = "watch:build:js"
 
 [tasks.'watch:build:js:browser']
 extends = "watch:build:js:browser"
+
+[tasks.'watch:build:js:node']
+extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
@@ -28,10 +34,9 @@ extends = "format:oxlint"
 [tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.test]
-description = "Run unit tests for fs-path"
-run = "node src/self.unit.test.ts"
+[tasks."test:unit"]
+extends = "test:unit"
 
 [tasks.buildAndTest]
-description = "Build the neutral dist, then run the aggregator (path-ops imports the built `.` bundle as the smoke test)"
-run = ["mise run build", "mise run test"]
+description = "Build both platform artifacts, then run the unit tests (they import the built `.` and `./node` entries)"
+run = ["mise run build", "mise run test:unit"]

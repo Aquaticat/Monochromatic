@@ -11,21 +11,21 @@ import {
 } from './staleness-types.ts';
 
 /**
- * Returns whether current destination metadata and content hashes match recorded stamps:
- * compares filesystem metadata via {@link readFileStamps} and {@link fileStampListsMatch},
- * then content via {@link hashContent}.
- *
- * @param recordedStamps - Destination stamps persisted in manifest.
- *
- * @returns Whether every destination is unchanged.
- *
- * @throws When destination content cannot be read for reasons other than absence
- * (distinguished from absence via {@link caughtErrorHasCode}).
- *
- * @example
- * ```ts
- * const fresh = await destinationStampListsMatch({ recordedStamps });
- * ```
+ Returns whether current destination metadata and content hashes match recorded stamps:
+ compares filesystem metadata via {@link readFileStamps} and {@link fileStampListsMatch},
+ then content via {@link hashContent}.
+ 
+ @param recordedStamps - Destination stamps persisted in manifest.
+ 
+ @returns Whether every destination is unchanged.
+ 
+ @throws When destination content cannot be read for reasons other than absence
+ (distinguished from absence via {@link caughtErrorHasCode}).
+ 
+ @example
+ ```ts
+ const fresh = await destinationStampListsMatch({ recordedStamps });
+ ```
  */
 export async function destinationStampListsMatch(
   {
@@ -35,7 +35,7 @@ export async function destinationStampListsMatch(
   },
 ): Promise<boolean> {
   /**
-   * Current filesystem metadata for every recorded destination.
+   Current filesystem metadata for every recorded destination.
    */
   const currentStamps = await readFileStamps(recordedStamps.map(function destinationPath(stamp,): string {
     return stamp.path;
@@ -49,7 +49,7 @@ export async function destinationStampListsMatch(
     return false;
 
   /**
-   * Content hash comparison results for every recorded destination.
+   Content hash comparison results for every recorded destination.
    */
   const hashMatches = await Promise.all(
     recordedStamps.map(async function destinationHashMatches(stamp,): Promise<boolean> {

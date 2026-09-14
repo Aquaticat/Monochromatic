@@ -15,22 +15,22 @@ import {
 } from './index.ts';
 
 /**
- * Example single-byte varuint payload used by reader tests.
+ Example single-byte varuint payload used by reader tests.
  */
 const EXAMPLE_VARUINT_VALUE = 42;
 
 /**
- * Primitive type code for Kiwi string values.
+ Primitive type code for Kiwi string values.
  */
 const STRING_TYPE_CODE = -6;
 
 /**
- * Reserved byte count after the null-terminated fig magic in the header.
+ Reserved byte count after the null-terminated fig magic in the header.
  */
 const FIG_HEADER_RESERVED_BYTES = 6;
 
 /**
- * Header bytes for a fig canvas payload.
+ Header bytes for a fig canvas payload.
  */
 const FIG_HEADER = new Uint8Array([
   ...new TextEncoder().encode('fig-kiwie\0',),
@@ -38,7 +38,7 @@ const FIG_HEADER = new Uint8Array([
 ],);
 
 /**
- * Minimal empty Kiwi schema bytes.
+ Minimal empty Kiwi schema bytes.
  */
 const EMPTY_SCHEMA_BYTES = new Uint8Array([0,],);
 
@@ -52,7 +52,7 @@ await describe({
           name: 'reads single byte varuint',
           fn: async () => {
             /**
-             * Reader over example varuint bytes.
+             Reader over example varuint bytes.
              */
             const reader = createBinaryReader({
               data: new Uint8Array([EXAMPLE_VARUINT_VALUE,],),
@@ -70,7 +70,7 @@ await describe({
           name: 'parses empty schema',
           fn: async () => {
             /**
-             * Parsed empty schema.
+             Parsed empty schema.
              */
             const schema = parseKiwiSchema(EMPTY_SCHEMA_BYTES,);
             expect(schema.definitions,).toHaveLength(0,);
@@ -85,7 +85,7 @@ await describe({
           name: 'resolves primitive string type',
           fn: async () => {
             /**
-             * Empty schema still resolves primitive type codes.
+             Empty schema still resolves primitive type codes.
              */
             const schema = parseKiwiSchema(EMPTY_SCHEMA_BYTES,);
             expect(resolveTypeName({
@@ -103,7 +103,7 @@ await describe({
           name: 'returns sentinel for empty document bytes',
           fn: async () => {
             /**
-             * Empty schema paired with empty document data.
+             Empty schema paired with empty document data.
              */
             const schema = parseKiwiSchema(EMPTY_SCHEMA_BYTES,);
             expect(decodeDocument({
@@ -132,11 +132,11 @@ await describe({
           name: 'parses metadata defaults',
           fn: async () => {
             /**
-             * Empty metadata payload.
+             Empty metadata payload.
              */
             const json = new TextEncoder().encode('{}',);
             /**
-             * Parsed metadata with defaulted fields.
+             Parsed metadata with defaulted fields.
              */
             const meta = parseMetaJson(json,);
             expect(meta.fileName,).toBe('',);

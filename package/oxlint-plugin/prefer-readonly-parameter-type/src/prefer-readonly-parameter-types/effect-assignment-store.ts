@@ -1,14 +1,14 @@
 /**
- * Assignments that hand parameter-reachable state to a binding the callable does not own.
- *
- * Split from `direct-effect-summary.ts` rather than added to its body scan, because the
- * question is not the one `inspectDirectWrite` answers. That asks which parameter a write
- * lands on, and returns early for an identifier target on purpose: `held = row` changes
- * no object the caller can see. This asks the opposite question about the same syntax,
- * which is what the assignment hands outward, and an identifier target is exactly where
- * that matters.
- *
- * @module
+ Assignments that hand parameter-reachable state to a binding the callable does not own.
+ 
+ Split from `direct-effect-summary.ts` rather than added to its body scan, because the
+ question is not the one `inspectDirectWrite` answers. That asks which parameter a write
+ lands on, and returns early for an identifier target on purpose: `held = row` changes
+ no object the caller can see. This asks the opposite question about the same syntax,
+ which is what the assignment hands outward, and an identifier target is exactly where
+ that matters.
+ 
+ @module
  */
 
 import {
@@ -45,13 +45,13 @@ import {
 import { targetIsCallableLocal, } from './effect-value-consumer.ts';
 
 /**
- * Assignment operators that store the right operand's own reference.
- *
- * The logical forms belong here and the arithmetic forms do not. `held ||= config.row`
- * stores the row itself whenever the target is absent, so the caller's object outlives
- * the call exactly as plain assignment leaves it. `total += config.rows.length` coerces
- * its operand to a primitive and retains nothing, so treating the compound operators as
- * one class would report a callable that kept only a number.
+ Assignment operators that store the right operand's own reference.
+ 
+ The logical forms belong here and the arithmetic forms do not. `held ||= config.row`
+ stores the row itself whenever the target is absent, so the caller's object outlives
+ the call exactly as plain assignment leaves it. `total += config.rows.length` coerces
+ its operand to a primitive and retains nothing, so treating the compound operators as
+ one class would report a callable that kept only a number.
  */
 const RETAINING_ASSIGNMENT_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.EqualsToken,
@@ -61,39 +61,39 @@ const RETAINING_ASSIGNMENT_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Records opacity for every parameter an escaping assignment can hand outward.
- *
- * Opacity rather than a dimension of its own. An escaped reference is precisely a value
- * this analysis cannot prove stays unwritten, which is what an opaque slot already
- * asserts, and it already propagates through owned calls and withholds the offer. A
- * separate escape bit would answer the same question until something exists to read it
- * more finely.
- *
- * `parameterIndexes` decides what the assignment hands over, and choosing it over
- * `expressionOrigins` is the whole precision of this. The origin resolver descends an
- * object literal and answers with the parameter reached through a property read that
- * filled it, so `held = { label: config.row.label, }` would attribute a store of a string
- * to `config`. `parameterIndexes` gates every leaf on whether that leaf can carry mutable
- * state, so the same literal contributes nothing.
- *
- * @param project - TypeScript project resolving origins and targets.
- *
- * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
- *
- * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
- *
- * @param summary - Summary receiving opacity.
- *
- * @param node - Candidate assignment from the body scan.
- *
- * @param body - Body of callable being summarised.
- *
- * @mutates summary - Adds an opaque slot and store provenance per escaping origin.
- *
- * @example
- * ```ts
- * recordAssignmentStore({ project, bindingOriginBySymbolId, summary, node, body, });
- * ```
+ Records opacity for every parameter an escaping assignment can hand outward.
+ 
+ Opacity rather than a dimension of its own. An escaped reference is precisely a value
+ this analysis cannot prove stays unwritten, which is what an opaque slot already
+ asserts, and it already propagates through owned calls and withholds the offer. A
+ separate escape bit would answer the same question until something exists to read it
+ more finely.
+ 
+ `parameterIndexes` decides what the assignment hands over, and choosing it over
+ `expressionOrigins` is the whole precision of this. The origin resolver descends an
+ object literal and answers with the parameter reached through a property read that
+ filled it, so `held = { label: config.row.label, }` would attribute a store of a string
+ to `config`. `parameterIndexes` gates every leaf on whether that leaf can carry mutable
+ state, so the same literal contributes nothing.
+ 
+ @param project - TypeScript project resolving origins and targets.
+ 
+ @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ 
+ @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ 
+ @param summary - Summary receiving opacity.
+ 
+ @param node - Candidate assignment from the body scan.
+ 
+ @param body - Body of callable being summarised.
+ 
+ @mutates summary - Adds an opaque slot and store provenance per escaping origin.
+ 
+ @example
+ ```ts
+ recordAssignmentStore({ project, bindingOriginBySymbolId, summary, node, body, });
+ ```
  */
 export function recordAssignmentStore({
   project,
@@ -126,28 +126,28 @@ export function recordAssignmentStore({
   },))
     return;
   /**
-   * Authored target text, naming what the value was handed to.
+   Authored target text, naming what the value was handed to.
    */
   const targetText = node.left
     .getText();
   /**
-   * Where the store sits, so the report can point at it.
+   Where the store sits, so the report can point at it.
    */
   const location = effectOriginLocation({ node, },);
   /**
-   * Retention provenance naming where the stored value went.
+   Retention provenance naming where the stored value went.
    */
   const provenance = retentionProvenance({
     target: targetText,
     location,
   },);
   /**
-   * Every expression the stored value can evaluate to, itself included.
-   *
-   * Asked once and used twice below, because the two questions this path puts to a stored value
-   * are questions about the same set: what origins it packages, and whether it is a callable
-   * handing its captures over. Testing the written syntax answered both only for the inline
-   * form, and missed the conditional and the container held in a local, both falsified.
+   Every expression the stored value can evaluate to, itself included.
+   
+   Asked once and used twice below, because the two questions this path puts to a stored value
+   are questions about the same set: what origins it packages, and whether it is a callable
+   handing its captures over. Testing the written syntax answered both only for the inline
+   form, and missed the conditional and the container held in a local, both falsified.
    */
   const storedValues = possibleValueNodes({
     project,
@@ -191,12 +191,12 @@ export function recordAssignmentStore({
    * structural-store fixture stores `(): number => config.row.label.length` and records
    * `opaque=[0]`. Task #64 holds the finer question. */
   /**
-   * Whether any possible value of the store was a callable handing its captures over.
+   Whether any possible value of the store was a callable handing its captures over.
    */
   const handedOver: { any: boolean; } = { any: false, };
   storedValues.forEach(function recordCapturedCallable(value,): void {
     /**
-     * Callable this possible value resolves to, absent when it is not one.
+     Callable this possible value resolves to, absent when it is not one.
      */
     const callable = callableDeclaration({
       project,
@@ -274,36 +274,36 @@ export function recordAssignmentStore({
 }
 
 /**
- * Records opacity for a parameter an iteration statement hands to a binding it does not own.
- *
- * `for (held of config.rows)` retains a caller-owned row past the call exactly as
- * `held = config.rows[0]` does, and no assignment expression appears anywhere in it, so the
- * classification that reads assignments cannot see it. Measured before this existed:
- * `opaque=[]` and the parameter offered, beside `held = config.rows.at(0,)` recording
- * `opaque=[0]` for the same retention.
- *
- * A declaration initializer is not a store. `for (const row of config.rows)` binds a fresh
- * local per iteration, which dies with the iteration, and reporting it would take every
- * ordinary read loop with it.
- *
- * @param project - TypeScript project resolving origins and targets.
- *
- * @param bindingOriginBySymbolId - Local binding origins by symbol identity.
- *
- * @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
- *
- * @param summary - Summary receiving opacity.
- *
- * @param node - Candidate iteration statement from the body scan.
- *
- * @param body - Body of callable being summarised.
- *
- * @mutates summary - Adds an opaque slot and store provenance per retained origin.
- *
- * @example
- * ```ts
- * recordIterationStore({ project, bindingOriginBySymbolId, summary, node, body, });
- * ```
+ Records opacity for a parameter an iteration statement hands to a binding it does not own.
+ 
+ `for (held of config.rows)` retains a caller-owned row past the call exactly as
+ `held = config.rows[0]` does, and no assignment expression appears anywhere in it, so the
+ classification that reads assignments cannot see it. Measured before this existed:
+ `opaque=[]` and the parameter offered, beside `held = config.rows.at(0,)` recording
+ `opaque=[0]` for the same retention.
+ 
+ A declaration initializer is not a store. `for (const row of config.rows)` binds a fresh
+ local per iteration, which dies with the iteration, and reporting it would take every
+ ordinary read loop with it.
+ 
+ @param project - TypeScript project resolving origins and targets.
+ 
+ @param bindingOriginBySymbolId - Local binding origins by symbol identity.
+ 
+ @param resultSitesBySymbolId - Call sites each local binding can hold a result of.
+ 
+ @param summary - Summary receiving opacity.
+ 
+ @param node - Candidate iteration statement from the body scan.
+ 
+ @param body - Body of callable being summarised.
+ 
+ @mutates summary - Adds an opaque slot and store provenance per retained origin.
+ 
+ @example
+ ```ts
+ recordIterationStore({ project, bindingOriginBySymbolId, summary, node, body, });
+ ```
  */
 export function recordIterationStore({
   project,
@@ -323,7 +323,7 @@ export function recordIterationStore({
   if (!isForOfStatement(node,))
     return;
   /**
-   * What each element is assigned to, either a fresh declaration or an existing binding.
+   What each element is assigned to, either a fresh declaration or an existing binding.
    */
   const { initializer, } = node;
   if (isVariableDeclarationList(initializer,))
@@ -344,15 +344,15 @@ export function recordIterationStore({
   },))
     return;
   /**
-   * Authored target text, naming what each element was handed to.
+   Authored target text, naming what each element was handed to.
    */
   const targetText = initializer.getText();
   /**
-   * Where the iteration sits, so the report can point at it.
+   Where the iteration sits, so the report can point at it.
    */
   const location = effectOriginLocation({ node, },);
   /**
-   * Retention provenance naming where each element went.
+   Retention provenance naming where each element went.
    */
   const provenance = retentionProvenance({
     target: targetText,

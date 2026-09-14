@@ -30,30 +30,30 @@ import {
 } from './virsh.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 //region Windows post-boot provisioning
 
 /**
- * Sets the hostname on a running Windows VM via the QEMU guest agent.
- * Windows VMs do not use cloud-init, so hostname must be configured
- * after boot using PowerShell via guest-exec.
- *
- * @param hostname - Desired hostname
- *
- * @param name - VM name for guest agent addressing
- *
- * @example
- * ```ts
- * await setWindowsHostname({ name: 'win-01', hostname: 'win-01' });
- * ```
+ Sets the hostname on a running Windows VM via the QEMU guest agent.
+ Windows VMs do not use cloud-init, so hostname must be configured
+ after boot using PowerShell via guest-exec.
+ 
+ @param hostname - Desired hostname
+ 
+ @param name - VM name for guest agent addressing
+ 
+ @example
+ ```ts
+ await setWindowsHostname({ name: 'win-01', hostname: 'win-01' });
+ ```
  */
 async function setWindowsHostname({
   hostname,
@@ -63,7 +63,7 @@ async function setWindowsHostname({
   readonly name: string;
 },): Promise<void> {
   /**
-   * Logger scoped to this helper so the rename invocation is namespaced.
+   Logger scoped to this helper so the rename invocation is namespaced.
    */
   const rl = tagged({
     tag: setWindowsHostname.name,
@@ -71,7 +71,7 @@ async function setWindowsHostname({
   },);
   rl.info(`setting Windows hostname to ${hostname}`,);
   /**
-   * Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal.
+   Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal.
    */
   const result = await exec({
     command: `Rename-Computer -NewName '${hostname}' -Force`,
@@ -90,27 +90,27 @@ async function setWindowsHostname({
 //region Create
 
 /**
- * Creates a new VM from a template image and starts it.
- * Resolves the image identifier through the built-in registry or custom template lookup.
- * Registry images go through the download-and-template-bake pipeline;
- * custom templates are used as backing files directly.
- *
- * For Linux guests, a cloud-init seed ISO configures hostname and autologin.
- * For Windows guests, the hostname is set via guest agent after boot.
- *
- * @param image - Image identifier (defaults to `ubuntu`)
- *
- * @param name - VM name (alphanumeric, hyphens, underscores)
- *
- * @throws Error on invalid name, unknown image, or disk creation failure
- *
- * @example
- * ```ts
- * await create({ name: 'dev-01' });
- * await create({ image: 'fedora', name: 'build-box' });
- * await create({ image: 'windows', name: 'win-test' });
- * await create({ image: 'my-custom', name: 'special' });
- * ```
+ Creates a new VM from a template image and starts it.
+ Resolves the image identifier through the built-in registry or custom template lookup.
+ Registry images go through the download-and-template-bake pipeline;
+ custom templates are used as backing files directly.
+ 
+ For Linux guests, a cloud-init seed ISO configures hostname and autologin.
+ For Windows guests, the hostname is set via guest agent after boot.
+ 
+ @param image - Image identifier (defaults to `ubuntu`)
+ 
+ @param name - VM name (alphanumeric, hyphens, underscores)
+ 
+ @throws Error on invalid name, unknown image, or disk creation failure
+ 
+ @example
+ ```ts
+ await create({ name: 'dev-01' });
+ await create({ image: 'fedora', name: 'build-box' });
+ await create({ image: 'windows', name: 'win-test' });
+ await create({ image: 'my-custom', name: 'special' });
+ ```
  */
 export async function create({
   image = DEFAULT_IMAGE,
@@ -121,14 +121,14 @@ export async function create({
 },): Promise<void> {
   validateName(name,);
   /**
-   * Logger scoped to this create call so step logs are namespaced.
+   Logger scoped to this create call so step logs are namespaced.
    */
   const rl = tagged({
     tag: create.name,
     l,
   },);
   /**
-   * Per-VM scratch directory under {@link VMS_DIR}; holds disk, seed ISO, and shared dir.
+   Per-VM scratch directory under {@link VMS_DIR}; holds disk, seed ISO, and shared dir.
    */
   const vmDir = join(
     VMS_DIR,
@@ -136,7 +136,7 @@ export async function create({
   );
 
   /**
-   * Resolved image record from registry or custom-template lookup; drives the rest of the pipeline.
+   Resolved image record from registry or custom-template lookup; drives the rest of the pipeline.
    */
   const resolved = await resolveImage(image,);
   rl.info(`creating VM ${name} (image: ${image})`,);
@@ -146,7 +146,7 @@ export async function create({
   );
 
   /**
-   * Backing template path; registry images go through the bake pipeline, custom ones are used directly.
+   Backing template path; registry images go through the bake pipeline, custom ones are used directly.
    */
   const templateImage = resolved.kind
     === 'registry'
@@ -154,7 +154,7 @@ export async function create({
     : resolved.customTemplatePath;
 
   /**
-   * Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates.
+   Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates.
    */
   const guest = resolved.kind
     === 'registry'
@@ -162,14 +162,14 @@ export async function create({
     : CUSTOM_GUEST_DEFAULTS;
 
   /**
-   * New VM's qcow2 path; created with the resolved template as a backing file.
+   New VM's qcow2 path; created with the resolved template as a backing file.
    */
   const diskPath = join(
     vmDir,
     'disk.qcow2',
   );
   /**
-   * Disk capacity for the new VM; Windows needs a larger image so it gets bumped up.
+   Disk capacity for the new VM; Windows needs a larger image so it gets bumped up.
    */
   const diskSize = guest.osFamily
     === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
@@ -191,7 +191,7 @@ export async function create({
   },);
 
   /**
-   * Shared directory exposed to the guest via virtiofs.
+   Shared directory exposed to the guest via virtiofs.
    */
   const sharedDir = join(
     vmDir,
@@ -203,7 +203,7 @@ export async function create({
   );
 
   /**
-   * NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; {@link NO_SEED_ISO} for Windows.
+   NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; {@link NO_SEED_ISO} for Windows.
    */
   const seedIso = await createSeedIso({
     guest,
@@ -211,7 +211,7 @@ export async function create({
     vmDir,
   },);
   /**
-   * Libvirt domain XML wiring the disk, seed ISO, and shared dir into a new VM definition.
+   Libvirt domain XML wiring the disk, seed ISO, and shared dir into a new VM definition.
    */
   const xml = domainXml({
     diskPath,

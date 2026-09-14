@@ -3,7 +3,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { logger, } from './logger.ts';
+import {
+  logger,
+} from '@monochromatic-dev/module-logger';
 
 await describe({
   name: logger.constructor.name,

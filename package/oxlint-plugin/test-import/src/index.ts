@@ -1,13 +1,13 @@
 /**
- * Oxlint JS plugin keeping tests pointed at the artifact their package ships.
- *
- * The plugin's public API is its default export. Everything else this module
- * re-exports is marked `\@internal`: those symbols exist so this package's own
- * tests can exercise each classifier through the built artifact, which is the
- * very convention {@link requireEventualArtifact} enforces. They carry no
- * compatibility promise.
- *
- * @module
+ Oxlint JS plugin keeping tests pointed at the artifact their package ships.
+ 
+ The plugin's public API is its default export. Everything else this module
+ re-exports is marked `\@internal`: those symbols exist so this package's own
+ tests can exercise each classifier through the built artifact, which is the
+ very convention {@link requireEventualArtifact} enforces. They carry no
+ compatibility promise.
+ 
+ @module
  */
 
 import {
@@ -67,19 +67,19 @@ export {
 export { requireEventualArtifact, } from './require-eventual-artifact.ts';
 
 /**
- * Oxlint JS plugin providing the test-import ruleset.
- *
- * Registers one rule, so diagnostics render as
- * `test-import/require-eventual-artifact`.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-test-import'],
- * });
- * ```
+ Oxlint JS plugin providing the test-import ruleset.
+ 
+ Registers one rule, so diagnostics render as
+ `test-import/require-eventual-artifact`.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-test-import'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {

@@ -1,7 +1,7 @@
 /**
- * Tests for the thinking-default extension entry point.
- *
- * @module
+ Tests for the thinking-default extension entry point.
+ 
+ @module
  */
 
 import type {
@@ -57,16 +57,16 @@ type MockApiHarness = {
 };
 
 /**
- * Creates a mock ExtensionAPI that records event registrations and thinking writes.
- *
- * @param currentLevel - value returned by `getThinkingLevel`
- *
- * @returns mock API with captured registrations and set calls
- *
- * @example
- * ```typescript
- * const harness = createMockApi({ currentLevel: 'high' });
- * ```
+ Creates a mock ExtensionAPI that records event registrations and thinking writes.
+ 
+ @param currentLevel - value returned by `getThinkingLevel`
+ 
+ @returns mock API with captured registrations and set calls
+ 
+ @example
+ ```typescript
+ const harness = createMockApi({ currentLevel: 'high' });
+ ```
  */
 function createMockApi(
   {
@@ -105,20 +105,20 @@ function createMockApi(
 }
 
 /**
- * Retrieves the single registered handler for an event.
- *
- * @param registrations - event registration map
- *
- * @param event - event name to look up
- *
- * @returns registered handler
- *
- * @throws when event has no registered handler
- *
- * @example
- * ```typescript
- * const handler = getHandler({ registrations, event: 'model_select' });
- * ```
+ Retrieves the single registered handler for an event.
+ 
+ @param registrations - event registration map
+ 
+ @param event - event name to look up
+ 
+ @returns registered handler
+ 
+ @throws when event has no registered handler
+ 
+ @example
+ ```typescript
+ const handler = getHandler({ registrations, event: 'model_select' });
+ ```
  */
 function getHandler(
   {
@@ -141,16 +141,16 @@ function getHandler(
 }
 
 /**
- * Creates a minimal extension context carrying a current model.
- *
- * @param model - context model to expose
- *
- * @returns extension context for handler invocation
- *
- * @example
- * ```typescript
- * const ctx = createContext({ model: { id: 'gpt-5.5' } });
- * ```
+ Creates a minimal extension context carrying a current model.
+ 
+ @param model - context model to expose
+ 
+ @returns extension context for handler invocation
+ 
+ @example
+ ```typescript
+ const ctx = createContext({ model: { id: 'gpt-5.5' } });
+ ```
  */
 function createContext(
   {

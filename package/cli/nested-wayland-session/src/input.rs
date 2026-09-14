@@ -48,7 +48,7 @@ fn event_time(state: &Compositor) -> u32 {
     // What:     `state.start_time.elapsed().as_millis() as u32`. Elapsed time, in ms,
     //           narrowed to `u32`. Tail expression.
     // Why:      Provide the event timestamp.
-    state.start_time.elapsed().as_millis() as u32
+    return state.start_time.elapsed().as_millis() as u32
 }
 
 /// Click a button at a logical point: move the pointer there, press, and release.
@@ -255,6 +255,6 @@ fn send_key(state: &mut Compositor, evdev: u32, key_state: KeyState) {
         key_state,
         SERIAL_COUNTER.next_serial(),
         time,
-        |_, _, _| FilterResult::Forward,
+        |_, _, _| return FilterResult::Forward,
     );
 }

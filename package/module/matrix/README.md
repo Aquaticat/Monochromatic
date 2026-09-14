@@ -306,5 +306,5 @@ await matrix({
    tagged logger
 - `nano-spawn`:
    process execution (podman and host runtimes)
-- `find-up`:
+- `@monochromatic-dev/module-fs-path`:
    monorepo root detection

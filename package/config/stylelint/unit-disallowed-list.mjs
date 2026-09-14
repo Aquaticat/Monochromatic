@@ -1,16 +1,16 @@
 /**
- * CSS units banned from use in stylesheets.
- *
- * Grouped by category: angle (use `turn`), font-relative length (unpredictable),
- * viewport (use logical), absolute length (use `rem`), and time (use `s`).
- *
- * @type {ReadonlyArray<string>}
- * @example
- * ```js
- * // stylelint.config.mjs
- * import { unitDisallowedList } from './unit-disallowed-list.mjs';
- * export default { rules: { 'unit-disallowed-list': unitDisallowedList } };
- * ```
+ CSS units banned from use in stylesheets.
+ 
+ Grouped by category: angle (use `turn`), font-relative length (unpredictable),
+ viewport (use logical), absolute length (use `rem`), and time (use `s`).
+ 
+ @type {ReadonlyArray<string>}
+ @example
+ ```js
+ // stylelint.config.mjs
+ import { unitDisallowedList } from './unit-disallowed-list.mjs';
+ export default { rules: { 'unit-disallowed-list': unitDisallowedList } };
+ ```
  */
 export const unitDisallowedList = [
   //region angle - Use turn

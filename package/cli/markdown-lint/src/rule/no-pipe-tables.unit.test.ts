@@ -17,13 +17,13 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Run only `no-pipe-tables` over a source.
- *
- * @param source - Markdown or MDX source
- *
- * @param mdx - whether to parse as MDX
- *
- * @returns diagnostics from the rule
+ Run only `no-pipe-tables` over a source.
+ 
+ @param source - Markdown or MDX source
+ 
+ @param mdx - whether to parse as MDX
+ 
+ @returns diagnostics from the rule
  */
 function lintTables(
   source: string,
@@ -37,21 +37,21 @@ function lintTables(
 }
 
 /**
- * `table` node exactly as the SHIPPED renderer declares it.
- *
- * TAKEN FROM THE SIGNATURE rather than imported from `mdast`, because the
- * bundled declaration file inlines its own `Table` and the two are not
- * interchangeable. Annotating with mdast's copy compiles against the source
- * and fails against the artifact, which is the drift this test exists to catch.
+ `table` node exactly as the shipped renderer declares it.
+ 
+ Taken from the signature rather than imported from `mdast`, because the
+ bundled declaration file inlines its own `Table` and the two are not
+ interchangeable. Annotating with mdast's copy compiles against the source
+ and fails against the artifact, which is the drift this test exists to catch.
  */
 type RenderableTable = Parameters<typeof toHtmlTable>[0]['table'];
 
 /**
- * Parse a source and return its first `table` node, for transform tests.
- *
- * @param source - Markdown source containing a table
- *
- * @returns first table node
+ Parse a source and return its first `table` node, for transform tests.
+ 
+ @param source - Markdown source containing a table
+ 
+ @returns first table node
  */
 function firstTable(source: string,): RenderableTable {
   for (const { node, } of walk(parse({
@@ -66,7 +66,7 @@ function firstTable(source: string,): RenderableTable {
 }
 
 /**
- * Pipe table covering alignment, an escaped pipe, and inline Markdown.
+ Pipe table covering alignment, an escaped pipe, and inline Markdown.
  */
 const PIPE_TABLE = [
   '| Name | Age | Note |',
@@ -77,7 +77,7 @@ const PIPE_TABLE = [
 ].join('\n',);
 
 /**
- * Expected HTML rendering of {@link PIPE_TABLE}.
+ Expected HTML rendering of {@link PIPE_TABLE}.
  */
 const EXPECTED_HTML = [
   '<table>',
@@ -104,7 +104,7 @@ const EXPECTED_HTML = [
 ];
 
 /**
- * Pipe table containing Markdown-escaped and raw HTML-special characters.
+ Pipe table containing Markdown-escaped and raw HTML-special characters.
  */
 const UNSAFE_PIPE_TABLE = [
   '| Payload |',
@@ -114,7 +114,7 @@ const UNSAFE_PIPE_TABLE = [
 ].join('\n',);
 
 /**
- * HTML table that must never be flagged (parses as raw `html`, not a `table`).
+ HTML table that must never be flagged (parses as raw `html`, not a `table`).
  */
 const HTML_TABLE = [
   '<table>',
@@ -132,12 +132,12 @@ await describe({
       name: 'flags a pipe table at its first line with a fix',
       fn: async function flagsPipeTable() {
         /**
-         * Diagnostics for the pipe table.
+         Diagnostics for the pipe table.
          */
         const diagnostics = lintTables(PIPE_TABLE, false,);
         expect(diagnostics.length,).toBe(1,);
         /**
-         * First (only) diagnostic.
+         First (only) diagnostic.
          */
         const first = nonNullishOrThrow(diagnostics[0],);
         expect(first.line,).toBe(1,);
@@ -160,7 +160,7 @@ await describe({
       name: 'flags a blockquote-nested table without a fix',
       fn: async function blockquoteReportOnly() {
         /**
-         * Diagnostics for the blockquote-nested table.
+         Diagnostics for the blockquote-nested table.
          */
         const diagnostics = lintTables([
           '> | A | B |',
@@ -185,7 +185,7 @@ await describe({
       name: 'escapes HTML-special cell text when converting',
       fn: async function escapesHtml() {
         /**
-         * Rendered HTML for the unsafe table.
+         Rendered HTML for the unsafe table.
          */
         const html = toHtmlTable({
           table: firstTable(UNSAFE_PIPE_TABLE,),
@@ -202,7 +202,7 @@ await describe({
       name: 'applyFixes converts the table and is idempotent',
       fn: async function fixIdempotent() {
         /**
-         * Source after one fix pass.
+         Source after one fix pass.
          */
         const fixed = applyFixes({
           source: PIPE_TABLE,
@@ -217,7 +217,7 @@ await describe({
       name: 'fixSource settles to clean and is a no-op on the result',
       fn: async function fixSourceSettles() {
         /**
-         * First fixpoint result.
+         First fixpoint result.
          */
         const once = fixSource({
           rules: [noPipeTables,],
@@ -226,7 +226,7 @@ await describe({
         },);
         expect(once.diagnostics.length,).toBe(0,);
         /**
-         * Re-fixing the settled source.
+         Re-fixing the settled source.
          */
         const twice = fixSource({
           rules: [noPipeTables,],

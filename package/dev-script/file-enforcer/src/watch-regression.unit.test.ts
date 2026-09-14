@@ -26,14 +26,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Creates an isolated temp directory for watch regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temp directory for watch regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -43,14 +43,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes an isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -99,11 +99,11 @@ await describe({
         ),);
 
         /**
-         * Directories watched after recording an empty glob expansion.
+         Directories watched after recording an empty glob expansion.
          */
         const watchedDirectories = await watchDirs(configPath,);
         /**
-         * Absolute source directory expected to be monitored for future files.
+         Absolute source directory expected to be monitored for future files.
          */
         const resolvedSourceDirectory = resolve(sourceDirectory,);
         expect(watchedDirectories.has(resolvedSourceDirectory,),).toBe(true,);
@@ -152,12 +152,12 @@ await describe({
         ),);
 
         /**
-         * Directories watched after recording an empty glob with missing static root.
+         Directories watched after recording an empty glob with missing static root.
          */
         const watchedDirectories = await watchDirs(configPath,);
         expect(watchedDirectories.has(tempDir,),).toBe(true,);
         /**
-         * Missing glob root that should not be watched directly until it exists.
+         Missing glob root that should not be watched directly until it exists.
          */
         const resolvedSourceDirectory = resolve(sourceDirectory,);
         expect(watchedDirectories.has(resolvedSourceDirectory,),).toBe(false,);
@@ -206,7 +206,7 @@ await describe({
         );
         await cat(sourceGlob,);
         /**
-         * Directories watched before any missing glob-root ancestors exist.
+         Directories watched before any missing glob-root ancestors exist.
          */
         const initiallyWatchedDirectories = await watchDirs(configPath,);
         expect(initiallyWatchedDirectories.has(tempDir,),).toBe(true,);
@@ -221,7 +221,7 @@ await describe({
         reset();
         await cat(sourceGlob,);
         /**
-         * Directories watched after first missing ancestor exists.
+         Directories watched after first missing ancestor exists.
          */
         const futureWatchedDirectories = await watchDirs(configPath,);
         expect(futureWatchedDirectories.has(futureDirectory,),).toBe(true,);
@@ -235,7 +235,7 @@ await describe({
         reset();
         await cat(sourceGlob,);
         /**
-         * Directories watched after static glob root exists.
+         Directories watched after static glob root exists.
          */
         const sourceWatchedDirectories = await watchDirs(configPath,);
         expect(sourceWatchedDirectories.has(sourceDirectory,),).toBe(true,);

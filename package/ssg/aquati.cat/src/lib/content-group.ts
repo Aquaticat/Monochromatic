@@ -1,8 +1,8 @@
 /**
- * Post grouping and filtering utilities.
- *
- * Provides functions to organize posts by language, slug name, and tag.
- * Used by the build pipeline to generate per-language and per-tag pages.
+ Post grouping and filtering utilities.
+ 
+ Provides functions to organize posts by language, slug name, and tag.
+ Used by the build pipeline to generate per-language and per-tag pages.
  */
 // File justification: 104 lines; grouping functions share the same type
 // and patterns; splitting by-lang/by-name from by-tag would break cohesion.
@@ -13,35 +13,35 @@ import type { Post, } from './content.ts';
 //region By language and name
 
 /**
- * Returns locale grouping key for one post.
- *
- * @param post - post to group
- *
- * @returns post locale
+ Returns locale grouping key for one post.
+ 
+ @param post - post to group
+ 
+ @returns post locale
  */
 function postLanguage(post: Post,): Locale {
   return post.lang;
 }
 
 /**
- * Returns slug grouping key for one post.
- *
- * @param post - post to group
- *
- * @returns post slug
+ Returns slug grouping key for one post.
+ 
+ @param post - post to group
+ 
+ @returns post slug
  */
 function postName(post: Post,): string {
   return post.name;
 }
 
 /**
- * Groups posts by one primitive key while preserving encounter order.
- *
- * @param posts - posts to group
- *
- * @param keyForPost - key selector
- *
- * @returns mutable buckets in encounter order
+ Groups posts by one primitive key while preserving encounter order.
+ 
+ @param posts - posts to group
+ 
+ @param keyForPost - key selector
+ 
+ @returns mutable buckets in encounter order
  */
 function groupPostsBy<const Key,>({
   posts,
@@ -51,16 +51,16 @@ function groupPostsBy<const Key,>({
   readonly keyForPost: (post: Post,) => Key;
 }): Map<Key, Post[]> {
   /**
-   * Encounter-ordered groups under construction.
+   Encounter-ordered groups under construction.
    */
   const groups = new Map<Key, Post[]>();
   for (const post of posts) {
     /**
-     * Existing bucket for current post key.
+     Existing bucket for current post key.
      */
     const key = keyForPost(post,);
     /**
-     * Existing group for current key.
+     Existing group for current key.
      */
     const existing = groups.get(key,);
     if (existing === undefined) {
@@ -76,17 +76,17 @@ function groupPostsBy<const Key,>({
 }
 
 /**
- * Groups posts by language code.
- *
- * @param posts - all loaded posts
- *
- * @returns map from language codes to their posts; absent locales have no key rather than an empty bucket
- *
- * @example
- * ```ts
- * const byLang = groupByLang(posts);
- * // Map { 'en' => [...], 'fr' => [...] }
- * ```
+ Groups posts by language code.
+ 
+ @param posts - all loaded posts
+ 
+ @returns map from language codes to their posts; absent locales have no key rather than an empty bucket
+ 
+ @example
+ ```ts
+ const byLang = groupByLang(posts);
+ // Map { 'en' => [...], 'fr' => [...] }
+ ```
  */
 export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]> {
   return groupPostsBy({
@@ -96,17 +96,17 @@ export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locale, Post[]
 }
 
 /**
- * Groups posts by slug name across all languages.
- *
- * @param posts - all loaded posts
- *
- * @returns record mapping post names to all language variants
- *
- * @example
- * ```ts
- * const byName = groupByName(posts);
- * // { 'hello-world': [enPost, frPost] }
- * ```
+ Groups posts by slug name across all languages.
+ 
+ @param posts - all loaded posts
+ 
+ @returns record mapping post names to all language variants
+ 
+ @example
+ ```ts
+ const byName = groupByName(posts);
+ // { 'hello-world': [enPost, frPost] }
+ ```
  */
 export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
   return Object.fromEntries(groupPostsBy({
@@ -120,17 +120,17 @@ export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
 //region By tag
 
 /**
- * Extracts all unique tags across all posts.
- *
- * @param posts - all loaded posts
- *
- * @returns deduplicated array of tag strings
- *
- * @example
- * ```ts
- * const tags = allTags(posts);
- * // ['typescript', 'css', 'web']
- * ```
+ Extracts all unique tags across all posts.
+ 
+ @param posts - all loaded posts
+ 
+ @returns deduplicated array of tag strings
+ 
+ @example
+ ```ts
+ const tags = allTags(posts);
+ // ['typescript', 'css', 'web']
+ ```
  */
 export function allTags(posts: readonly Post[],): string[] {
   return [...new Set(posts.flatMap(function getTags(post,) {
@@ -140,21 +140,21 @@ export function allTags(posts: readonly Post[],): string[] {
 }
 
 /**
- * Groups posts by tag, where each tag maps to its matching posts.
- *
- * @param posts - all loaded posts
- *
- * @returns record mapping tags to posts containing that tag
- *
- * @example
- * ```ts
- * const byTag = groupByTag(posts);
- * // { typescript: [...], css: [...] }
- * ```
+ Groups posts by tag, where each tag maps to its matching posts.
+ 
+ @param posts - all loaded posts
+ 
+ @returns record mapping tags to posts containing that tag
+ 
+ @example
+ ```ts
+ const byTag = groupByTag(posts);
+ // { typescript: [...], css: [...] }
+ ```
  */
 export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
   /**
-   * Distinct tag universe computed once so the inner filter loop only iterates the set, not duplicates.
+   Distinct tag universe computed once so the inner filter loop only iterates the set, not duplicates.
    */
   const tags = allTags(posts,);
   return Object.fromEntries(
@@ -172,27 +172,27 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
 }
 
 /**
- * Groups posts first by language, then by tag within each language.
- *
- * Uses per-language tag sets so each language only contains tags
- * that actually have posts in that language, avoiding empty arrays
- * for tags that only exist in other languages.
- *
- * @param posts - all loaded posts
- *
- * @returns nested map of lang \> tag \> posts; absent locales have no key
- *
- * @example
- * ```ts
- * const grouped = groupByLangThenTag(posts);
- * // Map { 'en' => { typescript: [...], css: [...] }, 'zh' => { ... } }
- * ```
+ Groups posts first by language, then by tag within each language.
+ 
+ Uses per-language tag sets so each language only contains tags
+ that actually have posts in that language, avoiding empty arrays
+ for tags that only exist in other languages.
+ 
+ @param posts - all loaded posts
+ 
+ @returns nested map of lang \> tag \> posts; absent locales have no key
+ 
+ @example
+ ```ts
+ const grouped = groupByLangThenTag(posts);
+ // Map { 'en' => { typescript: [...], css: [...] }, 'zh' => { ... } }
+ ```
  */
 export function groupByLangThenTag(
   posts: readonly Post[],
 ): ReadonlyMap<Locale, Record<string, Post[]>> {
   /**
-   * Stage one of the two-level grouping; second-level tag grouping happens per language to avoid empty buckets.
+   Stage one of the two-level grouping; second-level tag grouping happens per language to avoid empty buckets.
    */
   const byLang = groupByLang(posts,);
 

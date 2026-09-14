@@ -55,7 +55,8 @@ Recording the intermediate state because the reasoning for deferring them was wr
 way twice:
  each was deferred on a cost that had never been measured.
 
-**#420, the outgoing overlay.**
+**#420,
+ the outgoing overlay.**
 `openSemanticFile` cleared its overlay map to the incoming source and reported only that source
 through `fileChanges`,
  so the native server kept holding the text it was last given for a source
@@ -66,7 +67,8 @@ hash,
  so retention is only as complete as the server's change report,
  and the report was missing
 the outgoing source.
-Unreachable under Oxlint, which hands over what it read from disk.
+Unreachable under Oxlint,
+ which hands over what it read from disk.
 Reachable by anything supplying an unsaved buffer.
 
 Closed in `4add69903` by retaining every text handed to the bridge instead of clearing.
@@ -82,7 +84,8 @@ retention from clearing and passed either way.
 It now opens a second source of the same project,
  and was shown to fail when retention is removed.
 
-**#421, declaration files in the fingerprint.**
+**#421,
+ declaration files in the fingerprint.**
 Analysed sources were hashed from the snapshot and declarations still read from disk,
  so a
 workspace `.d.ts` rebuilt underneath a running lint could key summaries to text nothing analysed.
@@ -116,7 +119,8 @@ The spread within each configuration is 1.9s and 2.4s,
 The band is not a constant;
  the earlier figure was sampled while probes competed for the same
 cores.
-Treat it as a property of the conditions, not of the sweep.
+Treat it as a property of the conditions,
+ not of the sweep.
 
 Both configurations now measure about 61.3s,
  where the same code measured 57.3s to 61.9s earlier
@@ -147,7 +151,8 @@ What survives that:
 - 1m50.7s to 70.7s,
  the declaration-file decode skip net of the classification guard.
  Forty
-seconds, far outside the band.
+seconds,
+   far outside the band.
 - The decode-cache change,
  67.3s to 58.3s.
  Nine seconds is only twice the band,
@@ -170,7 +175,8 @@ the user,
 - Weak retention plus the file-list move "saving 3.1s".
  Noise.
  The change is justified by what
-it retains, not by that figure.
+it retains,
+   not by that figure.
 
 Any future comparison of two configurations here needs repeated runs of each,
  not one of each.
@@ -258,7 +264,8 @@ churn would otherwise cost.
 
 `openSemanticFile` calls `api.clearSourceFileCache()` before every snapshot update it performs,
 and that method is `this.sourceFileCache.clear()`:
- it empties the whole store, for every project,
+ it empties the whole store,
+ for every project,
 on every discovery.
 Measured cost of refilling it for one project is 154.6ms against 0.6ms for a pass that finds it
 already there.
@@ -613,7 +620,8 @@ meaningless,
 ## Which three minutes
 
 Measured by turning the one rule off in `oxlint.config.ts`,
- keeping the same task, invocation
+ keeping the same task,
+ invocation
 and warm cache,
  and putting the file back afterwards.
 
@@ -782,7 +790,8 @@ the difference it then reported.
 Read the key rather than guessing at its field names.
 
 `effect-summaries.ts` builds
-`projectDigest = contentDigest(`${projectFingerprint.digest}\0${analysisRoot ?? ''}`,)`,
+`projectDigest = contentDigest(`${projectFingerprint.digest}\0${analysisRoot ??
+ ''}`,)`,
  and
 `effect-summary-cache.ts` stores each entry under that digest together with the file's own
 `sourceText`.
@@ -821,7 +830,8 @@ cache directory's own contents across two consecutive unmodified runs.
 
 Two consecutive `mise run lint:oxlint` runs with the working tree clean,
  comparing the cache
-directory's own contents by path, modification time and size.
+directory's own contents by path,
+ modification time and size.
 
 - 4104 entries after the first run,
  4124 after the second
@@ -1579,7 +1589,8 @@ What has to hold for it to be safe,
 
 1. Type IDs are stable only within one checker or project instance,
  so the shared store must be
-keyed on that, as `effect-final-index-cache.ts` and the inclusion-scope memo already are.
+keyed on that,
+    as `effect-final-index-cache.ts` and the inclusion-scope memo already are.
 2. `CLASSIFICATION_ACTIVE` is a traversal marker,
  not a result,
  and must never be published to

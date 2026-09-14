@@ -1,13 +1,13 @@
 /**
- * `propose_trust` tool registration for the auto-mode extension.
- *
- * Lets the agent request a session-wide trust rule when the guardrail blocks
- * it. Rules already trusted in active session history are accepted without a
- * prompt; new rules prompt the user to accept or reject. Accepted rules are
- * appended as trust-directive session entries that relax the judge for the rest
- * of the session.
- *
- * @module
+ `propose_trust` tool registration for the auto-mode extension.
+ 
+ Lets the agent request a session-wide trust rule when the guardrail blocks
+ it. Rules already trusted in active session history are accepted without a
+ prompt; new rules prompt the user to accept or reject. Accepted rules are
+ appended as trust-directive session entries that relax the judge for the rest
+ of the session.
+ 
+ @module
  */
 
 import type {
@@ -23,17 +23,17 @@ import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for auto-mode after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for propose_trust registration and execution.
+ Tagged logger for propose_trust registration and execution.
  */
 const l = tagged({
   tag: 'register-propose-trust',
@@ -41,34 +41,34 @@ const l = tagged({
 },);
 
 /**
- * Parameters accepted by propose_trust.
+ Parameters accepted by propose_trust.
  */
 type ProposeTrustParams = {
   /**
-   * Session trust directive requested by agent.
+   Session trust directive requested by agent.
    */
   readonly rule: string;
   /**
-   * Optional rationale for why directive is needed.
+   Optional rationale for why directive is needed.
    */
   readonly reason?: string;
 };
 
 /**
- * Tool result shape returned by propose_trust.
- *
- * Details are intentionally empty because all durable state is written through
- * trust-directive session entries.
- *
- * @example
- * ```typescript
- * const result: ProposeTrustResult = trustRuleRejectedResult();
- * ```
+ Tool result shape returned by propose_trust.
+ 
+ Details are intentionally empty because all durable state is written through
+ trust-directive session entries.
+ 
+ @example
+ ```typescript
+ const result: ProposeTrustResult = trustRuleRejectedResult();
+ ```
  */
 type ProposeTrustResult = AgentToolResult<unknown>;
 
 /**
- * Required trust-rule parameter schema.
+ Required trust-rule parameter schema.
  */
 const trustRuleParameterSchema = Type.String({
   description:
@@ -76,7 +76,7 @@ const trustRuleParameterSchema = Type.String({
 },);
 
 /**
- * Optional trust-rule rationale parameter schema.
+ Optional trust-rule rationale parameter schema.
  */
 const trustReasonParameterSchema = Type.Optional(
   Type.String({
@@ -85,24 +85,24 @@ const trustReasonParameterSchema = Type.Optional(
 );
 
 /**
- * Register the `propose_trust` tool on the extension API.
- *
- * Auto-accepts rules already active via {@link isActiveTrustRule}, otherwise
- * prompts with {@link buildTrustRulePrompt} and records acceptance through the
- * {@link TRUST_ENTRY_TYPE} session entry, returning {@link trustRuleAcceptedResult}
- * or {@link trustRuleRejectedResult}.
- *
- * Split out of the entry point so `index.ts` stays within the per-file line
- * budget; the tool closes only over `pi`, so it needs no turn-level state.
- *
- * @param pi - pi extension API the tool is registered on
- *
- * @mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
- *
- * @example
- * ```typescript
- * registerProposeTrust(pi);
- * ```
+ Register the `propose_trust` tool on the extension API.
+ 
+ Auto-accepts rules already active via {@link isActiveTrustRule}, otherwise
+ prompts with {@link buildTrustRulePrompt} and records acceptance through the
+ {@link TRUST_ENTRY_TYPE} session entry, returning {@link trustRuleAcceptedResult}
+ or {@link trustRuleRejectedResult}.
+ 
+ Split out of the entry point so `index.ts` stays within the per-file line
+ budget; the tool closes only over `pi`, so it needs no turn-level state.
+ 
+ @param pi - pi extension API the tool is registered on
+ 
+ @mutates pi - `pi.registerTool` changes registered tools; deferred `pi.appendEntry` calls append accepted trust state.
+ 
+ @example
+ ```typescript
+ registerProposeTrust(pi);
+ ```
  */
 function registerProposeTrust(
   pi: ForeignHostCapability<ExtensionAPI>,
@@ -125,21 +125,21 @@ function registerProposeTrust(
       reason: trustReasonParameterSchema,
     },),
     /**
-     * Resolves one trust-rule proposal.
-     *
-     * @param _toolCallId - Pi-assigned tool call identity.
-     *
-     * @param params - Requested trust rule and rationale.
-     *
-     * @param _signal - Pi cancellation capability unused by this implementation.
-     *
-     * @param _onUpdate - Pi progress callback unused by this implementation.
-     *
-     * @param ctx - Active Pi tool context.
-     *
-     * @returns Trust proposal result for Pi tool host.
-     *
-     * @mutates ctx - `ctx.ui.select` changes active Pi selector state.
+     Resolves one trust-rule proposal.
+     
+     @param _toolCallId - Pi-assigned tool call identity.
+     
+     @param params - Requested trust rule and rationale.
+     
+     @param _signal - Pi cancellation capability unused by this implementation.
+     
+     @param _onUpdate - Pi progress callback unused by this implementation.
+     
+     @param ctx - Active Pi tool context.
+     
+     @returns Trust proposal result for Pi tool host.
+     
+     @mutates ctx - `ctx.ui.select` changes active Pi selector state.
      */
     async execute(
       _toolCallId: string,
@@ -149,7 +149,7 @@ function registerProposeTrust(
       ctx: ForeignHostCapability<ExtensionContext>,
     ): Promise<ProposeTrustResult> {
       /**
-       * Per-call sub-logger so branches are visible without logging rule text.
+       Per-call sub-logger so branches are visible without logging rule text.
        */
       const innerL = tagged({
         tag: 'execute',
@@ -180,7 +180,7 @@ function registerProposeTrust(
 
       innerL.debug('prompting user for new trust rule proposal',);
       /**
-       * Button label selected by user; undefined is treated as rejection.
+       Button label selected by user; undefined is treated as rejection.
        */
       const choice = await ctx.ui
         .select(
@@ -210,24 +210,24 @@ function registerProposeTrust(
 }
 
 /**
- * Check whether proposed trust rule is already active in session history.
- *
- * Exact matching against {@link getTrustDirectives} keeps auto-approval
- * idempotent: reset entries and spelling changes still require user
- * interaction.
- *
- * @param ctx - extension context carrying session branch
- *
- * @param rule - proposed trust directive text
- *
- * @returns whether active directives already contain proposed rule
- *
- * @mutates ctx - session branch lookup may update host-owned session caches
- *
- * @example
- * ```typescript
- * isActiveTrustRule({ ctx, rule: 'Allow .env file access' });
- * ```
+ Check whether proposed trust rule is already active in session history.
+ 
+ Exact matching against {@link getTrustDirectives} keeps auto-approval
+ idempotent: reset entries and spelling changes still require user
+ interaction.
+ 
+ @param ctx - extension context carrying session branch
+ 
+ @param rule - proposed trust directive text
+ 
+ @returns whether active directives already contain proposed rule
+ 
+ @mutates ctx - session branch lookup may update host-owned session caches
+ 
+ @example
+ ```typescript
+ isActiveTrustRule({ ctx, rule: 'Allow .env file access' });
+ ```
  */
 function isActiveTrustRule(
   {
@@ -243,16 +243,16 @@ function isActiveTrustRule(
 }
 
 /**
- * Build prompt body for new trust-rule proposal.
- *
- * @param params - tool parameters containing rule and optional reason
- *
- * @returns multiline prompt text shown to user
- *
- * @example
- * ```typescript
- * buildTrustRulePrompt({ params: { rule: 'Allow terraform plan' } });
- * ```
+ Build prompt body for new trust-rule proposal.
+ 
+ @param params - tool parameters containing rule and optional reason
+ 
+ @returns multiline prompt text shown to user
+ 
+ @example
+ ```typescript
+ buildTrustRulePrompt({ params: { rule: 'Allow terraform plan' } });
+ ```
  */
 function buildTrustRulePrompt(
   {
@@ -262,7 +262,7 @@ function buildTrustRulePrompt(
   },
 ): string {
   /**
-   * Per-line accumulator for prompt text; reason is appended when present.
+   Per-line accumulator for prompt text; reason is appended when present.
    */
   const lines = [
     'Trust rule proposed',
@@ -282,18 +282,18 @@ function buildTrustRulePrompt(
 }
 
 /**
- * Build accepted propose_trust tool result.
- *
- * @param alreadyTrusted - whether active session directives already contained rule
- *
- * @param rule - trust directive text accepted for session
- *
- * @returns tool result sent back to agent
- *
- * @example
- * ```typescript
- * trustRuleAcceptedResult({ alreadyTrusted: true, rule: 'Allow .env file access' });
- * ```
+ Build accepted propose_trust tool result.
+ 
+ @param alreadyTrusted - whether active session directives already contained rule
+ 
+ @param rule - trust directive text accepted for session
+ 
+ @returns tool result sent back to agent
+ 
+ @example
+ ```typescript
+ trustRuleAcceptedResult({ alreadyTrusted: true, rule: 'Allow .env file access' });
+ ```
  */
 function trustRuleAcceptedResult(
   {
@@ -318,14 +318,14 @@ function trustRuleAcceptedResult(
 }
 
 /**
- * Build rejected propose_trust tool result.
- *
- * @returns tool result sent back to agent
- *
- * @example
- * ```typescript
- * trustRuleRejectedResult();
- * ```
+ Build rejected propose_trust tool result.
+ 
+ @returns tool result sent back to agent
+ 
+ @example
+ ```typescript
+ trustRuleRejectedResult();
+ ```
  */
 function trustRuleRejectedResult(): ProposeTrustResult {
   return {

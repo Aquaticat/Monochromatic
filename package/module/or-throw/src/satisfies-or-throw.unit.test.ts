@@ -1,7 +1,7 @@
 /**
- * Tests for `satisfiesOrThrow` and `satisfiesOrThrowAsync`.
- *
- * @module
+ Tests for `satisfiesOrThrow` and `satisfiesOrThrowAsync`.
+ 
+ @module
  */
 
 import {

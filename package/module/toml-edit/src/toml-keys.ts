@@ -1,7 +1,7 @@
 /**
- * {@link tomlKeys}: list the keys at a path (or at the root).
- *
- * @module
+ {@link tomlKeys}: list the keys at a path (or at the root).
+ 
+ @module
  */
 
 import {
@@ -15,19 +15,19 @@ import type {
 } from './types.ts';
 
 /**
- * Return the immediate children of the value at `path`.
- *
- * For objects (tables and inline tables) returns key strings; for arrays and
- * array-of-tables returns numeric indices; for a scalar or a missing path
- * returns an empty array.
- *
- * @returns Computed result (`readonly (string | number)[]`).
- *
- * @example
- * ```ts
- * tomlKeys({ edit, },);                    // ['title', 'tools', 'fruits']
- * tomlKeys({ edit, path: ['fruits',], },); // [0, 1] (array-of-tables)
- * ```
+ Return the immediate children of the value at `path`.
+ 
+ For objects (tables and inline tables) returns key strings; for arrays and
+ array-of-tables returns numeric indices; for a scalar or a missing path
+ returns an empty array.
+ 
+ @returns Computed result (`readonly (string | number)[]`).
+ 
+ @example
+ ```ts
+ tomlKeys({ edit, },);                    // ['title', 'tools', 'fruits']
+ tomlKeys({ edit, path: ['fruits',], },); // [0, 1] (array-of-tables)
+ ```
  */
 export function tomlKeys(
   {
@@ -39,7 +39,7 @@ export function tomlKeys(
   },
 ): readonly (string | number)[] {
   /**
-   * Materialized value at the path; missing and scalars yield no keys.
+   Materialized value at the path; missing and scalars yield no keys.
    */
   const result = navigate({
     root: materializeDocument({ edit, },),

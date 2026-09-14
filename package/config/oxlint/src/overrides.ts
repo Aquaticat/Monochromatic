@@ -1,20 +1,20 @@
 /**
- * File-pattern overrides for oxlint.
- *
- * Each override relaxes or tightens rules for specific file patterns
- * (declaration files, test files, config files, etc.) where the base
- * ruleset would be too strict or inappropriate.
- *
- * @example
- * ```typescript
- * import { overrides } from './overrides.ts';
- * ```
+ File-pattern overrides for oxlint.
+ 
+ Each override relaxes or tightens rules for specific file patterns
+ (declaration files, test files, config files, etc.) where the base
+ ruleset would be too strict or inappropriate.
+ 
+ @example
+ ```typescript
+ import { overrides } from './overrides.ts';
+ ```
  */
 
 import type { OxlintOverride, } from 'oxlint';
 
 /**
- * Figma plugin globals.
+ Figma plugin globals.
  */
 const figmaOverride = {
   files: ['**/figma-plugin/**',],
@@ -24,7 +24,7 @@ const figmaOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Numeric type files can use magic numbers.
+ Numeric type files can use magic numbers.
  */
 const typeFileOverride = {
   files: ['**/*.type.*.ts',],
@@ -34,7 +34,7 @@ const typeFileOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Fixture files are exempt from line limits and magic numbers.
+ Fixture files are exempt from line limits and magic numbers.
  */
 const fixtureOverride = {
   files: ['**/fixture.*',],
@@ -45,7 +45,7 @@ const fixtureOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Model-generated canary artifacts have no meaningful line budget.
+ Model-generated canary artifacts have no meaningful line budget.
  */
 const canaryOverride = {
   files: ['**/canary-lint/**',],
@@ -55,7 +55,7 @@ const canaryOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Astro components have implicit module context.
+ Astro components have implicit module context.
  */
 const astroOverride = {
   files: ['**/*.astro',],
@@ -70,7 +70,7 @@ const astroOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Declaration files describe external shapes that violate source conventions.
+ Declaration files describe external shapes that violate source conventions.
  */
 const declarationOverride = {
   files: ['**/*.d.{ts,mts,cts}',],
@@ -125,7 +125,7 @@ const declarationOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Config files are exempt from line limits.
+ Config files are exempt from line limits.
  */
 const configOverride = {
   files: ['**/*.config.*',],
@@ -135,13 +135,13 @@ const configOverride = {
 } satisfies OxlintOverride;
 
 /**
- * The test module exposes Jest-style matchers (`toHaveBeenCalledWith`,
- * `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`,
- * `toHaveBeenCalledExactlyOnceWith`) whose public signatures take
- * variadic positional arguments to match the Vitest/Jest convention
- * documented in this package's README. The internal wrappers that
- * forward through `MatcherSet[K]` inherit the same shape. External
- * function signatures may use rest parameters.
+ The test module exposes Jest-style matchers (`toHaveBeenCalledWith`,
+ `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`,
+ `toHaveBeenCalledExactlyOnceWith`) whose public signatures take
+ variadic positional arguments to match the Vitest/Jest convention
+ documented in this package's README. The internal wrappers that
+ forward through `MatcherSet[K]` inherit the same shape. External
+ function signatures may use rest parameters.
  */
 const jestMatcherApiOverride = {
   files: [
@@ -154,7 +154,7 @@ const jestMatcherApiOverride = {
 } satisfies OxlintOverride;
 
 /**
- * Test and benchmark files have relaxed rules for flexibility.
+ Test and benchmark files have relaxed rules for flexibility.
  */
 const testOverride = {
   files: ['**/*.{test,bench}.ts',],
@@ -236,12 +236,12 @@ const testOverride = {
 } satisfies OxlintOverride;
 
 /**
- * The `prefer-describe-function-ref-name` rule fires when a `describe()` call
- * uses a string literal name that matches an in-scope binding. Unit tests
- * exercise a specific export and benefit from the function-reference form
- * (`describe({ name: myFn.name })`) so suite names follow renames. Other
- * test shapes (e2e, browser, bench) describe scenarios rather than single
- * exports; the literal form is correct there.
+ The `prefer-describe-function-ref-name` rule fires when a `describe()` call
+ uses a string literal name that matches an in-scope binding. Unit tests
+ exercise a specific export and benefit from the function-reference form
+ (`describe({ name: myFn.name })`) so suite names follow renames. Other
+ test shapes (e2e, browser, bench) describe scenarios rather than single
+ exports; the literal form is correct there.
  */
 const nonUnitTestRuleOverride = {
   files: [
@@ -256,59 +256,59 @@ const nonUnitTestRuleOverride = {
 } satisfies OxlintOverride;
 
 /**
- * The effect rule cannot soundly use its own strict opacity policy to prove
- * TypeScript semantic handles or Oxlint's host context. Self-application would
- * require precisely the handwritten host authorities the rule forbids. Other
- * rules remain active for its implementation and tests.
- *
- * ECMAScript collections were a third ground and no longer are. Read-only view
- * receivers derive through `doc/decision/prefer-readonly-effect-model-split.md`,
- * mutable ones through `doc/decision/prefer-readonly-mutable-collection-members.md`,
- * and a verified member channel discharges the receiver claim through
- * `doc/decision/prefer-readonly-member-channel-authority.md`.
- *
- * The exemption still covers the whole package because the remaining two grounds
- * reach 52 of its 96 source files, and because what blocks the rest is now a
- * short named list rather than collections generally.
- *
- * Measured on the three modules that import no semantic API, by linting them
- * with this override removed: four findings, at
- * `effect-element-application.ts:39`, `effect-callback-relation.ts:35`, and
- * `effect-fixed-point-propagation.ts:37` and `:69`.
- *
- * An earlier revision of this comment described each finding by one cause and
- * concluded "every one is a `Map.get`". That was measured too narrowly. Each
- * finding names a list, and the `:37` finding alone names six causes:
- * `(provenanceBySlot.get(slot,) ?? []).forEach` at
- * `effect-slot-projection.ts:182`, `summaries.get` at `:90`, `summaries.values`
- * at `:49`, `summary.opaqueProvenanceBySlot.set` at
- * `effect-call-resolution.ts:419`, and `target.get` and `target.set` at
- * `effect-uncertainty-provenance.ts:47` and `:55`.
- *
- * What blocks narrowing is result provenance: a summary fact recording that a
- * call result is reachable from the receiver's parameter. That covers every
- * `.get` cause, and `target.set` once the value it stores carries a known
- * origin, because the code mutates what those lookups return and nothing tracks
- * the alias.
- *
- * Iterator members were listed here as a second, independent blocker, on the
- * ground that `summaries.values` stayed unproven whatever result provenance did.
- * That is no longer true and the reason it was stated is no longer the reason it
- * holds. The iterator members are in the channel authority now, claiming
- * creation and drainage together, which discharges an iterator yielding
- * primitives and nothing else. `summaries.values` yields `MutableEffectSummary`,
- * so it still reports, and it now reports for exactly the same reason every
- * `.get` cause does: nothing describes a container whose elements are receiver
- * state. Measured after the entries landed, this probe's output was
- * byte-identical.
- *
- * So one thing blocks narrowing, not two, and `doc/planning/prefer-readonly-iterator-members.md`
- * records why closing it is larger than a table entry: the discharge would also
- * need `effect-result-escape.ts` to recognise a spread and a for-of position,
- * which is a global widening rather than a relation.
- *
- * Neither is a wider authority, which remains the thing this exemption is not
- * waiting for.
+ The effect rule cannot soundly use its own strict opacity policy to prove
+ TypeScript semantic handles or Oxlint's host context. Self-application would
+ require precisely the handwritten host authorities the rule forbids. Other
+ rules remain active for its implementation and tests.
+ 
+ ECMAScript collections were a third ground and no longer are. Read-only view
+ receivers derive through `doc/decision/prefer-readonly-effect-model-split.md`,
+ mutable ones through `doc/decision/prefer-readonly-mutable-collection-members.md`,
+ and a verified member channel discharges the receiver claim through
+ `doc/decision/prefer-readonly-member-channel-authority.md`.
+ 
+ The exemption still covers the whole package because the remaining two grounds
+ reach 52 of its 96 source files, and because what blocks the rest is now a
+ short named list rather than collections generally.
+ 
+ Measured on the three modules that import no semantic API, by linting them
+ with this override removed: four findings, at
+ `effect-element-application.ts:39`, `effect-callback-relation.ts:35`, and
+ `effect-fixed-point-propagation.ts:37` and `:69`.
+ 
+ An earlier revision of this comment described each finding by one cause and
+ concluded "every one is a `Map.get`". That was measured too narrowly. Each
+ finding names a list, and the `:37` finding alone names six causes:
+ `(provenanceBySlot.get(slot,) ?? []).forEach` at
+ `effect-slot-projection.ts:182`, `summaries.get` at `:90`, `summaries.values`
+ at `:49`, `summary.opaqueProvenanceBySlot.set` at
+ `effect-call-resolution.ts:419`, and `target.get` and `target.set` at
+ `effect-uncertainty-provenance.ts:47` and `:55`.
+ 
+ What blocks narrowing is result provenance: a summary fact recording that a
+ call result is reachable from the receiver's parameter. That covers every
+ `.get` cause, and `target.set` once the value it stores carries a known
+ origin, because the code mutates what those lookups return and nothing tracks
+ the alias.
+ 
+ Iterator members were listed here as a second, independent blocker, on the
+ ground that `summaries.values` stayed unproven whatever result provenance did.
+ That is no longer true and the reason it was stated is no longer the reason it
+ holds. The iterator members are in the channel authority now, claiming
+ creation and drainage together, which discharges an iterator yielding
+ primitives and nothing else. `summaries.values` yields `MutableEffectSummary`,
+ so it still reports, and it now reports for exactly the same reason every
+ `.get` cause does: nothing describes a container whose elements are receiver
+ state. Measured after the entries landed, this probe's output was
+ byte-identical.
+ 
+ So one thing blocks narrowing, not two, and `doc/planning/prefer-readonly-iterator-members.md`
+ records why closing it is larger than a table entry: the discharge would also
+ need `effect-result-escape.ts` to recognise a spread and a for-of position,
+ which is a global widening rather than a relation.
+ 
+ Neither is a wider authority, which remains the thing this exemption is not
+ waiting for.
  */
 const readonlyEffectSelfHostingOverride = {
   files: [
@@ -320,7 +320,7 @@ const readonlyEffectSelfHostingOverride = {
 } satisfies OxlintOverride;
 
 /**
- * All overrides, ordered from most specific to least specific.
+ All overrides, ordered from most specific to least specific.
  */
 export const overrides: OxlintOverride[] = [
   readonlyEffectSelfHostingOverride,

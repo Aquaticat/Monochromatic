@@ -3,32 +3,31 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   isIpLiteral,
   parseAllowedFromFiles,
+  parseEndpointPort,
   parsePositiveInt,
   stripComment,
 } from './config-parse-values.ts';
-import type {
-  AllowedFromFiles,
-  WireguardConfig,
-} from './config-types.ts';
+import type { ParseAcc, } from './config-parse-types.ts';
+import type { WireguardConfig, } from './config-types.ts';
 import { ConfigError, } from './errors.ts';
 import { trimLinear, } from './text.ts';
 
 /**
- * Module logger for config parsing.
+ Module logger for config parsing.
  */
 const l = tagged({ tag: 'config-parse', },);
 
 /**
- * Splits one `key = value` line at its first `=`, trimming both sides linearly.
- *
- * @param stripped - Comment-stripped config line.
- *
- * @returns Trimmed key and trimmed value.
- *
- * @example
- * ```ts
- * splitKeyValue({ stripped: 'Address = 10.0.0.1/32' });
- * ```
+ Splits one `key = value` line at its first `=`, trimming both sides linearly.
+ 
+ @param stripped - Comment-stripped config line.
+ 
+ @returns Trimmed key and trimmed value.
+ 
+ @example
+ ```ts
+ splitKeyValue({ stripped: 'Address = 10.0.0.1/32' });
+ ```
  */
 function splitKeyValue(
   { stripped, }: { readonly stripped: string; },
@@ -37,7 +36,7 @@ function splitKeyValue(
   readonly value: string
 } {
   /**
-   * Index of the first key/value separator.
+   Index of the first key/value separator.
    */
   const equals = stripped.indexOf('=',);
   if (equals === (-1)) {
@@ -56,16 +55,16 @@ function splitKeyValue(
 }
 
 /**
- * Reports the lowercased section name when a trimmed line is a section header.
- *
- * @param stripped - Comment-stripped, whitespace-trimmed config line.
- *
- * @returns Lowercased section name, or an empty string when not a header.
- *
- * @example
- * ```ts
- * sectionName({ stripped: '[Interface]' });
- * ```
+ Reports the lowercased section name when a trimmed line is a section header.
+ 
+ @param stripped - Comment-stripped, whitespace-trimmed config line.
+ 
+ @returns Lowercased section name, or an empty string when not a header.
+ 
+ @example
+ ```ts
+ sectionName({ stripped: '[Interface]' });
+ ```
  */
 function sectionName({ stripped, }: { readonly stripped: string; },): string {
   if ((!stripped.startsWith('[',)) || (!stripped.endsWith(']',)))
@@ -78,112 +77,22 @@ function sectionName({ stripped, }: { readonly stripped: string; },): string {
 }
 
 /**
- * Mutable state gathered while walking config lines.
- */
-type ParseAcc = {
-  /**
-   * Accumulated `Address` values.
-   */
-  addresses: string[];
-
-  /**
-   * Accumulated DNS server literals.
-   */
-  dns: string[];
-
-  /**
-   * Accumulated DNS search domains.
-   */
-  dnsSearch: string[];
-
-  /**
-   * Accumulated explicit MTU.
-   */
-  mtu?: number;
-
-  /**
-   * Accumulated `Table` value.
-   */
-  table?: string;
-
-  /**
-   * Accumulated `ExemptMark` value.
-   */
-  exemptMark?: number;
-
-  /**
-   * Accumulated peer-scoped `AllowedIPsFromFiles` directives.
-   */
-  allowedFromFiles: AllowedFromFiles[];
-
-  /**
-   * Accumulated `PreUp` hooks.
-   */
-  preUp: string[];
-
-  /**
-   * Accumulated `PostUp` hooks.
-   */
-  postUp: string[];
-
-  /**
-   * Accumulated `PreDown` hooks.
-   */
-  preDown: string[];
-
-  /**
-   * Accumulated `PostDown` hooks.
-   */
-  postDown: string[];
-
-  /**
-   * Raw lines forwarded to `wg addconf`.
-   */
-  wgLines: string[];
-
-  /**
-   * Whether cursor is inside `[Interface]` section.
-   */
-  inInterface: boolean;
-
-  /**
-   * Whether cursor is inside `[Peer]` section.
-   */
-  inPeer: boolean;
-
-  /**
-   * Zero-based index of current or most recently opened peer.
-   */
-  peerIndex: number;
-
-  /**
-   * Whether current peer already contains literal `AllowedIPs`.
-   */
-  peerHasAllowedIps: boolean;
-
-  /**
-   * Whether current peer already contains `AllowedIPsFromFiles`.
-   */
-  peerHasAllowedFromFiles: boolean;
-};
-
-/**
- * Routes one `[Interface]` key/value pair into the accumulator.
- *
- * @param acc - Accumulator being built.
- *
- * @param key - Trimmed lowercased key.
- *
- * @param value - Trimmed value.
- *
- * @param unstripped - Value before comment-stripping, used by hooks.
- *
- * @returns True when the key was consumed as an interface setting.
- *
- * @example
- * ```ts
- * consumeInterfaceKey({ acc, key: 'dns', value: '1.1.1.1', unstripped: '1.1.1.1' });
- * ```
+ Routes one `[Interface]` key/value pair into the accumulator.
+ 
+ @param acc - Accumulator being built.
+ 
+ @param key - Trimmed lowercased key.
+ 
+ @param value - Trimmed value.
+ 
+ @param unstripped - Value before comment-stripping, used by hooks.
+ 
+ @returns True when the key was consumed as an interface setting.
+ 
+ @example
+ ```ts
+ consumeInterfaceKey({ acc, key: 'dns', value: '1.1.1.1', unstripped: '1.1.1.1' });
+ ```
  */
 function consumeInterfaceKey(
   {
@@ -201,7 +110,7 @@ function consumeInterfaceKey(
   if (key === 'address') {
     for (const part of value.split(',',)) {
       /**
-       * One whitespace-trimmed comma-separated address token.
+       One whitespace-trimmed comma-separated address token.
        */
       const token = trimLinear({ value: part, },);
       if (token !== '')
@@ -213,7 +122,7 @@ function consumeInterfaceKey(
   if (key === 'dns') {
     for (const part of value.split(',',)) {
       /**
-       * One whitespace-trimmed comma-separated DNS token.
+       One whitespace-trimmed comma-separated DNS token.
        */
       const token = trimLinear({ value: part, },);
       if (token === '')
@@ -262,24 +171,24 @@ function consumeInterfaceKey(
 }
 
 /**
- * Consumes peer-scoped AllowedIPs key when it belongs to wg-quicker.
- *
- * @param acc - Accumulator carrying current peer state.
- *
- * @param key - Lowercased key.
- *
- * @param value - Comment-stripped value.
- *
- * @returns Whether source-file directive was consumed instead of forwarded.
- *
- * @throws {@link ConfigError} when directive is outside peer,
- * duplicated,
- * or conflicts with literal `AllowedIPs`.
- *
- * @example
- * ```ts
- * consumePeerAllowedIpsKey({ acc, key: 'allowedips', value: '0.0.0.0/0' });
- * ```
+ Consumes peer-scoped AllowedIPs key when it belongs to wg-quicker.
+ 
+ @param acc - Accumulator carrying current peer state.
+ 
+ @param key - Lowercased key.
+ 
+ @param value - Comment-stripped value.
+ 
+ @returns Whether source-file directive was consumed instead of forwarded.
+ 
+ @throws {@link ConfigError} when directive is outside peer,
+ duplicated,
+ or conflicts with literal `AllowedIPs`.
+ 
+ @example
+ ```ts
+ consumePeerAllowedIpsKey({ acc, key: 'allowedips', value: '0.0.0.0/0' });
+ ```
  */
 function consumePeerAllowedIpsKey(
   {
@@ -317,7 +226,7 @@ function consumePeerAllowedIpsKey(
     );
   }
   /**
-   * Validated paths associated with current peer and insertion point.
+   Validated paths associated with current peer and insertion point.
    */
   const paths = parseAllowedFromFiles({ value, },);
   acc.allowedFromFiles
@@ -332,16 +241,16 @@ function consumePeerAllowedIpsKey(
 }
 
 /**
- * Processes a single raw config line into the accumulator.
- *
- * @param acc - Accumulator being built.
- *
- * @param rawLine - One unmodified config line.
- *
- * @example
- * ```ts
- * processLine({ acc, rawLine: 'Address = 10.0.0.1/32' });
- * ```
+ Processes a single raw config line into the accumulator.
+ 
+ @param acc - Accumulator being built.
+ 
+ @param rawLine - One unmodified config line.
+ 
+ @example
+ ```ts
+ processLine({ acc, rawLine: 'Address = 10.0.0.1/32' });
+ ```
  */
 function processLine(
   {
@@ -353,11 +262,11 @@ function processLine(
   },
 ): void {
   /**
-   * Comment-stripped, whitespace-trimmed view of the line.
+   Comment-stripped, whitespace-trimmed view of the line.
    */
   const stripped = stripComment({ line: rawLine, },);
   /**
-   * Lowercased section name when the line opens a section.
+   Lowercased section name when the line opens a section.
    */
   const section = sectionName({ stripped, },);
   if (section !== '') {
@@ -379,14 +288,14 @@ function processLine(
     return;
   }
   /**
-   * Trimmed key and value split from the comment-stripped line.
+   Trimmed key and value split from the comment-stripped line.
    */
   const {
     key,
     value,
   } = splitKeyValue({ stripped, },);
   /**
-   * Lowercased key for case-insensitive matching.
+   Lowercased key for case-insensitive matching.
    */
   const lower = key.toLowerCase();
   if (consumePeerAllowedIpsKey({
@@ -395,13 +304,16 @@ function processLine(
     value,
   },))
     return;
+  if (acc.inPeer && (lower === 'endpoint'))
+    acc.endpointPorts
+      .push(parseEndpointPort({ value, },),);
   if (acc.inInterface) {
     /**
-     * Index of the first key/value separator in the raw line.
+     Index of the first key/value separator in the raw line.
      */
     const equals = rawLine.indexOf('=',);
     /**
-     * Value text before comment-stripping, preserving hook commands.
+     Value text before comment-stripping, preserving hook commands.
      */
     const unstripped = trimLinear({ value: rawLine.slice(equals + 1,), },);
     if (lower === 'mtu') {
@@ -426,23 +338,23 @@ function processLine(
 
 
 /**
- * Parses config text into the interface settings wg-quicker consumes and the raw
- * peer block passed to `wg addconf`.
- *
- * Only `[Interface]` routing/DNS/hook keys are interpreted; `PrivateKey`, the
- * `[Interface]` header, and every other line are forwarded verbatim, so a very
- * large `AllowedIPs` value is stored but never pattern-matched.
- *
- * @param interfaceName - Interface name used for logging context.
- *
- * @param text - Full config file text.
- *
- * @returns Parsed interface settings plus raw peer config.
- *
- * @example
- * ```ts
- * parseConfigText({ interfaceName: 'wg0', text: '[Interface]\nPrivateKey = k\nAddress = 10.0.0.1/32\n' });
- * ```
+ Parses config text into the interface settings wg-quicker consumes and the raw
+ peer block passed to `wg addconf`.
+ 
+ Only `[Interface]` routing/DNS/hook keys are interpreted; `PrivateKey`, the
+ `[Interface]` header, and every other line are forwarded verbatim, so a very
+ large `AllowedIPs` value is stored but never pattern-matched.
+ 
+ @param interfaceName - Interface name used for logging context.
+ 
+ @param text - Full config file text.
+ 
+ @returns Parsed interface settings plus raw peer config.
+ 
+ @example
+ ```ts
+ parseConfigText({ interfaceName: 'wg0', text: '[Interface]\nPrivateKey = k\nAddress = 10.0.0.1/32\n' });
+ ```
  */
 export function parseConfigText(
   {
@@ -454,14 +366,14 @@ export function parseConfigText(
   },
 ): WireguardConfig {
   /**
-   * Function-scoped logger for the parse.
+   Function-scoped logger for the parse.
    */
   const fl = tagged({
     tag: parseConfigText.name,
     l,
   },);
   /**
-   * Accumulator built by the line walk, contained so no root-level `let` leaks.
+   Accumulator built by the line walk, contained so no root-level `let` leaks.
    */
   const acc: ParseAcc = {
     addresses: [],
@@ -472,6 +384,7 @@ export function parseConfigText(
     preDown: [],
     postDown: [],
     allowedFromFiles: [],
+    endpointPorts: [],
     wgLines: [],
     inInterface: false,
     inPeer: false,
@@ -499,6 +412,7 @@ export function parseConfigText(
     ...(acc.mtu === undefined ? {} : { mtu: acc.mtu, }),
     ...(acc.table === undefined ? {} : { table: acc.table, }),
     ...(acc.exemptMark === undefined ? {} : { exemptMark: acc.exemptMark, }),
+    endpointPorts: [...new Set(acc.endpointPorts,),],
     allowedFromFiles: acc.allowedFromFiles,
     preUp: acc.preUp,
     postUp: acc.postUp,

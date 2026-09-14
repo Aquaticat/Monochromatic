@@ -1,10 +1,10 @@
 /**
- * Post-install mutations for the catalog-tighten matrix.
- *
- * Each scenario applies one mutation after install and before the tool runs:
- * seeding a stale orphan, or removing a file or directory that catalog-tighten
- * depends on, to exercise its graceful behaviour (tighten anyway, MISS, UNDCL,
- * or fail cleanly).
+ Post-install mutations for the catalog-tighten matrix.
+ 
+ Each scenario applies one mutation after install and before the tool runs:
+ seeding a stale orphan, or removing a file or directory that catalog-tighten
+ depends on, to exercise its graceful behaviour (tighten anyway, MISS, UNDCL,
+ or fail cleanly).
  */
 
 import {
@@ -31,19 +31,19 @@ import {
 //region Mutations
 
 /**
- * Indentation passed to `JSON.stringify` for the seeded orphan manifest.
+ Indentation passed to `JSON.stringify` for the seeded orphan manifest.
  */
 const JSON_INDENT = 2;
 
 /**
- * Removes a path, ignoring absence.
- *
- * @param path - absolute path to remove
- *
- * @example
- * ```ts
- * await removePath('/work/pnpm-lock.yaml');
- * ```
+ Removes a path, ignoring absence.
+ 
+ @param path - absolute path to remove
+ 
+ @example
+ ```ts
+ await removePath('/work/pnpm-lock.yaml');
+ ```
  */
 async function removePath(path: string,): Promise<void> {
   await rm(
@@ -56,19 +56,19 @@ async function removePath(path: string,): Promise<void> {
 }
 
 /**
- * Seeds {@link FIXTURE_PACKAGE} at the higher {@link FIXTURE_ORPHAN} version
- * into the virtual store, with no symlink pointing at it, reproducing the
- * post-downgrade leftover from `doc/troubleshooting/pnpm-modules-cache.md`.
- * The resolver must ignore it.
- *
- * @example
- * ```ts
- * await seedStaleOrphan();
- * ```
+ Seeds {@link FIXTURE_PACKAGE} at the higher {@link FIXTURE_ORPHAN} version
+ into the virtual store, with no symlink pointing at it, reproducing the
+ post-downgrade leftover from `doc/troubleshooting/pnpm-modules-cache.md`.
+ The resolver must ignore it.
+ 
+ @example
+ ```ts
+ await seedStaleOrphan();
+ ```
  */
 async function seedStaleOrphan(): Promise<void> {
   /**
-   * Virtual-store package directory for the orphan version, mirroring pnpm's `.pnpm` layout.
+   Virtual-store package directory for the orphan version, mirroring pnpm's `.pnpm` layout.
    */
   const orphanDir = join(
     WORK_DIR,
@@ -101,13 +101,13 @@ async function seedStaleOrphan(): Promise<void> {
 }
 
 /**
- * Removes every `node_modules` in the fixture: the root and both
- * {@link CONSUMER_DIRS}.
- *
- * @example
- * ```ts
- * await removeAllModules();
- * ```
+ Removes every `node_modules` in the fixture: the root and both
+ {@link CONSUMER_DIRS}.
+ 
+ @example
+ ```ts
+ await removeAllModules();
+ ```
  */
 async function removeAllModules(): Promise<void> {
   await removePath(join(
@@ -124,24 +124,24 @@ async function removeAllModules(): Promise<void> {
 }
 
 /**
- * Turns the catalog package into a store-only orphan: rewrites both
- * {@link CONSUMER_DIRS} manifests to drop the {@link FIXTURE_PACKAGE}
- * dependency and removes their `node_modules`, while leaving the root
- * `node_modules` (and its `.pnpm` virtual store) intact. The package is then
- * present in the store but declared by no importer and reachable through no
- * symlink, which is the layout catalog-tighten classifies as `UNDCL` (rather
- * than `MISS`, which also requires the store copy to be absent, or a plain
- * unresolved miss, which keeps the declaration).
- *
- * @example
- * ```ts
- * await orphanStoreCopy();
- * ```
+ Turns the catalog package into a store-only orphan: rewrites both
+ {@link CONSUMER_DIRS} manifests to drop the {@link FIXTURE_PACKAGE}
+ dependency and removes their `node_modules`, while leaving the root
+ `node_modules` (and its `.pnpm` virtual store) intact. The package is then
+ present in the store but declared by no importer and reachable through no
+ symlink, which is the layout catalog-tighten classifies as `UNDCL` (rather
+ than `MISS`, which also requires the store copy to be absent, or a plain
+ unresolved miss, which keeps the declaration).
+ 
+ @example
+ ```ts
+ await orphanStoreCopy();
+ ```
  */
 async function orphanStoreCopy(): Promise<void> {
   await Promise.all(CONSUMER_DIRS.map(async function orphanOneConsumer(dir,): Promise<void> {
     /**
-     * Absolute consumer directory whose manifest is undeclared and `node_modules` removed.
+     Absolute consumer directory whose manifest is undeclared and `node_modules` removed.
      */
     const consumerDir = join(
       WORK_DIR,
@@ -173,20 +173,20 @@ async function orphanStoreCopy(): Promise<void> {
 }
 
 /**
- * Applies the scenario's post-install mutation before the tool runs. An if/else
- * chain maps each mutation to its action (rule PP9: no switch), delegating to
- * {@link seedStaleOrphan} and {@link removeAllModules} for the multi-step cases.
- *
- * @param scenario - scenario whose mutation to apply
- *
- * @example
- * ```ts
- * await applyMutation(SCENARIOS[0]);
- * ```
+ Applies the scenario's post-install mutation before the tool runs. An if/else
+ chain maps each mutation to its action (rule PP9: no switch), delegating to
+ {@link seedStaleOrphan} and {@link removeAllModules} for the multi-step cases.
+ 
+ @param scenario - scenario whose mutation to apply
+ 
+ @example
+ ```ts
+ await applyMutation(SCENARIOS[0]);
+ ```
  */
 export async function applyMutation(scenario: Scenario,): Promise<void> {
   /**
-   * Mutation to apply.
+   Mutation to apply.
    */
   const { mutation, } = scenario;
   if (mutation === 'none')

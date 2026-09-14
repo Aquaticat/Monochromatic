@@ -1,9 +1,9 @@
 /**
- * Unit tests for the low-level scanners: whitespace classification, string and
- * number token scanning (including escapes, EOF, and invalid runs), keyword
- * matching, and line and block comment scanning.
- *
- * @module
+ Unit tests for the low-level scanners: whitespace classification, string and
+ number token scanning (including escapes, EOF, and invalid runs), keyword
+ matching, and line and block comment scanning.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
   scanLineComment,
   scanNumber,
   scanString,
-} from './scan.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'scan',

@@ -2,55 +2,55 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Host-suffix blocklist normalization and matching for Pi Search Fetch.
- *
- * @module
+ Host-suffix blocklist normalization and matching for Pi Search Fetch.
+ 
+ @module
  */
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: linkupLogger, },);
+ ```
  */
 const linkupLogger = tagged({ tag: 'pi-search-fetch', },);
 
 //region Constants
 
 /**
- * Characters allowed in normalized host suffix entries.
+ Characters allowed in normalized host suffix entries.
  */
 const HOST_SUFFIX_ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-.';
 
 /**
- * Scheme delimiter rejected in blocklist entries.
+ Scheme delimiter rejected in blocklist entries.
  */
 const SCHEME_DELIMITER = '://';
 
 /**
- * Slash rejected in blocklist entries.
+ Slash rejected in blocklist entries.
  */
 const SLASH = '/';
 
 /**
- * Colon rejected in blocklist entries.
+ Colon rejected in blocklist entries.
  */
 const COLON = ':';
 
 /**
- * Wildcard rejected in blocklist entries.
+ Wildcard rejected in blocklist entries.
  */
 const WILDCARD = '*';
 
 /**
- * Dot used as host label separator.
+ Dot used as host label separator.
  */
 const DOT = '.';
 
 /**
- * Boundary suffix separator for subdomain matching.
+ Boundary suffix separator for subdomain matching.
  */
 const DOT_PREFIX = '.';
 
@@ -59,57 +59,57 @@ const DOT_PREFIX = '.';
 //region Types
 
 /**
- * Result of filtering Linkup search results with the local host blocklist.
+ Result of filtering Linkup search results with the local host blocklist.
  */
 type SearchResultFilterResult = {
   /**
-   * Linkup-shaped response visible to the model after local filtering.
+   Linkup-shaped response visible to the model after local filtering.
    */
   readonly linkupResponse: unknown;
   /**
-   * Untouched upstream Linkup response.
+   Untouched upstream Linkup response.
    */
   readonly rawLinkupResponse: unknown;
   /**
-   * Blocked result URLs removed from the model-visible response.
+   Blocked result URLs removed from the model-visible response.
    */
   readonly removedBlockedUrls: readonly string[];
 };
 
 /**
- * Host or URL blocklist match result.
+ Host or URL blocklist match result.
  */
 type BlocklistMatch = {
   /**
-   * Whether input matched the blocklist.
+   Whether input matched the blocklist.
    */
   readonly blocked: false;
 } | {
   /**
-   * Whether input matched the blocklist.
+   Whether input matched the blocklist.
    */
   readonly blocked: true;
   /**
-   * Matching blocklist entry.
+   Matching blocklist entry.
    */
   readonly entry: string;
 };
 
 /**
- * Optional URL extracted from a Linkup search result.
+ Optional URL extracted from a Linkup search result.
  */
 type SearchResultUrl = {
   /**
-   * Whether a URL was present.
+   Whether a URL was present.
    */
   readonly found: false;
 } | {
   /**
-   * Whether a URL was present.
+   Whether a URL was present.
    */
   readonly found: true;
   /**
-   * Search result URL.
+   Search result URL.
    */
   readonly url: string;
 };
@@ -117,7 +117,7 @@ type SearchResultUrl = {
 //endregion Types
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'domain-policy',
@@ -127,40 +127,40 @@ const l = tagged({
 //region Blocklist normalization
 
 /**
- * Normalize one configured host suffix.
- *
- * @param entry - raw blocklist entry from config
- *
- * @returns normalized host suffix
- *
- * @throws when entry is empty or not a strict host suffix
- *
- * @example
- * ```ts
- * normalizeBlocklistEntry(' Example.COM. ');
- * ```
+ Normalize one configured host suffix.
+ 
+ @param entry - raw blocklist entry from config
+ 
+ @returns normalized host suffix
+ 
+ @throws when entry is empty or not a strict host suffix
+ 
+ @example
+ ```ts
+ normalizeBlocklistEntry(' Example.COM. ');
+ ```
  */
 function normalizeBlocklistEntry(entry: string,): string {
   /**
-   * Local value for innerL.
+   Local value for innerL.
    */
   const innerL = tagged({
     tag: normalizeBlocklistEntry.name,
     l,
   },);
   /**
-   * Local value for trimmed.
+   Local value for trimmed.
    */
   const trimmed = entry.trim();
   if (trimmed === '')
     throw new Error('blocklist entry is empty');
 
   /**
-   * Local value for lowered.
+   Local value for lowered.
    */
   const lowered = trimmed.toLowerCase();
   /**
-   * Local value for normalized.
+   Local value for normalized.
    */
   const normalized = stripOneTrailingDot(lowered,);
   if (normalized === '')
@@ -175,7 +175,7 @@ function normalizeBlocklistEntry(entry: string,): string {
     throw new Error(`blocklist entry ${JSON.stringify(entry,)} must not include a wildcard`);
 
   /**
-   * Local value for labels.
+   Local value for labels.
    */
   const labels = normalized.split(DOT,);
   if (labels.some(function isEmptyLabel(label,) {
@@ -190,22 +190,22 @@ function normalizeBlocklistEntry(entry: string,): string {
 }
 
 /**
- * Normalize all configured host suffixes and remove duplicates.
- *
- * @param entries - raw config blocklist entries
- *
- * @returns normalized blocklist
- *
- * @throws when any entry is invalid
- *
- * @example
- * ```ts
- * normalizeBlocklist(['Example.com.', 'example.com']);
- * ```
+ Normalize all configured host suffixes and remove duplicates.
+ 
+ @param entries - raw config blocklist entries
+ 
+ @returns normalized blocklist
+ 
+ @throws when any entry is invalid
+ 
+ @example
+ ```ts
+ normalizeBlocklist(['Example.com.', 'example.com']);
+ ```
  */
 function normalizeBlocklist(entries: readonly string[],): readonly string[] {
   /**
-   * Local value for normalizedEntries.
+   Local value for normalizedEntries.
    */
   const normalizedEntries = entries.map(function normalizeEntry(entry,) {
     return normalizeBlocklistEntry(entry,);
@@ -214,16 +214,16 @@ function normalizeBlocklist(entries: readonly string[],): readonly string[] {
 }
 
 /**
- * Strip one optional trailing root dot.
- *
- * @param value - host suffix candidate
- *
- * @returns host suffix without one trailing dot
- *
- * @example
- * ```ts
- * stripOneTrailingDot('example.com.');
- * ```
+ Strip one optional trailing root dot.
+ 
+ @param value - host suffix candidate
+ 
+ @returns host suffix without one trailing dot
+ 
+ @example
+ ```ts
+ stripOneTrailingDot('example.com.');
+ ```
  */
 function stripOneTrailingDot(value: string,): string {
   if (!value.endsWith(DOT,))
@@ -235,27 +235,27 @@ function stripOneTrailingDot(value: string,): string {
 }
 
 /**
- * Return whether a normalized host suffix character is allowed.
- *
- * @param char - one string iterator character
- *
- * @returns whether char is allowed in a host suffix
- *
- * @example
- * ```ts
- * isAllowedHostSuffixChar('a');
- * ```
+ Return whether a normalized host suffix character is allowed.
+ 
+ @param char - one string iterator character
+ 
+ @returns whether char is allowed in a host suffix
+ 
+ @example
+ ```ts
+ isAllowedHostSuffixChar('a');
+ ```
  */
 function isAllowedHostSuffixChar(char: string,): boolean {
   return HOST_SUFFIX_ALLOWED_CHARS.includes(char,);
 }
 
 /**
- * Return whether host suffix text uses only allowed ASCII host characters.
- *
- * @param value - normalized host suffix text
- *
- * @returns whether every character is allowed
+ Return whether host suffix text uses only allowed ASCII host characters.
+ 
+ @param value - normalized host suffix text
+ 
+ @returns whether every character is allowed
  */
 function hasOnlyAllowedHostSuffixChars(value: string,): boolean {
   for (const char of value) {
@@ -270,42 +270,42 @@ function hasOnlyAllowedHostSuffixChars(value: string,): boolean {
 //region Host matching
 
 /**
- * Normalize URL hostnames before local policy matching.
- *
- * @param host - URL hostname
- *
- * @returns lowercase host without one optional trailing root dot
- *
- * @example
- * ```ts
- * normalizeHostForPolicy('WWW.Example.COM.');
- * ```
+ Normalize URL hostnames before local policy matching.
+ 
+ @param host - URL hostname
+ 
+ @returns lowercase host without one optional trailing root dot
+ 
+ @example
+ ```ts
+ normalizeHostForPolicy('WWW.Example.COM.');
+ ```
  */
 function normalizeHostForPolicy(host: string,): string {
   /**
-   * Local value for trimmed.
+   Local value for trimmed.
    */
   const trimmed = host.trim();
   /**
-   * Local value for lowered.
+   Local value for lowered.
    */
   const lowered = trimmed.toLowerCase();
   return stripOneTrailingDot(lowered,);
 }
 
 /**
- * Find blocklist entry matching a host.
- *
- * @param host - candidate URL host
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns match result
- *
- * @example
- * ```ts
- * findBlockedHostMatch({ host: 'www.example.com', blocklist: ['example.com'] });
- * ```
+ Find blocklist entry matching a host.
+ 
+ @param host - candidate URL host
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns match result
+ 
+ @example
+ ```ts
+ findBlockedHostMatch({ host: 'www.example.com', blocklist: ['example.com'] });
+ ```
  */
 function findBlockedHostMatch(
   {
@@ -317,11 +317,11 @@ function findBlockedHostMatch(
   },
 ): BlocklistMatch {
   /**
-   * Local value for normalizedHost.
+   Local value for normalizedHost.
    */
   const normalizedHost = normalizeHostForPolicy(host,);
   /**
-   * Local value for matchedEntry.
+   Local value for matchedEntry.
    */
   const matchedEntry = blocklist.find(function matchesEntry(entry,) {
     return (normalizedHost === entry)
@@ -336,18 +336,18 @@ function findBlockedHostMatch(
 }
 
 /**
- * Return whether a host is blocked.
- *
- * @param host - candidate URL host
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns whether host matches blocklist exactly or as a subdomain suffix
- *
- * @example
- * ```ts
- * isBlockedHost({ host: 'www.example.com', blocklist: ['example.com'] });
- * ```
+ Return whether a host is blocked.
+ 
+ @param host - candidate URL host
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns whether host matches blocklist exactly or as a subdomain suffix
+ 
+ @example
+ ```ts
+ isBlockedHost({ host: 'www.example.com', blocklist: ['example.com'] });
+ ```
  */
 function isBlockedHost(
   {
@@ -366,20 +366,20 @@ function isBlockedHost(
 }
 
 /**
- * Find blocklist entry matching a URL.
- *
- * @param url - candidate absolute URL
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns match result
- *
- * @throws when url cannot be parsed
- *
- * @example
- * ```ts
- * findBlockedUrlMatch({ url: 'https://www.example.com/a', blocklist: ['example.com'] });
- * ```
+ Find blocklist entry matching a URL.
+ 
+ @param url - candidate absolute URL
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns match result
+ 
+ @throws when url cannot be parsed
+ 
+ @example
+ ```ts
+ findBlockedUrlMatch({ url: 'https://www.example.com/a', blocklist: ['example.com'] });
+ ```
  */
 function findBlockedUrlMatch(
   {
@@ -391,7 +391,7 @@ function findBlockedUrlMatch(
   },
 ): BlocklistMatch {
   /**
-   * Local value for parsedUrl.
+   Local value for parsedUrl.
    */
   const parsedUrl = parsePolicyUrl(url,);
   return findBlockedHostMatch({
@@ -401,20 +401,20 @@ function findBlockedUrlMatch(
 }
 
 /**
- * Return whether a URL is blocked.
- *
- * @param url - candidate absolute URL
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns whether URL host is blocked
- *
- * @throws when url cannot be parsed
- *
- * @example
- * ```ts
- * isBlockedUrl({ url: 'https://example.com', blocklist: ['example.com'] });
- * ```
+ Return whether a URL is blocked.
+ 
+ @param url - candidate absolute URL
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns whether URL host is blocked
+ 
+ @throws when url cannot be parsed
+ 
+ @example
+ ```ts
+ isBlockedUrl({ url: 'https://example.com', blocklist: ['example.com'] });
+ ```
  */
 function isBlockedUrl(
   {
@@ -433,18 +433,18 @@ function isBlockedUrl(
 }
 
 /**
- * Parse a URL for blocklist policy checks.
- *
- * @param url - candidate absolute URL
- *
- * @returns parsed URL
- *
- * @throws when url cannot be parsed
- *
- * @example
- * ```ts
- * parsePolicyUrl('https://example.com');
- * ```
+ Parse a URL for blocklist policy checks.
+ 
+ @param url - candidate absolute URL
+ 
+ @returns parsed URL
+ 
+ @throws when url cannot be parsed
+ 
+ @example
+ ```ts
+ parsePolicyUrl('https://example.com');
+ ```
  */
 function parsePolicyUrl(url: string,): URL {
   try {
@@ -452,7 +452,7 @@ function parsePolicyUrl(url: string,): URL {
   }
   catch (error: unknown) {
     /**
-     * Local value for detail.
+     Local value for detail.
      */
     const detail = caughtValueText(error,);
     throw new Error(
@@ -467,18 +467,18 @@ function parsePolicyUrl(url: string,): URL {
 //region Search result filtering
 
 /**
- * Filter blocked Linkup search result URLs out of a Linkup-shaped response.
- *
- * @param response - upstream Linkup search response
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns raw response plus model-visible response after local filtering
- *
- * @example
- * ```ts
- * filterBlockedSearchResults({ response: { results: [] }, blocklist: [] });
- * ```
+ Filter blocked Linkup search result URLs out of a Linkup-shaped response.
+ 
+ @param response - upstream Linkup search response
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns raw response plus model-visible response after local filtering
+ 
+ @example
+ ```ts
+ filterBlockedSearchResults({ response: { results: [] }, blocklist: [] });
+ ```
  */
 function filterBlockedSearchResults(
   {
@@ -495,29 +495,29 @@ function filterBlockedSearchResults(
     return unfilteredSearchResponse(response,);
 
   /**
-   * Local destructured value.
+   Local destructured value.
    */
   const { results: rawResults, } = response;
   if (!Array.isArray(rawResults,))
     return unfilteredSearchResponse(response,);
 
   /**
-   * Local value for removedBlockedUrls.
+   Local value for removedBlockedUrls.
    */
   const removedBlockedUrls: string[] = [];
   /**
-   * Local value for filteredResults.
+   Local value for filteredResults.
    */
   const filteredResults = rawResults.filter(function keepAllowedResult(result,) {
     /**
-     * Local value for resultUrl.
+     Local value for resultUrl.
      */
     const resultUrl = searchResultUrl(result,);
     if (!resultUrl.found)
       return true;
 
     /**
-     * Local value for blockedEntry.
+     Local value for blockedEntry.
      */
     const blockedEntry = blockedEntryForPossiblyInvalidUrl({
       url: resultUrl.url,
@@ -545,11 +545,11 @@ function filterBlockedSearchResults(
 }
 
 /**
- * Build an unfiltered search filter result.
- *
- * @param response - upstream response
- *
- * @returns unfiltered filter result
+ Build an unfiltered search filter result.
+ 
+ @param response - upstream response
+ 
+ @returns unfiltered filter result
  */
 function unfilteredSearchResponse(response: unknown,): SearchResultFilterResult {
   return {
@@ -560,18 +560,18 @@ function unfilteredSearchResponse(response: unknown,): SearchResultFilterResult 
 }
 
 /**
- * Return blocklist match for a Linkup result URL or unblocked for unparsable URLs.
- *
- * @param url - Linkup result URL
- *
- * @param blocklist - normalized host suffix blocklist
- *
- * @returns matching blocklist entry, when URL parses and is blocked
- *
- * @example
- * ```ts
- * blockedEntryForPossiblyInvalidUrl({ url: 'https://example.com', blocklist: ['example.com'] });
- * ```
+ Return blocklist match for a Linkup result URL or unblocked for unparsable URLs.
+ 
+ @param url - Linkup result URL
+ 
+ @param blocklist - normalized host suffix blocklist
+ 
+ @returns matching blocklist entry, when URL parses and is blocked
+ 
+ @example
+ ```ts
+ blockedEntryForPossiblyInvalidUrl({ url: 'https://example.com', blocklist: ['example.com'] });
+ ```
  */
 function blockedEntryForPossiblyInvalidUrl(
   {
@@ -595,22 +595,22 @@ function blockedEntryForPossiblyInvalidUrl(
 }
 
 /**
- * Return a Linkup result URL from an arbitrary result value.
- *
- * @param value - Linkup result candidate
- *
- * @returns URL extraction result
- *
- * @example
- * ```ts
- * searchResultUrl({ url: 'https://example.com' });
- * ```
+ Return a Linkup result URL from an arbitrary result value.
+ 
+ @param value - Linkup result candidate
+ 
+ @returns URL extraction result
+ 
+ @example
+ ```ts
+ searchResultUrl({ url: 'https://example.com' });
+ ```
  */
 function searchResultUrl(value: unknown,): SearchResultUrl {
   if (!isRecord(value,))
     return { found: false, };
   /**
-   * Local destructured value.
+   Local destructured value.
    */
   const { url, } = value;
   return (typeof url) === 'string'
@@ -622,16 +622,16 @@ function searchResultUrl(value: unknown,): SearchResultUrl {
 }
 
 /**
- * Return whether value is a non-null object record.
- *
- * @param value - unknown value
- *
- * @returns whether value can be read by string keys
- *
- * @example
- * ```ts
- * isRecord({});
- * ```
+ Return whether value is a non-null object record.
+ 
+ @param value - unknown value
+ 
+ @returns whether value can be read by string keys
+ 
+ @example
+ ```ts
+ isRecord({});
+ ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)

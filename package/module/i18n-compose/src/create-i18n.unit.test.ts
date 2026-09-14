@@ -1,7 +1,7 @@
 /**
- * Tests for `createI18n` and the registry helpers it returns.
- *
- * @module
+ Tests for `createI18n` and the registry helpers it returns.
+ 
+ @module
  */
 
 import {
@@ -60,14 +60,14 @@ const i18n = createI18n({
 },);
 
 /**
- * Builds a minimal locale spec for type-level vocabulary tests.
- *
- * @returns locale spec whose render methods return deterministic placeholders
- *
- * @example
- * ```ts
- * passthroughSpec<'label', 'subject', 'verb', 'noun'>();
- * ```
+ Builds a minimal locale spec for type-level vocabulary tests.
+ 
+ @returns locale spec whose render methods return deterministic placeholders
+ 
+ @example
+ ```ts
+ passthroughSpec<'label', 'subject', 'verb', 'noun'>();
+ ```
  */
 function passthroughSpec<
   Label extends string,

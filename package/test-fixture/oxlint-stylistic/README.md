@@ -5,7 +5,9 @@ Test fixture for validating the `@monochromatic-dev/oxlint-plugin-stylistic` rul
 The fixture has valid and invalid TypeScript source trees.
 
 - `src/valid/`:
-   correctly formatted TypeScript covering already-per-line layouts,
+   correctly formatted TypeScript covering star-less TSDoc,
+   literal-leading asterisks,
+   already-per-line layouts,
    empty constructs,
    single-item collections,
    semicolon-terminated statements,
@@ -15,7 +17,8 @@ The fixture has valid and invalid TypeScript source trees.
    invocation-depth layouts,
    and conforming operator grouping
 - `src/invalid/`:
-   intentionally broken formatting with focused files for per-line rules,
+   intentionally broken formatting with focused files for TSDoc asterisk prefixes,
+   per-line rules,
    block-body-newline,
    one-var-declaration-per-line,
    max-statements-per-line,
@@ -25,3 +28,6 @@ The fixture has valid and invalid TypeScript source trees.
    chain-per-line,
    invocation-depth-per-line,
    and autofix convergence cases
+
+The default fixture config selects `never` mode.
+Dedicated configs select `always` and verify that omitted or unsupported modes are rejected.

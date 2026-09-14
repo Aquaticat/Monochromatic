@@ -4,24 +4,183 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createLogger, } from './create-logger.ts';
-import type {
-  LogRecord,
-  Sink,
-  SinkFlush,
-  Verify,
-} from './types.ts';
+import {
+  createLogger,
+  DEFAULT_FLUSH_DEADLINE_MS,
+  DEFAULT_VERIFY_TIMEOUT_MS,
+  STARTUP_BUFFER_CAP,
+  type LogRecord,
+  type Sink,
+  type SinkFlush,
+  type Verify,
+} from '@monochromatic-dev/module-logger';
 
 /**
- * Milliseconds a slow write parks before recording, long enough that the
- * record is provably still pending when a synchronous assertion runs but the
- * draining `flush()` must wait for it.
+ Milliseconds a slow write parks before recording, long enough that the
+ record is provably still pending when a synchronous assertion runs but the
+ draining `flush()` must wait for it.
  */
 const SLOW_WRITE_MS = 25;
 
 /**
- * Recording sink plus the array it appends every written record to, so a test
- * can assert exactly which records crossed the seam.
+ Flush deadline the deadline tests inject: short enough to keep the suite
+ fast, long enough that timer granularity cannot fire it early.
+ */
+const SHORT_DEADLINE_MS = 60;
+
+/**
+ Timer slack subtracted from the deadline when asserting a flush waited it
+ out, covering setTimeout clamping and scheduler jitter.
+ */
+const DEADLINE_TOLERANCE_MS = 15;
+
+/**
+ Upper bound on a flush that must not wait out the deadline again; well
+ under `SHORT_DEADLINE_MS` so a regression that re-waits is caught.
+ */
+const FAST_FLUSH_MS = 40;
+
+/**
+ Harness timeout for the deadline tests: a regression that hangs forever
+ fails here instead of stalling the suite.
+ */
+const DEADLINE_TEST_TIMEOUT_MS = 2_000;
+
+/**
+ Promise that never settles, standing in for a wedged sink operation.
+ 
+ @returns Pending promise whose resolver is unreachable.
+ */
+function neverSettles(): Promise<never> {
+  return Promise.withResolvers<never>().promise;
+}
+
+/**
+ Times one `flush()` call.
+ 
+ @param flush - Flush function to time.
+ 
+ @returns Elapsed milliseconds.
+ */
+async function timeFlush({ flush, }: { readonly flush: () => Promise<void>; },): Promise<number> {
+  /**
+   Start timestamp.
+   */
+  const start = performance.now();
+  await flush();
+  return performance.now() - start;
+}
+
+/**
+ Structural view of a sinon stub: only the recorded calls matter here, and
+ naming the shape keeps the test free of a direct sinon type import.
+ */
+type RecordedCalls = {
+  readonly getCalls: () => readonly { readonly args: readonly unknown[]; }[];
+};
+
+/**
+ Collects the console.warn messages containing `needle`. Sibling tests in
+ this file run concurrently and emit their own internal-error reports
+ through the same console, so a raw call count would be noise.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @param needle - Substring identifying the breadcrumb family.
+ 
+ @returns Matching messages, in call order.
+ */
+function breadcrumbMessages(
+  {
+    warn,
+    needle,
+  }: {
+    readonly warn: RecordedCalls;
+    readonly needle: string;
+  },
+): string[] {
+  return warn.getCalls()
+    .map(function toMessage(call,) {
+      return String(call.args[0],);
+    },)
+    .filter(function matchesNeedle(message,) {
+      return message.includes(needle,);
+    },);
+}
+
+/**
+ Collects the flush-deadline breadcrumbs, see {@link breadcrumbMessages}.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Flush-deadline breadcrumb messages observed, in call order.
+ */
+function deadlineBreadcrumbMessages({ warn, }: { readonly warn: RecordedCalls; },): string[] {
+  return breadcrumbMessages({
+    needle: 'flush deadline',
+    warn,
+  },);
+}
+
+/**
+ Counts the sink-verification breadcrumbs (a verify that rejected, threw, or
+ ran past the verify time limit).
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Number of verification breadcrumbs observed.
+ */
+function verifyBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
+  return breadcrumbMessages({
+    needle: 'sink verification failed',
+    warn,
+  },).length;
+}
+
+/**
+ Builds a verifier that answers `true` after a delay.
+ 
+ @param delayMs - Milliseconds before the verifier resolves.
+ 
+ @returns Verify function resolving `true` after the delay.
+ */
+function verifyTrueAfter({ delayMs, }: { readonly delayMs: number; },): Verify {
+  return async function verifyLater(): Promise<boolean> {
+    await wait(delayMs,);
+    return true;
+  };
+}
+
+/**
+ Counts the flush-deadline breadcrumbs, see {@link deadlineBreadcrumbMessages}.
+ 
+ @param warn - Stubbed console.warn.
+ 
+ @returns Number of flush-deadline breadcrumbs observed.
+ */
+function deadlineBreadcrumbs({ warn, }: { readonly warn: RecordedCalls; },): number {
+  return deadlineBreadcrumbMessages({ warn, },).length;
+}
+
+/**
+ Builds a verified sink whose every write never settles.
+ 
+ @returns Sink standing in for a wedged backend.
+ */
+function wedgedWriteSink(): Sink {
+  return {
+    verify: function verifyAvailable(): Promise<boolean> {
+      return Promise.resolve(true,);
+    },
+    write: function writeForever(): Promise<void> {
+      return neverSettles();
+    },
+  };
+}
+
+/**
+ Recording sink plus the array it appends every written record to, so a test
+ can assert exactly which records crossed the seam.
  */
 type RecordingSink = {
   readonly records: LogRecord[];
@@ -29,18 +188,18 @@ type RecordingSink = {
 };
 
 /**
- * Builds a fake sink that records every record it receives. The seam under
- * test is `Sink`, so the whole orchestration (verify, replay, fan-out, flush)
- * is exercised through one self-contained adapter with no globals to reset.
- *
- * @param verify - Backend availability check; defaults to synchronously available.
- *
- * @param flush - Optional flush hook the logger should drain.
- *
- * @param writeDelayMs - Milliseconds each write parks before recording, to
- * keep a record pending across a `flush()`.
- *
- * @returns Sink adapter paired with its recorded-record array.
+ Builds a fake sink that records every record it receives. The seam under
+ test is `Sink`, so the whole orchestration (verify, replay, fan-out, flush)
+ is exercised through one self-contained adapter with no globals to reset.
+ 
+ @param verify - Backend availability check; defaults to synchronously available.
+ 
+ @param flush - Optional flush hook the logger should drain.
+ 
+ @param writeDelayMs - Milliseconds each write parks before recording, to
+ keep a record pending across a `flush()`.
+ 
+ @returns Sink adapter paired with its recorded-record array.
  */
 function recordingSink(
   {
@@ -56,14 +215,14 @@ function recordingSink(
   } = {},
 ): RecordingSink {
   /**
-   * Records this sink has received, in arrival order.
+   Records this sink has received, in arrival order.
    */
   const records: LogRecord[] = [];
 
   /**
-   * Records every received record after the optional delay.
-   *
-   * @param record - Record handed to the sink.
+   Records every received record after the optional delay.
+   
+   @param record - Record handed to the sink.
    */
   async function write(record: LogRecord,): Promise<void> {
     if (writeDelayMs > 0)
@@ -85,17 +244,111 @@ function recordingSink(
 }
 
 /**
- * Maps recorded records down to their messages for concise assertions.
- *
- * @param recording - Recording sink whose messages to read.
- *
- * @returns Messages in arrival order.
+ Maps recorded records down to their messages for concise assertions.
+ 
+ @param recording - Recording sink whose messages to read.
+ 
+ @returns Messages in arrival order.
  */
 function messages({ recording, }: { readonly recording: RecordingSink; },): string[] {
   return recording.records
     .map(function toMessage(record,) {
       return record.message;
     },);
+}
+
+/**
+ Recording sink whose first write parks on a promise the test settles, so a
+ `flush()` can abandon that write at the deadline and the test can then
+ settle it late, after the logger has stopped tracking it.
+ */
+type ParkedWriteSink = RecordingSink & {
+  readonly settleParked: PromiseWithResolvers<void>;
+};
+
+/**
+ Builds a verified sink whose first write waits on `settleParked` and whose
+ later writes record immediately.
+ 
+ @returns Sink, its record array, and the resolvers for the parked write.
+ */
+function parkedFirstWriteSink(): ParkedWriteSink {
+  /**
+   Records this sink has received, in arrival order.
+   */
+  const records: LogRecord[] = [];
+  /**
+   Resolvers the test uses to settle the parked write.
+   */
+  const settleParked = Promise.withResolvers<void>();
+  /**
+   Whether the parked write has been handed out; only the first write parks.
+   */
+  const handedOut = { parked: false, };
+
+  /**
+   Parks the first write on `settleParked`, records every later one.
+   
+   @param record - Record handed to the sink.
+   */
+  async function write(record: LogRecord,): Promise<void> {
+    if (!handedOut.parked) {
+      handedOut.parked = true;
+      await settleParked.promise;
+    }
+    records.push(record,);
+  }
+
+  return {
+    records,
+    settleParked,
+    sink: {
+      verify: function verifyAvailable(): Promise<boolean> {
+        return Promise.resolve(true,);
+      },
+      write,
+    },
+  };
+}
+
+/**
+ Unhandled-rejection reasons observed while the capture is alive, plus the
+ disposer that detaches the listener.
+ */
+type UnhandledCapture = {
+  readonly reasons: readonly unknown[];
+  readonly [Symbol.dispose]: () => void;
+};
+
+/**
+ Listens for `unhandledRejection` on the process until disposed. A listener
+ also stops Node from treating the rejection as fatal, so the assertion on
+ `reasons` is what enforces the property.
+ 
+ @returns Capture whose `reasons` grows with every unhandled rejection.
+ */
+function captureUnhandledRejections(): UnhandledCapture {
+  /**
+   Reasons observed so far.
+   */
+  const reasons: unknown[] = [];
+
+  /**
+   Listener appended to the process.
+   
+   @param reason - Rejection reason Node reports.
+   */
+  function record(reason: unknown,): void {
+    reasons.push(reason,);
+  }
+
+  process.on('unhandledRejection', record,);
+  return {
+    reasons,
+    [Symbol.dispose]: function detach(): void {
+      process.off('unhandledRejection', record,);
+    },
+  };
 }
 
 await describe({
@@ -264,8 +517,8 @@ await describe({
       name: 'a rejecting write does not retire the sink',
       fn: async () => {
         /**
-         * Write-attempt counter; a retired sink would stop receiving writes,
-         * so a second attempt proves the rejection left the backend available.
+         Write-attempt counter; a retired sink would stop receiving writes,
+         so a second attempt proves the rejection left the backend available.
          */
         const counters: { attempts: number; } = { attempts: 0, };
         const flaky: Sink = {
@@ -319,7 +572,7 @@ await describe({
       name: 'flush runs every available sink flush hook',
       fn: async () => {
         /**
-         * Hook-invocation counter proving `flush()` reached the sink's own hook.
+         Hook-invocation counter proving `flush()` reached the sink's own hook.
          */
         const counters: { flushes: number; } = { flushes: 0, };
         const hooked = recordingSink({
@@ -408,8 +661,8 @@ await describe({
       name: 'a synchronously-throwing write does not retire the sink',
       fn: async () => {
         /**
-         * Write-attempt counter; a retired sink would stop receiving writes, so
-         * a second attempt proves the synchronous throw left it available.
+         Write-attempt counter; a retired sink would stop receiving writes, so
+         a second attempt proves the synchronous throw left it available.
          */
         const counters: { attempts: number; } = { attempts: 0, };
         const flaky: Sink = {
@@ -449,8 +702,8 @@ await describe({
       name: 'does not run the flush hook of a sink that failed verification',
       fn: async () => {
         /**
-         * Flush-hook counter; stays zero because an unavailable sink's hook
-         * must be skipped by `flushAll`.
+         Flush-hook counter; stays zero because an unavailable sink's hook
+         must be skipped by `flushAll`.
          */
         const counters: { flushes: number; } = { flushes: 0, };
         const off = recordingSink({
@@ -489,5 +742,461 @@ await describe({
           .toThrow('No logging backends available',);
       },
     },),
+
+    //region Breadcrumb suites (each attempt owns its console.warn replacement)
+
+    describe({
+      name: 'breadcrumb suites',
+      children: [
+    describe({
+      name: 'flush deadline',
+      children: [
+    it({
+      name: 'exports a positive default flush deadline',
+      fn: async () => {
+        expect(DEFAULT_FLUSH_DEADLINE_MS,)
+          .toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a write never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [wedgedWriteSink(),],
+        },);
+        await initPromise;
+        logger.info('stuck',);
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+        expect(deadlineBreadcrumbMessages({ warn, },)[0],)
+          .toContain(`${SHORT_DEADLINE_MS}ms`,);
+      },
+    },),
+
+    it({
+      name: 'a second flush after an abandoned write does not wait out the deadline again',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        sinon.stub(
+          console,
+          'warn',
+        );
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [wedgedWriteSink(),],
+        },);
+        await initPromise;
+        logger.info('stuck',);
+        await logger.flush();
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeLessThan(FAST_FLUSH_MS,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a flush hook never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const hookWedged = recordingSink({
+          flush: function flushForever(): Promise<void> {
+            return neverSettles();
+          },
+        },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [hookWedged.sink,],
+        },);
+        await initPromise;
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'flush resolves once the deadline elapses when a verify never settles',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const verifyWedged = recordingSink({
+          verify: function verifyForever(): Promise<boolean> {
+            return neverSettles();
+          },
+        },);
+        const { logger, } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [verifyWedged.sink,],
+        },);
+
+        const elapsed = await timeFlush({ flush: logger.flush, },);
+        expect(elapsed,)
+          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'a flush that settles inside the deadline reports no breadcrumb',
+      fn: async ({ sinon, },) => {
+        const warn = sinon.stub(
+          console,
+          'warn',
+        );
+        const quick = recordingSink({ writeDelayMs: 1, },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({
+          flushDeadlineMs: SHORT_DEADLINE_MS,
+          sinks: [quick.sink,],
+        },);
+        await initPromise;
+        logger.info('fast',);
+        await logger.flush();
+
+        expect(messages({ recording: quick, },),)
+          .toEqual(['fast',],);
+        expect(deadlineBreadcrumbs({ warn, },),)
+          .toBe(0,);
+      },
+    },),
+      ],
+    },),
+
+    describe({
+      name: 'verify liveness',
+      children: [
+        it({
+          name: 'exports a positive default verify timeout',
+          fn: async () => {
+            expect(DEFAULT_VERIFY_TIMEOUT_MS,)
+              .toBeGreaterThan(0,);
+          },
+        },),
+
+        it({
+          name: 'a verify that never settles no longer starves the sinks after it',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            const wedged = recordingSink({
+              verify: function verifyForever(): Promise<boolean> {
+                return neverSettles();
+              },
+            },);
+            const later = recordingSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [
+                wedged.sink,
+                later.sink,
+              ],
+              verifyTimeoutMs: SHORT_DEADLINE_MS,
+            },);
+            await initPromise;
+            logger.info('after init',);
+            await logger.flush();
+
+            expect(messages({ recording: later, },),)
+              .toEqual(['after init',],);
+            expect(messages({ recording: wedged, },),)
+              .toEqual([],);
+            expect(verifyBreadcrumbs({ warn, },),)
+              .toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'a verify that answers after the time limit stays unavailable',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            sinon.stub(
+              console,
+              'warn',
+            );
+            const slow = recordingSink({
+              verify: verifyTrueAfter({ delayMs: SHORT_DEADLINE_MS * 3, },),
+            },);
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [slow.sink,],
+              verifyTimeoutMs: SHORT_DEADLINE_MS,
+            },);
+            await initPromise;
+            // Let the late answer arrive, then log and drain.
+            await wait(SHORT_DEADLINE_MS * 4,);
+            expect(function logAfterLateAnswer() {
+              logger.info('late',);
+            },)
+              .toThrow('No logging backends available',);
+            await logger.flush();
+
+            expect(messages({ recording: slow, },),)
+              .toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'sinks verify concurrently rather than one after another',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async () => {
+            const first = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const second = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const started = performance.now();
+            const { initPromise, } = createLogger({
+              sinks: [
+                first.sink,
+                second.sink,
+              ],
+            },);
+            await initPromise;
+            const elapsed = performance.now() - started;
+
+            // Sequential verification would take at least twice the delay.
+            expect(elapsed,)
+              .toBeLessThan(SLOW_WRITE_MS * 2,);
+          },
+        },),
+
+        it({
+          name: 'a record logged while sinks verify at different speeds reaches each exactly once',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async () => {
+            const quick = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
+            const slow = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              sinks: [
+                quick.sink,
+                slow.sink,
+              ],
+            },);
+            logger.info('early',);
+            await initPromise;
+            logger.info('late',);
+            await logger.flush();
+
+            expect(messages({ recording: quick, },),)
+              .toEqual([
+                'early',
+                'late',
+              ],);
+            expect(messages({ recording: slow, },),)
+              .toEqual([
+                'early',
+                'late',
+              ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'abandoned writes',
+      children: [
+        it({
+          name: 'a write rejecting after the deadline abandoned it is reported once, never left unhandled, and does not retire the sink',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            using unhandled = captureUnhandledRejections();
+            const parked = parkedFirstWriteSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              flushDeadlineMs: SHORT_DEADLINE_MS,
+              sinks: [parked.sink,],
+            },);
+            await initPromise;
+            logger.info('parked',);
+            await logger.flush();
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
+
+            parked.settleParked.reject(new Error('late failure',),);
+            await wait(1,);
+            logger.info('after',);
+
+            const elapsed = await timeFlush({ flush: logger.flush, },);
+            expect(elapsed,)
+              .toBeLessThan(FAST_FLUSH_MS,);
+            expect(messages({ recording: parked, },),)
+              .toEqual(['after',],);
+            expect(unhandled.reasons,)
+              .toHaveLength(0,);
+            expect(
+              breadcrumbMessages({
+                warn,
+                needle: 'sink write promise rejected while being tracked',
+              },),
+            )
+              .toHaveLength(1,);
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'a write resolving after the deadline abandoned it still lands and the sink keeps working',
+          timeout: DEADLINE_TEST_TIMEOUT_MS,
+          fn: async ({ sinon, },) => {
+            const warn = sinon.stub(
+              console,
+              'warn',
+            );
+            using unhandled = captureUnhandledRejections();
+            const parked = parkedFirstWriteSink();
+            const {
+              logger,
+              initPromise,
+            } = createLogger({
+              flushDeadlineMs: SHORT_DEADLINE_MS,
+              sinks: [parked.sink,],
+            },);
+            await initPromise;
+            logger.info('parked',);
+            await logger.flush();
+
+            parked.settleParked.resolve();
+            await wait(1,);
+            logger.info('after',);
+            await logger.flush();
+
+            expect(messages({ recording: parked, },),)
+              .toEqual([
+                'parked',
+                'after',
+              ],);
+            expect(unhandled.reasons,)
+              .toHaveLength(0,);
+            expect(
+              breadcrumbMessages({
+                warn,
+                needle: 'sink write promise rejected',
+              },),
+            )
+              .toHaveLength(0,);
+            expect(deadlineBreadcrumbs({ warn, },),)
+              .toBe(1,);
+          },
+        },),
+      ],
+    },),
+      ],
+    },),
+
+    //endregion Breadcrumb suites
+
+    //region Startup buffer bound
+
+    it({
+      name: 'exports a positive startup buffer cap',
+      fn: async () => {
+        expect(STARTUP_BUFFER_CAP,)
+          .toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'a startup burst beyond the cap keeps the newest records and reports the loss once',
+      timeout: DEADLINE_TEST_TIMEOUT_MS,
+      fn: async () => {
+        /**
+         Records logged before the sink verifies: the cap plus a few extra
+         that must push the oldest ones out.
+         */
+        const extra = 3;
+        /**
+         Total records in the burst; the last one is index `burstSize - 1`.
+         */
+        const burstSize = STARTUP_BUFFER_CAP + extra;
+        const late = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [late.sink,], },);
+        for (let index = 0; index < burstSize; index += 1)
+          logger.info(`burst ${index}`,);
+        await initPromise;
+        await logger.flush();
+
+        const received = messages({ recording: late, },);
+        expect(received,)
+          .toHaveLength(STARTUP_BUFFER_CAP + 1,);
+        expect(received[0],)
+          .toBe(`burst ${extra}`,);
+        expect(received[STARTUP_BUFFER_CAP - 1],)
+          .toBe(`burst ${burstSize - 1}`,);
+        expect(received[STARTUP_BUFFER_CAP],)
+          .toBe(`${extra} startup records dropped before a backend verified (buffer cap ${STARTUP_BUFFER_CAP})`,);
+        expect(late.records[STARTUP_BUFFER_CAP]?.level,)
+          .toBe('warn',);
+      },
+    },),
+
+    it({
+      name: 'no marker record is written when the startup buffer never overflowed',
+      fn: async () => {
+        const late = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
+        const {
+          logger,
+          initPromise,
+        } = createLogger({ sinks: [late.sink,], },);
+        logger.info('one',);
+        await initPromise;
+        await logger.flush();
+
+        expect(messages({ recording: late, },),)
+          .toEqual(['one',],);
+      },
+    },),
+
+    //endregion Startup buffer bound
   ],
 },);

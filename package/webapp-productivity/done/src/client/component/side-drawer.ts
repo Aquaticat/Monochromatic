@@ -1,9 +1,9 @@
 /**
- * `<side-drawer>`: intrinsic sidebar navigation.
- *
- * Renders two copies of the nav: an inline sidebar visible when the
- * component is narrow, and a popover panel opened by the hamburger menu
- * when the component is full-width (stacked).
+ `<side-drawer>`: intrinsic sidebar navigation.
+ 
+ Renders two copies of the nav: an inline sidebar visible when the
+ component is narrow, and a popover panel opened by the hamburger menu
+ when the component is full-width (stacked).
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {
@@ -14,28 +14,28 @@ import {
 import { SIDE_DRAWER_STYLES, } from './side-drawer-styles.ts';
 
 /**
- * `<side-drawer>` web component.
- *
- * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
+ `<side-drawer>` web component.
+ 
+ Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
   /**
-   * Attributes that trigger `attributeChangedCallback`.
+   Attributes that trigger `attributeChangedCallback`.
    */
   static observedAttributes = ['open',];
 
   /**
-   * Shadow root for encapsulated rendering.
+   Shadow root for encapsulated rendering.
    */
   readonly #shadow: ShadowRoot;
 
   /**
-   * Reference to the popover panel element; absent before first render.
+   Reference to the popover panel element; absent before first render.
    */
   #panel?: HTMLDivElement;
 
   /**
-   * Initializes the shadow root.
+   Initializes the shadow root.
    */
   constructor() {
     super();
@@ -43,18 +43,18 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Whether the popover panel is currently visible.
-   *
-   * @returns Current open state
+   Whether the popover panel is currently visible.
+   
+   @returns Current open state
    */
   get open(): boolean {
     return this.hasAttribute('open',);
   }
 
   /**
-   * Sets the open state by adding or removing the `open` attribute.
-   *
-   * @param value - Whether the drawer should be open
+   Sets the open state by adding or removing the `open` attribute.
+   
+   @param value - Whether the drawer should be open
    */
   set open(value: boolean,) {
     if (value) {
@@ -69,14 +69,14 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Closes the drawer by removing the open attribute.
+   Closes the drawer by removing the open attribute.
    */
   #closeDrawer(): void {
     this.open = false;
   }
 
   /**
-   * Renders content, sets up panel reference, and wires event listeners.
+   Renders content, sets up panel reference, and wires event listeners.
    */
   connectedCallback(): void {
     this.#render();
@@ -84,12 +84,12 @@ class SideDrawer extends HTMLElement {
     this.#panel = this.#shadow
       .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
     /**
-     * Pre-bound closer so the inline listeners keep `this` after handoff.
+     Pre-bound closer so the inline listeners keep `this` after handoff.
      */
     const closeFn = this.#closeDrawer
       .bind(this,);
     /**
-     * Local alias used by the backdrop listener to compare against the click target.
+     Local alias used by the backdrop listener to compare against the click target.
      */
     const panel = this.#panel;
 
@@ -114,7 +114,7 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Syncs the popover visibility when the `open` attribute changes.
+   Syncs the popover visibility when the `open` attribute changes.
    */
   attributeChangedCallback(): void {
     if (this.#panel
@@ -130,11 +130,11 @@ class SideDrawer extends HTMLElement {
   }
 
   /**
-   * Renders the inline sidebar and popover panel into the shadow root.
+   Renders the inline sidebar and popover panel into the shadow root.
    */
   #render(): void {
     /**
-     * Reused close button, tagged with `.panel-close` so the listener can find it.
+     Reused close button, tagged with `.panel-close` so the listener can find it.
      */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList

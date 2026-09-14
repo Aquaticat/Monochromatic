@@ -1,7 +1,7 @@
 /**
- * Tests for tool-call helper functions.
- *
- * @module
+ Tests for tool-call helper functions.
+ 
+ @module
  */
 
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
@@ -13,7 +13,7 @@ import {
 import {
   buildApprovalFingerprint,
   serializeToolInputForJudge,
-} from './tool-helpers.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Test working directory for approval fingerprint fixtures. */
 const TEST_CWD = '/repo';
@@ -22,21 +22,21 @@ const TEST_CWD = '/repo';
 const ALTERNATE_CWD = '/other-repo';
 
 /**
- * Build mock tool-call event.
- *
- * @param toolName - tool name to place on event
- *
- * @param input - tool input to place on event
- *
- * @returns mock tool-call event
- *
- * @example
- * ```typescript
- * const event = toolCallEvent({
- *   toolName: 'read',
- *   input: { path: '/repo/.env' },
- * });
- * ```
+ Build mock tool-call event.
+ 
+ @param toolName - tool name to place on event
+ 
+ @param input - tool input to place on event
+ 
+ @returns mock tool-call event
+ 
+ @example
+ ```typescript
+ const event = toolCallEvent({
+   toolName: 'read',
+   input: { path: '/repo/.env' },
+ });
+ ```
  */
 function toolCallEvent(
   {
@@ -244,6 +244,33 @@ await describe({
         expect(buildApprovalFingerprint({ event: approvedEvent, cwd: TEST_CWD, },),)
           .not
           .toBe(buildApprovalFingerprint({ event: changedEvent, cwd: TEST_CWD, },),);
+      },
+    },),
+
+    it({
+      name: 'changes fingerprint when loaded project context changes',
+      fn: async function changesFingerprintWhenProjectContextChanges(): Promise<void> {
+        /** Read event whose approval is evaluated under loaded project policy. */
+        const event = toolCallEvent({
+          toolName: 'read',
+          input: { path: '/repo/.env', },
+        },);
+        /** Original project-context snapshot used for first approval. */
+        const originalContext = '[{"content":"Original","path":"/repo/AGENTS.md"}]';
+        /** Updated project-context snapshot requiring new judge evaluation. */
+        const updatedContext = '[{"content":"Updated","path":"/repo/AGENTS.md"}]';
+
+        expect(buildApprovalFingerprint({
+          event,
+          cwd: TEST_CWD,
+          projectContext: originalContext,
+        },),)
+          .not
+          .toBe(buildApprovalFingerprint({
+            event,
+            cwd: TEST_CWD,
+            projectContext: updatedContext,
+          },),);
       },
     },),
 

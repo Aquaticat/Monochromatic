@@ -1,11 +1,11 @@
 /**
- * Tests for {@link compressBranch}.
- *
- * Uses sequential execution because all tests stub `globalThis.fetch`
- * (the network seam behind the Morph client) and sinon refuses to wrap an
- * already-wrapped method, so concurrent runs would conflict.
- *
- * @module
+ Tests for {@link compressBranch}.
+ 
+ Uses sequential execution because all tests stub `globalThis.fetch`
+ (the network seam behind the Morph client) and sinon refuses to wrap an
+ already-wrapped method, so concurrent runs would conflict.
+ 
+ @module
  */
 
 import type {

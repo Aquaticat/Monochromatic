@@ -1,5 +1,5 @@
 /**
- * Tests for pi extension entry point.
+ Tests for pi extension entry point.
  */
 
 import type {
@@ -28,20 +28,20 @@ type HandlerFn = (...args: unknown[]) => unknown;
 type RegistrationMap = Map<string, HandlerFn[]>;
 
 /**
- * Creates a mock ExtensionAPI that records all `on()` registrations.
- *
- * @returns mock API and registration map
+ Creates a mock ExtensionAPI that records all `on()` registrations.
+ 
+ @returns mock API and registration map
  */
 function createMockApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: RegistrationMap;
 } {
   /**
-   * Event handlers registered by extension.
+   Event handlers registered by extension.
    */
   const registrations: RegistrationMap = new Map();
   /**
-   * Minimal extension API mock.
+   Minimal extension API mock.
    */
   const api = {
     on(
@@ -49,7 +49,7 @@ function createMockApi(): {
       handler: HandlerFn,
     ) {
       /**
-       * Existing handlers for event.
+       Existing handlers for event.
        */
       const existing = registrations.get(event,) ?? [];
       existing.push(handler,);
@@ -64,16 +64,16 @@ function createMockApi(): {
 }
 
 /**
- * Creates a mock context with setTitle spy.
- *
- * @returns mock context and captured titles
+ Creates a mock context with setTitle spy.
+ 
+ @returns mock context and captured titles
  */
 function createMockContext(): {
   readonly ctx: { readonly ui: { readonly setTitle: (title: string,) => void } };
   readonly titles: string[];
 } {
   /**
-   * Titles captured from setTitle calls.
+   Titles captured from setTitle calls.
    */
   const titles: string[] = [];
   return {
@@ -89,13 +89,13 @@ function createMockContext(): {
 }
 
 /**
- * Retrieves registered handler for event.
- *
- * @param registrations - registration map from mock API
- *
- * @param event - event name to look up
- *
- * @returns registered handler
+ Retrieves registered handler for event.
+ 
+ @param registrations - registration map from mock API
+ 
+ @param event - event name to look up
+ 
+ @returns registered handler
  */
 function getHandler(
   {
@@ -107,13 +107,13 @@ function getHandler(
   }>,
 ): HandlerFn {
   /**
-   * Handlers registered for event.
+   Handlers registered for event.
    */
   const handlers = registrations.get(event,);
   if ((handlers === undefined) || (handlers.length === 0))
     throw new Error(`No handler registered for event: ${event}`,);
   /**
-   * First registered handler.
+   First registered handler.
    */
   const [handler,] = handlers;
   if (handler === undefined)
@@ -124,7 +124,7 @@ function getHandler(
 //endregion Mock infrastructure
 
 /**
- * Extension default export loaded dynamically for test isolation.
+ Extension default export loaded dynamically for test isolation.
  */
 const { default: terminalTitle, } = await import('./index.ts');
 
@@ -137,7 +137,7 @@ await describe({
         const { api, registrations, } = createMockApi();
         terminalTitle(api,);
         /**
-         * Events expected from extension entry point.
+         Events expected from extension entry point.
          */
         const expectedEvents = [
           'tool_execution_start',

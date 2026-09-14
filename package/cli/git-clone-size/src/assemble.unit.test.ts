@@ -1,7 +1,7 @@
 /**
- * Tests for estimator assembly, pending computation, and snapshot building.
- *
- * @module
+ Tests for estimator assembly, pending computation, and snapshot building.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import type { Source, } from './source.ts';
 import type { FusionState, } from './types.ts';
 
 /**
- * A minimal fused state for snapshot tests.
+ A minimal fused state for snapshot tests.
  */
 const FUSED: FusionState = {
   point: 100,
@@ -30,11 +30,11 @@ const FUSED: FusionState = {
 };
 
 /**
- * Maps estimate names for concise assertions.
- *
- * @param signals - signal accumulator
- *
- * @returns estimator names produced for the signals
+ Maps estimate names for concise assertions.
+ 
+ @param signals - signal accumulator
+ 
+ @returns estimator names produced for the signals
  */
 function namesFor(signals: Signals): readonly string[] {
   return buildEstimates({ signals, defaultBranchOnly: false, }).map((estimate) => estimate.name);

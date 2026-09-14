@@ -7,17 +7,17 @@ import {
   type ChainSegment,
   renderCanonical,
   selectBreakOffsets,
-} from './chain-render.ts';
+} from '../../dist/final/node/index.mjs';
 
 /** Attached segment helper for building fixture segment streams. */
 const attached: ChainSegment = { isBreak: false, };
 
 /**
- * Builds a break segment at a byte offset for fixture segment streams.
- *
- * @param offset - byte offset where the break's continuation line begins
- *
- * @returns break segment carrying that offset
+ Builds a break segment at a byte offset for fixture segment streams.
+ 
+ @param offset - byte offset where the break's continuation line begins
+ 
+ @returns break segment carrying that offset
  */
 function breakAt(offset: number,): ChainSegment {
   return {

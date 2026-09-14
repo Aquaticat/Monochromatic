@@ -51,5 +51,5 @@ fn spawns_command_and_reads_output() -> Result<()> {
     } else {
         panic!("expected PTY output event");
     }
-    Ok(())
+    return Ok(())
 }

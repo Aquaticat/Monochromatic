@@ -14,17 +14,17 @@ import {
 } from './continuation-progress.ts';
 
 /**
- * Transcript line standing for one forced-continuation feedback record.
+ Transcript line standing for one forced-continuation feedback record.
  */
 const BLOCK_LINE = `{"type":"user","message":{"content":"${FEEDBACK_PREFIX}:\\n${CONTINUATION_MARKER}."}}`;
 
 /**
- * Assistant record that issued a tool call.
+ Assistant record that issued a tool call.
  */
 const TOOL_LINE = '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"}]}}';
 
 /**
- * Assistant record that only produced prose.
+ Assistant record that only produced prose.
  */
 const TEXT_LINE = '{"type":"assistant","message":{"content":[{"type":"text","text":"still blocked on run 008"}]}}';
 

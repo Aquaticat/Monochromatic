@@ -1,7 +1,7 @@
 /**
- * Tests for `mapOrThrow`.
- *
- * @module
+ Tests for `mapOrThrow`.
+ 
+ @module
  */
 
 import {

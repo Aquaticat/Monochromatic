@@ -2,29 +2,29 @@
 // Expected: zero tsdoc/check-mutates violations.
 
 /**
- * Service with a mutating method.
+ Service with a mutating method.
  */
 type MutatingService = {
   /**
-   * Changes caller-owned state.
-   *
-   * @param value - Caller-owned state.
-   *
-   * @mutates value - Changes caller-owned state.
+   Changes caller-owned state.
+   
+   @param value - Caller-owned state.
+   
+   @mutates value - Changes caller-owned state.
    */
   mutate(value: { count: number; },): void;
 };
 
 /**
- * Callable mutation contract.
+ Callable mutation contract.
  */
 type MutatingCallback = {
   /**
-   * Changes caller-owned state.
-   *
-   * @param value - Caller-owned state.
-   *
-   * @mutates value - Changes caller-owned state.
+   Changes caller-owned state.
+   
+   @param value - Caller-owned state.
+   
+   @mutates value - Changes caller-owned state.
    */
   (value: { count: number; },): void;
 };

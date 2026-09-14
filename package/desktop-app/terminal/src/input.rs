@@ -377,10 +377,10 @@ pub fn encode_terminal_key(key_text: &str, control: bool, alt: bool) -> Option<V
     // Why:      Modifier-only or unknown special keys should not write text to the shell.
     let encoded = if control {
         encode_control_key(key_text)
-            .or_else(|| encode_named_key(key_text))
-            .or_else(|| encode_printable_text(key_text))?
+            .or_else(|| return encode_named_key(key_text))
+            .or_else(|| return encode_printable_text(key_text))?
     } else {
-        encode_named_key(key_text).or_else(|| encode_printable_text(key_text))?
+        encode_named_key(key_text).or_else(|| return encode_printable_text(key_text))?
     };
     // What:     `if alt { ... } else { ... }` optionally prefixes ESC for Alt-modified
     //           terminal input. `Some(...)` wraps the present byte vector.
@@ -398,11 +398,11 @@ pub fn encode_terminal_key(key_text: &str, control: bool, alt: bool) -> Option<V
         prefixed.extend(encoded);
         // What:     `Some(prefixed)` returns the present prefixed byte vector.
         // Why:      The caller should write these bytes to the PTY.
-        Some(prefixed)
+        return Some(prefixed)
     } else {
         // What:     `Some(encoded)` returns the present unmodified byte vector.
         // Why:      No Alt prefix is needed.
-        Some(encoded)
+        return Some(encoded)
     }
 }
 
@@ -431,7 +431,7 @@ fn encode_control_key(key_text: &str) -> Option<Vec<u8>> {
     let control_byte = first.to_ascii_uppercase() as u8 - b'A' + 1;
     // What:     `Some(vec![control_byte])` returns a one-byte vector.
     // Why:      The caller writes this control byte to the PTY.
-    Some(vec![control_byte])
+    return Some(vec![control_byte])
 }
 
 /// What:     `fn encode_named_key(...) -> Option<Vec<u8>>` maps Slint special-key
@@ -499,7 +499,7 @@ fn encode_named_key(key_text: &str) -> Option<Vec<u8>> {
     };
     // What:     `Some(bytes.to_vec())` copies the borrowed byte slice into an owned vector.
     // Why:      The caller owns the returned bytes independently of this static mapping.
-    Some(bytes.to_vec())
+    return Some(bytes.to_vec())
 }
 
 /// What:     `fn encode_printable_text(...) -> Option<Vec<u8>>` converts ordinary
@@ -513,7 +513,7 @@ fn encode_printable_text(key_text: &str) -> Option<Vec<u8>> {
     }
     // What:     `Some(key_text.as_bytes().to_vec())` copies UTF-8 bytes from the string.
     // Why:      PTYs transport bytes, and terminals interpret UTF-8 text bytes.
-    Some(key_text.as_bytes().to_vec())
+    return Some(key_text.as_bytes().to_vec())
 }
 
 /// What:     `#[cfg(test)] #[path = "input_tests.rs"] mod tests;`

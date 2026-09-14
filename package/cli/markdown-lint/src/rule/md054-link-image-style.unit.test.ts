@@ -12,11 +12,11 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Run only MD054 over Markdown source.
- *
- * @param source - Markdown source
- *
- * @returns diagnostics from the rule
+ Run only MD054 over Markdown source.
+ 
+ @param source - Markdown source
+ 
+ @returns diagnostics from the rule
  */
 function lint(source: string,): readonly Diagnostic[] {
   return runRules({
@@ -46,11 +46,11 @@ await describe({
       name: 'fix converts a shortcut reference to collapsed and is idempotent',
       fn: async function convertsToCollapsed() {
         /**
-         * Source whose shortcut reference is converted by the fix.
+         Source whose shortcut reference is converted by the fix.
          */
         const source = 'See [the docs].\n\n[the docs]: https://example.com\n';
         /**
-         * Source after the fix.
+         Source after the fix.
          */
         const fixed = applyFixes({
           source,

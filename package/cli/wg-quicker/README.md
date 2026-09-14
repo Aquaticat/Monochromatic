@@ -39,7 +39,7 @@ and selected paired or caller-path companion for root execution;
 use root-owned installed artifacts when workspace integrity is not trusted.
 
 See
-[`doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md`](../../../doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md)
+[sudo privilege troubleshooting](../../../doc/troubleshooting/sudo-1-9-secure-path-workspace-cli.md)
 for source trace and verification.
 
 ## Config behavior
@@ -87,10 +87,74 @@ Disable that conflicting feature before `up` and do not re-enable it while the t
 the preflight is not a persistent rule monitor.
 Customized IVPN mark or table constants are outside exact detection.
 See
-[`doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md`](../../../doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md)
+[IVPN routing troubleshooting](../../../doc/troubleshooting/ivpn-3-15-inverse-split-tunnel-overrides-wireguard.md)
 for source trace,
 diagnosis,
 and verified recovery.
+
+## OpenSnitch endpoint allowance
+
+When OpenSnitch 1.8's system-firewall file exists,
+`wg-quicker up` adds one enabled system rule for each distinct peer `Endpoint` UDP destination port.
+The rule sits in OpenSnitch's existing `inet opensnitch mangle_output` chain before its NFQUEUE rules,
+so WireGuard's kernel-generated outer connection works even when OpenSnitch uses `DefaultAction = deny`.
+If OpenSnitch is not installed,
+the integration is a no-op.
+
+Each port rule accepts outbound UDP from any process to that destination port before application filtering.
+`wg-quicker` emits a warning naming the ports,
+interface,
+and changed file whenever this policy widening is active.
+The rules carry interface-and-network-namespace-specific `wg-quicker managed endpoint [...] [netns:...]`
+descriptions and remain visible in OpenSnitch's system-firewall configuration.
+Equal interface names in separate network namespaces retain independent rules,
+locks,
+and lifecycle manifests.
+`down` and failed-`up` rollback remove only that interface's rules,
+even when the WireGuard link is already absent.
+Before config mutation,
+`wg-quicker` stores exact config path and potential ports in private per-interface-and-namespace runtime state.
+Cleanup uses that recorded path if `FwOptions.ConfigPath` later changes,
+and clears runtime state only after config reconciliation and live-chain proof succeed.
+Teardown waits until formerly owned exact port rules disappear from the live chain,
+unless another retained OpenSnitch rule still accepts the same port.
+A failed proof retains runtime state so a later `down` can retry cleanup.
+This `/run` state survives an interrupted process but not a host reboot;
+host-crash recovery is outside this lifecycle guarantee.
+
+The integration supports OpenSnitch 1.8's nftables backend and version 1 system-firewall schema.
+It rejects disabled system firewall,
+unsupported schema,
+missing `mangle_output` chain,
+non-regular config paths,
+and non-nftables backends instead of claiming strict-deny compatibility without an active rule.
+OpenSnitch live reload receives one positional file write;
+shorter JSON is padded with valid trailing whitespace so truncate does not emit a second reload event.
+`wg-quicker` then requires consecutive healthy nftables observations in the daemon's network namespace.
+When no daemon process exists,
+it still inspects any surviving OpenSnitch table and refuses to forget a stale managed allowance.
+Each required accept rule must precede the first NFQUEUE rule,
+and each no-longer-owned exact port must be absent.
+A missed watcher convergence triggers one bounded same-inode rewrite and another proof attempt;
+startup fails and rolls back if that retry also fails.
+
+Standard paths are `/etc/opensnitchd/default-config.json` and `/etc/opensnitchd/system-fw.json`.
+Without a system-firewall override,
+`wg-quicker` follows `FwOptions.ConfigPath` from the selected daemon config.
+Custom deployments can set `WG_QUICKER_OPENSNITCH_DAEMON_CONFIG`;
+`WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG` takes precedence over `FwOptions.ConfigPath` when both are set.
+System-firewall paths,
+daemon-config overrides,
+and `WG_QUICKER_RUNTIME_DIRECTORY` must be absolute so separate lifecycle invocations cannot resolve different
+files or state.
+The overrides cross the sudo boundary through the validated private caller-context file.
+The runtime `flock` serializes wg-quicker writers only;
+avoid editing the same OpenSnitch system-firewall file concurrently through its UI.
+See
+[OpenSnitch troubleshooting](../../../doc/troubleshooting/opensnitch-1-8-wg-quicker-wireguard.md)
+for source trace,
+warning scope,
+and disposable strict-deny verification.
 
 ## Generate AllowedIPs from files
 
@@ -126,7 +190,8 @@ When `up` does not find this key,
 it warns that Ghostty,
  Steam,
  Helium,
- and Pale Moon will use the tunnel and instructs the user to add
+ Pale Moon,
+ and Firefox Nightly will use the tunnel and instructs the user to add
 `ExemptMark = 8888` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 The warning is non-fatal;
@@ -148,19 +213,24 @@ Direct root execution without an explicit or sudo identity fails instead of watc
 The Rust watcher installs inotify on user's existing `app.slice` before its first scan,
 attaches the Ghostty service,
 every `app-ghostty-surface-transient-*.scope`,
-and Steam's `app-steam@*.service`,
+Steam's `app-steam@*.service`,
+and Firefox Nightly's `app-firefox\x2dnightly@*.service`,
 drains queued events,
 and scans again to close creation race.
 It reacts to future cgroup creation and periodically maps every live Helium executable,
 including renderer,
 zygote,
 and crashpad processes,
-and both Pale Moon executable names back to their current cgroups.
+both Pale Moon executable names,
+and Firefox Nightly's `firefox` and `firefox-bin` executables under the exact `firefox-nightly` install directory
+back to their current cgroups.
 Known process-discovered cgroups remain attached until directory disappears,
 covering process restarts inside same service or scope.
 Process discovery attaches entire current cgroup,
 so sibling processes in a shared cgroup also bypass tunnel until cgroup disappears or watcher stops.
-A newly started Helium or Pale Moon process can create sockets before next 250-millisecond rescan;
+A newly started Helium,
+Pale Moon,
+or Firefox Nightly process can create sockets before next 250-millisecond rescan;
 applications already running during watcher startup are attached before readiness.
 Watcher state validates PID,
 process start time,
@@ -193,8 +263,14 @@ and restarts an unexpectedly exited monitor child.
 A state-owner token,
 PID,
 process start time,
-and complete command-line check prevent signaling a reused or unrelated PID during teardown.
-Shutdown signals the validated detached process group so monitor and in-flight route-command children terminate before ownership release.
+nonempty executable argument,
+and exact watcher-script and state arguments prevent signaling a reused or unrelated PID during teardown.
+The executable installation path may differ after a Node runtime update.
+Shutdown signals the validated detached process group
+so monitor and in-flight route-command children terminate before ownership release.
+See
+[`doc/troubleshooting/node-runtime-watcher-upgrade.md`](doc/troubleshooting/node-runtime-watcher-upgrade.md)
+for the diagnosed upgrade failure and verified recovery.
 
 On `down`,
  persisted state identifies the exact watcher,

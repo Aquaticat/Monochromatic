@@ -203,7 +203,7 @@ pub(crate) fn fingerprint(path: &Path) -> Option<u64> {
     // ```ts
     // return gxhash64(material, FINGERPRINT_SEED);
     // ```
-    Some(gxhash64(&material, FINGERPRINT_SEED))
+    return Some(gxhash64(&material, FINGERPRINT_SEED))
 }
 
 /// What:     `const DECODER_STACK_DESCRIPTION: &str = "...";`. A stable text description of
@@ -235,7 +235,7 @@ fn decoder_stack_id() -> u64 {
     // ```ts
     // return stackId(DECODER_STACK_DESCRIPTION);
     // ```
-    truepeak_core::stack_id(DECODER_STACK_DESCRIPTION)
+    return truepeak_core::stack_id(DECODER_STACK_DESCRIPTION)
 }
 
 /// What:     `pub(crate) fn cache_identity() -> CacheIdentity`. The full four-part identity a
@@ -257,7 +257,7 @@ pub(crate) fn cache_identity() -> CacheIdentity {
     // ```ts
     // return defaultPolicy().cacheIdentity(decoderStackId());
     // ```
-    default_policy().cache_identity(decoder_stack_id())
+    return default_policy().cache_identity(decoder_stack_id())
 }
 
 /// What:     `fn db_path() -> Option<PathBuf>`. The on-disk location of the decision
@@ -288,7 +288,7 @@ fn db_path() -> Option<PathBuf> {
     // const dir = configDir();
     // return dir ? join(dir, "decisions.db") : null;
     // ```
-    identity::config_dir().map(|dir| dir.join("decisions.db"))
+    return identity::config_dir().map(|dir| return dir.join("decisions.db"))
 }
 
 /// What:     `#[cfg(test)] #[path = "peakcache_tests.rs"] mod tests;` declares a

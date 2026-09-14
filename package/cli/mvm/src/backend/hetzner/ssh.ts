@@ -1,14 +1,14 @@
 /**
- * SSH exec, interactive shell, and SCP file transfer for the Hetzner backend.
- *
- * Commands run over `ssh` with the managed key; transfers use `scp`, which uses
- * the SFTP protocol by default on OpenSSH 9.0+ (so remote paths are literal SFTP
- * paths, never re-parsed by a remote shell). The command in `exec` is passed as
- * a single argv element and runs in the remote login shell, matching libvirt's
- * `bash -c`. Host keys are not persisted because Hetzner recycles public IPv4
- * and the address was just obtained over the authenticated API.
- *
- * @module
+ SSH exec, interactive shell, and SCP file transfer for the Hetzner backend.
+ 
+ Commands run over `ssh` with the managed key; transfers use `scp`, which uses
+ the SFTP protocol by default on OpenSSH 9.0+ (so remote paths are literal SFTP
+ paths, never re-parsed by a remote shell). The command in `exec` is passed as
+ a single argv element and runs in the remote login shell, matching libvirt's
+ `bash -c`. Host keys are not persisted because Hetzner recycles public IPv4
+ and the address was just obtained over the authenticated API.
+ 
+ @module
  */
 
 import {
@@ -29,35 +29,35 @@ import { SSH_USER, } from './config.ts';
 import { PRIVATE_KEY_PATH, } from './ssh-key.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 //region Constants
 
 /**
- * Per-connection timeout in seconds passed to ssh/scp.
+ Per-connection timeout in seconds passed to ssh/scp.
  */
 const CONNECT_TIMEOUT_S = 10;
 
 /**
- * Maximum time to wait for SSH to answer after a server boots.
+ Maximum time to wait for SSH to answer after a server boots.
  */
 const SSH_READY_TIMEOUT_MS = 120_000;
 
 /**
- * Delay between SSH-readiness probes.
+ Delay between SSH-readiness probes.
  */
 const SSH_READY_POLL_MS = 2_000;
 
 /**
- * Exit code ssh returns for its own connection-level failures (vs the remote
- * command's exit code).
+ Exit code ssh returns for its own connection-level failures (vs the remote
+ command's exit code).
  */
 const SSH_CONNECTION_FAILURE = 255;
 
@@ -66,15 +66,15 @@ const SSH_CONNECTION_FAILURE = 255;
 //region Arg builders
 
 /**
- * Shared ssh/scp options: managed key, no host-key persistence, quiet logging,
- * and a bounded connect timeout.
- *
- * @returns option tokens common to ssh and scp
- *
- * @example
- * ```ts
- * sshBaseOpts(); // ['-i', '/path/id_ed25519', '-o', 'UserKnownHostsFile=/dev/null', ...]
- * ```
+ Shared ssh/scp options: managed key, no host-key persistence, quiet logging,
+ and a bounded connect timeout.
+ 
+ @returns option tokens common to ssh and scp
+ 
+ @example
+ ```ts
+ sshBaseOpts(); // ['-i', '/path/id_ed25519', '-o', 'UserKnownHostsFile=/dev/null', ...]
+ ```
  */
 export function sshBaseOpts(): readonly string[] {
   return [
@@ -92,36 +92,36 @@ export function sshBaseOpts(): readonly string[] {
 }
 
 /**
- * Builds the `user@host` connection target.
- *
- * @param ip - server public IPv4
- *
- * @returns `root@<ip>` connection target
- *
- * @example
- * ```ts
- * connectionTarget('203.0.113.7'); // builds the root SSH login target
- * ```
+ Builds the `user@host` connection target.
+ 
+ @param ip - server public IPv4
+ 
+ @returns `root@<ip>` connection target
+ 
+ @example
+ ```ts
+ connectionTarget('203.0.113.7'); // builds the root SSH login target
+ ```
  */
 export function connectionTarget(ip: string,): string {
   return `${SSH_USER}@${ip}`;
 }
 
 /**
- * Builds the ssh argv for running a single command remotely.
- * `command` is one argv element, so ssh forwards it verbatim to the remote
- * login shell (no local shell, no interpolation by mvm).
- *
- * @param command - command to run in the remote login shell
- *
- * @param ip - server public IPv4
- *
- * @returns ssh argument vector
- *
- * @example
- * ```ts
- * sshExecArgs({ ip: '203.0.113.7', command: 'echo "a;b"' });
- * ```
+ Builds the ssh argv for running a single command remotely.
+ `command` is one argv element, so ssh forwards it verbatim to the remote
+ login shell (no local shell, no interpolation by mvm).
+ 
+ @param command - command to run in the remote login shell
+ 
+ @param ip - server public IPv4
+ 
+ @returns ssh argument vector
+ 
+ @example
+ ```ts
+ sshExecArgs({ ip: '203.0.113.7', command: 'echo "a;b"' });
+ ```
  */
 export function sshExecArgs(
   {
@@ -140,22 +140,22 @@ export function sshExecArgs(
 }
 
 /**
- * Builds the scp argv for pushing a local file to a remote path.
- * The remote target is a single argv element; scp's default SFTP mode treats
- * the path literally, so it is not shell-quoted.
- *
- * @param guestPath - destination path on the server
- *
- * @param hostPath - local source path
- *
- * @param ip - server public IPv4
- *
- * @returns scp argument vector
- *
- * @example
- * ```ts
- * scpPushArgs({ ip: '203.0.113.7', hostPath: '/tmp/a', guestPath: '/root/a' });
- * ```
+ Builds the scp argv for pushing a local file to a remote path.
+ The remote target is a single argv element; scp's default SFTP mode treats
+ the path literally, so it is not shell-quoted.
+ 
+ @param guestPath - destination path on the server
+ 
+ @param hostPath - local source path
+ 
+ @param ip - server public IPv4
+ 
+ @returns scp argument vector
+ 
+ @example
+ ```ts
+ scpPushArgs({ ip: '203.0.113.7', hostPath: '/tmp/a', guestPath: '/root/a' });
+ ```
  */
 export function scpPushArgs(
   {
@@ -176,20 +176,20 @@ export function scpPushArgs(
 }
 
 /**
- * Builds the scp argv for pulling a remote file to a local path.
- *
- * @param guestPath - source path on the server
- *
- * @param ip - server public IPv4
- *
- * @param localPath - local destination path
- *
- * @returns scp argument vector
- *
- * @example
- * ```ts
- * scpPullArgs({ ip: '203.0.113.7', guestPath: '/root/a', localPath: '/tmp/a' });
- * ```
+ Builds the scp argv for pulling a remote file to a local path.
+ 
+ @param guestPath - source path on the server
+ 
+ @param ip - server public IPv4
+ 
+ @param localPath - local destination path
+ 
+ @returns scp argument vector
+ 
+ @example
+ ```ts
+ scpPullArgs({ ip: '203.0.113.7', guestPath: '/root/a', localPath: '/tmp/a' });
+ ```
  */
 export function scpPullArgs(
   {
@@ -214,34 +214,34 @@ export function scpPullArgs(
 //region Exec
 
 /**
- * Converts a nano-spawn error into an {@link ExecResult}, preserving the remote
- * command's captured output and exit code.
- *
- * @param error - thrown value from nano-spawn
- *
- * @returns exec result reconstructed from the error
- *
- * @throws the original value when it is not a subprocess error
- *
- * @example
- * ```ts
- * try { await nanoSpawn('ssh', args); } catch (err) { return execResultFromError(err); }
- * ```
+ Converts a nano-spawn error into an {@link ExecResult}, preserving the remote
+ command's captured output and exit code.
+ 
+ @param error - thrown value from nano-spawn
+ 
+ @returns exec result reconstructed from the error
+ 
+ @throws the original value when it is not a subprocess error
+ 
+ @example
+ ```ts
+ try { await nanoSpawn('ssh', args); } catch (err) { return execResultFromError(err); }
+ ```
  */
 function execResultFromError(error: unknown,): ExecResult {
   if ((error !== null) && ((typeof error) === 'object')
     && ('stdout' in error)
     && ('stderr' in error)) {
     /**
-     * Captured stdout if the error carries a string one, else empty.
+     Captured stdout if the error carries a string one, else empty.
      */
     const stdout = ((typeof error.stdout) === 'string') ? error.stdout : '';
     /**
-     * Captured stderr if the error carries a string one, else empty.
+     Captured stderr if the error carries a string one, else empty.
      */
     const stderr = ((typeof error.stderr) === 'string') ? error.stderr : '';
     /**
-     * Remote/ssh exit code, defaulting to the ssh connection-failure code.
+     Remote/ssh exit code, defaulting to the ssh connection-failure code.
      */
     const exitCode = (('exitCode' in error) && ((typeof error.exitCode) === 'number'))
       ? error.exitCode
@@ -256,18 +256,18 @@ function execResultFromError(error: unknown,): ExecResult {
 }
 
 /**
- * Runs a command on a server over SSH and captures its output and exit code.
- *
- * @param command - command to run in the remote login shell
- *
- * @param ip - server public IPv4
- *
- * @returns captured stdout, stderr, and exit code
- *
- * @example
- * ```ts
- * const result = await sshExec({ ip: '203.0.113.7', command: 'uname -a' });
- * ```
+ Runs a command on a server over SSH and captures its output and exit code.
+ 
+ @param command - command to run in the remote login shell
+ 
+ @param ip - server public IPv4
+ 
+ @returns captured stdout, stderr, and exit code
+ 
+ @example
+ ```ts
+ const result = await sshExec({ ip: '203.0.113.7', command: 'uname -a' });
+ ```
  */
 export async function sshExec(
   {
@@ -280,7 +280,7 @@ export async function sshExec(
 ): Promise<ExecResult> {
   try {
     /**
-     * Successful run captures both streams; exit code is zero by definition here.
+     Successful run captures both streams; exit code is zero by definition here.
      */
     const {
       stdout,
@@ -304,33 +304,33 @@ export async function sshExec(
 }
 
 /**
- * Polls until SSH answers on a freshly booted server, or the timeout elapses.
- *
- * @param ip - server public IPv4
- *
- * @throws Error when SSH does not become reachable before the timeout
- *
- * @example
- * ```ts
- * await waitForSsh({ ip: '203.0.113.7' });
- * ```
+ Polls until SSH answers on a freshly booted server, or the timeout elapses.
+ 
+ @param ip - server public IPv4
+ 
+ @throws Error when SSH does not become reachable before the timeout
+ 
+ @example
+ ```ts
+ await waitForSsh({ ip: '203.0.113.7' });
+ ```
  */
 export async function waitForSsh({ ip, }: { readonly ip: string; },): Promise<void> {
   /**
-   * Logger scoped to this wait so readiness polling is namespaced.
+   Logger scoped to this wait so readiness polling is namespaced.
    */
   const rl = tagged({
     tag: waitForSsh.name,
     l,
   },);
   /**
-   * Deadline after which readiness polling gives up.
+   Deadline after which readiness polling gives up.
    */
   const deadline = Date.now() + SSH_READY_TIMEOUT_MS;
   rl.debug(`waiting for SSH on ${ip}`,);
   while (Date.now() < deadline) {
     /**
-     * Probe result; a zero exit means the server accepted the connection.
+     Probe result; a zero exit means the server accepted the connection.
      */
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial readiness polling
     const probe = await sshExec({
@@ -353,18 +353,18 @@ export async function waitForSsh({ ip, }: { readonly ip: string; },): Promise<vo
 //region Interactive shell
 
 /**
- * Opens an interactive SSH session to a server, forwarding the exit code.
- *
- * @param ip - server public IPv4
- *
- * @example
- * ```ts
- * await sshShell({ ip: '203.0.113.7' });
- * ```
+ Opens an interactive SSH session to a server, forwarding the exit code.
+ 
+ @param ip - server public IPv4
+ 
+ @example
+ ```ts
+ await sshShell({ ip: '203.0.113.7' });
+ ```
  */
 export async function sshShell({ ip, }: { readonly ip: string; },): Promise<void> {
   /**
-   * Logger scoped to this session so connect messages are namespaced.
+   Logger scoped to this session so connect messages are namespaced.
    */
   const rl = tagged({
     tag: sshShell.name,
@@ -389,7 +389,7 @@ export async function sshShell({ ip, }: { readonly ip: string; },): Promise<void
     if ((error !== null) && ((typeof error) === 'object')
       && ('exitCode' in error)) {
       /**
-       * Forwarded so the shell exit code reflects the ssh session outcome.
+       Forwarded so the shell exit code reflects the ssh session outcome.
        */
       const exitCode = ((typeof error.exitCode) === 'number') ? error.exitCode : undefined;
       if (exitCode !== undefined) {
@@ -404,22 +404,22 @@ export async function sshShell({ ip, }: { readonly ip: string; },): Promise<void
 //region Transfer
 
 /**
- * Pushes a local file to a remote path over SCP (SFTP mode).
- *
- * @param guestPath - destination path on the server
- *
- * @param hostPath - local source path
- *
- * @param ip - server public IPv4
- *
- * @returns the remote path the file was written to
- *
- * @throws Error when the transfer fails
- *
- * @example
- * ```ts
- * await scpPush({ ip: '203.0.113.7', hostPath: '/tmp/setup.sh', guestPath: '/root/setup.sh' });
- * ```
+ Pushes a local file to a remote path over SCP (SFTP mode).
+ 
+ @param guestPath - destination path on the server
+ 
+ @param hostPath - local source path
+ 
+ @param ip - server public IPv4
+ 
+ @returns the remote path the file was written to
+ 
+ @throws Error when the transfer fails
+ 
+ @example
+ ```ts
+ await scpPush({ ip: '203.0.113.7', hostPath: '/tmp/setup.sh', guestPath: '/root/setup.sh' });
+ ```
  */
 export async function scpPush(
   {
@@ -444,21 +444,21 @@ export async function scpPush(
 }
 
 /**
- * Pulls a remote file over SCP (SFTP mode) and returns its bytes.
- * Downloads to a throwaway temp directory that is removed on scope exit.
- *
- * @param guestPath - source path on the server
- *
- * @param ip - server public IPv4
- *
- * @returns file contents
- *
- * @throws Error when the transfer fails
- *
- * @example
- * ```ts
- * const bytes = await scpPull({ ip: '203.0.113.7', guestPath: '/root/out.txt' });
- * ```
+ Pulls a remote file over SCP (SFTP mode) and returns its bytes.
+ Downloads to a throwaway temp directory that is removed on scope exit.
+ 
+ @param guestPath - source path on the server
+ 
+ @param ip - server public IPv4
+ 
+ @returns file contents
+ 
+ @throws Error when the transfer fails
+ 
+ @example
+ ```ts
+ const bytes = await scpPull({ ip: '203.0.113.7', guestPath: '/root/out.txt' });
+ ```
  */
 export async function scpPull(
   {
@@ -470,14 +470,14 @@ export async function scpPull(
   },
 ): Promise<Buffer> {
   /**
-   * Throwaway directory holding the downloaded file; removed on scope exit.
+   Throwaway directory holding the downloaded file; removed on scope exit.
    */
   const dir = await mkdtemp(join(
     tmpdir(),
     'mvm-pull-',
   ),);
   /**
-   * Disposable guard removing the temp directory once the bytes are read.
+   Disposable guard removing the temp directory once the bytes are read.
    */
   await using _cleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -491,7 +491,7 @@ export async function scpPull(
     },
   };
   /**
-   * Local destination for the downloaded file inside the temp directory.
+   Local destination for the downloaded file inside the temp directory.
    */
   const localPath = join(
     dir,

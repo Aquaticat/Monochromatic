@@ -1,5 +1,5 @@
 /**
- * Prepared trust-record commit and disposal lifecycle. @module
+ Prepared trust-record commit and disposal lifecycle. @module
  */
 import { randomUUID, } from 'node:crypto';
 import {
@@ -16,63 +16,63 @@ import { readRecord, } from './record-validation.ts';
 import type { TrustRecord, } from './types.ts';
 
 /**
- * Prepared private record awaiting validated installation.
+ Prepared private record awaiting validated installation.
  */
 export type PreparedTrustRecord = Readonly<{
   /**
-   * Candidate record metadata.
+   Candidate record metadata.
    */
   record: TrustRecord;
   /**
-   * Executable path inside private candidate directory.
+   Executable path inside private candidate directory.
    */
   executablePath: string;
   /**
-   * Atomically installs validated candidate.
+   Atomically installs validated candidate.
    */
   commit: () => Promise<void>;
   /**
-   * Removes private state and releases writer lock.
+   Removes private state and releases writer lock.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 /**
- * Mutable lifecycle hidden inside prepared record closure.
+ Mutable lifecycle hidden inside prepared record closure.
  */
 type PreparedRecordState = {
   /**
-   * Whether validated final record is installed.
+   Whether validated final record is installed.
    */
   committed: boolean;
   /**
-   * Whether exclusive writer lock was removed.
+   Whether exclusive writer lock was removed.
    */
   lockReleased: boolean;
 };
 
 /**
- * Creates disposable lifecycle around fully written candidate directory.
- *
- * @param record - validated candidate metadata
- *
- * @param executablePath - executable candidate snapshot
- *
- * @param registryRoot - complete registry root
- *
- * @param finalDirectory - permanent exact-identity directory
- *
- * @param temporaryDirectory - private candidate sibling
- *
- * @param parentDirectory - replacement parent
- *
- * @param lockDirectory - exclusive writer lock
- *
- * @returns prepared record lifecycle
- *
- * @example
- * ```ts
- * const prepared = createPreparedTrustRecord(input);
- * ```
+ Creates disposable lifecycle around fully written candidate directory.
+ 
+ @param record - validated candidate metadata
+ 
+ @param executablePath - executable candidate snapshot
+ 
+ @param registryRoot - complete registry root
+ 
+ @param finalDirectory - permanent exact-identity directory
+ 
+ @param temporaryDirectory - private candidate sibling
+ 
+ @param parentDirectory - replacement parent
+ 
+ @param lockDirectory - exclusive writer lock
+ 
+ @returns prepared record lifecycle
+ 
+ @example
+ ```ts
+ const prepared = createPreparedTrustRecord(input);
+ ```
  */
 export function createPreparedTrustRecord({
   record,
@@ -92,7 +92,7 @@ export function createPreparedTrustRecord({
   lockDirectory: string;
 }>,): PreparedTrustRecord {
   /**
-   * Mutable lifecycle isolated behind returned operations.
+   Mutable lifecycle isolated behind returned operations.
    */
   const state: PreparedRecordState = {
     committed: false,
@@ -100,7 +100,7 @@ export function createPreparedTrustRecord({
   };
 
   /**
-   * Releases writer lock once.
+   Releases writer lock once.
    */
   async function releaseLock(): Promise<void> {
     if (state.lockReleased)
@@ -116,15 +116,15 @@ export function createPreparedTrustRecord({
   }
 
   /**
-   * Installs prepared record with rollback before validation settles.
+   Installs prepared record with rollback before validation settles.
    */
   async function commitRecord(): Promise<void> {
     /**
-     * Sibling holding replaced record until candidate validates.
+     Sibling holding replaced record until candidate validates.
      */
     const backupDirectory = `${finalDirectory}.old-${randomUUID()}`;
     /**
-     * Replacement phases needed for safe rollback.
+     Replacement phases needed for safe rollback.
      */
     const replacement = {
       backupCreated: false,
@@ -132,7 +132,7 @@ export function createPreparedTrustRecord({
     };
     try {
       /**
-       * Existing record metadata before exchange.
+       Existing record metadata before exchange.
        */
       const currentMetadata = await lstat(finalDirectory,);
       if ((!currentMetadata.isDirectory()) || currentMetadata.isSymbolicLink())
@@ -194,7 +194,7 @@ export function createPreparedTrustRecord({
   }
 
   /**
-   * Removes uncommitted candidate and writer lock.
+   Removes uncommitted candidate and writer lock.
    */
   async function disposeRecord(): Promise<void> {
     if (!state.committed)

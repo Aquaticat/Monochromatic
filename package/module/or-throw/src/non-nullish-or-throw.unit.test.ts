@@ -1,7 +1,7 @@
 /**
- * Tests for `nonNullishOrThrow`.
- *
- * @module
+ Tests for `nonNullishOrThrow`.
+ 
+ @module
  */
 
 import {

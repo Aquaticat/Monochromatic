@@ -8,28 +8,28 @@ import { spawnResult, } from './spawn.ts';
 import type { RemoteSource, } from './source.ts';
 
 /**
- * Sentinel returned by {@link lsRemote} when the ref listing fails.
+ Sentinel returned by {@link lsRemote} when the ref listing fails.
  */
 export const NO_REFS: unique symbol = Symbol('git-clone-size/ls-remote-ref-listing-failed',);
 
 /**
- * Sentinel returned by {@link hostStorageBytes} when no storage proxy is available.
+ Sentinel returned by {@link hostStorageBytes} when no storage proxy is available.
  */
 export const NO_STORAGE: unique symbol = Symbol('git-clone-size/host-storage-proxy-unavailable',);
 
 /**
- * Sentinel returned by {@link hostCommitCount} when the host commit count is unavailable.
+ Sentinel returned by {@link hostCommitCount} when the host commit count is unavailable.
  */
 export const NO_HOST_COMMITS: unique symbol = Symbol('git-clone-size/host-commit-count-unavailable',);
 
 /**
- * Sentinel returned by {@link parseLastPage} when no `rel="last"` page exists.
+ Sentinel returned by {@link parseLastPage} when no `rel="last"` page exists.
  */
 const NO_LAST_PAGE: unique symbol = Symbol('git-clone-size/github-link-last-page-absent',);
 
 /**
- * Ref inventory from `git ls-remote`, used for the branch-coverage correction
- * and as a weak activity signal.
+ Ref inventory from `git ls-remote`, used for the branch-coverage correction
+ and as a weak activity signal.
  */
 export type LsRemoteResult = {
   readonly branches: number;
@@ -38,16 +38,16 @@ export type LsRemoteResult = {
 };
 
 /**
- * Host-reported storage size mapped to bytes, flagged as a proxy (server
- * storage, not the client-side packed object store).
+ Host-reported storage size mapped to bytes, flagged as a proxy (server
+ storage, not the client-side packed object store).
  */
 export type HostStorageResult = {
   readonly bytes: number;
 };
 
 /**
- * Commit count from a host API, with a lower-bound flag when pagination did not
- * expose a last-page number.
+ Commit count from a host API, with a lower-bound flag when pagination did not
+ expose a last-page number.
  */
 export type HostCommitCountResult = {
   readonly count: number;
@@ -55,23 +55,23 @@ export type HostCommitCountResult = {
 };
 
 /**
- * Counts heads and tags and resolves the default branch via `git ls-remote`.
- * Always cheap (refs only, no objects).
- *
- * @param url - remote clone URL
- *
- * @returns branch/tag counts and the default branch name when resolvable
- *
- * @example
- * ```ts
- * const refs = await lsRemote({ url });
- * ```
+ Counts heads and tags and resolves the default branch via `git ls-remote`.
+ Always cheap (refs only, no objects).
+ 
+ @param url - remote clone URL
+ 
+ @returns branch/tag counts and the default branch name when resolvable
+ 
+ @example
+ ```ts
+ const refs = await lsRemote({ url });
+ ```
  */
 export async function lsRemote(
   { url, }: { readonly url: string; },
 ): Promise<LsRemoteResult | typeof NO_REFS> {
   /**
-   * Tagged logger naming the ls-remote signal.
+   Tagged logger naming the ls-remote signal.
    */
   const rl = tagged({
     tag: lsRemote.name,
@@ -79,7 +79,7 @@ export async function lsRemote(
   },);
 
   /**
-   * Captured `ls-remote --heads --tags` listing and exit code.
+   Captured `ls-remote --heads --tags` listing and exit code.
    */
   const refs = await spawnResult({
     command: 'git',
@@ -95,7 +95,7 @@ export async function lsRemote(
     return NO_REFS;
   }
   /**
-   * Non-empty ref lines from the listing.
+   Non-empty ref lines from the listing.
    */
   const lines = refs.stdout
     .split('\n',)
@@ -103,14 +103,14 @@ export async function lsRemote(
     return line.includes('refs/',);
   },);
   /**
-   * Head refs (branches).
+   Head refs (branches).
    */
   const branches = lines.filter(function isHead(line,) {
     return line.includes('refs/heads/',);
   },)
     .length;
   /**
-   * Tag refs, excluding peeled `^{}` duplicate lines.
+   Tag refs, excluding peeled `^{}` duplicate lines.
    */
   const tags = lines.filter(function isTag(line,) {
     return line.includes('refs/tags/') && (!line.includes('^{}',));
@@ -118,7 +118,7 @@ export async function lsRemote(
     .length;
 
   /**
-   * Default branch from the symbolic HEAD ref.
+   Default branch from the symbolic HEAD ref.
    */
   const head = await spawnResult({
     command: 'git',
@@ -130,7 +130,7 @@ export async function lsRemote(
     ],
   },);
   /**
-   * `ref: refs/heads/<name>\tHEAD` line, when present.
+   `ref: refs/heads/<name>\tHEAD` line, when present.
    */
   const symrefLine = head.stdout
     .split('\n',)
@@ -138,7 +138,7 @@ export async function lsRemote(
     return line.startsWith('ref:',);
   },);
   /**
-   * Default branch name parsed from the symref line.
+   Default branch name parsed from the symref line.
    */
   const defaultBranch = symrefLine === undefined
     ? undefined
@@ -157,25 +157,25 @@ export async function lsRemote(
 }
 
 /**
- * Reads host-reported repository storage as a clone-size proxy. GitHub exposes
- * `.size` in KiB via `gh`; GitLab exposes `.statistics.repository_size` in bytes
- * via `glab` (requires Reporter+). Returns undefined for unsupported hosts or
- * any failure (missing CLI, auth, private repo), never refusing.
- *
- * @param source - parsed remote with host/owner/repo
- *
- * @returns storage bytes proxy, or undefined when unavailable
- *
- * @example
- * ```ts
- * const storage = await hostStorageBytes({ source });
- * ```
+ Reads host-reported repository storage as a clone-size proxy. GitHub exposes
+ `.size` in KiB via `gh`; GitLab exposes `.statistics.repository_size` in bytes
+ via `glab` (requires Reporter+). Returns undefined for unsupported hosts or
+ any failure (missing CLI, auth, private repo), never refusing.
+ 
+ @param source - parsed remote with host/owner/repo
+ 
+ @returns storage bytes proxy, or undefined when unavailable
+ 
+ @example
+ ```ts
+ const storage = await hostStorageBytes({ source });
+ ```
  */
 export async function hostStorageBytes(
   { source, }: { readonly source: RemoteSource; },
 ): Promise<HostStorageResult | typeof NO_STORAGE> {
   /**
-   * Tagged logger naming the host storage signal.
+   Tagged logger naming the host storage signal.
    */
   const rl = tagged({
     tag: hostStorageBytes.name,
@@ -186,7 +186,7 @@ export async function hostStorageBytes(
 
   if (source.host === 'github') {
     /**
-     * Captured `gh api repos/{o}/{r} --jq .size` output.
+     Captured `gh api repos/{o}/{r} --jq .size` output.
      */
     const result = await spawnResult({
       command: 'gh',
@@ -198,7 +198,7 @@ export async function hostStorageBytes(
       ],
     },);
     /**
-     * GitHub `.size` is KiB; convert to bytes.
+     GitHub `.size` is KiB; convert to bytes.
      */
     const kib = Math.trunc(Number(result.stdout,),);
     if ((result.exitCode === 0) && Number.isFinite(kib,)) {
@@ -210,11 +210,11 @@ export async function hostStorageBytes(
 
   if (source.host === 'gitlab') {
     /**
-     * URL-encoded `owner/repo` project id for the GitLab API.
+     URL-encoded `owner/repo` project id for the GitLab API.
      */
     const projectId = `${source.owner}%2F${source.repo}`;
     /**
-     * Captured `glab api projects/{id}?statistics=true` output.
+     Captured `glab api projects/{id}?statistics=true` output.
      */
     const result = await spawnResult({
       command: 'glab',
@@ -226,7 +226,7 @@ export async function hostStorageBytes(
       ],
     },);
     /**
-     * GitLab `repository_size` is already bytes.
+     GitLab `repository_size` is already bytes.
      */
     const bytes = Math.trunc(Number(result.stdout,),);
     if ((result.exitCode === 0) && Number.isFinite(bytes,)) {
@@ -240,22 +240,22 @@ export async function hostStorageBytes(
 }
 
 /**
- * Extracts the `rel="last"` page number from an HTTP `Link` header value.
- *
- * @param linkHeader - raw Link header content
- *
- * @returns last-page number, or {@link NO_LAST_PAGE} when no `rel="last"` segment exists
+ Extracts the `rel="last"` page number from an HTTP `Link` header value.
+ 
+ @param linkHeader - raw Link header content
+ 
+ @returns last-page number, or {@link NO_LAST_PAGE} when no `rel="last"` segment exists
  */
 function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
   /**
-   * Tagged logger naming GitHub Link header pagination parsing.
+   Tagged logger naming GitHub Link header pagination parsing.
    */
   const rl = tagged({
     tag: parseLastPage.name,
     l: logger,
   },);
   /**
-   * Comma-separated `<url>; rel="x"` segment naming the last page.
+   Comma-separated `<url>; rel="x"` segment naming the last page.
    */
   const lastSegment = linkHeader.split(',',)
     .find(function isLast(segment,) {
@@ -264,7 +264,7 @@ function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
   if (lastSegment === undefined)
     return NO_LAST_PAGE;
   /**
-   * URL inside the angle brackets of the segment.
+   URL inside the angle brackets of the segment.
    */
   const urlText = lastSegment.split('<',)
     .at(1,)
@@ -274,14 +274,14 @@ function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
     return NO_LAST_PAGE;
   try {
     /**
-     * Textual `page` query parameter from the pagination URL.
+     Textual `page` query parameter from the pagination URL.
      */
     const pageText = new URL(urlText,).searchParams
       .get('page',);
     if ((pageText === null) || (pageText === ''))
       return NO_LAST_PAGE;
     /**
-     * Parsed last-page number from the `page` query parameter.
+     Parsed last-page number from the `page` query parameter.
      */
     const page = Math.trunc(Number(pageText,),);
     return Number.isFinite(page,) ? page : NO_LAST_PAGE;
@@ -293,25 +293,25 @@ function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
 }
 
 /**
- * Default-branch commit count via the GitHub commits endpoint with
- * `per_page=1`, reading the `Link` `rel=last` page number. A missing `rel=last`
- * (GitHub omits it in some cases) yields a lower bound rather than a failure,
- * widening the range. GitHub only; other hosts return undefined.
- *
- * @param source - parsed remote with host/owner/repo
- *
- * @returns commit count with a lower-bound flag, or undefined when unavailable
- *
- * @example
- * ```ts
- * const commits = await hostCommitCount({ source });
- * ```
+ Default-branch commit count via the GitHub commits endpoint with
+ `per_page=1`, reading the `Link` `rel=last` page number. A missing `rel=last`
+ (GitHub omits it in some cases) yields a lower bound rather than a failure,
+ widening the range. GitHub only; other hosts return undefined.
+ 
+ @param source - parsed remote with host/owner/repo
+ 
+ @returns commit count with a lower-bound flag, or undefined when unavailable
+ 
+ @example
+ ```ts
+ const commits = await hostCommitCount({ source });
+ ```
  */
 export async function hostCommitCount(
   { source, }: { readonly source: RemoteSource; },
 ): Promise<HostCommitCountResult | typeof NO_HOST_COMMITS> {
   /**
-   * Tagged logger naming the host commit-count signal.
+   Tagged logger naming the host commit-count signal.
    */
   const rl = tagged({
     tag: hostCommitCount.name,
@@ -322,7 +322,7 @@ export async function hostCommitCount(
     return NO_HOST_COMMITS;
 
   /**
-   * Captured `gh api --include` response, headers plus body.
+   Captured `gh api --include` response, headers plus body.
    */
   const result = await spawnResult({
     command: 'gh',
@@ -335,7 +335,7 @@ export async function hostCommitCount(
   if (result.exitCode !== 0)
     return NO_HOST_COMMITS;
   /**
-   * Link header line from the included response headers, if present.
+   Link header line from the included response headers, if present.
    */
   const linkLine = result.stdout
     .split('\n',)
@@ -351,7 +351,7 @@ export async function hostCommitCount(
     };
   }
   /**
-   * Last-page number, equal to the total commit count at per_page=1.
+   Last-page number, equal to the total commit count at per_page=1.
    */
   const lastPage = parseLastPage(linkLine.slice(linkLine.indexOf(':',) + 1,),);
   if (lastPage === NO_LAST_PAGE)

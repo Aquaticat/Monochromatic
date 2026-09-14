@@ -13,7 +13,10 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { findGitRepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRoot,
+  GIT_REPOSITORY,
+} from '@monochromatic-dev/module-fs-path/ts';
 import nanoSpawn from 'nano-spawn';
 
 //region Isolated workflow fixture -- Clone, verify discovery, trust core config, and run direct check.
@@ -77,7 +80,10 @@ if ((!gitDirectory.isDirectory()) || (!configFile.isFile()))
 /**
  * Root returned through production repository discovery.
  */
-const discoveredRoot = await findGitRepoRoot({ cwd: scanRoot, },);
+const discoveredRoot = await findRoot({
+  cwd: scanRoot,
+  marker: GIT_REPOSITORY,
+},);
 if (discoveredRoot !== scanRoot)
   throw new TypeError(`Cli-git repository discovery mismatch: ${discoveredRoot}`,);
 

@@ -1,7 +1,7 @@
 /**
- * Which parameter origins a binding takes from an expression's elements.
- *
- * @module
+ Which parameter origins a binding takes from an expression's elements.
+ 
+ @module
  */
 
 import type { Node, } from 'typescript/unstable/ast';
@@ -22,31 +22,31 @@ import {
 import type { SlotOrigins, } from './effect-summary-model.ts';
 
 /**
- * Resolves parameter origins a binding takes from an expression's elements.
- *
- * The spelling of an element step decides nothing about its meaning, and three of the four
- * spellings carry no element-access node at all: `const [first] = copy`, `for (const row of
- * copy)` and `[...copy]` all reach an element without writing one. Resolving those as values
- * asks the container question where the element question was meant, and for a fresh
- * container the container answer is empty, which is a write attributed to nothing.
- *
- * The union is what makes it correct for both shapes. Iterating a parameter directly, `for
- * (const row of rows)`, reaches the parameter's own elements and the value origins already
- * answer it; iterating a container built from that parameter has empty value origins and the
- * container relation answers instead. Neither case has to know which it is.
- *
- * @param project - TypeScript project resolving declarations and symbols.
- *
- * @param bindingOriginBySymbolId - Known parameter and alias origins.
- *
- * @param node - Expression whose elements a binding receives.
- *
- * @returns origins reachable through the expression's elements.
- *
- * @example
- * ```ts
- * expressionElementOrigins({ project, bindingOriginBySymbolId, node: statement.expression });
- * ```
+ Resolves parameter origins a binding takes from an expression's elements.
+ 
+ The spelling of an element step decides nothing about its meaning, and three of the four
+ spellings carry no element-access node at all: `const [first] = copy`, `for (const row of
+ copy)` and `[...copy]` all reach an element without writing one. Resolving those as values
+ asks the container question where the element question was meant, and for a fresh
+ container the container answer is empty, which is a write attributed to nothing.
+ 
+ The union is what makes it correct for both shapes. Iterating a parameter directly, `for
+ (const row of rows)`, reaches the parameter's own elements and the value origins already
+ answer it; iterating a container built from that parameter has empty value origins and the
+ container relation answers instead. Neither case has to know which it is.
+ 
+ @param project - TypeScript project resolving declarations and symbols.
+ 
+ @param bindingOriginBySymbolId - Known parameter and alias origins.
+ 
+ @param node - Expression whose elements a binding receives.
+ 
+ @returns origins reachable through the expression's elements.
+ 
+ @example
+ ```ts
+ expressionElementOrigins({ project, bindingOriginBySymbolId, node: statement.expression });
+ ```
  */
 export function expressionElementOrigins({
   project,
@@ -58,7 +58,7 @@ export function expressionElementOrigins({
   readonly node: Node;
 },): SlotOrigins {
   /**
-   * Origins found so far, starting from what the expression's own value carries.
+   Origins found so far, starting from what the expression's own value carries.
    */
   const origins = new Set(expressionValueOrigins({
     project,
@@ -66,31 +66,31 @@ export function expressionElementOrigins({
     node,
   },),);
   /**
-   * Expressions already queued, so a declaration hop cannot revisit its own subject.
-   *
-   * A visited set rather than a hop count, and the distinction is a soundness one rather
-   * than a tidiness one. `containerElementReceiver` follows an identifier to its
-   * declaration initializer, which is not a descendant of the node it started from, so
-   * this walk leaves its own subtree and the descendant argument that bounds
-   * `expressionValueOrigins` does not hold here. What does hold is that a file has
-   * finitely many nodes and no node is examined twice.
-   *
-   * The count it replaces truncated silently, and truncation is the unsafe direction for
-   * this rule rather than a neutral one. Every consumer of the returned set only ever adds
-   * a charge, so a withheld origin is a withheld charge and a withheld charge is an offer.
-   * Measured 2026-08-07: eight composed `slice` calls recorded the parameter and nine
-   * recorded nothing, and at twelve the parameter came back with no opacity at all, which
-   * is the state a read-only offer is minted from. Nine composed calls do not appear in the
-   * corpus, so this cleared nothing; it removes a way to be wrong rather than a report.
+   Expressions already queued, so a declaration hop cannot revisit its own subject.
+   
+   A visited set rather than a hop count, and the distinction is a soundness one rather
+   than a tidiness one. `containerElementReceiver` follows an identifier to its
+   declaration initializer, which is not a descendant of the node it started from, so
+   this walk leaves its own subtree and the descendant argument that bounds
+   `expressionValueOrigins` does not hold here. What does hold is that a file has
+   finitely many nodes and no node is examined twice.
+   
+   The count it replaces truncated silently, and truncation is the unsafe direction for
+   this rule rather than a neutral one. Every consumer of the returned set only ever adds
+   a charge, so a withheld origin is a withheld charge and a withheld charge is an offer.
+   Measured 2026-08-07: eight composed `slice` calls recorded the parameter and nine
+   recorded nothing, and at twelve the parameter came back with no opacity at all, which
+   is the state a read-only offer is minted from. Nine composed calls do not appear in the
+   corpus, so this cleared nothing; it removes a way to be wrong rather than a report.
    */
   const visited = new Set<Node>([node,],);
   /**
-   * Expressions still to examine for a container relation.
+   Expressions still to examine for a container relation.
    */
   const pending: Node[] = [node,];
   while (pending.length > 0) {
     /**
-     * Next expression whose container relation is examined.
+     Next expression whose container relation is examined.
      */
     const current = pending.pop();
     if (current === undefined)
@@ -123,7 +123,7 @@ export function expressionElementOrigins({
      * declarations arrives at the same visited-set walk instead of a second cursor with its
      * own bound. */
     /**
-     * Value the current name was declared with, when it names one local declaration.
+     Value the current name was declared with, when it names one local declaration.
      */
     const declared = bindingDeclarationInitializer({
       project,
@@ -136,13 +136,13 @@ export function expressionElementOrigins({
       pending.push(declared,);
     }
     /**
-     * Receiver whose elements the current value holds, when that relation is verified.
-     *
-     * Queued as well as collected, because container members compose and the corpus
-     * composes them. `panes.filter(rootLike,).toSorted(bySpawnOrder,)` in
-     * `package/desktop-app/file-manager-electron/src/strip.ts` is the shape: the outer
-     * member's receiver is the inner call, whose own value origins are empty because the
-     * array it returns is fresh.
+     Receiver whose elements the current value holds, when that relation is verified.
+     
+     Queued as well as collected, because container members compose and the corpus
+     composes them. `panes.filter(rootLike,).toSorted(bySpawnOrder,)` in
+     `package/desktop-app/file-manager-electron/src/strip.ts` is the shape: the outer
+     member's receiver is the inner call, whose own value origins are empty because the
+     array it returns is fresh.
      */
     const elementReceiver = containerElementReceiver({
       project,

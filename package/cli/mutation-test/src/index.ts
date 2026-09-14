@@ -1,10 +1,10 @@
 /**
- * Library surface of the yuku-based container-native mutation tester.
- *
- * @example
- * ```ts
- * import { enumerateMutants } from '@monochromatic-dev/cli-mutation-test/ts';
- * ```
+ Library surface of the yuku-based container-native mutation tester.
+ 
+ @example
+ ```ts
+ import { enumerateMutants } from '@monochromatic-dev/cli-mutation-test/ts';
+ ```
  */
 
 export {
@@ -38,6 +38,17 @@ export type {
 } from './engine/types.ts';
 export { isEstreeNode, } from './engine/node-access.ts';
 export { effectiveTimeoutMs, } from './container/mutant-loop.ts';
+/**
+ Work-tree git marker shape and writer, exported so built-artifact tests
+ can verify the shape against fs-path's `GIT_REPOSITORY` marker.
+
+ @internal
+ */
+export {
+  GIT_MARKER_DIRECTORIES,
+  GIT_MARKER_FILES,
+  materialiseGitMarker,
+} from './container/worktree.ts';
 export {
   parseCliOptions,
   type CliOptions,

@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlHas`.
- *
- * @module
+ Tests for `tomlHas`.
+ 
+ @module
  */
 
 import {

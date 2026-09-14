@@ -33,6 +33,10 @@ The fix was released in `mise-action` `4.1.0`.
 
 Update the pinned action to `4.2.0` commit `e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d`.
 This release contains the `mise-shim.exe` fix and remains pinned to an immutable commit.
+On 2026-09-08 every workflow moved on to `4.3.0` commit `c2a87611a18de5b3828c5652fe268e992400cb5c`
+ with `minimum_release_age: 1d`,
+ for the reason recorded in `mise-action-version-ahead-of-release.md`;
+ that release keeps the shim fix.
 
 The plugin package provides host-acceptance tasks with separate Windows commands.
 Unix uses direct Node invocations.

@@ -9,34 +9,34 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for image-diff after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for image-diff after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'image-diff', },);
 
 /**
- * Handle the `compare` subcommand.
- *
- * @param imageA - first image argument (path or URL)
- *
- * @param imageB - second image argument (path or URL)
- *
- * @param provider - provider name; omit to use all providers
- *
- * @param model - model override; omit for the provider's default
- *
- * @example
- * ```ts
- * await handleCompare({
- *   imageA: 'a.png',
- *   imageB: 'b.png',
- *   provider: 'voyage',
- * });
- * ```
+ Handle the `compare` subcommand.
+ 
+ @param imageA - first image argument (path or URL)
+ 
+ @param imageB - second image argument (path or URL)
+ 
+ @param provider - provider name; omit to use all providers
+ 
+ @param model - model override; omit for the provider's default
+ 
+ @example
+ ```ts
+ await handleCompare({
+   imageA: 'a.png',
+   imageB: 'b.png',
+   provider: 'voyage',
+ });
+ ```
  */
 export async function handleCompare({
   imageA,
@@ -50,32 +50,32 @@ export async function handleCompare({
   readonly model?: EmbeddingModel;
 },): Promise<void> {
   /**
-   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
    */
   const rl = tagged({
     tag: handleCompare.name,
     l,
   },);
   /**
-   * Parsed first-image input; converts path or URL string into the structured {@link ImageInput}.
+   Parsed first-image input; converts path or URL string into the structured {@link ImageInput}.
    */
   const inputA = parseImageArg(imageA,);
   /**
-   * Parsed second-image input; converts path or URL string into the structured {@link ImageInput}.
+   Parsed second-image input; converts path or URL string into the structured {@link ImageInput}.
    */
   const inputB = parseImageArg(imageB,);
 
   if (provider !== undefined) {
     rl.debug(`comparing via ${provider}`,);
     /**
-     * Single-provider config; only includes `model` when the caller passed an override.
+     Single-provider config; only includes `model` when the caller passed an override.
      */
     const config = {
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
     /**
-     * Comparison result for the single requested provider; printed as JSON below.
+     Comparison result for the single requested provider; printed as JSON below.
      */
     const result = await compare({
       imageA: inputA,
@@ -99,7 +99,7 @@ export async function handleCompare({
   else {
     rl.debug('comparing via all providers',);
     /**
-     * Per-provider comparison entries from the multi-provider dispatch; printed as JSON below.
+     Per-provider comparison entries from the multi-provider dispatch; printed as JSON below.
      */
     const results = await compareAll({
       imageA: inputA,

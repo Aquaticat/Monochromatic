@@ -16,31 +16,31 @@ import {
 import { createBypassFixture, } from './tunnel-bypass.integration-fixture.ts';
 
 /**
- * Exempt socket mark used by all routing checks.
+ Exempt socket mark used by all routing checks.
  */
 const EXEMPT_MARK = 8_888;
 
 /**
- * Maximum bounded route-watcher readiness probes.
+ Maximum bounded route-watcher readiness probes.
  */
 const WATCH_PROBE_ATTEMPTS = 100;
 
 /**
- * Delay between route-watcher probes.
+ Delay between route-watcher probes.
  */
 const WATCH_PROBE_DELAY_MS = 10;
 
 /**
- * Adds bypass state through built artifact.
- *
- * @param fixture - Disposable namespace.
- *
- * @param watchRouteChanges - Whether detached watcher starts.
- *
- * @example
- * ```ts
- * addBypass({ fixture, watchRouteChanges: false });
- * ```
+ Adds bypass state through built artifact.
+ 
+ @param fixture - Disposable namespace.
+ 
+ @param watchRouteChanges - Whether detached watcher starts.
+ 
+ @example
+ ```ts
+ addBypass({ fixture, watchRouteChanges: false });
+ ```
  */
 async function addBypass(
   {
@@ -58,14 +58,14 @@ async function addBypass(
 }
 
 /**
- * Removes bypass state through built artifact.
- *
- * @param fixture - Disposable namespace.
- *
- * @example
- * ```ts
- * removeBypass({ fixture });
- * ```
+ Removes bypass state through built artifact.
+ 
+ @param fixture - Disposable namespace.
+ 
+ @example
+ ```ts
+ removeBypass({ fixture });
+ ```
  */
 async function removeBypass(
   { fixture, }: { readonly fixture: BypassFixture; },
@@ -77,22 +77,22 @@ async function removeBypass(
 }
 
 /**
- * Reads detached watcher PID from root-owned sidecar.
- *
- * @param fixture - Disposable namespace.
- *
- * @returns Registered watcher PID.
- *
- * @example
- * ```ts
- * watcherPid({ fixture });
- * ```
+ Reads detached watcher PID from root-owned sidecar.
+ 
+ @param fixture - Disposable namespace.
+ 
+ @returns Registered watcher PID.
+ 
+ @example
+ ```ts
+ watcherPid({ fixture });
+ ```
  */
 async function watcherPid(
   { fixture, }: { readonly fixture: BypassFixture; },
 ): Promise<number> {
   /**
-   * Parsed watcher sidecar.
+   Parsed watcher sidecar.
    */
   const value: unknown = JSON.parse(await runSudo({
     args: [
@@ -109,19 +109,107 @@ async function watcherPid(
   return value.pid;
 }
 
+
 /**
- * Polls active `ip monitor` child under watcher.
- *
- * @param watcherProcessId - Detached watcher PID.
- *
- * @param previousProcessId - Prior monitor PID excluded after restart.
- *
- * @returns Positive current monitor PID.
- *
- * @example
- * ```ts
- * await watcherMonitorPid({ watcherProcessId: 123, previousProcessId: 0 });
- * ```
+ Starts detached watcher through alternate Node executable argument.
+ 
+ @param fixture - Disposable namespace keeping process and routes isolated.
+ 
+ @returns Registered detached watcher PID for cleanup assertions.
+ 
+ @example
+ ```ts
+ await startPriorRuntimeWatcher({ fixture });
+ ```
+ */
+async function startPriorRuntimeWatcher(
+  { fixture, }: { readonly fixture: BypassFixture; },
+): Promise<number> {
+  /**
+   Alternate executable argument modeling prior mise-managed Node installation.
+   */
+  const executablePath = `${fixture.stateDirectory}/node-prior-runtime`;
+  await runSudo({
+    args: [
+      'ln',
+      '--symbolic',
+      process.execPath,
+      executablePath,
+    ],
+  },);
+  /**
+   Built watcher entry used by production detached process.
+   */
+  const watcherPath = new URL(
+    '../dist/final/node/bypass-watch.mjs',
+    import.meta.url,
+  ).pathname;
+  /**
+   Detached watcher PID printed by short-lived privileged launcher.
+   */
+  const processIdText = await runSudo({
+    args: [
+      process.execPath,
+      '--input-type=module',
+      '--eval',
+      [
+        "const { spawn } = await import('node:child_process');",
+        "const watcher = spawn('ip', process.argv.slice(1), { detached: true, stdio: 'ignore' });",
+        'watcher.unref();',
+        "if ((watcher.pid === undefined) || (watcher.pid <= 0)) throw new Error('Watcher lacks PID.');",
+        'console.log(String(watcher.pid));',
+      ].join(' ',),
+      'netns',
+      'exec',
+      fixture.namespace,
+      'env',
+      `WG_QUICKER_RUNTIME_DIRECTORY=${fixture.stateDirectory}`,
+      executablePath,
+      watcherPath,
+      fixture.statePath,
+    ],
+  },);
+  /**
+   Positive watcher process identifier returned to caller.
+   */
+  const processId = Number(processIdText.trim(),);
+  if ((!Number.isSafeInteger(processId)) || (processId <= 0))
+    throw new Error(`Prior-runtime watcher returned invalid PID: ${processIdText}`,);
+  /**
+   Bounded sidecar readiness cursor.
+   */
+  const cursor = { attempt: 0, };
+  while (cursor.attempt < WATCH_PROBE_ATTEMPTS) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Detached watcher creates sidecar asynchronously.
+    const result = await runSudoAllowingFailure({
+      args: [
+        'test',
+        '-e',
+        `${fixture.statePath}.watcher.json`,
+      ],
+    },);
+    if (result.exitCode === 0)
+      return processId;
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Bounded readiness wait avoids busy spin.
+    await wait(WATCH_PROBE_DELAY_MS,);
+    cursor.attempt += 1;
+  }
+  throw new Error(`Prior-runtime watcher ${String(processId,)} did not register.`,);
+}
+
+/**
+ Polls active `ip monitor` child under watcher.
+ 
+ @param watcherProcessId - Detached watcher PID.
+ 
+ @param previousProcessId - Prior monitor PID excluded after restart.
+ 
+ @returns Positive current monitor PID.
+ 
+ @example
+ ```ts
+ await watcherMonitorPid({ watcherProcessId: 123, previousProcessId: 0 });
+ ```
  */
 async function watcherMonitorPid(
   {
@@ -133,7 +221,7 @@ async function watcherMonitorPid(
   },
 ): Promise<number> {
   /**
-   * Bounded child-discovery cursor.
+   Bounded child-discovery cursor.
    */
   const cursor = { attempt: 0, };
   while (cursor.attempt < WATCH_PROBE_ATTEMPTS) {
@@ -149,7 +237,7 @@ async function watcherMonitorPid(
     },);
     if (result.exitCode === 0) {
       /**
-       * First matching monitor child.
+       First matching monitor child.
        */
       const pid = Number(result.stdout.trim(),);
       if (Number.isSafeInteger(pid,) && (pid > 0) && (pid !== previousProcessId))
@@ -163,16 +251,16 @@ async function watcherMonitorPid(
 }
 
 /**
- * Waits until watcher table follows secondary physical interface.
- *
- * @param fixture - Disposable namespace.
- *
- * @param table - Claimed bypass table.
- *
- * @example
- * ```ts
- * await waitForSecondaryRoute({ fixture, table: 52002 });
- * ```
+ Waits until watcher table follows secondary physical interface.
+ 
+ @param fixture - Disposable namespace.
+ 
+ @param table - Claimed bypass table.
+ 
+ @example
+ ```ts
+ await waitForSecondaryRoute({ fixture, table: 52002 });
+ ```
  */
 async function waitForSecondaryRoute(
   {
@@ -184,12 +272,12 @@ async function waitForSecondaryRoute(
   },
 ): Promise<void> {
   /**
-   * Mutable bounded probe count.
+   Mutable bounded probe count.
    */
   const cursor = { attempt: 0, };
   while (cursor.attempt < WATCH_PROBE_ATTEMPTS) {
     /**
-     * Current IPv4 bypass defaults.
+     Current IPv4 bypass defaults.
      */
     // oxlint-disable-next-line no-await-in-loop -- polling must observe route state after each bounded delay.
     const routes = await runNamespaceIp({
@@ -239,7 +327,7 @@ await addBypass({
   watchRouteChanges: false,
 },);
 /**
- * State proving occupied table and both-family preferences were skipped.
+ State proving occupied table and both-family preferences were skipped.
  */
 const firstState = await readFixtureState({ fixture, },);
 assert.equal(firstState.table, 52_001,);
@@ -281,6 +369,75 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'rule', 'show',], },)).i
 
 //endregion Exact teardown ownership
 
+//region Prior-runtime watcher cleanup
+
+await addBypass({
+  fixture,
+  watchRouteChanges: false,
+},);
+/**
+ Watcher launched through executable argument differing from current runtime.
+ */
+const priorRuntimeWatcherPid = await startPriorRuntimeWatcher({ fixture, },);
+/**
+ Guaranteed cleanup preserving disposable fixture when regression assertion fails.
+ */
+await using priorRuntimeWatcherCleanup: AsyncDisposable = {
+  async [Symbol.asyncDispose](): Promise<void> {
+    await runSudoAllowingFailure({
+      args: [
+        'kill',
+        '--signal',
+        'KILL',
+        '--',
+        `-${String(priorRuntimeWatcherPid,)}`,
+      ],
+    },);
+  },
+};
+/**
+ Sidecar text rewritten to legacy shape from incident before command persistence.
+ */
+const priorRuntimeWatcherSidecarText = await runSudo({
+  args: [
+    'cat',
+    `${fixture.statePath}.watcher.json`,
+  ],
+},);
+/**
+ Parsed prior-runtime watcher identity used for backward-compatibility fixture.
+ */
+const priorRuntimeWatcherSidecar: unknown = JSON.parse(priorRuntimeWatcherSidecarText,);
+if (((typeof priorRuntimeWatcherSidecar) !== 'object')
+  || (priorRuntimeWatcherSidecar === null)
+  || (!('ownerId' in priorRuntimeWatcherSidecar))
+  || (!('pid' in priorRuntimeWatcherSidecar))
+  || (!('startTime' in priorRuntimeWatcherSidecar))
+  || ((typeof priorRuntimeWatcherSidecar.ownerId) !== 'string')
+  || ((typeof priorRuntimeWatcherSidecar.pid) !== 'number')
+  || ((typeof priorRuntimeWatcherSidecar.startTime) !== 'string')) {
+  throw new Error('Prior-runtime watcher sidecar has invalid shape.',);
+}
+assert.equal(priorRuntimeWatcherSidecar.pid, priorRuntimeWatcherPid,);
+await writeRootFixtureFile({
+  path: `${fixture.statePath}.watcher.json`,
+  contents: JSON.stringify({
+    ownerId: priorRuntimeWatcherSidecar.ownerId,
+    pid: priorRuntimeWatcherSidecar.pid,
+    startTime: priorRuntimeWatcherSidecar.startTime,
+  },),
+},);
+await removeBypass({ fixture, },);
+assert.notEqual((await runSudoAllowingFailure({
+  args: [
+    'test',
+    '-e',
+    `/proc/${String(priorRuntimeWatcherPid,)}`,
+  ],
+},)).exitCode, 0,);
+
+//endregion Prior-runtime watcher cleanup
+
 //region Detached route-change watcher
 
 await addBypass({
@@ -288,16 +445,16 @@ await addBypass({
   watchRouteChanges: true,
 },);
 /**
- * State after two deliberately occupied bypass tables.
+ State after two deliberately occupied bypass tables.
  */
 const watcherState = await readFixtureState({ fixture, },);
 assert.equal(watcherState.table, 52_002,);
 /**
- * Detached watcher PID expected to disappear during teardown.
+ Detached watcher PID expected to disappear during teardown.
  */
 const detachedPid = await watcherPid({ fixture, },);
 /**
- * Initial route-monitor child intentionally killed to verify watcher supervision.
+ Initial route-monitor child intentionally killed to verify watcher supervision.
  */
 const firstMonitorPid = await watcherMonitorPid({
   watcherProcessId: detachedPid,
@@ -312,7 +469,7 @@ await runSudo({
   ],
 },);
 /**
- * Replacement monitor child started by persistent watcher.
+ Replacement monitor child started by persistent watcher.
  */
 const replacementMonitorPid = await watcherMonitorPid({
   watcherProcessId: detachedPid,
@@ -331,7 +488,7 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'get', '8.8.8.8
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'get', '2001:4860:4860::8888', 'mark', String(EXEMPT_MARK,),], },)).includes(`dev ${fixture.peerSecondary}`,));
 await runNamespaceIp({ fixture, args: ['-4', 'route', 'add', 'default', 'via', '198.51.101.1', 'dev', fixture.peerSecondary, 'metric', '900', 'table', String(watcherState.table,), 'proto', 'boot',], },);
 /**
- * Synchronization collision rejection for externally added default.
+ Synchronization collision rejection for externally added default.
  */
 const externalDefaultCollision = await runBypassOperationAllowingFailure({
   fixture,
@@ -340,7 +497,7 @@ const externalDefaultCollision = await runBypassOperationAllowingFailure({
 assert.notEqual(externalDefaultCollision.exitCode, 0,);
 assert.ok(externalDefaultCollision.stderr.includes('unowned default route',));
 /**
- * Original watcher sidecar restored after wrong-owner cleanup probe.
+ Original watcher sidecar restored after wrong-owner cleanup probe.
  */
 const originalWatcherSidecar = await runSudo({
   args: [
@@ -349,7 +506,7 @@ const originalWatcherSidecar = await runSudo({
   ],
 },);
 /**
- * Parsed sidecar used to change only owner identity.
+ Parsed sidecar used to change only owner identity.
  */
 const watcherSidecarValue: unknown = JSON.parse(originalWatcherSidecar,);
 if (((typeof watcherSidecarValue) !== 'object') || (watcherSidecarValue === null))
@@ -362,7 +519,7 @@ await writeRootFixtureFile({
   },),
 },);
 /**
- * Cleanup failure caused by mismatched sidecar owner.
+ Cleanup failure caused by mismatched sidecar owner.
  */
 const wrongOwnerCleanup = await runBypassOperationAllowingFailure({
   fixture,
@@ -386,7 +543,7 @@ assert.ok((await runNamespaceIp({ fixture, args: ['-4', 'route', 'show', 'table'
 await runNamespaceIp({ fixture, args: ['route', 'delete', 'default', 'via', '198.51.101.1', 'dev', fixture.peerSecondary, 'metric', '50',], },);
 await runNamespaceIp({ fixture, args: ['-6', 'route', 'delete', 'default', 'via', '2001:db8:2::1', 'dev', fixture.peerSecondary, 'metric', '50',], },);
 /**
- * Expected setup failure with no physical default in either family.
+ Expected setup failure with no physical default in either family.
  */
 const missingDefault = await runBypassOperationAllowingFailure({
   fixture,
@@ -401,7 +558,7 @@ await addBypass({
   watchRouteChanges: false,
 },);
 /**
- * State for IPv4-only physical connectivity.
+ State for IPv4-only physical connectivity.
  */
 const singleFamilyState = await readFixtureState({ fixture, },);
 assert.ok((await runNamespaceIp({ fixture, args: ['-6', 'route', 'show', 'table', String(singleFamilyState.table,),], },)).includes('unreachable default',));
@@ -413,7 +570,7 @@ await removeBypass({ fixture, },);
 
 await runNamespaceIp({ fixture, args: ['link', 'delete', 'wgtest',], },);
 /**
- * Valid private key generated inside disposable namespace.
+ Valid private key generated inside disposable namespace.
  */
 const privateKey = (await runSudo({
   args: [
@@ -426,7 +583,7 @@ const privateKey = (await runSudo({
   ],
 },)).trim();
 /**
- * Explicit config path consumed by built CLI.
+ Explicit config path consumed by built CLI.
  */
 const configPath = `${fixture.stateDirectory}/wgtest.conf`;
 await writeRootFixtureFile({
@@ -439,7 +596,7 @@ await writeRootFixtureFile({
   ].join('\n',),
 },);
 /**
- * Captured activation with configured mark and no missing-mark warning.
+ Captured activation with configured mark and no missing-mark warning.
  */
 const cliActivation = await runWgQuickerCli({
   fixture,
@@ -449,7 +606,7 @@ const cliActivation = await runWgQuickerCli({
 assert.equal(cliActivation.stderr.includes('has no ExemptMark',), false,);
 assert.ok((await runNamespaceIp({ fixture, args: ['link', 'show', 'dev', 'wgtest',], },)).includes('wgtest',));
 /**
- * CLI-created bypass state and watcher identity.
+ CLI-created bypass state and watcher identity.
  */
 const cliState = await readFixtureState({ fixture, },);
 const cliWatcherPid = await watcherPid({ fixture, },);

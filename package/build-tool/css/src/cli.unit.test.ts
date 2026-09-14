@@ -3,26 +3,29 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  MISE_MONOREPO,
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Mise monorepo root for spawn cwd, so the built bin path is invariant to the task's launch directory. */
-const REPO_ROOT = await findMiseMonorepoRootCached();
+const REPO_ROOT = await findRootCached({ marker: MISE_MONOREPO, },);
 
 /** Built bin path, resolved from the monorepo root. */
 const BIN_PATH = 'package/build-tool/css/dist/final/node/cli.mjs';
 
 /**
- * Runs the built build-css bin as a subprocess and returns stdout, stderr, and exit code.
- *
- * @param args - CLI arguments to pass after `build-css`
- * @returns Stdout text, stderr text, and numeric exit code
- *
- * @example
- * ```ts
- * const result = await runBuildCss({ args: ['--help'] });
- * // result.exitCode === 0
- * ```
+ Runs the built build-css bin as a subprocess and returns stdout, stderr, and exit code.
+ 
+ @param args - CLI arguments to pass after `build-css`
+ @returns Stdout text, stderr text, and numeric exit code
+ 
+ @example
+ ```ts
+ const result = await runBuildCss({ args: ['--help'] });
+ // result.exitCode === 0
+ ```
  */
 async function runBuildCss({ args, }: { args: readonly string[]; },): Promise<{
   stdout: string;

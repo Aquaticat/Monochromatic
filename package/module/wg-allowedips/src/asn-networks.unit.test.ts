@@ -22,7 +22,7 @@ import {
 import { captureError, } from './test-fixtures.ts';
 
 /**
- * Disposable temporary directory fixture.
+ Disposable temporary directory fixture.
  */
 type TempDir = {
   readonly path: string;
@@ -30,28 +30,28 @@ type TempDir = {
 };
 
 /**
- * Successful HTTP status used by compressed database fixtures.
+ Successful HTTP status used by compressed database fixtures.
  */
 const HTTP_OK = 200;
 
 /**
- * Server-failure HTTP status used by fallback fixture.
+ Server-failure HTTP status used by fallback fixture.
  */
 const HTTP_SERVER_ERROR = 500;
 
 /**
- * Creates disposable ASN cache directory.
- *
- * @returns Directory removed recursively on disposal.
- *
- * @example
- * ```ts
- * await using directory = await makeTempDir();
- * ```
+ Creates disposable ASN cache directory.
+ 
+ @returns Directory removed recursively on disposal.
+ 
+ @example
+ ```ts
+ await using directory = await makeTempDir();
+ ```
  */
 async function makeTempDir(): Promise<TempDir> {
   /**
-   * Fresh operating-system temporary path.
+   Fresh operating-system temporary path.
    */
   const path = await mkdtemp(join(
     tmpdir(),
@@ -72,18 +72,18 @@ async function makeTempDir(): Promise<TempDir> {
 }
 
 /**
- * Builds gzip-compressed IPinfo response fixture.
- *
- * @param text - Complete NDJSON text before compression.
- *
- * @param status - HTTP status.
- *
- * @returns Fetch-compatible response with compressed stream body.
- *
- * @example
- * ```ts
- * compressedResponse({ text: '', status: HTTP_OK });
- * ```
+ Builds gzip-compressed IPinfo response fixture.
+ 
+ @param text - Complete NDJSON text before compression.
+ 
+ @param status - HTTP status.
+ 
+ @returns Fetch-compatible response with compressed stream body.
+ 
+ @example
+ ```ts
+ compressedResponse({ text: '', status: HTTP_OK });
+ ```
  */
 function compressedResponse(
   {
@@ -95,7 +95,7 @@ function compressedResponse(
   },
 ): Response {
   /**
-   * Gzip stream matching IPinfo Lite transport.
+   Gzip stream matching IPinfo Lite transport.
    */
   const body = new Blob([new TextEncoder().encode(text),],)
     .stream()
@@ -122,11 +122,11 @@ await describe({
               '192.0.2.0/24,2001:db8::1',
             );
             /**
-             * Fetch spy that must remain unused for fresh cache.
+             Fetch spy that must remain unused for fresh cache.
              */
             const fetchSpy = sinon.stub(globalThis, 'fetch',);
             /**
-             * Networks read from current cache.
+             Networks read from current cache.
              */
             const networks = await lookupAsnNetworks({
               asn: 'as64500',
@@ -145,9 +145,9 @@ await describe({
           fn: async ({ sinon, }) => {
             await using directory = await makeTempDir();
             /**
-             * Database records with target,
-             * unrelated,
-             * and unterminated final target lines.
+             Database records with target,
+             unrelated,
+             and unterminated final target lines.
              */
             const databaseText = [
               JSON.stringify({ asn: 'AS64500', network: '192.0.2.0/24', },),
@@ -161,7 +161,7 @@ await describe({
                 status: HTTP_OK,
               },),);
             /**
-             * Networks filtered from streamed fixture.
+             Networks filtered from streamed fixture.
              */
             const networks = await lookupAsnNetworks({
               asn: 'AS64500',
@@ -183,7 +183,7 @@ await describe({
           fn: async ({ sinon, }) => {
             await using directory = await makeTempDir();
             /**
-             * Existing cache path made old enough to require refresh.
+             Existing cache path made old enough to require refresh.
              */
             const cachePath = join(directory.path, 'cache_AS64500.txt',);
             await writeFile(
@@ -202,7 +202,7 @@ await describe({
                 status: HTTP_SERVER_ERROR,
               },),);
             /**
-             * Networks recovered from stale cache.
+             Networks recovered from stale cache.
              */
             const networks = await lookupAsnNetworks({
               asn: 'AS64500',
@@ -217,7 +217,7 @@ await describe({
           fn: async () => {
             await using directory = await makeTempDir();
             /**
-             * Missing-token failure captured after absent-cache lookup.
+             Missing-token failure captured after absent-cache lookup.
              */
             const error = await captureError({
               operation: async function lookupWithoutData(): Promise<readonly string[]> {
@@ -243,7 +243,7 @@ await describe({
                 status: HTTP_OK,
               },),);
             /**
-             * Wrapped malformed-record failure.
+             Wrapped malformed-record failure.
              */
             const error = await captureError({
               operation: async function lookupMalformedRecord(): Promise<readonly string[]> {
@@ -268,7 +268,7 @@ await describe({
           fn: async ({ sinon, }) => {
             await using directory = await makeTempDir();
             /**
-             * Fetch stub resolving one reusable database response.
+             Fetch stub resolving one reusable database response.
              */
             const fetchSpy = sinon
               .stub(globalThis, 'fetch',)
@@ -277,14 +277,14 @@ await describe({
                 status: HTTP_OK,
               },),);
             /**
-             * Invocation-scoped resolver sharing pending work.
+             Invocation-scoped resolver sharing pending work.
              */
             const lookup = createAsnLookup({
               cacheDirectory: directory.path,
               token: 'fixture-token',
             },);
             /**
-             * Duplicate lookups started before either settles.
+             Duplicate lookups started before either settles.
              */
             const [first, second,] = await Promise.all([
               lookup({ asn: 'AS64500', },),

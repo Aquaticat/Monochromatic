@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 /**
- * CLI for perceptual image difference comparison using multimodal embeddings.
- * Supports Voyage AI and Google Gemini backends.
- *
- * @example
- * ```sh
- * # Compare using all providers (default)
- * image-diff compare before.png after.png
- *
- * # Compare with a specific provider
- * image-diff compare --provider gemini before.png after.png
- *
- * # Embed with a specific model
- * image-diff embed --provider voyage --model voyage-multimodal-3.5 photo.png
- *
- * # Embed using all providers
- * image-diff embed photo.png
- * ```
- *
- * @packageDocumentation
+ CLI for perceptual image difference comparison using multimodal embeddings.
+ Supports Voyage AI and Google Gemini backends.
+ 
+ @example
+ ```sh
+ # Compare using all providers (default)
+ image-diff compare before.png after.png
+ 
+ # Compare with a specific provider
+ image-diff compare --provider gemini before.png after.png
+ 
+ # Embed with a specific model
+ image-diff embed --provider voyage --model voyage-multimodal-3.5 photo.png
+ 
+ # Embed using all providers
+ image-diff embed photo.png
+ ```
+ 
+ @packageDocumentation
  */
 
 // TODO: deprecate Optique
@@ -31,8 +31,8 @@ import { handleCompare, } from './cli.compare.ts';
 import { handleEmbed, } from './cli.embed.ts';
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI result from process.argv.
+ TODO: deprecate Optique
+ Parsed CLI result from process.argv.
  */
 const args = runSync(
   parser,
@@ -47,7 +47,7 @@ const args = runSync(
 );
 
 /**
- * Provider/model overrides shared by both subcommands; spread in only when present.
+ Provider/model overrides shared by both subcommands; spread in only when present.
  */
 const {
   provider,

@@ -485,7 +485,8 @@ What follows from it:
   provenance instead;
 - iterator members fall under the same baseline,
    so the exclusion recorded in
-  "Scope, and what the residue becomes" is lifted for the channel question.
+  "Scope,
+   and what the residue becomes" is lifted for the channel question.
    `entries` still answers to its
   tuple result under result provenance;
 - species stops being a disqualifying channel in
@@ -627,7 +628,8 @@ attempted here.
 
 ## A channel that is narrow conditionally, added 2026-08-07
 
-`join` was absent from the table, and that absence was nearly right rather than an oversight.
+`join` was absent from the table,
+ and that absence was nearly right rather than an oversight.
 It reads `length` and each index,
  both trusted by the baseline above,
  and then calls `ToString` on

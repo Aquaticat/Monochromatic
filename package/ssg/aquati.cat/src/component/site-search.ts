@@ -1,15 +1,15 @@
 /**
- * Expanding search input and results dropdown component.
- *
- * The input is icon-sized by default with a Material Symbols `search`
- * icon centered over it. On `:focus` the input expands, reveals
- * placeholder text, and shifts the icon to the inline-start edge.
- * The results dropdown positions absolutely below the search wrapper.
- *
- * Internal class names (`.search-icon`, `.search-input`, `.search-results`,
- * `.search-title`, `.search-excerpt`) are scoped to this file's CSS.
- * The `.search-title` and `.search-excerpt` classes are also generated
- * in client-side innerHTML by `src/client/search.ts`.
+ Expanding search input and results dropdown component.
+ 
+ The input is icon-sized by default with a Material Symbols `search`
+ icon centered over it. On `:focus` the input expands, reveals
+ placeholder text, and shifts the icon to the inline-start edge.
+ The results dropdown positions absolutely below the search wrapper.
+ 
+ Internal class names (`.search-icon`, `.search-input`, `.search-results`,
+ `.search-title`, `.search-excerpt`) are scoped to this file's CSS.
+ The `.search-title` and `.search-excerpt` classes are also generated
+ in client-side innerHTML by `src/client/search.ts`.
  */
 import {
   cssCalc,
@@ -39,17 +39,17 @@ import {
 //region Constants
 
 /**
- * Collapsed search input size in rem (matches touch target).
+ Collapsed search input size in rem (matches touch target).
  */
 const SEARCH_COLLAPSED = TOUCH_TARGET;
 
 /**
- * Expanded search input width in rem.
+ Expanded search input width in rem.
  */
 const SEARCH_EXPANDED = 16;
 
 /**
- * Transition duration for the search input expand/collapse.
+ Transition duration for the search input expand/collapse.
  */
 const SEARCH_TRANSITION = cssS(1 / 2
   / 2,);
@@ -59,14 +59,14 @@ const SEARCH_TRANSITION = cssS(1 / 2
 //region CSS
 
 /**
- * Search input, icon overlay, and results dropdown styles.
- *
- * @returns CSS string for the `<site-search>` element
- *
- * @example
- * ```ts
- * const styles = css();
- * ```
+ Search input, icon overlay, and results dropdown styles.
+ 
+ @returns CSS string for the `<site-search>` element
+ 
+ @example
+ ```ts
+ const styles = css();
+ ```
  */
 export function css(): string {
   return [
@@ -246,22 +246,22 @@ export function css(): string {
 //region HTML
 
 /**
- * Renders the expanding search input with results dropdown
- * as a `<site-search>` custom element.
- *
- * The `<search>` landmark wraps an `<input type="search">` that collapses
- * to icon size when unfocused, with a Material Symbols `search` icon
- * overlaid via absolute positioning, and an empty `<ul>` for Pagefind
- * results populated client-side.
- *
- * @param lang - locale code resolving the placeholder text
- *
- * @returns HTML string for the search widget
- *
- * @example
- * ```ts
- * const markup = html('en');
- * ```
+ Renders the expanding search input with results dropdown
+ as a `<site-search>` custom element.
+ 
+ The `<search>` landmark wraps an `<input type="search">` that collapses
+ to icon size when unfocused, with a Material Symbols `search` icon
+ overlaid via absolute positioning, and an empty `<ul>` for Pagefind
+ results populated client-side.
+ 
+ @param lang - locale code resolving the placeholder text
+ 
+ @returns HTML string for the search widget
+ 
+ @example
+ ```ts
+ const markup = html('en');
+ ```
  */
 export function html(lang: Locale,): string {
   return h({

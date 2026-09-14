@@ -36,49 +36,49 @@ import {
 } from './test-support.ts';
 
 /**
- * Fields tests may override on default spawn state fixture.
+ Fields tests may override on default spawn state fixture.
  */
 type SpawnStateFixtureOverrides = {
   /**
-   * Spawn identifier for fixture.
+   Spawn identifier for fixture.
    */
   readonly spawnId?: SpawnState['spawnId'];
   /**
-   * Child session identifier for fixture.
+   Child session identifier for fixture.
    */
   readonly sessionId?: SpawnState['sessionId'];
   /**
-   * Child session file for fixture.
+   Child session file for fixture.
    */
   readonly sessionFile?: SpawnState['sessionFile'];
   /**
-   * Parent session identifier for fixture.
+   Parent session identifier for fixture.
    */
   readonly parentSessionId?: SpawnState['parentSessionId'];
   /**
-   * Parent session file for fixture.
+   Parent session file for fixture.
    */
   readonly parentSessionFile?: SpawnState['parentSessionFile'];
   /**
-   * Working directory for fixture.
+   Working directory for fixture.
    */
   readonly cwd?: SpawnState['cwd'];
   /**
-   * Lifecycle status for fixture.
+   Lifecycle status for fixture.
    */
   readonly status?: SpawnState['status'];
   /**
-   * Last assistant message for fixture.
+   Last assistant message for fixture.
    */
   readonly lastMessage?: SpawnState['lastMessage'];
 };
 
 /**
- * Builds spawn state fixtures for tests.
- *
- * @param overrides - fields to override from default stopped state.
- *
- * @returns spawn state fixture.
+ Builds spawn state fixtures for tests.
+ 
+ @param overrides - fields to override from default stopped state.
+ 
+ @returns spawn state fixture.
  */
 function spawnStateFixture(overrides: SpawnStateFixtureOverrides = {},): SpawnState {
   return {
@@ -185,7 +185,7 @@ await describe({
             },);
 
             /**
-             * Updated state JSON after completion.
+             Updated state JSON after completion.
              */
             const raw = readFileSync(spawnStatePath({ spawnId: 'spawn-1', },), 'utf8',);
             expect(raw,).toContain('"status":"stopped"',);
@@ -214,7 +214,7 @@ await describe({
             },);
 
             /**
-             * Unchanged state JSON after rejected completion.
+             Unchanged state JSON after rejected completion.
              */
             const raw = readFileSync(spawnStatePath({ spawnId: 'spawn-1', },), 'utf8',);
             expect(raw,).toContain('"status":"running"',);
@@ -230,7 +230,7 @@ await describe({
           name: 'formats completed child result for parent context',
           fn: async function testFormatResult() {
             /**
-             * Formatted child result for default fixture.
+             Formatted child result for default fixture.
              */
             const result = formatSpawnResult(spawnStateFixture(),);
 
@@ -324,19 +324,19 @@ await describe({
             expect(String(result,),).toContain('spawn-1',);
             expect(String(result,),).not.toContain('spawn-2',);
             /**
-             * Reported marker for consumed spawn.
+             Reported marker for consumed spawn.
              */
             const reportedSpawnPath = reportedStatePath({ spawnId: 'spawn-1', },);
             /**
-             * Active state path for consumed spawn.
+             Active state path for consumed spawn.
              */
             const consumedSpawnPath = spawnStatePath({ spawnId: 'spawn-1', },);
             /**
-             * Active state path for non-matching parent spawn.
+             Active state path for non-matching parent spawn.
              */
             const otherParentSpawnPath = spawnStatePath({ spawnId: 'spawn-2', },);
             /**
-             * Active state path for still-running spawn.
+             Active state path for still-running spawn.
              */
             const runningSpawnPath = spawnStatePath({ spawnId: 'spawn-3', },);
 

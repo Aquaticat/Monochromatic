@@ -6,7 +6,7 @@ import {
 import {
   baseIndentAt,
   leadingWhitespace,
-} from './indent.ts';
+} from '../../dist/final/node/index.mjs';
 
 await describe({
   name: '',

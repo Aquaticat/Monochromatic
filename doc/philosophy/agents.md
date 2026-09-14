@@ -569,8 +569,16 @@ detail lives in the skill.
 
 GUI clicks:
  `agent-browser` drives most web UIs;
- `xdotool` / `wtype` / `ydotool` drive native UIs;
- "click" usually has a keyboard shortcut to synthesise,
+ the repository's nested compositor isolates native Wayland UI tests;
+ application HTTP/IPC surfaces bridge authorized live UI;
+ a caller-independent broker owns global virtual input through key release.
+The host uses native Wayland,
+ so X11-only `xdotool` cannot bridge its application input.
+ A direct `ydotool` caller sends key-down and key-up separately.
+If injected input cancels that caller,
+ the persistent virtual device retains the pressed key until `ydotoold` restarts.
+See [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../troubleshooting/ydotool-interrupted-key-release.md).
+ "Click" usually has a keyboard shortcut to synthesise,
  or a backing HTTP/IPC endpoint that bypasses the UI.
  Interactive auth:
  scripted with `expect`,

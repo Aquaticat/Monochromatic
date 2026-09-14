@@ -1,9 +1,9 @@
 /**
- * Unit tests for closing containers: folding a comment found before the closing
- * bracket onto the last element or entry, or onto the empty container node, and
- * leaving elements and entries otherwise untouched.
- *
- * @module
+ Unit tests for closing containers: folding a comment found before the closing
+ bracket onto the last element or entry, or onto the empty container node, and
+ leaving elements and entries otherwise untouched.
+ 
+ @module
  */
 
 import {
@@ -13,13 +13,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type JsoncRecordEntry,
+  type JsoncValue,
   closeArray,
   closeRecord,
-} from './parse-close.ts';
-import type {
-  JsoncRecordEntry,
-  JsoncValue,
-} from './value.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const num = (value: number,): JsoncValue => ({ kind: 'number', value, });
 

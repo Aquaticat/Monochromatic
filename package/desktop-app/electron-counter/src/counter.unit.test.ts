@@ -1,10 +1,10 @@
 /**
- * Unit tests for shared counter domain functions.
- *
- * Tests import from built `dist/app` so they verify the artifact the Electron
- * app and tools consume, not sibling source.
- *
- * @module
+ Unit tests for shared counter domain functions.
+ 
+ Tests import from built `dist/app` so they verify the artifact the Electron
+ app and tools consume, not sibling source.
+ 
+ @module
  */
 
 import {

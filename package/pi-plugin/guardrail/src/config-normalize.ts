@@ -1,7 +1,7 @@
 /**
- * Pi guardrail config shape normalization.
- *
- * @module
+ Pi guardrail config shape normalization.
+ 
+ @module
  */
 
 import { basename, } from 'node:path';
@@ -15,20 +15,20 @@ import { isRecord, } from './value.ts';
 //region Public API
 
 /**
- * Normalizes a parsed config file value.
- *
- * @param value - parsed JSON value
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns normalized config file shape
- *
- * @throws when config shape is invalid
- *
- * @example
- * ```typescript
- * normalizeConfigFile({ value: { 'pnpm-lock.yaml': 'run pnpm install' }, configPath });
- * ```
+ Normalizes a parsed config file value.
+ 
+ @param value - parsed JSON value
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns normalized config file shape
+ 
+ @throws when config shape is invalid
+ 
+ @example
+ ```typescript
+ normalizeConfigFile({ value: { 'pnpm-lock.yaml': 'run pnpm install' }, configPath });
+ ```
  */
 function normalizeConfigFile(
   {
@@ -66,16 +66,16 @@ function normalizeConfigFile(
 //region Advanced config
 
 /**
- * Detects advanced config shape by reserved top-level keys.
- *
- * @param value - object config value
- *
- * @returns whether value uses advanced shape
- *
- * @example
- * ```typescript
- * isAdvancedConfigObject({ blockBunTest: false }); // true
- * ```
+ Detects advanced config shape by reserved top-level keys.
+ 
+ @param value - object config value
+ 
+ @returns whether value uses advanced shape
+ 
+ @example
+ ```typescript
+ isAdvancedConfigObject({ blockBunTest: false }); // true
+ ```
  */
 function isAdvancedConfigObject(value: Readonly<Record<string, unknown>>,): boolean {
   return Object.hasOwn(
@@ -89,18 +89,18 @@ function isAdvancedConfigObject(value: Readonly<Record<string, unknown>>,): bool
 }
 
 /**
- * Normalizes advanced config shape.
- *
- * @param value - advanced config object
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns normalized config
- *
- * @example
- * ```typescript
- * normalizeAdvancedConfig({ value: { blockBunTest: false }, configPath });
- * ```
+ Normalizes advanced config shape.
+ 
+ @param value - advanced config object
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns normalized config
+ 
+ @example
+ ```typescript
+ normalizeAdvancedConfig({ value: { blockBunTest: false }, configPath });
+ ```
  */
 function normalizeAdvancedConfig(
   {
@@ -117,7 +117,7 @@ function normalizeAdvancedConfig(
   },);
 
   /**
-   * Optional blockBunTest scalar.
+   Optional blockBunTest scalar.
    */
   const blockBunTestValue = value.blockBunTest;
   if ((blockBunTestValue !== undefined) && ((typeof blockBunTestValue) !== 'boolean')) {
@@ -127,7 +127,7 @@ function normalizeAdvancedConfig(
   }
 
   /**
-   * Optional advanced path rule map.
+   Optional advanced path rule map.
    */
   const rawPathRules = value.pathRules;
   if ((rawPathRules !== undefined) && (!isRecord(rawPathRules,))) {
@@ -137,7 +137,7 @@ function normalizeAdvancedConfig(
   }
 
   /**
-   * Normalized path rule list.
+   Normalized path rule list.
    */
   const pathRules = rawPathRules === undefined
     ? []
@@ -157,11 +157,11 @@ function normalizeAdvancedConfig(
 }
 
 /**
- * Throws when advanced config contains unknown top-level keys.
- *
- * @param value - advanced config object
- *
- * @param configPath - config path used in diagnostics
+ Throws when advanced config contains unknown top-level keys.
+ 
+ @param value - advanced config object
+ 
+ @param configPath - config path used in diagnostics
  */
 function assertOnlyAdvancedKeys(
   {
@@ -173,14 +173,14 @@ function assertOnlyAdvancedKeys(
   },
 ): void {
   /**
-   * Allowed advanced config keys.
+   Allowed advanced config keys.
    */
   const allowedKeys = new Set([
     'pathRules',
     'blockBunTest',
   ],);
   /**
-   * Unknown advanced config keys.
+   Unknown advanced config keys.
    */
   const unknownKeys = Object
     .keys(value,)
@@ -199,20 +199,20 @@ function assertOnlyAdvancedKeys(
 //region Path rule normalization
 
 /**
- * Converts an object mapping gitignore patterns to messages into ordered rules.
- *
- * @param value - record to normalize
- *
- * @param configPath - config path used in diagnostics
- *
- * @param fieldName - human-readable field name used in errors
- *
- * @returns path rules preserving JSON insertion order
- *
- * @example
- * ```typescript
- * recordToPathRules({ value: { 'pnpm-lock.yaml': 'run pnpm install' }, configPath, fieldName: 'pathRules' });
- * ```
+ Converts an object mapping gitignore patterns to messages into ordered rules.
+ 
+ @param value - record to normalize
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @param fieldName - human-readable field name used in errors
+ 
+ @returns path rules preserving JSON insertion order
+ 
+ @example
+ ```typescript
+ recordToPathRules({ value: { 'pnpm-lock.yaml': 'run pnpm install' }, configPath, fieldName: 'pathRules' });
+ ```
  */
 function recordToPathRules(
   {
@@ -229,7 +229,7 @@ function recordToPathRules(
     .entries(value,)
     .map(function toPathRule(entry,): PathRule {
       /**
-       * Pattern and refusal message entry from config.
+       Pattern and refusal message entry from config.
        */
       const [pattern, message,] = entry;
       if (pattern.length === 0) {

@@ -1,7 +1,7 @@
 /**
- * Characterization tests for auto-mode budget-model selection before shared extraction.
- *
- * @module
+ Characterization tests for auto-mode budget-model selection before shared extraction.
+ 
+ @module
  */
 
 import type {
@@ -47,22 +47,22 @@ const MAX_TOKENS = 4_096;
 const apiKey = 'test-api-key';
 
 /**
- * Build a complete pi model fixture.
- *
- * @param provider - provider slug
- *
- * @param id - model id
- *
- * @param inputCost - input token price per million tokens
- *
- * @param outputCost - output token price per million tokens
- *
- * @returns pi model fixture
- *
- * @example
- * ```typescript
- * modelFixture({ provider: 'openai', id: 'gpt-4o-mini', inputCost: 1, outputCost: 2 });
- * ```
+ Build a complete pi model fixture.
+ 
+ @param provider - provider slug
+ 
+ @param id - model id
+ 
+ @param inputCost - input token price per million tokens
+ 
+ @param outputCost - output token price per million tokens
+ 
+ @returns pi model fixture
+ 
+ @example
+ ```typescript
+ modelFixture({ provider: 'openai', id: 'gpt-4o-mini', inputCost: 1, outputCost: 2 });
+ ```
  */
 function modelFixture(
   {
@@ -146,16 +146,16 @@ const allModels = [
 ] as const;
 
 /**
- * Return canonical provider/model slug for test registry lookups.
- *
- * @param model - model fixture
- *
- * @returns provider/model slug
- *
- * @example
- * ```typescript
- * slugFor(activeModel);
- * ```
+ Return canonical provider/model slug for test registry lookups.
+ 
+ @param model - model fixture
+ 
+ @returns provider/model slug
+ 
+ @example
+ ```typescript
+ slugFor(activeModel);
+ ```
  */
 function slugFor(
   model: Model<Api>,
@@ -164,16 +164,16 @@ function slugFor(
 }
 
 /**
- * Build a fake pi extension context with registry auth behavior.
- *
- * @param authenticatedSlugs - slugs whose registry auth succeeds
- *
- * @returns fake extension context
- *
- * @example
- * ```typescript
- * contextFixture({ authenticatedSlugs: ['openai/gpt-4o-mini'] });
- * ```
+ Build a fake pi extension context with registry auth behavior.
+ 
+ @param authenticatedSlugs - slugs whose registry auth succeeds
+ 
+ @returns fake extension context
+ 
+ @example
+ ```typescript
+ contextFixture({ authenticatedSlugs: ['openai/gpt-4o-mini'] });
+ ```
  */
 function contextFixture(
   {
@@ -214,16 +214,16 @@ function contextFixture(
 }
 
 /**
- * Capture an async error without promise matcher indirection.
- *
- * @param action - async action expected to throw
- *
- * @returns caught error value
- *
- * @example
- * ```typescript
- * const error = await captureError(async function fail() { throw new Error('x'); });
- * ```
+ Capture an async error without promise matcher indirection.
+ 
+ @param action - async action expected to throw
+ 
+ @returns caught error value
+ 
+ @example
+ ```typescript
+ const error = await captureError(async function fail() { throw new Error('x'); });
+ ```
  */
 async function captureError(
   action: () => Promise<unknown>,

@@ -11,16 +11,16 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Proxy operations a plain indexed access on a parameter already opens.
- *
- * Measured against the rule itself rather than assumed, because the own-index channel
- * is defined as "no wider than what indexed access opens" and that set turned out to
- * be wider than the `Get` and `Set` an earlier description named. Each entry
- * corresponds to source this rule accepts on a parameter with no unresolved effect:
- * `values[0]` opens `get`, `0 in values` opens `has`, `values[0] = x` opens `set`,
- * `getOwnPropertyDescriptor` and `defineProperty`, and `delete values[0]` opens
- * `deleteProperty`. The last two are reported as plain mutations, never as something
- * the rule could not resolve.
+ Proxy operations a plain indexed access on a parameter already opens.
+ 
+ Measured against the rule itself rather than assumed, because the own-index channel
+ is defined as "no wider than what indexed access opens" and that set turned out to
+ be wider than the `Get` and `Set` an earlier description named. Each entry
+ corresponds to source this rule accepts on a parameter with no unresolved effect:
+ `values[0]` opens `get`, `0 in values` opens `has`, `values[0] = x` opens `set`,
+ `getOwnPropertyDescriptor` and `defineProperty`, and `delete values[0]` opens
+ `deleteProperty`. The last two are reported as plain mutations, never as something
+ the rule could not resolve.
  */
 const INDEXED_ACCESS_TRAPS: ReadonlySet<string> = new Set([
   'get',
@@ -32,31 +32,31 @@ const INDEXED_ACCESS_TRAPS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Trap names one probed operation reached.
+ Trap names one probed operation reached.
  */
 type TrapHits = string[];
 
 /**
- * Arguments letting each probed member do its real work on a two-element receiver.
- *
- * Plain strings, because this probe measures which operations reach the receiver
- * rather than what a member coerces. Element coercion has its own probe in
- * `effect-member-channel-authority.unit.test.ts`.
- *
- * @param memberName - Member being invoked.
- *
- * @returns argument list for the call.
- *
- * @example
- * ```ts
- * trapProbeArguments({ memberName: 'with', });
- * ```
+ Arguments letting each probed member do its real work on a two-element receiver.
+ 
+ Plain strings, because this probe measures which operations reach the receiver
+ rather than what a member coerces. Element coercion has its own probe in
+ `effect-member-channel-authority.unit.test.ts`.
+ 
+ @param memberName - Member being invoked.
+ 
+ @returns argument list for the call.
+ 
+ @example
+ ```ts
+ trapProbeArguments({ memberName: 'with', });
+ ```
  */
 function trapProbeArguments(
   { memberName, }: { readonly memberName: string; },
 ): readonly unknown[] {
   /**
-   * Members needing an index or a value to reach past their first step.
+   Members needing an index or a value to reach past their first step.
    */
   const byMember: Record<string, readonly unknown[]> = {
     at: [0,],
@@ -74,24 +74,24 @@ function trapProbeArguments(
 }
 
 /**
- * Builds a handler recording every operation before forwarding it unchanged.
- *
- * Each trap is written out with its own signature rather than collected through rest
- * parameters, so no forwarding call can silently receive the wrong argument at the
- * wrong position: `get` takes the receiver third while `set` takes the value there.
- *
- * `ownKeys` and `getPrototypeOf` are instrumented precisely because they lie outside
- * the indexed-access baseline. A member reaching either is doing something no source
- * construct this rule accepts would do, and must leave the channel.
- *
- * @param hits - Accumulator recording every trap reached.
- *
- * @returns proxy handler forwarding every operation to the target.
- *
- * @example
- * ```ts
- * new Proxy(['a'], recordingHandler({ hits: [], },),);
- * ```
+ Builds a handler recording every operation before forwarding it unchanged.
+ 
+ Each trap is written out with its own signature rather than collected through rest
+ parameters, so no forwarding call can silently receive the wrong argument at the
+ wrong position: `get` takes the receiver third while `set` takes the value there.
+ 
+ `ownKeys` and `getPrototypeOf` are instrumented precisely because they lie outside
+ the indexed-access baseline. A member reaching either is doing something no source
+ construct this rule accepts would do, and must leave the channel.
+ 
+ @param hits - Accumulator recording every trap reached.
+ 
+ @returns proxy handler forwarding every operation to the target.
+ 
+ @example
+ ```ts
+ new Proxy(['a'], recordingHandler({ hits: [], },),);
+ ```
  */
 function recordingHandler(
   { hits, }: { readonly hits: TrapHits; },
@@ -135,28 +135,28 @@ function recordingHandler(
 }
 
 /**
- * Steps a drain may take before the probe treats the iterator as non-terminating.
+ Steps a drain may take before the probe treats the iterator as non-terminating.
  */
 const DRAIN_STEP_LIMIT = 16;
 
 /**
- * Applies one member to a trapped receiver and exhausts any iterator it returns.
- *
- * Drainage is where an iterator member reaches its receiver, so applying without
- * draining would report a clean run for `keys`, `values` and `entries` while measuring
- * only the producer. The terminal step reporting `done` is included, since that step
- * reads the receiver's length one last time.
- *
- * @param receiver - Trapped receiver the member is applied to.
- *
- * @param memberName - Member being invoked.
- *
- * @throws Error when a result keeps yielding past the runaway guard.
- *
- * @example
- * ```ts
- * applyAndDrain({ receiver, memberName: 'entries', });
- * ```
+ Applies one member to a trapped receiver and exhausts any iterator it returns.
+ 
+ Drainage is where an iterator member reaches its receiver, so applying without
+ draining would report a clean run for `keys`, `values` and `entries` while measuring
+ only the producer. The terminal step reporting `done` is included, since that step
+ reads the receiver's length one last time.
+ 
+ @param receiver - Trapped receiver the member is applied to.
+ 
+ @param memberName - Member being invoked.
+ 
+ @throws Error when a result keeps yielding past the runaway guard.
+ 
+ @example
+ ```ts
+ applyAndDrain({ receiver, memberName: 'entries', });
+ ```
  */
 function applyAndDrain({
   receiver,
@@ -166,7 +166,7 @@ function applyAndDrain({
   readonly memberName: string;
 },): void {
   /**
-   * Value the member handed back, drained when it is an iterator.
+   Value the member handed back, drained when it is an iterator.
    */
   const result = (
     (receiver as Record<string, unknown>)[memberName] as (
@@ -177,13 +177,13 @@ function applyAndDrain({
   if ((result === null) || ((typeof result) !== 'object'))
     return;
   /**
-   * Advancing member, present only when the result is an iterator.
+   Advancing member, present only when the result is an iterator.
    */
   const advance = (result as { readonly next?: unknown; }).next;
   if ((typeof advance) !== 'function')
     return;
   /**
-   * Drain position, tracking exhaustion and guarding against a non-terminating result.
+   Drain position, tracking exhaustion and guarding against a non-terminating result.
    */
   const drain = {
     done: false,
@@ -202,16 +202,16 @@ function applyAndDrain({
 }
 
 /**
- * Runs one operation against a fully trapped array and reports what it reached.
- *
- * @param operate - Operation performed on the trapped receiver.
- *
- * @returns trap names reached, deduplicated and sorted.
- *
- * @example
- * ```ts
- * reachedTraps({ operate(receiver,) { void (receiver as readonly unknown[])[0]; }, });
- * ```
+ Runs one operation against a fully trapped array and reports what it reached.
+ 
+ @param operate - Operation performed on the trapped receiver.
+ 
+ @returns trap names reached, deduplicated and sorted.
+ 
+ @example
+ ```ts
+ reachedTraps({ operate(receiver,) { void (receiver as readonly unknown[])[0]; }, });
+ ```
  */
 function reachedTraps({
   operate,
@@ -219,7 +219,7 @@ function reachedTraps({
   readonly operate: (receiver: unknown,) => void;
 },): readonly string[] {
   /**
-   * Traps reached by this single operation.
+   Traps reached by this single operation.
    */
   const hits: TrapHits = [];
   operate(new Proxy([
@@ -237,7 +237,7 @@ await describe({
       name: 'opens no operation that indexed access on a parameter does not',
       fn: async () => {
         /**
-         * Members reaching an operation outside the indexed-access baseline.
+         Members reaching an operation outside the indexed-access baseline.
          */
         const wider: string[] = [];
         for (const [ownerName, members,] of MEMBER_CHANNELS_BY_INTERFACE) {
@@ -247,7 +247,7 @@ await describe({
             if (channel !== MEMBER_CHANNEL_RECEIVER_INDEX)
               continue;
             /**
-             * Operations this member reached through the trapped receiver.
+             Operations this member reached through the trapped receiver.
              */
             const traps = reachedTraps({
               operate(receiver,): void {
@@ -258,7 +258,7 @@ await describe({
               },
             },);
             /**
-             * Operations the baseline does not admit.
+             Operations the baseline does not admit.
              */
             const outside = traps.filter(function notBaseline(trapName,): boolean {
               return !INDEXED_ACCESS_TRAPS.has(trapName,);
@@ -339,14 +339,14 @@ await describe({
       name: 'cannot probe internal-slot members this way, which is why they rest on the specification',
       fn: async () => {
         /**
-         * Reports whether applying a `Map` member to a proxied receiver throws.
-         *
-         * @returns outcome of the attempt.
-         *
-         * @example
-         * ```ts
-         * proxiedMapOutcome();
-         * ```
+         Reports whether applying a `Map` member to a proxied receiver throws.
+         
+         @returns outcome of the attempt.
+         
+         @example
+         ```ts
+         proxiedMapOutcome();
+         ```
          */
         function proxiedMapOutcome(): string {
           try {
@@ -359,7 +359,7 @@ await describe({
           }
         }
         /**
-         * Outcome of applying `Map.prototype.get` to a proxied receiver.
+         Outcome of applying `Map.prototype.get` to a proxied receiver.
          */
         const outcome = proxiedMapOutcome();
         /* A `Proxy` cannot stand in for a `Map` or `Set` receiver, because these

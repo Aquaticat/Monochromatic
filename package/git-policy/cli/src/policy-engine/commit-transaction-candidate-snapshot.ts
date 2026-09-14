@@ -1,7 +1,7 @@
 /**
- * Exact streamed candidate-state snapshots for transaction convergence.
- *
- * @module
+ Exact streamed candidate-state snapshots for transaction convergence.
+ 
+ @module
  */
 import { Buffer, } from 'node:buffer';
 import { constants, } from 'node:fs';
@@ -9,36 +9,36 @@ import { open, } from 'node:fs/promises';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
 
 /**
- * Snapshot files remain private to current account.
+ Snapshot files remain private to current account.
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
- * Fixed streaming comparison buffer size.
+ Fixed streaming comparison buffer size.
  */
 const COMPARISON_BUFFER_SIZE = 2 ** (2 ** (2 + 2));
 /**
- * Four-byte unsigned field width.
+ Four-byte unsigned field width.
  */
 const UINT32_WIDTH = 4;
 /**
- * Eight-byte unsigned field width.
+ Eight-byte unsigned field width.
  */
 const UINT64_WIDTH = 8;
 /**
- * Candidate metadata text encoder.
+ Candidate metadata text encoder.
  */
 const ENCODER = new TextEncoder();
 
 /**
- * Encodes unsigned metadata length.
- *
- * @param value - bounded byte length
- *
- * @returns four-byte big-endian field
+ Encodes unsigned metadata length.
+ 
+ @param value - bounded byte length
+ 
+ @returns four-byte big-endian field
  */
 function encodeUint32(value: number,): Uint8Array {
   /**
-   * Fixed-width encoded field.
+   Fixed-width encoded field.
    */
   const bytes = new Uint8Array(UINT32_WIDTH,);
   new DataView(bytes.buffer,).setUint32(
@@ -49,15 +49,15 @@ function encodeUint32(value: number,): Uint8Array {
 }
 
 /**
- * Encodes candidate content length.
- *
- * @param value - exact byte length
- *
- * @returns eight-byte big-endian field
+ Encodes candidate content length.
+ 
+ @param value - exact byte length
+ 
+ @returns eight-byte big-endian field
  */
 function encodeUint64(value: number,): Uint8Array {
   /**
-   * Fixed-width encoded field.
+   Fixed-width encoded field.
    */
   const bytes = new Uint8Array(UINT64_WIDTH,);
   new DataView(bytes.buffer,).setBigUint64(
@@ -68,16 +68,16 @@ function encodeUint64(value: number,): Uint8Array {
 }
 
 /**
- * Writes exact ordered path, mode, and content bytes to private snapshot.
- *
- * @param gitFacts - private-index lazy candidate facts
- *
- * @param snapshotPath - destination outside worktree
- *
- * @example
- * ```ts
- * await writeCandidateSnapshot({ gitFacts, snapshotPath: '/tmp/state' });
- * ```
+ Writes exact ordered path, mode, and content bytes to private snapshot.
+ 
+ @param gitFacts - private-index lazy candidate facts
+ 
+ @param snapshotPath - destination outside worktree
+ 
+ @example
+ ```ts
+ await writeCandidateSnapshot({ gitFacts, snapshotPath: '/tmp/state' });
+ ```
  */
 export async function writeCandidateSnapshot({
   gitFacts,
@@ -87,7 +87,7 @@ export async function writeCandidateSnapshot({
   snapshotPath: string;
 }>,): Promise<void> {
   /**
-   * Candidates sorted by exact repository path for stable comparison.
+   Candidates sorted by exact repository path for stable comparison.
    */
   const candidates = (await gitFacts.candidates()).toSorted(function comparePathBytes(
     left,
@@ -99,7 +99,7 @@ export async function writeCandidateSnapshot({
     );
   },);
   /**
-   * Private exact snapshot output.
+   Private exact snapshot output.
    */
   await using output = await open(
     snapshotPath,
@@ -108,15 +108,15 @@ export async function writeCandidateSnapshot({
   );
   for (const candidate of candidates) {
     /**
-     * Exact repository path bytes.
+     Exact repository path bytes.
      */
     const pathBytes = ENCODER.encode(candidate.path,);
     /**
-     * Exact policy mode bytes.
+     Exact policy mode bytes.
      */
     const modeBytes = ENCODER.encode(candidate.mode,);
     /**
-     * Exact current candidate content held one file at a time.
+     Exact current candidate content held one file at a time.
      */
     // oxlint-disable-next-line no-await-in-loop -- Candidate API supplies one file at a time so complete trees never duplicate in memory.
     const contentBytes = await candidate.bytes();
@@ -137,18 +137,18 @@ export async function writeCandidateSnapshot({
 }
 
 /**
- * Compares exact files through bounded fixed-size buffers.
- *
- * @param leftPath - prior snapshot
- *
- * @param rightPath - current snapshot
- *
- * @returns whether every byte and total length match
- *
- * @example
- * ```ts
- * await snapshotFilesEqual({ leftPath: '/tmp/one', rightPath: '/tmp/two' });
- * ```
+ Compares exact files through bounded fixed-size buffers.
+ 
+ @param leftPath - prior snapshot
+ 
+ @param rightPath - current snapshot
+ 
+ @returns whether every byte and total length match
+ 
+ @example
+ ```ts
+ await snapshotFilesEqual({ leftPath: '/tmp/one', rightPath: '/tmp/two' });
+ ```
  */
 export async function snapshotFilesEqual({
   leftPath,
@@ -158,36 +158,36 @@ export async function snapshotFilesEqual({
   rightPath: string;
 }>,): Promise<boolean> {
   /**
-   * Prior snapshot input.
+   Prior snapshot input.
    */
   await using left = await open(
     leftPath,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Current snapshot input.
+   Current snapshot input.
    */
   await using right = await open(
     rightPath,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Reusable prior-state buffer.
+   Reusable prior-state buffer.
    */
   const leftBuffer = new Uint8Array(COMPARISON_BUFFER_SIZE,);
   /**
-   * Reusable current-state buffer.
+   Reusable current-state buffer.
    */
   const rightBuffer = new Uint8Array(COMPARISON_BUFFER_SIZE,);
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- Side-effecting file cursor requires bounded iterative reads. */
   /**
-   * Prior snapshot initial read state.
+   Prior snapshot initial read state.
    */
   let leftRead = await left.read(leftBuffer,);
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- Side-effecting file cursor requires bounded iterative reads. */
   /**
-   * Current snapshot initial read state.
+   Current snapshot initial read state.
    */
   let rightRead = await right.read(rightBuffer,);
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
@@ -215,18 +215,18 @@ export async function snapshotFilesEqual({
 }
 
 /**
- * Streams prior private snapshots until exact candidate state repeats.
- *
- * @param snapshotPaths - ordered prior snapshot paths
- *
- * @param currentPath - current exact snapshot path
- *
- * @returns whether any prior state matches
- *
- * @example
- * ```ts
- * await containsExactCandidateSnapshot({ snapshotPaths: ['/tmp/one'], currentPath: '/tmp/current' });
- * ```
+ Streams prior private snapshots until exact candidate state repeats.
+ 
+ @param snapshotPaths - ordered prior snapshot paths
+ 
+ @param currentPath - current exact snapshot path
+ 
+ @returns whether any prior state matches
+ 
+ @example
+ ```ts
+ await containsExactCandidateSnapshot({ snapshotPaths: ['/tmp/one'], currentPath: '/tmp/current' });
+ ```
  */
 export async function containsExactCandidateSnapshot({
   snapshotPaths,

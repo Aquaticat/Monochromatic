@@ -1,7 +1,7 @@
 /**
- * Tests for caught-value stack diagnostics.
- *
- * @module
+ Tests for caught-value stack diagnostics.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ await describe({
       name: 'returns Error stack text when available',
       fn: async () => {
         /**
-         * Error carrying deterministic stack text.
+         Error carrying deterministic stack text.
          */
         const error = new Error('offline',);
         error.stack = 'stack details';
@@ -30,7 +30,7 @@ await describe({
       name: 'falls back to Error message when stack is absent',
       fn: async () => {
         /**
-         * Error with stack explicitly absent.
+         Error with stack explicitly absent.
          */
         const error = new Error('offline',);
         delete error.stack;
@@ -41,13 +41,13 @@ await describe({
       name: 'preserves caller-defined non-Error text',
       fn: async () => {
         /**
-         * Thrown object carrying diagnostic conversion text.
+         Thrown object carrying diagnostic conversion text.
          */
         const thrownValue = {
           /**
-           * Supplies caller-defined diagnostic text.
-           *
-           * @returns caller-defined text.
+           Supplies caller-defined diagnostic text.
+           
+           @returns caller-defined text.
            */
           toString(): string {
             return 'provider details';

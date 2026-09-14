@@ -10,14 +10,14 @@ use super::*;
 
 use forbidden_strings::fuzz_api::{load_from_text, scan_file};
 
-// Builds a one-literal file and confirms it loads and finds the literal in content.
+// Builds a one-literal file and confirms it matches at boundaries, not inside a word.
 #[test]
 fn literal_line_loads_and_matches() {
     let file = RuleFile { lines: vec![RuleLine::Literal(SafeBytes(b"abc".to_vec()))] };
     let source = file.render();
     assert_eq!(source, "abc");
     let loaded = load_from_text(&source).expect("bare literal must load");
-    let hits = scan_file("fuzz.txt", b"zz\nxabcx\n", &loaded);
+    let hits = scan_file("fuzz.txt", b"zz\nabc\nxabcx\n", &loaded);
     assert_eq!(hits, vec!["fuzz.txt:2 rule=0".to_string()]);
 }
 

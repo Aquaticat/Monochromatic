@@ -18,7 +18,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Minimal LSP4IJ settings needed to exercise discovery failure handling.
+ Minimal LSP4IJ settings needed to exercise discovery failure handling.
  */
 const SETTINGS = {
   productPrefixes: ['IntelliJIdea',],
@@ -31,20 +31,20 @@ const SETTINGS = {
 //region Environment and fixture helpers
 
 /**
- * Sets `XDG_CONFIG_HOME` for scoped JetBrains discovery tests.
- *
- * @param configRoot - Directory exposed as XDG config root.
- *
- * @returns Disposable that restores prior environment state.
- *
- * @example
- * ```ts
- * using xdg = withXdgConfigHome('/tmp/config');
- * ```
+ Sets `XDG_CONFIG_HOME` for scoped JetBrains discovery tests.
+ 
+ @param configRoot - Directory exposed as XDG config root.
+ 
+ @returns Disposable that restores prior environment state.
+ 
+ @example
+ ```ts
+ using xdg = withXdgConfigHome('/tmp/config');
+ ```
  */
 function withXdgConfigHome(configRoot: string,): Disposable {
   /**
-   * Prior XDG config root, restored on disposal.
+   Prior XDG config root, restored on disposal.
    */
   const previous = process.env.XDG_CONFIG_HOME;
   process.env.XDG_CONFIG_HOME = configRoot;
@@ -59,16 +59,16 @@ function withXdgConfigHome(configRoot: string,): Disposable {
 }
 
 /**
- * Owns temporary directory cleanup for JetBrains LSP4IJ hardening tests.
- *
- * @param directory - Directory to remove on disposal.
- *
- * @returns Async disposable that removes directory recursively.
- *
- * @example
- * ```ts
- * await using owned = throwawayDir('/tmp/config');
- * ```
+ Owns temporary directory cleanup for JetBrains LSP4IJ hardening tests.
+ 
+ @param directory - Directory to remove on disposal.
+ 
+ @returns Async disposable that removes directory recursively.
+ 
+ @example
+ ```ts
+ await using owned = throwawayDir('/tmp/config');
+ ```
  */
 function throwawayDir(directory: string,): AsyncDisposable {
   return {
@@ -89,14 +89,14 @@ function throwawayDir(directory: string,): AsyncDisposable {
 //region Error capture helpers
 
 /**
- * Captures LSP4IJ sync failure for assertion.
- *
- * @returns Caught error, or undefined when sync resolves.
- *
- * @example
- * ```ts
- * const error = await manageLsp4ijServerSettingsError();
- * ```
+ Captures LSP4IJ sync failure for assertion.
+ 
+ @returns Caught error, or undefined when sync resolves.
+ 
+ @example
+ ```ts
+ const error = await manageLsp4ijServerSettingsError();
+ ```
  */
 async function manageLsp4ijServerSettingsError(): Promise<unknown> {
   try {
@@ -121,7 +121,7 @@ await describe({
       fn: async function propagatesCorruptConfigRoot({ sinon, },): Promise<void> {
         const warnStub = sinon.stub(l, 'warn',);
         /**
-         * Throwaway XDG root whose JetBrains entry is a file, not directory.
+         Throwaway XDG root whose JetBrains entry is a file, not directory.
          */
         const configRoot = await mkdtemp(join(
           tmpdir(),

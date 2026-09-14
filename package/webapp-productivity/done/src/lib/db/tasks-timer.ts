@@ -1,5 +1,5 @@
 /**
- * Task timer and completion operations.
+ Task timer and completion operations.
  */
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 
@@ -21,22 +21,22 @@ import {
 } from './tasks-sql.ts';
 
 /**
- * Starts the timer on a task, transitioning its status to `in_progress`.
- * Stamps the start time with {@link nowIso} and reads the updated row back
- * via {@link getTaskById}.
- *
- * @param id - Task UUID
- *
- * @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
- *
- * @example
- * ```ts
- * const task = await startTaskTimer('abc-123');
- * ```
+ Starts the timer on a task, transitioning its status to `in_progress`.
+ Stamps the start time with {@link nowIso} and reads the updated row back
+ via {@link getTaskById}.
+ 
+ @param id - Task UUID
+ 
+ @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
+ 
+ @example
+ ```ts
+ const task = await startTaskTimer('abc-123');
+ ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
   /**
-   * Captured once so both the `started_at` and `updated_at` columns share the value.
+   Captured once so both the `started_at` and `updated_at` columns share the value.
    */
   const timestamp = nowIso();
   await (await db.prepare(SQL_START_TIMER,))
@@ -49,29 +49,29 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
 }
 
 /**
- * Stops the running timer, accumulates elapsed seconds into `trackedTime`,
- * and transitions the task back to `inbox` status. Reads the pre-update
- * snapshot via {@link getTaskById} and stamps the update with {@link nowIso}.
- *
- * @param id - Task UUID
- *
- * @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
- *
- * @example
- * ```ts
- * const task = await stopTaskTimer('abc-123');
- * ```
+ Stops the running timer, accumulates elapsed seconds into `trackedTime`,
+ and transitions the task back to `inbox` status. Reads the pre-update
+ snapshot via {@link getTaskById} and stamps the update with {@link nowIso}.
+ 
+ @param id - Task UUID
+ 
+ @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
+ 
+ @example
+ ```ts
+ const task = await stopTaskTimer('abc-123');
+ ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
   /**
-   * Pre-update snapshot used to compute the elapsed delta.
+   Pre-update snapshot used to compute the elapsed delta.
    */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)
     return TASK_NOT_FOUND;
 
   /**
-   * Live seconds between `timerStartedAt` and now; zero when no timer was running.
+   Live seconds between `timerStartedAt` and now; zero when no timer was running.
    */
   const elapsedSeconds = currentTask.timerStartedAt
     === undefined
@@ -85,12 +85,12 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
       ),
     );
   /**
-   * Accumulated total persisted to the row's `tracked_time` column.
+   Accumulated total persisted to the row's `tracked_time` column.
    */
   const updatedTrackedTime = currentTask.trackedTime
     + elapsedSeconds;
   /**
-   * Captured once so the `updated_at` column carries the same value as the calculation.
+   Captured once so the `updated_at` column carries the same value as the calculation.
    */
   const timestamp = nowIso();
 
@@ -105,22 +105,22 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
 }
 
 /**
- * Attempts to complete a task: reads it via {@link getTaskById}, stops any
- * running timer via {@link stopTaskTimer}, then deletes it. Refuses completion
- * when the task has unresolved blockers.
- *
- * @param id - Task UUID
- *
- * @returns Completion result with blocker information
- *
- * @example
- * ```ts
- * const result = await completeTask('abc-123');
- * ```
+ Attempts to complete a task: reads it via {@link getTaskById}, stops any
+ running timer via {@link stopTaskTimer}, then deletes it. Refuses completion
+ when the task has unresolved blockers.
+ 
+ @param id - Task UUID
+ 
+ @returns Completion result with blocker information
+ 
+ @example
+ ```ts
+ const result = await completeTask('abc-123');
+ ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   /**
-   * Snapshot needed for the timer-stop branch below; the sentinel distinguishes not-found.
+   Snapshot needed for the timer-stop branch below; the sentinel distinguishes not-found.
    */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND) {
@@ -133,7 +133,7 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns blocker join columns */
   /**
-   * Rows of unresolved blockers; empty allows completion.
+   Rows of unresolved blockers; empty allows completion.
    */
   const blockingRows = (await (await db
     .prepare(SQL_SELECT_BLOCKERS,))
@@ -144,7 +144,7 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 
   /**
-   * Reshaped blocker summaries returned to the API caller for UI rendering.
+   Reshaped blocker summaries returned to the API caller for UI rendering.
    */
   const blockedBy = blockingRows.map(function toBlockerSummary(row,) {
     return {

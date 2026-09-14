@@ -4,13 +4,13 @@
 //!
 //! Playback has a SCOPE that it loops over, chosen by the shuffle mode:
 //!
-//! - `ShuffleMode::Off` and `ShuffleMode::WithinPage` confine playback to the
+//! - `PlaybackMode::InOrder` and `PlaybackMode::ShufflePage` confine playback to the
 //!   current track's PAGE (its top-level folder under the loaded root, or its
 //!   A-Z/`#` letter bucket for a root-level track; the same grouping the UI tabs
 //!   use, computed by the `pagination` module). `Off` plays the page in load
 //!   order; `WithinPage` shuffles the page. Either way, reaching the end of the
 //!   page loops back to its start.
-//! - `ShuffleMode::All` scopes playback to the whole queue, shuffled, and loops
+//! - `PlaybackMode::ShuffleAll` scopes playback to the whole queue, shuffled, and loops
 //!   the whole queue.
 //!
 //! Shuffle is JUST IN TIME and WITHOUT REPLACEMENT: there is no precomputed
@@ -48,15 +48,15 @@ use std::path::PathBuf;
 /// ```
 use std::collections::HashSet;
 
-/// What:     `use crate::command::ShuffleMode;` imports our own enum from the sibling
+/// What:     `use crate::command::PlaybackMode;` imports our own enum from the sibling
 ///           module. `crate::` means "from the root of this package".
 /// Why:      The queue's scope and ordering depend on the shuffle mode.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { ShuffleMode } from "./command";
+/// import { PlaybackMode } from "./command";
 /// ```
-use crate::command::ShuffleMode;
+use crate::command::PlaybackMode;
 
 /// What:     `pub struct Queue { ... }` declares a public record type with named fields.
 ///           The fields are private (no `pub`), so only this module can touch them
@@ -69,8 +69,8 @@ use crate::command::ShuffleMode;
 ///   private tracks: string[];
 ///   private order: number[];
 ///   private pos: number | null;
-///   private shuffle: ShuffleMode;
-///   private repeatTrack: boolean;
+///   private mode: PlaybackMode;
+///   private pageScope: number[];
 ///   private rngState: bigint;
 /// }
 /// ```
@@ -105,25 +105,12 @@ pub struct Queue {
     /// private pos: number | null;
     /// ```
     pos: Option<usize>,
-    /// What:     `shuffle: ShuffleMode`. The three-state shuffle/scope setting (Off /
-    ///           WithinPage / All). `ShuffleMode` is `Copy`.
-    /// Why:      Decides both the scope (page vs whole queue) and the ordering (sequential
-    ///           vs shuffled).
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// private shuffle: ShuffleMode;
-    /// ```
-    shuffle: ShuffleMode,
-    /// What:     `repeat_track: bool`. When true, a track that ends naturally replays
-    ///           itself.
-    /// Why:      The "repeat track" checkbox; independent of the shuffle scope.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// private repeatTrack: boolean;
-    /// ```
-    repeat_track: bool,
+    /// One selected completion, ordering, and scope behavior.
+    mode: PlaybackMode,
+    /// Load-order indices belonging to the page currently displayed by the UI.
+    page_scope: Vec<usize>,
+    /// First repeatable slot after any retained off-page current-track prelude.
+    sequential_start: usize,
     /// What:     `rng_state: u64`. An unsigned 64-bit integer (siblings: `u32`, `usize`,
     ///           `i64`). Used as the running state of a tiny PRNG.
     /// Why:      Shuffling needs randomness; a self-contained PRNG avoids a dependency and
@@ -196,7 +183,7 @@ impl Queue {
             // ```ts
             // // ...mapped to a 64-bit number
             // ```
-            .map(|d| d.as_nanos() as u64)
+            .map(|d| return d.as_nanos() as u64)
             // What:     `.unwrap_or(0x9e3779b97f4a7c15)` extracts the Ok number, or
             //           substitutes this constant (a well-known mixing constant) if the
             //           clock was weird. `_or` DROPS the error.
@@ -215,7 +202,7 @@ impl Queue {
         // ```ts
         // return Queue.withRngSeed(seed);
         // ```
-        Queue::with_rng_seed(seed)
+        return Queue::with_rng_seed(seed)
     }
 
     /// What:     `pub fn with_rng_seed(seed: u64) -> Queue` builds a queue with a
@@ -229,7 +216,7 @@ impl Queue {
     pub fn with_rng_seed(seed: u64) -> Queue {
         // What:     `Queue { ... }`. A struct literal constructs the record. `Vec::new()`
         //           makes an empty owned array; `None` is the empty `Option`.
-        //           `ShuffleMode::Off` is the path-qualified variant. No `;`, so this is the
+        //           `PlaybackMode::InOrder` is the path-qualified variant. No `;`, so this is the
         //           return value.
         // Why:      Start empty, not shuffled, repeat-track off.
         //
@@ -238,12 +225,13 @@ impl Queue {
         // return { tracks: [], order: [], pos: null, shuffle: "off",
         //          repeatTrack: false, rngState: seed === 0n ? 1n : seed };
         // ```
-        Queue {
+        return Queue {
             tracks: Vec::new(),
             order: Vec::new(),
             pos: None,
-            shuffle: ShuffleMode::Off,
-            repeat_track: false,
+            mode: PlaybackMode::InOrder,
+            page_scope: Vec::new(),
+            sequential_start: 0,
             // What:     `rng_state: if seed == 0 { 1 } else { seed }`. An `if/else`
             //           EXPRESSION that evaluates to one of the two branch values (no `;`).
             // Why:      xorshift gets stuck forever at state 0, so forbid it.
@@ -328,7 +316,7 @@ impl Queue {
         // ```ts
         // return x;
         // ```
-        x
+        return x
     }
 
     /// Number of tracks in the queue.
@@ -349,7 +337,7 @@ impl Queue {
         // ```ts
         // return this.tracks.length;
         // ```
-        self.tracks.len()
+        return self.tracks.len()
     }
 
     /// Tracks in load order (as opened), regardless of shuffle.
@@ -371,7 +359,7 @@ impl Queue {
         // ```ts
         // return this.tracks;
         // ```
-        &self.tracks
+        return &self.tracks
     }
 
     /// Whether the queue has no tracks.
@@ -390,45 +378,20 @@ impl Queue {
         // ```ts
         // return this.tracks.length === 0;
         // ```
-        self.tracks.is_empty()
+        return self.tracks.is_empty()
     }
 
-    /// Whether "repeat track" is on.
-    // What:     `pub fn repeat_track(&self) -> bool`. Read-only borrow.
-    // Why:      The engine mirrors this flag to the UI checkbox.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // repeatTrack(): boolean { return this.repeatTrack; }
-    // ```
-    pub fn repeat_track(&self) -> bool {
-        // What:     `self.repeat_track` reads the `Copy` bool. Tail expression.
-        // Why:      Expose the flag.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return this.repeatTrack;
-        // ```
-        self.repeat_track
-    }
-
-    /// Current shuffle mode.
-    // What:     `pub fn shuffle_mode(&self) -> ShuffleMode`. Read-only borrow.
+    /// Current completion and transport mode.
+    // What:     `pub fn playback_mode(&self) -> PlaybackMode`. Read-only borrow.
     // Why:      The engine mirrors the mode to the UI radio group.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // shuffleMode(): ShuffleMode { return this.shuffle; }
+    // shuffleMode(): PlaybackMode { return this.shuffle; }
     // ```
-    pub fn shuffle_mode(&self) -> ShuffleMode {
-        // What:     `self.shuffle` reads the `Copy` enum out. Tail expression.
-        // Why:      Expose the mode.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return this.shuffle;
-        // ```
-        self.shuffle
+    pub fn playback_mode(&self) -> PlaybackMode {
+        // Return the same enum value used by navigation and persistence.
+        return self.mode
     }
 
     /// What:     `pub fn display_paths(&self) -> Vec<String>` returns owned display strings
@@ -454,7 +417,7 @@ impl Queue {
         // ```ts
         // return relativeDisplayPaths(this.tracks);
         // ```
-        crate::relpath::relative_display_paths(&self.tracks)
+        return crate::relpath::relative_display_paths(&self.tracks)
     }
 
     /// What:     `pub fn current_index(&self) -> Option<usize>` returns the LOAD-ORDER index
@@ -477,7 +440,7 @@ impl Queue {
         // ```ts
         // return this.pos === null ? null : this.order[this.pos];
         // ```
-        self.pos.map(|p| self.order[p])
+        return self.pos.map(|p| return self.order[p])
     }
 
     /// What:     `pub fn current_path(&self) -> Option<&PathBuf>` returns a BORROWED
@@ -502,26 +465,7 @@ impl Queue {
         // ```ts
         // const i = this.currentIndex(); return i === null ? null : this.tracks[i];
         // ```
-        self.current_index().map(|i| &self.tracks[i])
-    }
-
-    /// What:     `pub fn set_repeat_track(&mut self, on: bool)` mutates state.
-    /// Why:      The UI checkbox toggles "repeat track"; record the new flag.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// setRepeatTrack(on: boolean): void { this.repeatTrack = on; }
-    /// ```
-    pub fn set_repeat_track(&mut self, on: bool) {
-        // What:     `self.repeat_track = on;`. Plain field assignment through the mutable
-        //           borrow.
-        // Why:      Store it; `advance` reads it on a natural end.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.repeatTrack = on;
-        // ```
-        self.repeat_track = on;
+        return self.current_index().map(|i| return &self.tracks[i])
     }
 
     /// What:     `pub fn set_tracks(&mut self, tracks: Vec<PathBuf>)`. The parameter is taken
@@ -536,6 +480,14 @@ impl Queue {
     /// }
     /// ```
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
+        let previous_names = self.display_paths();
+        let previous_pages = crate::pagination::paginate(&previous_names);
+        let previous_page = self
+            .page_scope
+            .first()
+            .and_then(|index| return crate::pagination::page_of_index(&previous_pages, *index));
+        let previous_page_identity =
+            previous_page.map(|page| return crate::pagination::page_identity(&previous_pages[page]));
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
         // Why:      Adopt the new track list.
@@ -545,6 +497,23 @@ impl Queue {
         // this.tracks = tracks;
         // ```
         self.tracks = tracks;
+        let rebuilt_names = self.display_paths();
+        let rebuilt_pages = crate::pagination::paginate(&rebuilt_names);
+        let rebuilt_page = previous_page_identity
+            .and_then(|identity| {
+                return rebuilt_pages
+                    .iter()
+                    .find(|page| return crate::pagination::page_identity(page) == identity);
+            })
+            .or_else(|| {
+                return previous_page.and_then(|page| {
+                    let fallback = page.min(rebuilt_pages.len().saturating_sub(1));
+                    return rebuilt_pages.get(fallback);
+                });
+            });
+        self.page_scope = rebuilt_page
+            .map(|page| return page.entries.iter().map(|entry| return entry.index).collect())
+            .unwrap_or_default();
         // What:     `self.rebuild_scope_order(Some(0));` builds the scope order around the
         //           first track. `Some(0)` wraps index 0; the helper handles the empty queue
         //           (order empty, cursor None).
@@ -601,7 +570,7 @@ impl Queue {
     /// }
     /// ```
     fn scope_indices(&self, anchor: usize) -> Vec<usize> {
-        // What:     `if self.shuffle == ShuffleMode::All { ... }`. `==` compares the `Copy`
+        // What:     `if self.mode == PlaybackMode::ShuffleAll { ... }`. `==` compares the `Copy`
         //           enum (it derives `PartialEq`).
         // Why:      `All` ignores pages: the scope is every track.
         //
@@ -609,7 +578,7 @@ impl Queue {
         // ```ts
         // if (this.shuffle === "all") return [...Array(this.tracks.length).keys()];
         // ```
-        if self.shuffle == ShuffleMode::All {
+        if self.mode == PlaybackMode::ShuffleAll {
             // What:     `(0..self.tracks.len()).collect()`. `(a..b)` is a half-open RANGE;
             //           `.collect()` gathers it into a `Vec<usize>` (the return type fixes
             //           the element type). `return` makes this the function's value.
@@ -620,6 +589,9 @@ impl Queue {
             // return [...Array(this.tracks.length).keys()];
             // ```
             return (0..self.tracks.len()).collect();
+        }
+        if !self.page_scope.is_empty() {
+            return self.page_scope.clone();
         }
         // What:     `let names = self.display_paths();`. The relative display strings, one
         //           per track, in load order.
@@ -660,7 +632,7 @@ impl Queue {
             // ```ts
             // return pages[p].entries.map((e) => e.index);
             // ```
-            Some(p) => pages[p].entries.iter().map(|e| e.index).collect(),
+            Some(p) => return pages[p].entries.iter().map(|e| return e.index).collect(),
             // What:     `None => (0..self.tracks.len()).collect()`. The anchor was not found
             //           on any page (only happens for an empty/invalid anchor); fall back to
             //           the whole queue.
@@ -670,7 +642,7 @@ impl Queue {
             // ```ts
             // return [...Array(this.tracks.length).keys()];
             // ```
-            None => (0..self.tracks.len()).collect(),
+            None => return (0..self.tracks.len()).collect(),
         }
     }
 
@@ -725,7 +697,7 @@ impl Queue {
         // let remaining = scope.filter((i) => !played.has(i));
         // ```
         let mut remaining: Vec<usize> =
-            scope.iter().copied().filter(|i| !played.contains(i)).collect();
+            scope.iter().copied().filter(|i| return !played.contains(i)).collect();
         // What:     `if remaining.is_empty() { ... }`. Cycle exhausted: begin a new one.
         // Why:      Without replacement means a full cycle covers the whole scope; then reshuffle.
         //
@@ -751,7 +723,7 @@ impl Queue {
             // ```ts
             // remaining = scope.filter((i) => i !== current);
             // ```
-            remaining = scope.iter().copied().filter(|&i| i != current).collect();
+            remaining = scope.iter().copied().filter(|&i| return i != current).collect();
             // What:     `if remaining.is_empty() { remaining = scope; }`. A single-track scope
             //           has nothing else; replay it.
             // Why:      Avoid an empty candidate list when the scope is one track.
@@ -780,13 +752,13 @@ impl Queue {
         // ```ts
         // return remaining[j];
         // ```
-        remaining[j]
+        return remaining[j]
     }
 
     /// What:     `fn rebuild_scope_order(&mut self, anchor: Option<usize>)`. Recompute the
     ///           scope `order` (and the cursor `pos`) so that the `anchor` track stays
     ///           current. Private helper used whenever the scope might change (set_tracks,
-    ///           set_shuffle, play_index to another page).
+    ///           set_playback_mode, play_index to another page).
     /// Why:      Centralise the "what plays next, in what order" rebuild.
     ///
     /// In TS you'd write (pseudocode):
@@ -813,6 +785,7 @@ impl Queue {
         if self.tracks.is_empty() {
             self.order = Vec::new();
             self.pos = None;
+            self.sequential_start = 0;
             return;
         }
         // What:     `let anchor = match anchor { Some(a) => a, None => { ...; return; } };`.
@@ -851,6 +824,7 @@ impl Queue {
             None => {
                 self.order = Vec::new();
                 self.pos = None;
+                self.sequential_start = 0;
                 return;
             }
         };
@@ -863,7 +837,7 @@ impl Queue {
         // const a = Math.min(a0, this.tracks.length - 1);
         // ```
         let anchor = anchor.min(self.tracks.len() - 1);
-        // What:     `if self.shuffle == ShuffleMode::Off { ... } else { ... }`. Off builds the
+        // What:     `if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat { ... } else { ... }`. Off builds the
         //           full sequential scope order; the shuffle modes start a fresh play history.
         // Why:      Off is a deterministic in-order walk of the scope, while shuffle picks just
         //           in time, so its `order` begins as only the anchor and grows on `advance`.
@@ -872,7 +846,7 @@ impl Queue {
         // ```ts
         // if (this.shuffle === "off") { /* full sequential scope */ } else { /* [anchor] */ }
         // ```
-        if self.shuffle == ShuffleMode::Off {
+        if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat {
             // What:     `let scope = self.scope_indices(anchor);`. The scope's indices in
             //           ascending load order.
             // Why:      Off plays the scope in load order.
@@ -890,7 +864,7 @@ impl Queue {
             // ```ts
             // const p = scope.indexOf(anchor);
             // ```
-            let pos = scope.iter().position(|&x| x == anchor);
+            let pos = scope.iter().position(|&x| return x == anchor);
             // What:     `self.order = scope; self.pos = pos.or(Some(0));`. Adopt the sequential
             //           order and point the cursor at the anchor (or the start).
             // Why:      Off's `order` is the full scope, walked sequentially with looping.
@@ -899,8 +873,16 @@ impl Queue {
             // ```ts
             // this.order = scope; this.pos = p < 0 ? 0 : p;
             // ```
-            self.order = scope;
-            self.pos = pos.or(Some(0));
+            if let Some(position) = pos {
+                self.order = scope;
+                self.pos = Some(position);
+                self.sequential_start = 0;
+            } else {
+                self.order = vec![anchor];
+                self.order.extend(scope);
+                self.pos = Some(0);
+                self.sequential_start = 1;
+            }
         } else {
             // What:     `self.order = vec![anchor]; self.pos = Some(0); self.cycle_start = 0;`.
             //           Begin the play history with just the anchor and open a fresh cycle.
@@ -914,24 +896,25 @@ impl Queue {
             self.order = vec![anchor];
             self.pos = Some(0);
             self.cycle_start = 0;
+            self.sequential_start = 0;
         }
     }
 
-    /// What:     `pub fn set_shuffle(&mut self, mode: ShuffleMode)` changes the shuffle/scope
+    /// What:     `pub fn set_playback_mode(&mut self, mode: PlaybackMode)` changes the shuffle/scope
     ///           mode while keeping the currently-playing track current.
     /// Why:      Switching shuffle should not interrupt the current song.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// setShuffle(mode: ShuffleMode): void {
+    /// setShuffle(mode: PlaybackMode): void {
     ///   if (mode === this.shuffle) return;
     ///   const cur = this.currentIndex();
     ///   this.shuffle = mode;
     ///   this.rebuildScopeOrder(cur);
     /// }
     /// ```
-    pub fn set_shuffle(&mut self, mode: ShuffleMode) {
-        // What:     `if mode == self.shuffle { return; }`. Early return when nothing
+    pub fn set_playback_mode(&mut self, mode: PlaybackMode) {
+        // What:     `if mode == self.mode { return; }`. Early return when nothing
         //           changes. `==` compares the enum.
         // Why:      Avoid reshuffling (and moving the cursor) on a no-op.
         //
@@ -939,7 +922,7 @@ impl Queue {
         // ```ts
         // if (mode === this.shuffle) return;
         // ```
-        if mode == self.shuffle {
+        if mode == self.mode {
             return;
         }
         // What:     `let current = self.current_index();` remembers the playing track
@@ -951,14 +934,14 @@ impl Queue {
         // const current = this.currentIndex();
         // ```
         let current = self.current_index();
-        // What:     `self.shuffle = mode;` record the new mode.
+        // What:     `self.mode = mode;` record the new mode.
         // Why:      `rebuild_scope_order`/`scope_indices` read it.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // this.shuffle = mode;
         // ```
-        self.shuffle = mode;
+        self.mode = mode;
         // What:     `self.rebuild_scope_order(current);` rebuild the scope order anchored on
         //           the previously playing track.
         // Why:      Apply the new mode without losing the current track.
@@ -967,6 +950,23 @@ impl Queue {
         // ```ts
         // this.rebuildScopeOrder(current);
         // ```
+        self.rebuild_scope_order(current);
+    }
+
+    /// Updates the displayed page's load-order scope while retaining current audio.
+    pub fn set_page_scope(&mut self, indices: Vec<usize>) {
+        let valid: Vec<usize> = indices
+            .into_iter()
+            .filter(|index| return *index < self.tracks.len())
+            .collect();
+        if valid == self.page_scope {
+            return;
+        }
+        self.page_scope = valid;
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
+            return;
+        }
+        let current = self.current_index();
         self.rebuild_scope_order(current);
     }
 
@@ -996,7 +996,15 @@ impl Queue {
         if track >= self.tracks.len() {
             return None;
         }
-        // What:     `if self.shuffle == ShuffleMode::Off { ...find or rebuild... } else { rebuild }`.
+        if !self.page_scope.contains(&track) {
+            let names = self.display_paths();
+            let pages = crate::pagination::paginate(&names);
+            self.page_scope = match crate::pagination::page_of_index(&pages, track) {
+                Some(page) => pages[page].entries.iter().map(|entry| return entry.index).collect(),
+                None => (0..self.tracks.len()).collect(),
+            };
+        }
+        // What:     `if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat { ...find or rebuild... } else { rebuild }`.
         //           In `Off`, stay in the current scope when the track is already in it and
         //           only rebuild on a jump to another page; in the shuffle modes, always
         //           rebuild so the play history restarts from the clicked track.
@@ -1011,7 +1019,7 @@ impl Queue {
         //   if (p >= 0) this.pos = p; else this.rebuildScopeOrder(track);
         // } else this.rebuildScopeOrder(track);
         // ```
-        if self.shuffle == ShuffleMode::Off {
+        if self.mode == PlaybackMode::InOrder || self.mode == PlaybackMode::Repeat {
             // What:     `match self.order.iter().position(|&x| x == track) { ... }`. Find the
             //           track's slot in the current sequential scope, if any.
             // Why:      Stay in scope when possible; rebuild only on a jump to another page.
@@ -1020,7 +1028,7 @@ impl Queue {
             // ```ts
             // const p = this.order.indexOf(track);
             // ```
-            match self.order.iter().position(|&x| x == track) {
+            match self.order.iter().position(|&x| return x == track) {
                 // What:     `Some(p) => self.pos = Some(p)`. Already in scope: move the cursor.
                 // Why:      Clicking another track on the same page keeps the scope intact.
                 //
@@ -1058,7 +1066,16 @@ impl Queue {
         // ```ts
         // return track;
         // ```
-        Some(track)
+        return Some(track)
+    }
+
+    /// Restores a relocated selected track without replacing the displayed-page scope.
+    pub fn restore_index_preserving_page(&mut self, track: usize) -> Option<usize> {
+        if track >= self.tracks.len() {
+            return None;
+        }
+        self.rebuild_scope_order(Some(track));
+        return Some(track);
     }
 
     /// What:     `pub fn advance(&mut self, natural: bool) -> Option<usize>`. `natural` is
@@ -1089,14 +1106,14 @@ impl Queue {
         // const pos = this.pos;
         // ```
         let pos = self.pos?;
-        // What:     `if natural && self.repeat_track { ... }`. `&&` is logical AND.
+        // What:     `if natural && self.mode == PlaybackMode::Repeat { ... }`. `&&` is logical AND.
         // Why:      A track that ended under "repeat track" replays itself.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (natural && this.repeatTrack) return this.order[pos];
         // ```
-        if natural && self.repeat_track {
+        if natural && self.mode == PlaybackMode::Repeat {
             // What:     `return Some(self.order[pos]);`. Wrap the current track index as the
             //           return value (cursor unchanged).
             // Why:      Signal "play this same track again".
@@ -1107,7 +1124,7 @@ impl Queue {
             // ```
             return Some(self.order[pos]);
         }
-        // What:     `if self.shuffle != ShuffleMode::Off { ... }`. The shuffle modes use the
+        // What:     `if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll { ... }`. The shuffle modes use the
         //           just-in-time path; `Off` falls through to the sequential walk below.
         // Why:      Shuffle has no precomputed order: it retraces history forward, or appends a
         //           fresh random pick when at the history end.
@@ -1116,7 +1133,7 @@ impl Queue {
         // ```ts
         // if (this.shuffle !== "off") { /* retrace or pick */ }
         // ```
-        if self.shuffle != ShuffleMode::Off {
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
             // What:     `if pos + 1 < self.order.len() { ... }`. There is forward history to
             //           retrace (the user pressed `prev` earlier, then `next`).
             // Why:      `next` after `prev` replays the recorded history before drawing anew.
@@ -1157,6 +1174,12 @@ impl Queue {
             // return pick;
             // ```
             return Some(pick);
+        }
+        if self.sequential_start > 0 && pos < self.sequential_start {
+            self.order.drain(0..self.sequential_start);
+            self.sequential_start = 0;
+            self.pos = Some(0);
+            return Some(self.order[0]);
         }
         // What:     `let next = pos + 1;` compute the following position (Off, sequential).
         // Why:      Try to move forward within the scope.
@@ -1200,7 +1223,7 @@ impl Queue {
         // ```ts
         // this.pos = 0;
         // ```
-        self.pos = Some(0);
+        self.pos = Some(self.sequential_start);
         // What:     `Some(self.order[0])` tail expression: the wrapped track.
         // Why:      Begin the next loop of the scope.
         //
@@ -1208,7 +1231,7 @@ impl Queue {
         // ```ts
         // return this.order[0];
         // ```
-        Some(self.order[0])
+        return Some(self.order[self.sequential_start])
     }
 
     /// What:     `pub fn prev(&mut self) -> Option<usize>` steps backward. In `Off` it walks the
@@ -1242,7 +1265,7 @@ impl Queue {
         // const pos = this.pos;
         // ```
         let pos = self.pos?;
-        // What:     `if self.shuffle != ShuffleMode::Off { ... }`. Shuffle steps back through
+        // What:     `if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll { ... }`. Shuffle steps back through
         //           the history and stops at its start; `Off` falls through to the wrap below.
         // Why:      Going back past the start of a random history would invent a track.
         //
@@ -1250,7 +1273,7 @@ impl Queue {
         // ```ts
         // if (this.shuffle !== "off") { if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; } return this.order[pos]; }
         // ```
-        if self.shuffle != ShuffleMode::Off {
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
             // What:     `if pos > 0 { self.pos = Some(pos - 1); return Some(self.order[pos - 1]); }`.
             //           Step back one in the history.
             // Why:      Replay the previously-played track.
@@ -1272,6 +1295,13 @@ impl Queue {
             // ```
             return Some(self.order[pos]);
         }
+        if self.sequential_start > 0 && pos < self.sequential_start {
+            self.order.drain(0..self.sequential_start);
+            self.sequential_start = 0;
+            let last = self.order.len() - 1;
+            self.pos = Some(last);
+            return Some(self.order[last]);
+        }
         // What:     `if pos > 0 { ... }` there is a previous slot in the scope (Off).
         // Why:      Normal backward step.
         //
@@ -1279,7 +1309,7 @@ impl Queue {
         // ```ts
         // if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
         // ```
-        if pos > 0 {
+        if pos > self.sequential_start {
             // What:     `self.pos = Some(pos - 1);`. Decrement the cursor.
             // Why:      Move to the previous track.
             //
@@ -1320,7 +1350,7 @@ impl Queue {
         // ```ts
         // return this.order[last];
         // ```
-        Some(self.order[last])
+        return Some(self.order[last])
     }
 }
 
@@ -1348,7 +1378,7 @@ impl Default for Queue {
         // ```ts
         // return Queue.new();
         // ```
-        Queue::new()
+        return Queue::new()
     }
 }
 

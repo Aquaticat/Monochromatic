@@ -1,5 +1,5 @@
 /**
- * Unified branch-worktree-only built-in policy. @module
+ Unified branch-worktree-only built-in policy. @module
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
@@ -9,12 +9,12 @@ import {
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
- * Configurable branch-worktree-only policy.
- *
- * @example
- * ```ts
- * branchWorktreePolicy.name;
- * ```
+ Configurable branch-worktree-only policy.
+ 
+ @example
+ ```ts
+ branchWorktreePolicy.name;
+ ```
  */
 export const branchWorktreePolicy: RuntimePolicyDefinition = {
   name: 'branch-worktree-only',

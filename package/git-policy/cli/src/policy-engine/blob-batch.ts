@@ -1,7 +1,7 @@
 /**
- * Batched Git blob loading shared by landed and pushed candidates.
- *
- * @module
+ Batched Git blob loading shared by landed and pushed candidates.
+ 
+ @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
@@ -11,54 +11,54 @@ import {
 } from 'node:stream/consumers';
 
 /**
- * Byte terminating Git batch protocol records.
+ Byte terminating Git batch protocol records.
  */
 const NEWLINE_BYTE = 0x0A;
 /**
- * Strict decoder for ASCII-compatible Git batch headers.
+ Strict decoder for ASCII-compatible Git batch headers.
  */
 const HEADER_DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
 /**
- * Encoder for complete object-ID request lines.
+ Encoder for complete object-ID request lines.
  */
 const REQUEST_ENCODER = new TextEncoder();
 /**
- * Field count in successful default batch header.
+ Field count in successful default batch header.
  */
 const BATCH_HEADER_FIELD_COUNT = 3;
 
 /**
- * Parsed Git batch object header.
+ Parsed Git batch object header.
  */
 type BatchHeader = Readonly<{
   /**
-   * Canonical object ID returned by Git.
+   Canonical object ID returned by Git.
    */
   oid: string;
   /**
-   * Uncompressed object byte length.
+   Uncompressed object byte length.
    */
   size: number;
 }>;
 
 /**
- * Parses one successful `git cat-file --batch` header.
- *
- * @param header - decoded header without newline
- *
- * @param createError - domain error factory for malformed output
- *
- * @returns canonical object identity and size
- *
- * @throws caller-domain error when header is malformed or names a non-blob
- *
- * @example
- * ```ts
- * parseBatchHeader({ header: 'abc blob 3', createError: function toError(message,) { return new Error(message,); } });
- * ```
+ Parses one successful `git cat-file --batch` header.
+ 
+ @param header - decoded header without newline
+ 
+ @param createError - domain error factory for malformed output
+ 
+ @returns canonical object identity and size
+ 
+ @throws caller-domain error when header is malformed or names a non-blob
+ 
+ @example
+ ```ts
+ parseBatchHeader({ header: 'abc blob 3', createError: function toError(message,) { return new Error(message,); } });
+ ```
  */
 function parseBatchHeader({
   header,
@@ -68,13 +68,13 @@ function parseBatchHeader({
   readonly createError: (message: string) => Error;
 },): BatchHeader {
   /**
-   * Space-delimited default batch fields.
+   Space-delimited default batch fields.
    */
   const fields = header.split(' ',);
   /**
-   * Required object identity,
-   * type,
-   * and size.
+   Required object identity,
+   type,
+   and size.
    */
   const [oid, objectType, sizeText,] = fields;
   if ((oid === undefined) || (objectType === undefined)
@@ -84,7 +84,7 @@ function parseBatchHeader({
   if (objectType !== 'blob')
     throw createError(`Git blob batch returned ${objectType} for ${oid}.`,);
   /**
-   * Parsed uncompressed byte length.
+   Parsed uncompressed byte length.
    */
   const size = Number(sizeText,);
   if ((!Number.isSafeInteger(size,)) || (size < 0)
@@ -97,22 +97,22 @@ function parseBatchHeader({
 }
 
 /**
- * Parses ordered Git batch output without interpreting blob bytes as delimiters.
- *
- * @param output - complete binary batch output
- *
- * @param requestedOids - unique requested object IDs in protocol order
- *
- * @param createError - domain error factory for malformed output
- *
- * @returns exact blob bytes keyed by requested object ID
- *
- * @throws caller-domain error when output is malformed, misordered, or truncated
- *
- * @example
- * ```ts
- * parseBatchOutput({ output, requestedOids: ['abc'], createError: function toError(message,) { return new Error(message,); } });
- * ```
+ Parses ordered Git batch output without interpreting blob bytes as delimiters.
+ 
+ @param output - complete binary batch output
+ 
+ @param requestedOids - unique requested object IDs in protocol order
+ 
+ @param createError - domain error factory for malformed output
+ 
+ @returns exact blob bytes keyed by requested object ID
+ 
+ @throws caller-domain error when output is malformed, misordered, or truncated
+ 
+ @example
+ ```ts
+ parseBatchOutput({ output, requestedOids: ['abc'], createError: function toError(message,) { return new Error(message,); } });
+ ```
  */
 function parseBatchOutput({
   output,
@@ -124,16 +124,16 @@ function parseBatchOutput({
   readonly createError: (message: string) => Error;
 },): ReadonlyMap<string, Uint8Array> {
   /**
-   * Parsed bytes retaining views into complete batch output.
+   Parsed bytes retaining views into complete batch output.
    */
   const blobs = new Map<string, Uint8Array>();
   /**
-   * Current unread output offset.
+   Current unread output offset.
    */
   let offset = 0;
   requestedOids.forEach(function parseRequestedBlob(requestedOid,) {
     /**
-     * Header terminator before exact-size content.
+     Header terminator before exact-size content.
      */
     const headerEnd = output.indexOf(
       NEWLINE_BYTE,
@@ -142,7 +142,7 @@ function parseBatchOutput({
     if (headerEnd === (-1))
       throw createError(`Git blob batch omitted header for ${requestedOid}.`,);
     /**
-     * Parsed successful batch header.
+     Parsed successful batch header.
      */
     const header = parseBatchHeader({
       header: HEADER_DECODER.decode(output.subarray(
@@ -154,11 +154,11 @@ function parseBatchOutput({
     if (header.oid !== requestedOid)
       throw createError(`Git blob batch returned ${header.oid} while ${requestedOid} was requested.`,);
     /**
-     * Exact content start after header newline.
+     Exact content start after header newline.
      */
     const contentStart = headerEnd + 1;
     /**
-     * Exact content end derived from trusted parsed size.
+     Exact content end derived from trusted parsed size.
      */
     const contentEnd = contentStart + header.size;
     if ((contentEnd >= output.length) || (output[contentEnd] !== NEWLINE_BYTE))
@@ -178,27 +178,27 @@ function parseBatchOutput({
 }
 
 /**
- * Loads every unique requested blob through one Git batch subprocess.
- *
- * One persistent reader replaces per-candidate `cat-file blob` spawns, whose
- * fork and exec cost dominates mechanical commits touching thousands of paths.
- *
- * @param gitPath - resolved real Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param oids - blob IDs in candidate encounter order
- *
- * @param createError - domain error factory for batch failure and malformed output
- *
- * @returns exact blob bytes keyed by object ID
- *
- * @throws caller-domain error when Git exits nonzero or output is malformed
- *
- * @example
- * ```ts
- * await loadBlobBatch({ gitPath: '/usr/bin/git', cwd: '/repo', oids: [], createError: function toError(message,) { return new Error(message,); } });
- * ```
+ Loads every unique requested blob through one Git batch subprocess.
+ 
+ One persistent reader replaces per-candidate `cat-file blob` spawns, whose
+ fork and exec cost dominates mechanical commits touching thousands of paths.
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param oids - blob IDs in candidate encounter order
+ 
+ @param createError - domain error factory for batch failure and malformed output
+ 
+ @returns exact blob bytes keyed by object ID
+ 
+ @throws caller-domain error when Git exits nonzero or output is malformed
+ 
+ @example
+ ```ts
+ await loadBlobBatch({ gitPath: '/usr/bin/git', cwd: '/repo', oids: [], createError: function toError(message,) { return new Error(message,); } });
+ ```
  */
 export async function loadBlobBatch({
   gitPath,
@@ -212,13 +212,13 @@ export async function loadBlobBatch({
   readonly createError: (message: string) => Error;
 },): Promise<ReadonlyMap<string, Uint8Array>> {
   /**
-   * Unique request order avoids re-reading unchanged blobs across commit trees.
+   Unique request order avoids re-reading unchanged blobs across commit trees.
    */
   const requestedOids = [...new Set(oids,),];
   if (requestedOids.length === 0)
     return new Map();
   /**
-   * One persistent Git object reader for complete request set.
+   One persistent Git object reader for complete request set.
    */
   const child = spawn(
     gitPath,
@@ -236,7 +236,7 @@ export async function loadBlobBatch({
     },
   );
   /**
-   * Concurrent output consumers prevent either pipe from blocking Git.
+   Concurrent output consumers prevent either pipe from blocking Git.
    */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
@@ -249,7 +249,7 @@ export async function loadBlobBatch({
     'close',
   );
   /**
-   * Settled binary output and private diagnostic.
+   Settled binary output and private diagnostic.
    */
   const [stdout, stderr,] = await output;
   if (child.exitCode !== 0)

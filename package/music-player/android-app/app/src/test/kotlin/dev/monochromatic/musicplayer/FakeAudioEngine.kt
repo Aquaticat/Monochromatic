@@ -53,6 +53,9 @@ class FakeAudioEngine : AudioEngine {
     // ```
     var loadedUri: String? = null
 
+    /** Number of engine load calls observed by controller tests. */
+    var loadCount: Int = 0
+
     // What:     `var lastVolume: Float = 1.0f` declares a public, reassignable `Float` (32-bit
     //           float; the `f` suffix makes `1.0f` a `Float`, not the 64-bit `Double` `1.0`),
     //           initialised to full gain.
@@ -127,6 +130,7 @@ class FakeAudioEngine : AudioEngine {
         // this.loadedUri = uri; this.playWhenReadyValue = play;
         // ```
         loadedUri = uri
+        loadCount += 1
         playWhenReadyValue = play
     }
 

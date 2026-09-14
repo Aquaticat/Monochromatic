@@ -57,7 +57,7 @@ pub(crate) const B6P_PREVIEW_BODY: DebugRegion = DebugRegion {
 /// What: report whether debug tinting is active for this process.
 /// Why: production runs should not allocate labels or alter widget wrappers.
 pub(crate) fn enabled() -> bool {
-    std::env::var_os(DEBUG_TINT_ENV).is_some()
+    return std::env::var_os(DEBUG_TINT_ENV).is_some()
 }
 
 /// What: add tooltip metadata to `widget` when debug tinting is active.
@@ -82,7 +82,7 @@ pub(crate) fn wrap(child: &impl IsA<Widget>, region: DebugRegion, detail: Option
     overlay.add_css_class("fm-debug-overlay");
     overlay.add_overlay(&badge(region, detail));
     tag(&overlay, region, detail);
-    overlay.upcast::<Widget>()
+    return overlay.upcast::<Widget>()
 }
 
 /// What: build a fixed-size abstract lane overlay.
@@ -95,7 +95,7 @@ pub(crate) fn lane(region: DebugRegion, detail: Option<&str>, width: i32, height
     rail.add_css_class("fm-debug-lane");
     rail.append(&inline_badge(region, detail));
     tag(&rail, region, detail);
-    rail.upcast::<Widget>()
+    return rail.upcast::<Widget>()
 }
 
 /// What: build a floating badge for overlay wrappers.
@@ -106,13 +106,13 @@ fn badge(region: DebugRegion, detail: Option<&str>) -> Label {
     label.set_valign(Align::Start);
     label.set_margin_start(BADGE_MARGIN);
     label.set_margin_top(BADGE_MARGIN);
-    label
+    return label
 }
 
 /// What: build an inline badge for box children and lane rails.
 /// Why: inline badges should not request overlay alignment, only text styling.
 fn inline_badge(region: DebugRegion, detail: Option<&str>) -> Label {
-    base_badge(region, detail)
+    return base_badge(region, detail)
 }
 
 /// What: build the shared label widget for a region code and description.
@@ -122,7 +122,7 @@ fn base_badge(region: DebugRegion, detail: Option<&str>) -> Label {
     label.set_can_target(false);
     label.set_can_focus(false);
     label.add_css_class("fm-debug-badge");
-    label
+    return label
 }
 
 /// What: turn a debug region plus optional runtime detail into visible badge text.
@@ -132,5 +132,5 @@ fn label_text(region: DebugRegion, detail: Option<&str>) -> String {
     if let Some(detail) = detail {
         return format!("{prefix} {detail}");
     }
-    prefix
+    return prefix
 }

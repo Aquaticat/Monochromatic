@@ -1,7 +1,7 @@
 /**
- * Static scenario declarations for lifecycle latency benchmark.
- *
- * @module
+ Static scenario declarations for lifecycle latency benchmark.
+ 
+ @module
  */
 
 import {
@@ -22,75 +22,75 @@ import {
 import type { LifecycleFixture, } from './lifecycle-latency-fixture.ts';
 
 /**
- * Scenario paired-command declaration.
+ Scenario paired-command declaration.
  */
 export type PairedScenario = Readonly<{
   /**
-   * Stable scenario identity.
+   Stable scenario identity.
    */
   id: LifecycleScenarioId;
   /**
-   * Direct Git request.
+   Direct Git request.
    */
   direct: CommandRequest;
   /**
-   * Wrapped request.
+   Wrapped request.
    */
   wrapper: CommandRequest;
 }>;
 
 /**
- * Direct and wrapped requests sharing one prepared repository state.
+ Direct and wrapped requests sharing one prepared repository state.
  */
 export type PreparedPair = Readonly<{
   /**
-   * Direct real-Git baseline request.
+   Direct real-Git baseline request.
    */
   direct: CommandRequest;
   /**
-   * Wrapped lifecycle request.
+   Wrapped lifecycle request.
    */
   wrapper: CommandRequest;
 }>;
 
 /**
- * Scenario requiring fresh state before each command pair.
+ Scenario requiring fresh state before each command pair.
  */
 export type PreparedPairedScenario = {
   /**
-   * Stable scenario identity.
+   Stable scenario identity.
    */
   readonly id: LifecycleScenarioId;
   /**
-   * Builds next equivalent direct and wrapped requests.
+   Builds next equivalent direct and wrapped requests.
    */
   readonly prepare: (input: Readonly<{
     /**
-     * Unique state sequence.
+     Unique state sequence.
      */
     iteration: number;
     /**
-     * Prepared trust facts.
+     Prepared trust facts.
      */
     fixture: LifecycleFixture;
   }>,) => Promise<PreparedPair>;
 };
 
 /**
- * Creates one same-command pair over prepared repository state.
- *
- * @param args - literal Git arguments
- *
- * @param cwd - shared repository
- *
- * @param env - optional wrapped trust environment
- *
- * @returns direct and wrapped requests differing only by executable and wrapped environment
- *
- * @example
- * ```ts
- * commandPair({ args: ['status'], cwd: '/work/repository' });
- * ```
+ Creates one same-command pair over prepared repository state.
+ 
+ @param args - literal Git arguments
+ 
+ @param cwd - shared repository
+ 
+ @param env - optional wrapped trust environment
+ 
+ @returns direct and wrapped requests differing only by executable and wrapped environment
+ 
+ @example
+ ```ts
+ commandPair({ args: ['status'], cwd: '/work/repository' });
+ ```
  */
 function commandPair({
   args,
@@ -117,16 +117,16 @@ function commandPair({
 }
 
 /**
- * Creates dry-run commit arguments that exercise selected content without changing repository state.
- *
- * @param iteration - unique diagnostic sequence
- *
- * @returns same direct and wrapped Git argument vector
- *
- * @example
- * ```ts
- * dryRunCommitArgs(1);
- * ```
+ Creates dry-run commit arguments that exercise selected content without changing repository state.
+ 
+ @param iteration - unique diagnostic sequence
+ 
+ @returns same direct and wrapped Git argument vector
+ 
+ @example
+ ```ts
+ dryRunCommitArgs(1);
+ ```
  */
 function dryRunCommitArgs(iteration: number,): readonly string[] {
   return [
@@ -140,11 +140,11 @@ function dryRunCommitArgs(iteration: number,): readonly string[] {
 }
 
 /**
- * Builds validator trust request after changing exact bytes.
- *
- * @param iteration - unique source sequence
- *
- * @returns trust request
+ Builds validator trust request after changing exact bytes.
+ 
+ @param iteration - unique source sequence
+ 
+ @returns trust request
  */
 async function validatorRequest({
   iteration,
@@ -171,13 +171,13 @@ async function validatorRequest({
 }
 
 /**
- * Builds relaxed TypeScript refresh request after changing exact bytes.
- *
- * @param iteration - unique source sequence
- *
- * @param fixture - exact relaxed trust environment
- *
- * @returns relaxed wrapper request
+ Builds relaxed TypeScript refresh request after changing exact bytes.
+ 
+ @param iteration - unique source sequence
+ 
+ @param fixture - exact relaxed trust environment
+ 
+ @returns relaxed wrapper request
  */
 async function relaxedRequest({
   iteration,
@@ -204,9 +204,9 @@ async function relaxedRequest({
 }
 
 /**
- * Builds scanner direct-check request.
- *
- * @returns scanner request
+ Builds scanner direct-check request.
+ 
+ @returns scanner request
  */
 async function scannerRequest({
   iteration,
@@ -227,11 +227,11 @@ async function scannerRequest({
 }
 
 /**
- * Builds changed normalizer direct-fix request.
- *
- * @param iteration - unique content sequence
- *
- * @returns normalizer fix request
+ Builds changed normalizer direct-fix request.
+ 
+ @param iteration - unique content sequence
+ 
+ @returns normalizer fix request
  */
 async function normalizerChangedRequest({
   iteration,
@@ -252,9 +252,9 @@ async function normalizerChangedRequest({
 }
 
 /**
- * Builds normalizer direct-check request.
- *
- * @returns normalizer request
+ Builds normalizer direct-check request.
+ 
+ @returns normalizer request
  */
 async function normalizerRequest({
   iteration,
@@ -275,7 +275,7 @@ async function normalizerRequest({
 }
 
 /**
- * Paired scenarios in stable report order.
+ Paired scenarios in stable report order.
  */
 export const PAIRED_SCENARIOS: readonly PairedScenario[] = [
   {
@@ -357,7 +357,7 @@ export const PAIRED_SCENARIOS: readonly PairedScenario[] = [
 ];
 
 /**
- * Prepared paired scenarios in stable report order.
+ Prepared paired scenarios in stable report order.
  */
 export const PREPARED_PAIRED_SCENARIOS: readonly PreparedPairedScenario[] = [
   {

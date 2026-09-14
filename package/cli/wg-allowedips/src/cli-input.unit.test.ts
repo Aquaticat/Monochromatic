@@ -19,11 +19,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Invalid allowed input path.
+         Invalid allowed input path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Empty disallowed input path.
+         Empty disallowed input path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -31,7 +31,7 @@ await describe({
           writeFile(disallowedPath, '',),
         ],);
         /**
-         * Parser-failure process result.
+         Parser-failure process result.
          */
         const result = await runCli({
           args: [
@@ -52,11 +52,11 @@ await describe({
       fn: async () => {
         await using directory = await makeTempDir();
         /**
-         * Empty allowed input path.
+         Empty allowed input path.
          */
         const allowedPath = `${directory.path}/allowed.txt`;
         /**
-         * Empty disallowed input path.
+         Empty disallowed input path.
          */
         const disallowedPath = `${directory.path}/disallowed.txt`;
         await Promise.all([
@@ -64,7 +64,7 @@ await describe({
           writeFile(disallowedPath, '',),
         ],);
         /**
-         * Empty-allowed process result.
+         Empty-allowed process result.
          */
         const result = await runCli({
           args: [

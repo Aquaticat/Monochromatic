@@ -11,14 +11,14 @@ import type {
 import { walk, } from '../walk.ts';
 
 /**
- * Rule id.
+ Rule id.
  */
 const ID = 'MD034';
 
 /**
- * URL scheme prefixes whose bare form can be wrapped into a valid `<...>`
- * autolink. A scheme-less `www.` autolink literal is left alone: wrapping it
- * would produce literal angle-bracketed text, not a link.
+ URL scheme prefixes whose bare form can be wrapped into a valid `<...>`
+ autolink. A scheme-less `www.` autolink literal is left alone: wrapping it
+ would produce literal angle-bracketed text, not a link.
  */
 const WRAPPABLE_SCHEMES: readonly string[] = [
   'http://',
@@ -28,25 +28,25 @@ const WRAPPABLE_SCHEMES: readonly string[] = [
 ];
 
 /**
- * Parameters for {@link isWrappableBareUrl}.
+ Parameters for {@link isWrappableBareUrl}.
  */
 type IsWrappableParams = {
   /**
-   * Source slice of the link node (its exact written form).
+   Source slice of the link node (its exact written form).
    */
   readonly slice: string;
   /**
-   * Resolved URL of the link node.
+   Resolved URL of the link node.
    */
   readonly url: string;
 };
 
 /**
- * Escape literal link text for use inside an inline Markdown link label.
- *
- * @param text - visible link text to escape
- *
- * @returns text safe for `[text](...)`
+ Escape literal link text for use inside an inline Markdown link label.
+ 
+ @param text - visible link text to escape
+ 
+ @returns text safe for `[text](...)`
  */
 function escapeLinkText(text: string,): string {
   return text
@@ -65,35 +65,35 @@ function escapeLinkText(text: string,): string {
 }
 
 /**
- * Parameters for {@link fixedBareUrlText}.
+ Parameters for {@link fixedBareUrlText}.
  */
 type FixedBareUrlTextParams = {
   /**
-   * Source slice of the link node (its exact written form).
+   Source slice of the link node (its exact written form).
    */
   readonly slice: string;
   /**
-   * Resolved URL of the link node.
+   Resolved URL of the link node.
    */
   readonly url: string;
   /**
-   * Whether the file is parsed as MDX.
+   Whether the file is parsed as MDX.
    */
   readonly mdx: boolean;
 };
 
 /**
- * Replacement text for a bare URL. Plain Markdown can use autolink syntax, but
- * MDX parses `<https://...>` as JSX and throws; MDX therefore needs an explicit
- * inline link with an angle-bracketed destination for URL safety.
- *
- * @param slice - source slice of the link node
- *
- * @param url - resolved URL of the link node
- *
- * @param mdx - whether the file is parsed as MDX
- *
- * @returns replacement text for the bare URL
+ Replacement text for a bare URL. Plain Markdown can use autolink syntax, but
+ MDX parses `<https://...>` as JSX and throws; MDX therefore needs an explicit
+ inline link with an angle-bracketed destination for URL safety.
+ 
+ @param slice - source slice of the link node
+ 
+ @param url - resolved URL of the link node
+ 
+ @param mdx - whether the file is parsed as MDX
+ 
+ @returns replacement text for the bare URL
  */
 function fixedBareUrlText({
   slice,
@@ -106,16 +106,16 @@ function fixedBareUrlText({
 }
 
 /**
- * Whether a `link` node was written as a bare URL that can be wrapped into a
- * valid autolink. A slice opening with `<` is already an autolink and one
- * opening with `[` is an inline or reference link; otherwise the slice is bare,
- * and it is wrappable when it carries a known scheme or is an email autolink.
- *
- * @param slice - source slice of the link node
- *
- * @param url - resolved URL of the link node
- *
- * @returns whether the node is a wrappable bare URL
+ Whether a `link` node was written as a bare URL that can be wrapped into a
+ valid autolink. A slice opening with `<` is already an autolink and one
+ opening with `[` is an inline or reference link; otherwise the slice is bare,
+ and it is wrappable when it carries a known scheme or is an email autolink.
+ 
+ @param slice - source slice of the link node
+ 
+ @param url - resolved URL of the link node
+ 
+ @returns whether the node is a wrappable bare URL
  */
 function isWrappableBareUrl({
   slice,
@@ -133,17 +133,17 @@ function isWrappableBareUrl({
 }
 
 /**
- * Flag bare URLs (and bare emails) and attach a fix. Markdown files receive
- * angle-bracket autolinks; MDX files receive inline links because MDX reserves
- * angle brackets for JSX.
- *
- * @param tree - mdast tree under lint
- *
- * @param source - original source, for the written form and offsets
- *
- * @param mdx - whether the file is parsed as MDX
- *
- * @returns one diagnostic per bare URL
+ Flag bare URLs (and bare emails) and attach a fix. Markdown files receive
+ angle-bracket autolinks; MDX files receive inline links because MDX reserves
+ angle brackets for JSX.
+ 
+ @param tree - mdast tree under lint
+ 
+ @param source - original source, for the written form and offsets
+ 
+ @param mdx - whether the file is parsed as MDX
+ 
+ @returns one diagnostic per bare URL
  */
 function checkNoBareUrls({
   tree,
@@ -151,7 +151,7 @@ function checkNoBareUrls({
   mdx,
 }: RuleContext,): readonly Diagnostic[] {
   /**
-   * Diagnostics collected across the walk.
+   Diagnostics collected across the walk.
    */
   const diagnostics: Diagnostic[] = [];
   for (const { node, } of walk(tree,)) {
@@ -159,7 +159,7 @@ function checkNoBareUrls({
       continue;
     }
     /**
-     * Exact written form of the link.
+     Exact written form of the link.
      */
     const slice = sliceOf({
       node,
@@ -172,7 +172,7 @@ function checkNoBareUrls({
       continue;
     }
     /**
-     * Link node's source offsets.
+     Link node's source offsets.
      */
     const {
       start,
@@ -199,8 +199,8 @@ function checkNoBareUrls({
 }
 
 /**
- * MD034 no-bare-urls: a bare URL should use explicit link syntax. Fixable:
- * wraps the URL in angle brackets for Markdown, or uses an inline link for MDX.
+ MD034 no-bare-urls: a bare URL should use explicit link syntax. Fixable:
+ wraps the URL in angle brackets for Markdown, or uses an inline link for MDX.
  */
 export const noBareUrls: Rule = {
   id: ID,

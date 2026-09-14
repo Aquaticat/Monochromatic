@@ -1,7 +1,7 @@
 /**
- * Core final-newline policy tests.
- *
- * @module
+ Core final-newline policy tests.
+ 
+ @module
  */
 import {
   describe,
@@ -29,22 +29,22 @@ const DECODER = new TextDecoder();
 const REVISION = '1111111111111111111111111111111111111111';
 
 /**
- * Encodes fixture text.
- *
- * @param value - fixture text
- *
- * @returns encoded bytes
+ Encodes fixture text.
+ 
+ @param value - fixture text
+ 
+ @returns encoded bytes
  */
 function bytes(value: string,): Uint8Array {
   return ENCODER.encode(value,);
 }
 
 /**
- * Decodes changed normalization result.
- *
- * @param value - input text
- *
- * @returns replacement text or unchanged marker
+ Decodes changed normalization result.
+ 
+ @param value - input text
+ 
+ @returns replacement text or unchanged marker
  */
 function normalizedText(value: string,): string {
   /** Exact normalization result. */
@@ -55,13 +55,13 @@ function normalizedText(value: string,): string {
 }
 
 /**
- * Creates ordinary candidate fixture.
- *
- * @param path - repository path
- *
- * @param value - exact text bytes
- *
- * @returns candidate fixture
+ Creates ordinary candidate fixture.
+ 
+ @param path - repository path
+ 
+ @param value - exact text bytes
+ 
+ @returns candidate fixture
  */
 function candidate({
   path,
@@ -83,15 +83,15 @@ function candidate({
 }
 
 /**
- * Creates lifecycle context over exact candidates.
- *
- * @param trigger - policy lifecycle trigger
- *
- * @param candidates - exact candidate fixtures
- *
- * @param canApplyPatches - whether lifecycle owns safe patch application
- *
- * @returns policy context
+ Creates lifecycle context over exact candidates.
+ 
+ @param trigger - policy lifecycle trigger
+ 
+ @param candidates - exact candidate fixtures
+ 
+ @param canApplyPatches - whether lifecycle owns safe patch application
+ 
+ @returns policy context
  */
 function context({
   trigger,

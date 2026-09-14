@@ -1,10 +1,10 @@
 /**
- * Collection literal mutations: arrays and objects.
- *
- * @example
- * ```ts
- * collectionReplacements({ node, parent: undefined, source });
- * ```
+ Collection literal mutations: arrays and objects.
+ 
+ @example
+ ```ts
+ collectionReplacements({ node, parent: undefined, source });
+ ```
  */
 
 import { FILLER_TEXT, } from './literals.ts';
@@ -14,19 +14,19 @@ import type {
 } from '../types.ts';
 
 /**
- * Emits collection replacements for one node.
- *
- * Non-empty arrays and objects empty out; empty arrays gain one filler
- * element, mirroring Stryker's ArrayDeclaration and ObjectLiteral.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * collectionReplacements({ node: arrayExpression, parent: undefined, source });
- * ```
+ Emits collection replacements for one node.
+ 
+ Non-empty arrays and objects empty out; empty arrays gain one filler
+ element, mirroring Stryker's ArrayDeclaration and ObjectLiteral.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ collectionReplacements({ node: arrayExpression, parent: undefined, source });
+ ```
  */
 export function collectionReplacements(options: {
   readonly node: EstreeNode;
@@ -37,7 +37,7 @@ export function collectionReplacements(options: {
     .type
     === 'ArrayExpression') {
     /**
-     * Whether the array literal has any elements.
+     Whether the array literal has any elements.
      */
     const hasElements = Array.isArray(options.node
       .elements,)
@@ -61,7 +61,7 @@ export function collectionReplacements(options: {
     .type
     === 'ObjectExpression') {
     /**
-     * Whether the object literal has any properties.
+     Whether the object literal has any properties.
      */
     const hasProperties = Array.isArray(options.node
       .properties,)

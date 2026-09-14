@@ -22,7 +22,7 @@ fn paths(list: &[&str]) -> Vec<PathBuf> {
     //           by name is the closure shorthand); `.collect()` gathers them.
     //           Tail expression -> return.
     // Why:      Build the owned input vector.
-    list.iter().map(PathBuf::from).collect()
+    return list.iter().map(PathBuf::from).collect()
 }
 
 // What:     `#[test]` marks the next function as a test case.

@@ -1,7 +1,7 @@
 /**
- * Tests for `errorOrThrow`.
- *
- * @module
+ Tests for `errorOrThrow`.
+ 
+ @module
  */
 
 import {

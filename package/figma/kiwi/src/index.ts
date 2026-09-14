@@ -1,10 +1,10 @@
 /**
- * Figma Kiwi binary format parser public API.
- *
- * @example
- * ```ts
- * import { parseFigmaFile } from '@monochromatic-dev/figma-kiwi/ts';
- * ```
+ Figma Kiwi binary format parser public API.
+ 
+ @example
+ ```ts
+ import { parseFigmaFile } from '@monochromatic-dev/figma-kiwi/ts';
+ ```
  */
 
 export {

@@ -1,14 +1,14 @@
 /**
- * Hetzner server lifecycle: create (with location fallback), clone (snapshot),
- * destroy, destroy-all, and list.
- *
- * Create tries each location in the fallback list, advancing past out-of-stock
- * responses. Clone snapshots the source, provisions from the snapshot, and
- * reaps the snapshot via an `await using` guard so it is never left billing.
- * Single-server operations resolve through the label-scoped lookup so they can
- * never touch an unrelated server.
- *
- * @module
+ Hetzner server lifecycle: create (with location fallback), clone (snapshot),
+ destroy, destroy-all, and list.
+ 
+ Create tries each location in the fallback list, advancing past out-of-stock
+ responses. Clone snapshots the source, provisions from the snapshot, and
+ reaps the snapshot via an `await using` guard so it is never left billing.
+ Single-server operations resolve through the label-scoped lookup so they can
+ never touch an unrelated server.
+ 
+ @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -47,25 +47,25 @@ import type {
 } from './types.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 //region Shared helpers
 
 /**
- * Hetzner error code returned when a server type is out of stock or not offered
- * in a location.
+ Hetzner error code returned when a server type is out of stock or not offered
+ in a location.
  */
 const OUT_OF_STOCK_CODE = 'resource_unavailable';
 
 /**
- * Created-server result paired with its boot action.
+ Created-server result paired with its boot action.
  */
 type Provisioned = {
   readonly server: HetznerServer;
@@ -73,7 +73,7 @@ type Provisioned = {
 };
 
 /**
- * Tagged-logger surface used by the helpers below.
+ Tagged-logger surface used by the helpers below.
  */
 type RunLogger = {
   readonly debug: (msg: string,) => void;
@@ -81,14 +81,14 @@ type RunLogger = {
 };
 
 /**
- * Labels applied to every mvm-created Hetzner resource.
- *
- * @returns ownership labels including the OS marker
- *
- * @example
- * ```ts
- * mvmLabels(); // { mvm: 'true', 'mvm-os': 'linux' }
- * ```
+ Labels applied to every mvm-created Hetzner resource.
+ 
+ @returns ownership labels including the OS marker
+ 
+ @example
+ ```ts
+ mvmLabels(); // { mvm: 'true', 'mvm-os': 'linux' }
+ ```
  */
 function mvmLabels(): Readonly<Record<string, string>> {
   return {
@@ -98,22 +98,22 @@ function mvmLabels(): Readonly<Record<string, string>> {
 }
 
 /**
- * Extracts the public IPv4 of a server or throws when none is attached.
- *
- * @param server - server resource
- *
- * @returns public IPv4 address
- *
- * @throws Error when the server has no usable public IPv4
- *
- * @example
- * ```ts
- * const ip = ipv4OrThrow(server);
- * ```
+ Extracts the public IPv4 of a server or throws when none is attached.
+ 
+ @param server - server resource
+ 
+ @returns public IPv4 address
+ 
+ @throws Error when the server has no usable public IPv4
+ 
+ @example
+ ```ts
+ const ip = ipv4OrThrow(server);
+ ```
  */
 function ipv4OrThrow(server: HetznerServer,): string {
   /**
-   * Public IPv4 of the server, when one is attached.
+   Public IPv4 of the server, when one is attached.
    */
   const ip = server.public_net
     .ipv4
@@ -125,29 +125,29 @@ function ipv4OrThrow(server: HetznerServer,): string {
 }
 
 /**
- * Creates a server, advancing through the location fallback list when a
- * location is out of stock.
- *
- * @param image - image slug or numeric snapshot id to boot from
- *
- * @param fullName - full server name including the mvm- prefix
- *
- * @param locations - ordered location fallback list
- *
- * @param rl - logger for progress and fallback messages
- *
- * @param serverType - server type slug
- *
- * @param sshKeyId - SSH key id to inject
- *
- * @returns the created server and its boot action
- *
- * @throws Error when every location is out of stock ({@link HetznerApiError} instances with other codes propagate)
- *
- * @example
- * ```ts
- * const created = await createWithFallback({ fullName: 'mvm-dev', image: 'ubuntu-24.04', serverType: 'cx22', sshKeyId: 1, locations: ['fsn1', 'nbg1'], rl });
- * ```
+ Creates a server, advancing through the location fallback list when a
+ location is out of stock.
+ 
+ @param image - image slug or numeric snapshot id to boot from
+ 
+ @param fullName - full server name including the mvm- prefix
+ 
+ @param locations - ordered location fallback list
+ 
+ @param rl - logger for progress and fallback messages
+ 
+ @param serverType - server type slug
+ 
+ @param sshKeyId - SSH key id to inject
+ 
+ @returns the created server and its boot action
+ 
+ @throws Error when every location is out of stock ({@link HetznerApiError} instances with other codes propagate)
+ 
+ @example
+ ```ts
+ const created = await createWithFallback({ fullName: 'mvm-dev', image: 'ubuntu-24.04', serverType: 'cx22', sshKeyId: 1, locations: ['fsn1', 'nbg1'], rl });
+ ```
  */
 export async function createWithFallback(
   {
@@ -197,23 +197,23 @@ export async function createWithFallback(
 //region Create
 
 /**
- * Creates and starts a Hetzner server, waiting for boot and SSH readiness.
- *
- * @param image - image shorthand or literal slug (defaults to ubuntu)
- *
- * @param location - per-invocation location or comma-separated fallback series
- *
- * @param name - VM name without the mvm- prefix
- *
- * @param serverType - per-invocation server type override
- *
- * @throws Error on invalid name, unsupported image, or exhausted locations
- *
- * @example
- * ```ts
- * await hetznerCreate({ name: 'dev-01' });
- * await hetznerCreate({ name: 'big', serverType: 'cpx41', location: 'ash' });
- * ```
+ Creates and starts a Hetzner server, waiting for boot and SSH readiness.
+ 
+ @param image - image shorthand or literal slug (defaults to ubuntu)
+ 
+ @param location - per-invocation location or comma-separated fallback series
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @param serverType - per-invocation server type override
+ 
+ @throws Error on invalid name, unsupported image, or exhausted locations
+ 
+ @example
+ ```ts
+ await hetznerCreate({ name: 'dev-01' });
+ await hetznerCreate({ name: 'big', serverType: 'cpx41', location: 'ash' });
+ ```
  */
 export async function hetznerCreate(
   {
@@ -230,38 +230,38 @@ export async function hetznerCreate(
 ): Promise<void> {
   validateHetznerName(name,);
   /**
-   * Logger scoped to this create so steps are namespaced.
+   Logger scoped to this create so steps are namespaced.
    */
   const rl = tagged({
     tag: hetznerCreate.name,
     l,
   },);
   /**
-   * SSH key id injected into the server so we can connect afterwards.
+   SSH key id injected into the server so we can connect afterwards.
    */
   const sshKeyId = await ensureSshKeyId();
   /**
-   * Concrete Hetzner image slug resolved from the shorthand.
+   Concrete Hetzner image slug resolved from the shorthand.
    */
   const imageSlug = await resolveHetznerImage({ shorthand: image ?? DEFAULT_IMAGE, },);
   /**
-   * Locations to try, in fallback order.
+   Locations to try, in fallback order.
    */
   const locations = resolveLocations(location,);
   /**
-   * Explicit server-type override, or `''` to pick the cheapest type.
+   Explicit server-type override, or `''` to pick the cheapest type.
    */
   const explicitType = serverTypeOverride(serverType,);
   /**
-   * Server type to provision: the override, or the cheapest non-deprecated type
-   * offered in the target locations (the image is by name, so any architecture
-   * matches).
+   Server type to provision: the override, or the cheapest non-deprecated type
+   offered in the target locations (the image is by name, so any architecture
+   matches).
    */
   const serverTypeName = (explicitType !== '')
     ? explicitType
     : await resolveCheapestServerType({ locations, },);
   /**
-   * Created server plus boot action, after location fallback.
+   Created server plus boot action, after location fallback.
    */
   const created = await createWithFallback({
     fullName: `${VM_PREFIX}${name}`,
@@ -274,7 +274,7 @@ export async function hetznerCreate(
   await waitForAction({ id: created.action
     .id, },);
   /**
-   * Public IPv4 to probe for SSH readiness.
+   Public IPv4 to probe for SSH readiness.
    */
   const ip = ipv4OrThrow(created.server,);
   await waitForSsh({ ip, },);
@@ -288,16 +288,16 @@ export async function hetznerCreate(
 //region Clone
 
 /**
- * Best-effort image deletion that logs rather than throwing.
- *
- * @param id - snapshot image id
- *
- * @param rl - logger for cleanup-failure messages
- *
- * @example
- * ```ts
- * await safeDeleteImage({ id: 1, rl });
- * ```
+ Best-effort image deletion that logs rather than throwing.
+ 
+ @param id - snapshot image id
+ 
+ @param rl - logger for cleanup-failure messages
+ 
+ @example
+ ```ts
+ await safeDeleteImage({ id: 1, rl });
+ ```
  */
 async function safeDeleteImage(
   {
@@ -322,25 +322,25 @@ async function safeDeleteImage(
 }
 
 /**
- * Provisions the destination server from a snapshot, reaping the snapshot on
- * scope exit (success or failure) before the caller waits on SSH.
- *
- * @param architecture - source architecture the snapshot requires the type to match
- *
- * @param fullName - full destination server name
- *
- * @param imageId - snapshot image id to boot from and then delete
- *
- * @param rl - logger for progress
- *
- * @param snapshotActionId - action to await before the snapshot is usable
- *
- * @returns the created destination server and its boot action
- *
- * @example
- * ```ts
- * const created = await provisionFromSnapshot({ architecture: 'x86', fullName: 'mvm-dev-02', imageId: 9, snapshotActionId: 7, rl });
- * ```
+ Provisions the destination server from a snapshot, reaping the snapshot on
+ scope exit (success or failure) before the caller waits on SSH.
+ 
+ @param architecture - source architecture the snapshot requires the type to match
+ 
+ @param fullName - full destination server name
+ 
+ @param imageId - snapshot image id to boot from and then delete
+ 
+ @param rl - logger for progress
+ 
+ @param snapshotActionId - action to await before the snapshot is usable
+ 
+ @returns the created destination server and its boot action
+ 
+ @example
+ ```ts
+ const created = await provisionFromSnapshot({ architecture: 'x86', fullName: 'mvm-dev-02', imageId: 9, snapshotActionId: 7, rl });
+ ```
  */
 async function provisionFromSnapshot(
   {
@@ -358,8 +358,8 @@ async function provisionFromSnapshot(
   },
 ): Promise<Provisioned> {
   /**
-   * Guard reaping the snapshot when this scope exits, so it never leaks even if
-   * provisioning throws (PP3).
+   Guard reaping the snapshot when this scope exits, so it never leaks even if
+   provisioning throws (PP3).
    */
   await using _snapshotCleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -371,20 +371,20 @@ async function provisionFromSnapshot(
   };
   await waitForAction({ id: snapshotActionId, },);
   /**
-   * SSH key id injected into the destination server.
+   SSH key id injected into the destination server.
    */
   const sshKeyId = await ensureSshKeyId();
   /**
-   * Locations to try, in fallback order.
+   Locations to try, in fallback order.
    */
   const locations = resolveLocations();
   /**
-   * Explicit server-type override, or `''` to pick the cheapest type.
+   Explicit server-type override, or `''` to pick the cheapest type.
    */
   const explicitType = serverTypeOverride();
   /**
-   * Server type for the clone: the override, or the cheapest non-deprecated
-   * type of the snapshot's architecture (the snapshot image is arch-specific).
+   Server type for the clone: the override, or the cheapest non-deprecated
+   type of the snapshot's architecture (the snapshot image is arch-specific).
    */
   const serverTypeName = (explicitType !== '')
     ? explicitType
@@ -393,7 +393,7 @@ async function provisionFromSnapshot(
       locations,
     },);
   /**
-   * Destination server provisioned from the snapshot image.
+   Destination server provisioned from the snapshot image.
    */
   const created = await createWithFallback({
     fullName,
@@ -409,21 +409,21 @@ async function provisionFromSnapshot(
 }
 
 /**
- * Clones a Hetzner server by snapshotting the source and provisioning a new
- * server from that snapshot. The source is snapshotted live (not shut down),
- * so a running source is not disrupted but the snapshot may catch in-flight
- * disk state.
- *
- * @param destination - destination VM name without the mvm- prefix
- *
- * @param source - source VM name without the mvm- prefix
- *
- * @throws Error on invalid name, missing source, or provisioning failure
- *
- * @example
- * ```ts
- * await hetznerClone({ destination: 'dev-02', source: 'dev-01' });
- * ```
+ Clones a Hetzner server by snapshotting the source and provisioning a new
+ server from that snapshot. The source is snapshotted live (not shut down),
+ so a running source is not disrupted but the snapshot may catch in-flight
+ disk state.
+ 
+ @param destination - destination VM name without the mvm- prefix
+ 
+ @param source - source VM name without the mvm- prefix
+ 
+ @throws Error on invalid name, missing source, or provisioning failure
+ 
+ @example
+ ```ts
+ await hetznerClone({ destination: 'dev-02', source: 'dev-01' });
+ ```
  */
 export async function hetznerClone(
   {
@@ -436,19 +436,19 @@ export async function hetznerClone(
 ): Promise<void> {
   validateHetznerName(destination,);
   /**
-   * Logger scoped to this clone so steps are namespaced.
+   Logger scoped to this clone so steps are namespaced.
    */
   const rl = tagged({
     tag: hetznerClone.name,
     l,
   },);
   /**
-   * Source server, resolved label-scoped so an unrelated server is never used.
+   Source server, resolved label-scoped so an unrelated server is never used.
    */
   const src = await getMvmServerByName({ name: source, },);
   rl.info(`snapshotting ${source} to clone into ${destination}`,);
   /**
-   * Snapshot action and image; the image is reaped inside {@link provisionFromSnapshot}.
+   Snapshot action and image; the image is reaped inside {@link provisionFromSnapshot}.
    */
   const snapshot = await createImage({
     description: `mvm clone ${source} -> ${destination}`,
@@ -456,8 +456,8 @@ export async function hetznerClone(
     serverId: src.id,
   },);
   /**
-   * Destination server, created from the snapshot which is then deleted. The
-   * server type must match the source architecture the snapshot carries.
+   Destination server, created from the snapshot which is then deleted. The
+   server type must match the source architecture the snapshot carries.
    */
   const created = await provisionFromSnapshot({
     architecture: src.server_type
@@ -470,7 +470,7 @@ export async function hetznerClone(
       .id,
   },);
   /**
-   * Public IPv4 to probe for SSH readiness.
+   Public IPv4 to probe for SSH readiness.
    */
   const ip = ipv4OrThrow(created.server,);
   await waitForSsh({ ip, },);
@@ -484,28 +484,28 @@ export async function hetznerClone(
 //region Destroy and list
 
 /**
- * Destroys a single mvm-managed server by name.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @throws Error when no single mvm-managed server matches
- *
- * @example
- * ```ts
- * await hetznerDestroy({ name: 'dev-01' });
- * ```
+ Destroys a single mvm-managed server by name.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @throws Error when no single mvm-managed server matches
+ 
+ @example
+ ```ts
+ await hetznerDestroy({ name: 'dev-01' });
+ ```
  */
 export async function hetznerDestroy({ name, }: { readonly name: string; },): Promise<void> {
   validateHetznerName(name,);
   /**
-   * Logger scoped to this destroy so steps are namespaced.
+   Logger scoped to this destroy so steps are namespaced.
    */
   const rl = tagged({
     tag: hetznerDestroy.name,
     l,
   },);
   /**
-   * Target server, resolved label-scoped and exact so unrelated servers are safe.
+   Target server, resolved label-scoped and exact so unrelated servers are safe.
    */
   const server = await getMvmServerByName({ name, },);
   rl.info(`destroying ${name} (id ${String(server.id,)})`,);
@@ -514,27 +514,27 @@ export async function hetznerDestroy({ name, }: { readonly name: string; },): Pr
 }
 
 /**
- * Destroys every mvm-managed server, then sweeps mvm-managed snapshot images as
- * a backstop against leaked clone snapshots. Both are scoped by the ownership
- * label selector, never by name prefix.
- *
- * @throws Error when a delete fails
- *
- * @example
- * ```ts
- * await hetznerDestroyAll();
- * ```
+ Destroys every mvm-managed server, then sweeps mvm-managed snapshot images as
+ a backstop against leaked clone snapshots. Both are scoped by the ownership
+ label selector, never by name prefix.
+ 
+ @throws Error when a delete fails
+ 
+ @example
+ ```ts
+ await hetznerDestroyAll();
+ ```
  */
 export async function hetznerDestroyAll(): Promise<void> {
   /**
-   * Logger scoped to this bulk destroy so steps are namespaced.
+   Logger scoped to this bulk destroy so steps are namespaced.
    */
   const rl = tagged({
     tag: hetznerDestroyAll.name,
     l,
   },);
   /**
-   * Every mvm-labelled server, the only deletion scope.
+   Every mvm-labelled server, the only deletion scope.
    */
   const servers = await listMvmServers();
   if (servers.length === 0) {
@@ -549,7 +549,7 @@ export async function hetznerDestroyAll(): Promise<void> {
   }
 
   /**
-   * mvm-labelled snapshot images; swept so an interrupted clone cannot leak one.
+   mvm-labelled snapshot images; swept so an interrupted clone cannot leak one.
    */
   const images = await listImages({
     labelSelector: MVM_LABEL_SELECTOR,
@@ -562,14 +562,14 @@ export async function hetznerDestroyAll(): Promise<void> {
 }
 
 /**
- * Lists mvm-managed servers (by ownership label) with their state.
- *
- * @returns VM entries with the unprefixed name and Hetzner status
- *
- * @example
- * ```ts
- * const vms = await hetznerList();
- * ```
+ Lists mvm-managed servers (by ownership label) with their state.
+ 
+ @returns VM entries with the unprefixed name and Hetzner status
+ 
+ @example
+ ```ts
+ const vms = await hetznerList();
+ ```
  */
 export async function hetznerList(): Promise<readonly VmInfo[]> {
   return (await listMvmServers()).map(function toVmInfo(server,) {

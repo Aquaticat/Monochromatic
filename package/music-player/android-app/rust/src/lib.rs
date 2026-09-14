@@ -260,7 +260,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePin
     // ```ts
     // return 42;
     // ```
-    42
+    return 42
 }
 
 // What:     `#[unsafe(no_mangle)]` again: keep the symbol name unmangled so the JVM finds it.
@@ -318,7 +318,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
         // ```ts
         // // succeeded: return 1;
         // ```
-        Ok(_decoder) => 1,
+        Ok(_decoder) => return 1,
         // What:     `Err(_error) => 0` is the failure arm. `Err(...)` is the failure
         //           variant of `Result`; we destructure the error into `_error` and
         //           ignore it (leading `_`). The arm yields `0`.
@@ -328,7 +328,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
         // ```ts
         // // failed: return 0;
         // ```
-        Err(_error) => 0,
+        Err(_error) => return 0,
     }
 }
 
@@ -387,7 +387,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
     // ```ts
     // return 1;
     // ```
-    1
+    return 1
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -517,7 +517,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     // ```ts
     // return benchmarkDecode(source);
     // ```
-    bench::benchmark_decode(source)
+    return bench::benchmark_decode(source)
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -602,7 +602,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     // ```ts
     // return benchmarkDecode(source);
     // ```
-    bench::benchmark_decode(source)
+    return bench::benchmark_decode(source)
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name unmangled so the JVM finds it.
@@ -708,7 +708,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     // ```ts
     // return truePeakInterleaved(buf, channels);
     // ```
-    truepeak::true_peak_interleaved(&buf, channels as usize)
+    return truepeak::true_peak_interleaved(&buf, channels as usize)
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -749,7 +749,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
     // const ms = output.measureOutputLatencyMs(); // number | null
     // return ms ?? -1.0;
     // ```
-    output::measure_output_latency_ms().unwrap_or(-1.0)
+    return output::measure_output_latency_ms().unwrap_or(-1.0)
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -818,7 +818,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         Ok(engine_value) => {
             let handle = Box::into_raw(Box::new(engine_value)) as jlong;
             tracing::info!(handle, "engine created");
-            handle
+            return handle
         }
         // What:     `Err(_) => 0`. Failure variant, error discarded; yield the handle
         //           value `0`, which the contract treats as "no engine".
@@ -830,7 +830,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         // ```
         Err(error) => {
             tracing::error!(cause = %error, "could not create engine (worker spawn failed)");
-            0
+            return 0
         }
     }
 }
@@ -931,7 +931,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         // ```ts
         // // success: return 0;
         // ```
-        Ok(()) => 0,
+        Ok(()) => return 0,
         // What:     `Err(_) => -2`. Failure variant, error discarded; yield `-2`, the
         //           "dup/dispatch failed" code.
         // Why:      The dup or the send-to-worker failed; report -2.
@@ -942,7 +942,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
         // ```
         Err(error) => {
             tracing::warn!(cause = %error, "engine load failed");
-            -2
+            return -2
         }
     }
 }
@@ -1266,7 +1266,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // ```ts
     // return engineRef.positionSec();
     // ```
-    engine_ref.position_sec()
+    return engine_ref.position_sec()
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1318,7 +1318,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // ```ts
     // return engineRef.durationSec();
     // ```
-    engine_ref.duration_sec()
+    return engine_ref.duration_sec()
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1376,7 +1376,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // ```ts
     // return engineRef.isPlaying();
     // ```
-    jboolean::from(engine_ref.is_playing())
+    return jboolean::from(engine_ref.is_playing())
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1430,7 +1430,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // ```ts
     // return engineRef.isEnded();
     // ```
-    jboolean::from(engine_ref.is_ended())
+    return jboolean::from(engine_ref.is_ended())
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1485,7 +1485,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // ```ts
     // return engineRef.playWhenReady();
     // ```
-    jboolean::from(engine_ref.play_when_ready())
+    return jboolean::from(engine_ref.play_when_ready())
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.

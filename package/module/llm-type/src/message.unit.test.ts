@@ -1,7 +1,7 @@
 /**
- * Tests for the text chat message envelope.
- *
- * @module
+ Tests for the text chat message envelope.
+ 
+ @module
  */
 
 import {

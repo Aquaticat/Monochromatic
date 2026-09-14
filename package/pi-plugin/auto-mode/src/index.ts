@@ -1,22 +1,22 @@
 /**
- * Auto-mode pi extension entry point.
- *
- * LLM-as-judge guardrail that replaces pi-safeguard with:
- * - Fixed path handling (no /var/home false positives)
- * - Structured-output judge (tool-calling instead of free-text JSON)
- * - Inline budget model (no broken `getApiKey` dependency)
- *
- * @module
+ Auto-mode pi extension entry point.
+ 
+ LLM-as-judge guardrail that replaces pi-safeguard with:
+ - Fixed path handling (no /var/home false positives)
+ - Structured-output judge (tool-calling instead of free-text JSON)
+ - Inline budget model (no broken `getApiKey` dependency)
+ 
+ @module
  */
 
 import { homedir, } from 'node:os';
 
 import type {
+  BeforeAgentStartEvent,
   ExtensionAPI,
   ExtensionContext,
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,
@@ -32,9 +32,11 @@ import {
   updateBypassStatus,
 } from './bypass.ts';
 import { HISTORICAL_AGENT_TEMP_DIR, } from './constants.ts';
+import { buildProjectContext, } from './context.ts';
 import { evaluate, } from './evaluate.ts';
 import { createJudgeCallHistory, } from './judge-call-history.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
+import { entryPointLogger, } from './logger.ts';
 import { registerGuardCommand, } from './guard-command.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
 import { shouldFlag, } from './signals.ts';
@@ -46,104 +48,61 @@ import {
   isRelevantTool,
   serializeToolInputForJudge,
 } from './tool-helpers.ts';
+import { guardVirtualInput, } from './virtual-input-guard.ts';
 import type {
   BatchEntry,
   SignalContext,
 } from './types.ts';
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
- */
-const parentLogger = tagged({ tag: 'auto-mode', },);
-
-/**
- * Tagged logger for the auto-mode entry point.
- */
-const l = tagged({
-  tag: 'index',
-  l: parentLogger,
-},);
-
-/**
- * Readonly event subset needed to collect skill read allowlist entries.
- *
- * @example
- * ```typescript
- * const event: SkillPromptEvent = {
- *   systemPromptOptions: { skills: [{ baseDir: "/skills/example" }] },
- * };
- * ```
- */
-type SkillPromptEvent = {
-  /**
-   * Structured prompt options containing loaded skill metadata.
-   */
-  readonly systemPromptOptions: {
-    /**
-     * Skills visible to the model in the current prompt.
-     */
-    readonly skills?: readonly {
-      /**
-       * Absolute skill root directory.
-       */
-      readonly baseDir: string;
-    }[];
-  };
-};
-
-/**
- * Auto-mode pi extension.
- *
- * Subscribes to agent lifecycle events to implement the
- * flagger-judge-user pipeline:
- * - {@link registerGuardCommand} and {@link registerProposeTrust} register the `/guard` command and `propose_trust` tool
- * - {@link findLatestBypassEnabled} and {@link updateBypassStatus} restore and surface bypass state
- * - {@link appendBypassToggleEntry} and {@link announceBypassToggle} record and announce bypass toggles
- * - {@link describeAction} and {@link appendBypassAllowEntry} log bypassed tool calls
- * - {@link agentTempAllowlistedDirs} and {@link linkedWorktreeReadAllowlistedDirs} build read allowlists
- * - {@link shouldFlag} and {@link isRelevantTool} decide whether a tool call needs evaluation
- * - {@link approvalFingerprintForEvent} and {@link evaluate} run the judge pipeline
- * - {@link updateWidget} renders flow verdicts
- *
- * @param pi - the pi extension API
- *
- * @param home - current account home used to derive current agent scratch root
- *
- * @param historicalAgentTempDir - historical compatibility root used for isolated verification
- *
- * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
- *
- * @example
- * ```typescript
- * initializeAutoMode({ pi, home: '/account-home' });
- * ```
+ Auto-mode pi extension.
+ 
+ Subscribes to agent lifecycle events to implement the
+ flagger-judge-user pipeline:
+ - {@link registerGuardCommand} and {@link registerProposeTrust} register the `/guard` command and `propose_trust` tool
+ - {@link findLatestBypassEnabled} and {@link updateBypassStatus} restore and surface bypass state
+ - {@link appendBypassToggleEntry} and {@link announceBypassToggle} record and announce bypass toggles
+ - {@link describeAction} and {@link appendBypassAllowEntry} log bypassed tool calls
+ - {@link agentTempAllowlistedDirs} and {@link linkedWorktreeReadAllowlistedDirs} build read allowlists
+ - {@link shouldFlag} and {@link isRelevantTool} decide whether a tool call needs evaluation
+ - {@link approvalFingerprintForEvent} and {@link evaluate} run the judge pipeline
+ - {@link updateWidget} renders flow verdicts
+ 
+ @param pi - the pi extension API
+ 
+ @param home - current account home used to derive current agent scratch root
+ 
+ @param historicalAgentTempDir - historical compatibility root used for isolated verification
+ 
+ @param evaluateAction - evaluation boundary override used by provider-free integration tests
+ 
+ @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
+ 
+ @example
+ ```typescript
+ initializeAutoMode({ pi, home: '/account-home' });
+ ```
  */
 function initializeAutoMode(
   {
     pi,
     home = homedir(),
     historicalAgentTempDir = HISTORICAL_AGENT_TEMP_DIR,
+    evaluateAction = evaluate,
   }: {
     readonly pi: ForeignHostCapability<ExtensionAPI>;
     readonly home?: string;
     readonly historicalAgentTempDir?: string;
+    readonly evaluateAction?: typeof evaluate;
   },
 ): void {
   /**
-   * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
+   Per-call sub-logger so registration log lines carry the entry-point name as a tag.
    */
-  const innerL = tagged({
-    tag: initializeAutoMode.name,
-    l,
-  },);
+  const innerL = entryPointLogger(initializeAutoMode.name,);
   innerL.debug('auto-mode active; registering handlers',);
   /**
-   * Session-local logical judge outcome history and derived temporary blocklist.
+   Session-local logical judge outcome history and derived temporary blocklist.
    */
   const judgeCallHistory = createJudgeCallHistory();
 
@@ -163,19 +122,19 @@ function initializeAutoMode(
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- handler closure state for turn, skill, and bypass latches */
   /**
-   * Batch siblings accumulated during the current agent turn; surfaced to the judge for context.
+   Batch siblings accumulated during the current agent turn; surfaced to the judge for context.
    */
   let currentTurnBatch: BatchEntry[] = [];
   /**
-   * True once any tool call in this turn is denied; latched until the next `turn_start`.
+   True once any tool call in this turn is denied; latched until the next `turn_start`.
    */
   let denialInCurrentTurn = false;
   /**
-   * Copy of the previous turn's denial flag; raises sensitivity for the very next turn.
+   Copy of the previous turn's denial flag; raises sensitivity for the very next turn.
    */
   let denialInPreviousTurn = false;
   /**
-   * Per-flow verdict log surfaced in the widget; reset on `agent_start` and `agent_end`.
+   Per-flow verdict log surfaced in the widget; reset on `agent_start` and `agent_end`.
    */
   let flowVerdicts: {
     action: string;
@@ -183,12 +142,16 @@ function initializeAutoMode(
     reason: string;
   }[] = [];
   /**
-   * Skill base directories visible in the current prompt; read-tool access bypasses path prompts.
+   Skill base directories visible in current prompt; read-tool access bypasses path prompts.
    */
   let currentSkillReadDirs: readonly string[] = [];
   /**
-   * Runtime bypass state, restored from session entries and toggled by
-   * {@link BYPASS_SHORTCUT}.
+   Canonical loaded project-context snapshot retained through compact-and-retry runs.
+   */
+  let currentProjectContext = '';
+  /**
+   Runtime bypass state, restored from session entries and toggled by
+   {@link BYPASS_SHORTCUT}.
    */
   let bypassEnabled = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
@@ -202,13 +165,13 @@ function initializeAutoMode(
     {
       description: 'Toggle auto-mode bypass',
       /**
-       * Toggles bypass state from registered shortcut.
-       *
-       * @param ctx - Active Pi extension context.
-       *
-       * @returns Nothing.
-       *
-       * @mutates ctx - `announceBypassToggle` changes displayed Pi state.
+       Toggles bypass state from registered shortcut.
+       
+       @param ctx - Active Pi extension context.
+       
+       @returns Nothing.
+       
+       @mutates ctx - `announceBypassToggle` changes displayed Pi state.
        */
       handler(
         ctx: ForeignHostCapability<ExtensionContext>,
@@ -236,15 +199,15 @@ function initializeAutoMode(
   pi.on(
     'session_start',
     /**
-     * Restores bypass state for active session.
-     *
-     * @param _event - Unused Pi lifecycle payload.
-     *
-     * @param ctx - Active Pi extension context.
-     *
-     * @returns Nothing.
-     *
-     * @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
+     Restores bypass state for active session.
+     
+     @param _event - Unused Pi lifecycle payload.
+     
+     @param ctx - Active Pi extension context.
+     
+     @returns Nothing.
+     
+     @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
      */
     function handleSessionStart(
       _event: unknown,
@@ -262,15 +225,15 @@ function initializeAutoMode(
   pi.on(
     'session_tree',
     /**
-     * Restores bypass state after session tree changes.
-     *
-     * @param _event - Unused Pi lifecycle payload.
-     *
-     * @param ctx - Active Pi extension context.
-     *
-     * @returns Nothing.
-     *
-     * @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
+     Restores bypass state after session tree changes.
+     
+     @param _event - Unused Pi lifecycle payload.
+     
+     @param ctx - Active Pi extension context.
+     
+     @returns Nothing.
+     
+     @mutates ctx - `updateBypassStatus` changes displayed Pi status state.
      */
     function handleSessionTree(
       _event: unknown,
@@ -287,14 +250,19 @@ function initializeAutoMode(
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(
-      event: SkillPromptEvent,
+      event: ForeignBorrowed<BeforeAgentStartEvent>,
     ) {
       /**
-       * Prompt options carrying the loaded skill catalog for this turn.
+       Prompt options carrying loaded project and skill context for this run.
        */
       const { systemPromptOptions, } = event;
       /**
-       * Skills visible in the current system prompt; empty when no skills are loaded.
+       Authoritative loaded context files for current agent run.
+       */
+      const { contextFiles = [], } = systemPromptOptions;
+      currentProjectContext = buildProjectContext(contextFiles,);
+      /**
+       Skills visible in the current system prompt; empty when no skills are loaded.
        */
       const skills = systemPromptOptions
         .skills
@@ -311,15 +279,15 @@ function initializeAutoMode(
   pi.on(
     'agent_start',
     /**
-     * Resets per-agent flow state and clears displayed widget state.
-     *
-     * @param _event - Unused Pi lifecycle payload.
-     *
-     * @param ctx - Active Pi extension context.
-     *
-     * @returns Nothing.
-     *
-     * @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state.
+     Resets per-agent flow state and clears displayed widget state.
+     
+     @param _event - Unused Pi lifecycle payload.
+     
+     @param ctx - Active Pi extension context.
+     
+     @returns Nothing.
+     
+     @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state.
      */
     function handleAgentStart(
       _event: unknown,
@@ -349,15 +317,15 @@ function initializeAutoMode(
   pi.on(
     'agent_end',
     /**
-     * Clears completed flow and skill state.
-     *
-     * @param _event - Unused Pi lifecycle payload.
-     *
-     * @param ctx - Active Pi extension context.
-     *
-     * @returns Nothing.
-     *
-     * @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state when needed.
+     Clears completed flow and skill state.
+     
+     @param _event - Unused Pi lifecycle payload.
+     
+     @param ctx - Active Pi extension context.
+     
+     @returns Nothing.
+     
+     @mutates ctx - `ctx.ui.setWidget` clears displayed Pi widget state when needed.
      */
     function handleAgentEnd(
       _event: unknown,
@@ -377,25 +345,55 @@ function initializeAutoMode(
   );
 
   pi.on(
+    'agent_settled',
+    /**
+     Clears run-scoped project context after every retry and continuation settles.
+     
+     @returns Nothing.
+     */
+    function handleAgentSettled() {
+      currentProjectContext = '';
+    },
+  );
+
+  pi.on(
     'tool_call',
     /**
-     * Evaluates one Pi tool call through bypass and judge policy.
-     *
-     * @param event - Pi tool-call payload inspected and fingerprinted.
-     *
-     * @param ctx - Active Pi extension context.
-     *
-     * @returns Optional Pi block decision.
-     *
-     * @mutates ctx - evaluation can invoke registry, session, and UI capabilities.
+     Evaluates one Pi tool call through bypass and judge policy.
+     
+     @param event - Pi tool-call payload inspected and fingerprinted.
+     
+     @param ctx - Active Pi extension context.
+     
+     @returns Optional Pi block decision.
+     
+     @mutates ctx - evaluation can invoke registry, session, and UI capabilities.
      */
     async function handleToolCall(
       event: ForeignBorrowed<ToolCallEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
+      /**
+       Non-bypassable policy for global virtual input tied to caller lifetime.
+       */
+      const virtualInputDecision = guardVirtualInput(event,);
+      if (virtualInputDecision.block) {
+        /**
+         Human-readable action retained in audit logs and batch context.
+         */
+        const action = describeAction(event,);
+        innerL.warn(`hard deny: ${action}; ${virtualInputDecision.reason}`,);
+        denialInCurrentTurn = true;
+        currentTurnBatch[currentTurnBatch.length] = {
+          action,
+          verdict: 'deny',
+        };
+        return virtualInputDecision;
+      }
+
       if (bypassEnabled) {
         /**
-         * Human-readable rendering of the tool call allowed without guardrail evaluation.
+         Human-readable rendering of the tool call allowed without guardrail evaluation.
          */
         const action = describeAction(event,);
         innerL.warn(`bypass allow: ${action}`,);
@@ -407,19 +405,19 @@ function initializeAutoMode(
       }
 
       /**
-       * Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`.
+       Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`.
        */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
         home,
       };
       /**
-       * Whether tool supports trusted agent scratch paths.
+       Whether tool supports trusted agent scratch paths.
        */
       const usesAgentTempTrust = (event.toolName === 'read')
         || (event.toolName === 'bash');
       /**
-       * Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
+       Private current and historical compatibility roots whose existing non-secret contents bypass prompts.
        */
       const trustedAgentTempDirs = usesAgentTempTrust
         ? await agentTempAllowlistedDirs({
@@ -428,7 +426,7 @@ function initializeAutoMode(
         },)
         : [];
       /**
-       * Read-only roots whose existing non-secret contents bypass location prompts.
+       Read-only roots whose existing non-secret contents bypass location prompts.
        */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
@@ -438,14 +436,14 @@ function initializeAutoMode(
         ]
         : [];
       /**
-       * Bash roots whose existing non-secret helper paths bypass location prompts.
+       Bash roots whose existing non-secret helper paths bypass location prompts.
        */
       const bashAllowlistedDirs: readonly string[] = event.toolName === 'bash'
         ? trustedAgentTempDirs
         : [];
 
       /**
-       * True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up.
+       True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up.
        */
       const flagged = await shouldFlag({
         event,
@@ -459,40 +457,42 @@ function initializeAutoMode(
         return undefined;
 
       /**
-       * Human-readable rendering of the tool call shown to the judge and the user.
+       Human-readable rendering of the tool call shown to the judge and the user.
        */
       const action = describeAction(event,);
       /**
-       * Complete JSON-encoded tool input passed only to judge request construction.
+       Complete JSON-encoded tool input passed only to judge request construction.
        */
       const actionInput = serializeToolInputForJudge(event.input,);
       /**
-       * Stable identity for exact same-session approval reuse.
+       Stable identity for exact same-session approval reuse.
        */
       const approvalFingerprint = approvalFingerprintForEvent({
         event,
         cwd: ctx.cwd,
+        projectContext: currentProjectContext,
       },);
       /**
-       * Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call.
+       Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call.
        */
       const batchContext = [...currentTurnBatch,];
 
       /**
-       * Block-or-allow result after judge and any user decision complete.
+       Block-or-allow result after judge and any user decision complete.
        */
-      const result = await evaluate({
+      const result = await evaluateAction({
         pi,
         ctx,
         systemPrompt: JUDGE_SYSTEM_PROMPT,
         action,
         actionInput,
         approvalFingerprint,
+        projectContext: currentProjectContext,
         batchContext,
         judgeCallHistory,
       },);
       /**
-       * Block-or-allow decision and optional flow verdict produced by judge.
+       Block-or-allow decision and optional flow verdict produced by judge.
        */
       const {
         decision,
@@ -530,19 +530,19 @@ function initializeAutoMode(
 }
 
 /**
- * Load auto-mode through Pi's extension factory boundary.
- *
- * Delegates to {@link initializeAutoMode} with runtime-derived current account paths.
- *
- * @param pi - Pi extension API supplied by extension loader
- *
- * @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
- *
- * @example
- * ```typescript
- * // In ~/.pi/agent/settings.json:
- * // { "packages": ["./packages/pi-plugin/auto-mode"] }
- * ```
+ Load auto-mode through Pi's extension factory boundary.
+ 
+ Delegates to {@link initializeAutoMode} with runtime-derived current account paths.
+ 
+ @param pi - Pi extension API supplied by extension loader
+ 
+ @mutates pi - registers Pi commands, tools, shortcuts, lifecycle handlers, and session entries
+ 
+ @example
+ ```typescript
+ // In ~/.pi/agent/settings.json:
+ // { "packages": ["./packages/pi-plugin/auto-mode"] }
+ ```
  */
 export default function autoMode(
   pi: ForeignHostCapability<ExtensionAPI>,

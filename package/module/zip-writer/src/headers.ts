@@ -1,10 +1,10 @@
 /**
- * Local file header and central directory header writers.
- *
- * Reference: PKWARE APPNOTE.txt v6.3.10 sections 4.3 (local file header)
- * and 4.4 (central directory record).
- *
- * @module
+ Local file header and central directory header writers.
+ 
+ Reference: PKWARE APPNOTE.txt v6.3.10 sections 4.3 (local file header)
+ and 4.4 (central directory record).
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -26,21 +26,21 @@ import type {
 } from './types.ts';
 
 /**
- * Write a single local file header followed by its raw file data.
- *
- * @param view - DataView over the archive buffer
- *
- * @param buffer - Backing byte buffer (used for raw-byte writes)
- *
- * @param entry - Entry to write
- *
- * @param startOffset - Cursor at which to begin writing
- *
- * @returns Cursor position after the header and data
- *
- * @mutates view - `view.setUint16` and `view.setUint32` write ZIP header fields
- *
- * @mutates buffer - `buffer.set` writes filename and file-content bytes
+ Write a single local file header followed by its raw file data.
+ 
+ @param view - DataView over the archive buffer
+ 
+ @param buffer - Backing byte buffer (used for raw-byte writes)
+ 
+ @param entry - Entry to write
+ 
+ @param startOffset - Cursor at which to begin writing
+ 
+ @returns Cursor position after the header and data
+ 
+ @mutates view - `view.setUint16` and `view.setUint32` write ZIP header fields
+ 
+ @mutates buffer - `buffer.set` writes filename and file-content bytes
  */
 function writeOneLocalFileHeader(
   {
@@ -56,7 +56,7 @@ function writeOneLocalFileHeader(
   }>>,
 ): number {
   /**
-   * Local cursor tracking each successive little-endian write.
+   Local cursor tracking each successive little-endian write.
    */
   let offset = startOffset;
   view.setUint32(
@@ -146,26 +146,26 @@ function writeOneLocalFileHeader(
 }
 
 /**
- * Write all local file headers (and their data) into the archive buffer.
- *
- * @param view - DataView over the archive buffer
- *
- * @param buffer - Backing byte buffer (used for raw-byte writes)
- *
- * @param positioned - Entries with their pre-computed LFH offsets
- *
- * @param startOffset - Cursor at which to begin writing (always 0 for ZIP layout)
- *
- * @returns Cursor position after the last write
- *
- * @mutates view - `writeOneLocalFileHeader` delegates `view.setUint16` and `view.setUint32` writes
- *
- * @mutates buffer - `writeOneLocalFileHeader` delegates filename and content writes to `buffer.set`
- *
- * @example
- * ```ts
- * const lfhEnd = writeLocalFileHeaders({ view, buffer, positioned, startOffset: 0, },);
- * ```
+ Write all local file headers (and their data) into the archive buffer.
+ 
+ @param view - DataView over the archive buffer
+ 
+ @param buffer - Backing byte buffer (used for raw-byte writes)
+ 
+ @param positioned - Entries with their pre-computed LFH offsets
+ 
+ @param startOffset - Cursor at which to begin writing (always 0 for ZIP layout)
+ 
+ @returns Cursor position after the last write
+ 
+ @mutates view - `writeOneLocalFileHeader` delegates `view.setUint16` and `view.setUint32` writes
+ 
+ @mutates buffer - `writeOneLocalFileHeader` delegates filename and content writes to `buffer.set`
+ 
+ @example
+ ```ts
+ const lfhEnd = writeLocalFileHeaders({ view, buffer, positioned, startOffset: 0, },);
+ ```
  */
 export function writeLocalFileHeaders(
   {
@@ -181,7 +181,7 @@ export function writeLocalFileHeaders(
   }>>,
 ): number {
   /**
-   * Running cursor advancing through successive local file headers.
+   Running cursor advancing through successive local file headers.
    */
   let offset = startOffset;
   for (const { entry, } of positioned) {
@@ -196,23 +196,23 @@ export function writeLocalFileHeaders(
 }
 
 /**
- * Write a single central directory file header.
- *
- * @param view - DataView over the archive buffer
- *
- * @param buffer - Backing byte buffer (used for raw filename bytes)
- *
- * @param entry - Entry whose central directory header is being written
- *
- * @param lfhOffset - Pre-computed offset of the entry's local file header
- *
- * @param startOffset - Cursor at which to begin writing
- *
- * @returns Cursor position after the header
- *
- * @mutates view - `view.setUint16` and `view.setUint32` write directory fields
- *
- * @mutates buffer - `buffer.set` writes filename bytes
+ Write a single central directory file header.
+ 
+ @param view - DataView over the archive buffer
+ 
+ @param buffer - Backing byte buffer (used for raw filename bytes)
+ 
+ @param entry - Entry whose central directory header is being written
+ 
+ @param lfhOffset - Pre-computed offset of the entry's local file header
+ 
+ @param startOffset - Cursor at which to begin writing
+ 
+ @returns Cursor position after the header
+ 
+ @mutates view - `view.setUint16` and `view.setUint32` write directory fields
+ 
+ @mutates buffer - `buffer.set` writes filename bytes
  */
 function writeOneCentralDirectoryHeader(
   {
@@ -230,7 +230,7 @@ function writeOneCentralDirectoryHeader(
   }>>,
 ): number {
   /**
-   * Local cursor tracking each successive little-endian write.
+   Local cursor tracking each successive little-endian write.
    */
   let offset = startOffset;
   view.setUint32(
@@ -350,26 +350,26 @@ function writeOneCentralDirectoryHeader(
 }
 
 /**
- * Write all central directory file headers into the archive buffer.
- *
- * @param view - DataView over the archive buffer
- *
- * @param buffer - Backing byte buffer (used for raw filename bytes)
- *
- * @param positioned - Entries with their pre-computed LFH offsets
- *
- * @param startOffset - Cursor where the central directory begins
- *
- * @returns Cursor position after the last write
- *
- * @mutates view - `writeOneCentralDirectoryHeader` delegates `view.setUint16` and `view.setUint32` writes
- *
- * @mutates buffer - `writeOneCentralDirectoryHeader` delegates filename writes to `buffer.set`
- *
- * @example
- * ```ts
- * const cdEnd = writeCentralDirectory({ view, buffer, positioned, startOffset: lfhEnd, },);
- * ```
+ Write all central directory file headers into the archive buffer.
+ 
+ @param view - DataView over the archive buffer
+ 
+ @param buffer - Backing byte buffer (used for raw filename bytes)
+ 
+ @param positioned - Entries with their pre-computed LFH offsets
+ 
+ @param startOffset - Cursor where the central directory begins
+ 
+ @returns Cursor position after the last write
+ 
+ @mutates view - `writeOneCentralDirectoryHeader` delegates `view.setUint16` and `view.setUint32` writes
+ 
+ @mutates buffer - `writeOneCentralDirectoryHeader` delegates filename writes to `buffer.set`
+ 
+ @example
+ ```ts
+ const cdEnd = writeCentralDirectory({ view, buffer, positioned, startOffset: lfhEnd, },);
+ ```
  */
 export function writeCentralDirectory(
   {
@@ -385,7 +385,7 @@ export function writeCentralDirectory(
   }>>,
 ): number {
   /**
-   * Running cursor advancing through successive central directory headers.
+   Running cursor advancing through successive central directory headers.
    */
   let offset = startOffset;
   for (const {

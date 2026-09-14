@@ -1,7 +1,7 @@
 /**
- * TSDoc returns tag validation rules.
- *
- * @module
+ TSDoc returns tag validation rules.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -19,24 +19,25 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Requires returns tag for functions that return a value.
- *
- * Skips void/never return types, constructors, and setters, per
- * {@link functionReturnsValue}.
- *
- * @example
- * ```ts
- * // Bad; missing returns tag
- * /\** Adds numbers. *\/
- * function add(a: number, b: number): number { return a + b; }
- *
- * // Good
- * /\**
- *  * Adds numbers.
- *  * @returns sum of a and b
- *  *\/
- * function add(a: number, b: number): number { return a + b; }
- * ```
+ Requires returns tag for functions that return a value.
+ 
+ Skips void/never return types, constructors, and setters, per
+ {@link functionReturnsValue}.
+ 
+ @example
+ ```ts
+ // Bad; missing returns tag
+ /\** Adds numbers. *\/
+ function add(a: number, b: number): number { return a + b; }
+ 
+ // Good
+ /\**
+  Adds numbers.
+ 
+  @returns sum of a and b
+  *\/
+ function add(a: number, b: number): number { return a + b; }
+ ```
  */
 export const requireReturns: CreateOnceRule = {
   meta: {
@@ -50,16 +51,16 @@ export const requireReturns: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
@@ -84,11 +85,11 @@ export const requireReturns: CreateOnceRule = {
 };
 
 /**
- * Validates returns tag consistency with the function signature.
- *
- * Reports returns tag on void functions, and missing returns tag on
- * functions with non-void return types (when returns tag is present
- * but the function doesn't return a value, per {@link functionReturnsValue}).
+ Validates returns tag consistency with the function signature.
+ 
+ Reports returns tag on void functions, and missing returns tag on
+ functions with non-void return types (when returns tag is present
+ but the function doesn't return a value, per {@link functionReturnsValue}).
  */
 export const requireReturnsCheck: CreateOnceRule = {
   meta: {
@@ -102,16 +103,16 @@ export const requireReturnsCheck: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({

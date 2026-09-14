@@ -1,10 +1,10 @@
 /**
- * Library surface of the yuku-analyzer-based unused-export detector.
- *
- * @example
- * ```ts
- * import { findUnusedExports } from '@monochromatic-dev/cli-unused-export/ts';
- * ```
+ Library surface of the yuku-analyzer-based unused-export detector.
+ 
+ @example
+ ```ts
+ import { findUnusedExports } from '@monochromatic-dev/cli-unused-export/ts';
+ ```
  */
 
 export {

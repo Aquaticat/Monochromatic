@@ -1,7 +1,7 @@
 /**
- * Private registry filesystem and protection primitives.
- *
- * @module
+ Private registry filesystem and protection primitives.
+ 
+ @module
  */
 import type { Stats, } from 'node:fs';
 import {
@@ -20,19 +20,19 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 /**
- * Private directory mode.
+ Private directory mode.
  */
 export const DIRECTORY_MODE = 0o700;
 /**
- * Private file mode.
+ Private file mode.
  */
 export const FILE_MODE = 0o600;
 /**
- * Group and other permission mask.
+ Group and other permission mask.
  */
 const NON_OWNER_PERMISSION_MASK = 0o077;
 /**
- * Windows ACL script using account and built-in administrators SIDs.
+ Windows ACL script using account and built-in administrators SIDs.
  */
 const WINDOWS_ACL_SCRIPT = String.raw`
 $target = $env:CLI_GIT_ACL_TARGET
@@ -52,7 +52,7 @@ $acl.AddAccessRule($adminsRule)
 if ($isDirectory) { [System.IO.Directory]::SetAccessControl($target, $acl) } else { [System.IO.File]::SetAccessControl($target, $acl) }
 `;
 /**
- * Windows ACL verification without modifying target.
+ Windows ACL verification without modifying target.
  */
 const WINDOWS_ACL_VERIFY_SCRIPT = String.raw`
 $target = $env:CLI_GIT_ACL_TARGET
@@ -73,17 +73,17 @@ if (-not $seenUser -or -not $seenAdmins) { throw 'Registry ACL lacks required ac
 `;
 
 /**
- * Registry storage failure.
+ Registry storage failure.
  */
 export class TrustStorageError extends Error {
   /**
-   * Creates storage failure.
-   *
-   * @param message - safe failure explanation
-   *
-   * @param options - optional underlying cause
-   *
-   * @mutates options through super options.cause getter or proxy effects
+   Creates storage failure.
+   
+   @param message - safe failure explanation
+   
+   @param options - optional underlying cause
+   
+   @mutates options through super options.cause getter or proxy effects
    */
   public constructor(
     message: string,
@@ -98,16 +98,16 @@ export class TrustStorageError extends Error {
 }
 
 /**
- * Reports whether filesystem error means path absence.
- *
- * @param error - arbitrary filesystem error
- *
- * @returns whether code is ENOENT
- *
- * @example
- * ```ts
- * isMissingPath(Object.assign(new Error('missing'), { code: 'ENOENT' }));
- * ```
+ Reports whether filesystem error means path absence.
+ 
+ @param error - arbitrary filesystem error
+ 
+ @returns whether code is ENOENT
+ 
+ @example
+ ```ts
+ isMissingPath(Object.assign(new Error('missing'), { code: 'ENOENT' }));
+ ```
  */
 export function isMissingPath(error: unknown,): boolean {
   return Error.isError(error,)
@@ -116,16 +116,16 @@ export function isMissingPath(error: unknown,): boolean {
 }
 
 /**
- * Verifies platform-native ACL protection before trusting stored content.
- *
- * @param path - registry directory or private file
- *
- * @param directory - whether target is a directory
- *
- * @example
- * ```ts
- * await assertPrivatePathProtection({ path: 'C:\\private\\record.json', directory: false });
- * ```
+ Verifies platform-native ACL protection before trusting stored content.
+ 
+ @param path - registry directory or private file
+ 
+ @param directory - whether target is a directory
+ 
+ @example
+ ```ts
+ await assertPrivatePathProtection({ path: 'C:\\private\\record.json', directory: false });
+ ```
  */
 export async function assertPrivatePathProtection({
   path,
@@ -164,16 +164,16 @@ export async function assertPrivatePathProtection({
 }
 
 /**
- * Applies private permissions and Windows ACL protection.
- *
- * @param path - registry root or created entry
- *
- * @param directory - whether target is a directory
- *
- * @example
- * ```ts
- * await protectPath({ path: '/private/registry', directory: true });
- * ```
+ Applies private permissions and Windows ACL protection.
+ 
+ @param path - registry root or created entry
+ 
+ @param directory - whether target is a directory
+ 
+ @example
+ ```ts
+ await protectPath({ path: '/private/registry', directory: true });
+ ```
  */
 export async function protectPath({
   path,
@@ -213,21 +213,21 @@ export async function protectPath({
 }
 
 /**
- * Verifies registry root spelling contains no followed symlink or junction.
- *
- * @param registryRoot - complete registry root
+ Verifies registry root spelling contains no followed symlink or junction.
+ 
+ @param registryRoot - complete registry root
  */
 async function assertCanonicalRegistryRoot(registryRoot: string,): Promise<void> {
   /**
-   * Native canonical registry location.
+   Native canonical registry location.
    */
   const canonicalRoot = await realpath(registryRoot,);
   /**
-   * Lexically resolved requested location.
+   Lexically resolved requested location.
    */
   const requestedRoot = resolve(registryRoot,);
   /**
-   * Case-normalized paths on case-insensitive Windows.
+   Case-normalized paths on case-insensitive Windows.
    */
   const pathsAgree = process.platform === 'win32'
     ? canonicalRoot.toLowerCase() === requestedRoot.toLowerCase()
@@ -237,14 +237,14 @@ async function assertCanonicalRegistryRoot(registryRoot: string,): Promise<void>
 }
 
 /**
- * Ensures private registry root and verifies it is not a symbolic link.
- *
- * @param registryRoot - complete account-derived or injected root
- *
- * @example
- * ```ts
- * await ensureRegistryRoot('/private/registry');
- * ```
+ Ensures private registry root and verifies it is not a symbolic link.
+ 
+ @param registryRoot - complete account-derived or injected root
+ 
+ @example
+ ```ts
+ await ensureRegistryRoot('/private/registry');
+ ```
  */
 export async function ensureRegistryRoot(registryRoot: string,): Promise<void> {
   await mkdir(
@@ -255,11 +255,11 @@ export async function ensureRegistryRoot(registryRoot: string,): Promise<void> {
     },
   );
   /**
-   * Root metadata checked before any trust write.
+   Root metadata checked before any trust write.
    */
   await assertCanonicalRegistryRoot(registryRoot,);
   /**
-   * Root metadata after canonical ancestor verification.
+   Root metadata after canonical ancestor verification.
    */
   const metadata = await lstat(registryRoot,);
   if ((!metadata.isDirectory()) || metadata.isSymbolicLink())
@@ -273,16 +273,16 @@ export async function ensureRegistryRoot(registryRoot: string,): Promise<void> {
 }
 
 /**
- * Verifies every registry-owned component from root to target is a real directory.
- *
- * @param registryRoot - complete registry root
- *
- * @param targetDirectory - descendant directory
- *
- * @example
- * ```ts
- * await assertSafeRegistryDirectory({ registryRoot: '/r', targetDirectory: '/r/records' });
- * ```
+ Verifies every registry-owned component from root to target is a real directory.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param targetDirectory - descendant directory
+ 
+ @example
+ ```ts
+ await assertSafeRegistryDirectory({ registryRoot: '/r', targetDirectory: '/r/records' });
+ ```
  */
 export async function assertSafeRegistryDirectory({
   registryRoot,
@@ -293,7 +293,7 @@ export async function assertSafeRegistryDirectory({
 }>,): Promise<void> {
   await assertCanonicalRegistryRoot(registryRoot,);
   /**
-   * Relative path proven to remain below registry root.
+   Relative path proven to remain below registry root.
    */
   const relativeTarget = relative(
     registryRoot,
@@ -305,13 +305,13 @@ export async function assertSafeRegistryDirectory({
   ) !== resolve(targetDirectory,)))
     throw new TrustStorageError('Trust registry path escapes registry root.',);
   /**
-   * Platform-native registry path components.
+   Platform-native registry path components.
    */
   const segments = relativeTarget === ''
     ? []
     : relativeTarget.split(process.platform === 'win32' ? '\\' : '/',);
   /**
-   * Every ancestor path from root toward target.
+   Every ancestor path from root toward target.
    */
   const paths = [
     registryRoot,
@@ -329,7 +329,7 @@ export async function assertSafeRegistryDirectory({
     },),
   ];
   /**
-   * Metadata for each registry-owned ancestor.
+   Metadata for each registry-owned ancestor.
    */
   const metadataEntries = await Promise.all(paths.map(function readMetadata(path,) {
     return lstat(path,);
@@ -339,7 +339,7 @@ export async function assertSafeRegistryDirectory({
     index,
   ) {
     /**
-     * Path corresponding to current metadata entry.
+     Path corresponding to current metadata entry.
      */
     const path = paths[index] ?? targetDirectory;
     if ((!metadata.isDirectory()) || metadata.isSymbolicLink())
@@ -358,18 +358,18 @@ export async function assertSafeRegistryDirectory({
 }
 
 /**
- * Writes one private file with exclusive no-follow semantics and fsync.
- *
- * @param path - destination path
- *
- * @param bytes - exact file bytes
- *
- * @mutates bytes through handle.writeFile configured VFS handler or native-boundary access
- *
- * @example
- * ```ts
- * await writePrivateFile({ path: '/private/file', bytes: new Uint8Array() });
- * ```
+ Writes one private file with exclusive no-follow semantics and fsync.
+ 
+ @param path - destination path
+ 
+ @param bytes - exact file bytes
+ 
+ @mutates bytes through handle.writeFile configured VFS handler or native-boundary access
+ 
+ @example
+ ```ts
+ await writePrivateFile({ path: '/private/file', bytes: new Uint8Array() });
+ ```
  */
 export async function writePrivateFile({
   path,
@@ -379,7 +379,7 @@ export async function writePrivateFile({
   bytes: Uint8Array;
 }>,): Promise<void> {
   /**
-   * Exclusive no-follow destination handle.
+   Exclusive no-follow destination handle.
    */
   const handle = await open(
     path,
@@ -389,7 +389,7 @@ export async function writePrivateFile({
     FILE_MODE,
   );
   /**
-   * Automatically closed handle after bytes and metadata are durable.
+   Automatically closed handle after bytes and metadata are durable.
    */
   await using disposableHandle = handle;
   await handle.writeFile(bytes,);
@@ -401,27 +401,27 @@ export async function writePrivateFile({
 }
 
 /**
- * Flushes directory metadata where host supports directory handles.
- *
- * @param path - directory to flush
- *
- * @example
- * ```ts
- * await syncDirectory('/private/registry');
- * ```
+ Flushes directory metadata where host supports directory handles.
+ 
+ @param path - directory to flush
+ 
+ @example
+ ```ts
+ await syncDirectory('/private/registry');
+ ```
  */
 export async function syncDirectory(path: string,): Promise<void> {
   if (process.platform === 'win32')
     return;
   /**
-   * Directory handle used only for fsync.
+   Directory handle used only for fsync.
    */
   const handle = await open(
     path,
     constants.O_RDONLY,
   );
   /**
-   * Automatically closed directory handle.
+   Automatically closed directory handle.
    */
   await using disposableHandle = handle;
   await handle.sync();

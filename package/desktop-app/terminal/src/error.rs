@@ -94,7 +94,7 @@ impl fmt::Display for TerminalError {
             // ```ts
             // return `libghostty-vt error: ${source}`;
             // ```
-            TerminalError::Ghostty(source) => write!(formatter, "libghostty-vt error: {source}"),
+            TerminalError::Ghostty(source) => return write!(formatter, "libghostty-vt error: {source}"),
         }
     }
 }
@@ -135,7 +135,7 @@ impl std::error::Error for TerminalError {
             // ```ts
             // return source;
             // ```
-            TerminalError::Ghostty(source) => Some(source),
+            TerminalError::Ghostty(source) => return Some(source),
         }
     }
 }
@@ -168,6 +168,6 @@ impl From<libghostty_vt::Error> for TerminalError {
         // ```ts
         // return { kind: "ghostty", source };
         // ```
-        TerminalError::Ghostty(source)
+        return TerminalError::Ghostty(source)
     }
 }

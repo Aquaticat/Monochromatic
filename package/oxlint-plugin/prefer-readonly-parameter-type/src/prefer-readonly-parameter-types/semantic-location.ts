@@ -1,7 +1,7 @@
 /**
- * Oxlint report-location mapping from TypeScript source spans.
- *
- * @module
+ Oxlint report-location mapping from TypeScript source spans.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -11,7 +11,7 @@ import type {
 } from '@oxlint/plugins';
 
 /**
- * Copied mutable Oxlint report location.
+ Copied mutable Oxlint report location.
  */
 export type SemanticReportLocation = {
   start: LineColumn;
@@ -19,18 +19,18 @@ export type SemanticReportLocation = {
 };
 
 /**
- * Converts TypeScript source offset to Oxlint source offset.
- *
- * @param offset - TypeScript UTF-16 source offset.
- *
- * @param hasBOM - Whether Oxlint removed leading byte-order mark.
- *
- * @returns Oxlint source offset.
- *
- * @example
- * ```ts
- * oxlintOffset({ offset: 12, hasBOM: false });
- * ```
+ Converts TypeScript source offset to Oxlint source offset.
+ 
+ @param offset - TypeScript UTF-16 source offset.
+ 
+ @param hasBOM - Whether Oxlint removed leading byte-order mark.
+ 
+ @returns Oxlint source offset.
+ 
+ @example
+ ```ts
+ oxlintOffset({ offset: 12, hasBOM: false });
+ ```
  */
 export function oxlintOffset({
   offset,
@@ -46,20 +46,20 @@ export function oxlintOffset({
 }
 
 /**
- * Builds Oxlint report location from TypeScript source span.
- *
- * @param context - Rule context providing source location mapping.
- *
- * @param start - TypeScript span start.
- *
- * @param end - TypeScript span end.
- *
- * @returns copied mutable report location.
- *
- * @example
- * ```ts
- * semanticLocation({ context, start: 0, end: 4 });
- * ```
+ Builds Oxlint report location from TypeScript source span.
+ 
+ @param context - Rule context providing source location mapping.
+ 
+ @param start - TypeScript span start.
+ 
+ @param end - TypeScript span end.
+ 
+ @returns copied mutable report location.
+ 
+ @example
+ ```ts
+ semanticLocation({ context, start: 0, end: 4 });
+ ```
  */
 export function semanticLocation({
   context,
@@ -71,7 +71,7 @@ export function semanticLocation({
   readonly end: number;
 }>,): SemanticReportLocation {
   /**
-   * Oxlint source start after optional BOM normalization.
+   Oxlint source start after optional BOM normalization.
    */
   const oxlintStart = oxlintOffset({
     offset: start,
@@ -79,7 +79,7 @@ export function semanticLocation({
       .hasBOM,
   },);
   /**
-   * Oxlint source end after optional BOM normalization.
+   Oxlint source end after optional BOM normalization.
    */
   const oxlintEnd = oxlintOffset({
     offset: end,

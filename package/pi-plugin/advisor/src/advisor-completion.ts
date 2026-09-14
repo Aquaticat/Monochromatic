@@ -1,7 +1,7 @@
 /**
- * Bounded Advisor provider-attempt state machine.
- *
- * @module
+ Bounded Advisor provider-attempt state machine.
+ 
+ @module
  */
 
 import type {
@@ -24,7 +24,7 @@ import {
 //region Constants
 
 /**
- * Maximum provider attempts allowed for one Advisor operation.
+ Maximum provider attempts allowed for one Advisor operation.
  */
 const MAX_ADVISOR_ATTEMPTS = 2;
 
@@ -33,31 +33,31 @@ const MAX_ADVISOR_ATTEMPTS = 2;
 //region Types
 
 /**
- * Inputs for one bounded Advisor completion sequence.
+ Inputs for one bounded Advisor completion sequence.
  */
 export type CompleteAdvisorAttemptsOptions = {
   /**
-   * Canonical selected model slug used in diagnostics.
+   Canonical selected model slug used in diagnostics.
    */
   readonly modelSlug: string;
   /**
-   * Configured total operation timeout.
+   Configured total operation timeout.
    */
   readonly timeoutMs: number;
   /**
-   * Operation start time, including context preparation.
+   Operation start time, including context preparation.
    */
   readonly operationStartedAtMs?: number;
   /**
-   * Caller cancellation signal from Pi.
+   Caller cancellation signal from Pi.
    */
   readonly signal?: ForeignHostCapability<AbortSignal>;
   /**
-   * Provider options shared by every attempt.
+   Provider options shared by every attempt.
    */
   readonly providerOptions: Readonly<Omit<SimpleStreamOptions, 'signal' | 'timeoutMs'>>;
   /**
-   * Provider invocation boundary supplied by Advisor client.
+   Provider invocation boundary supplied by Advisor client.
    */
   readonly complete: ForeignHostCapability<(options: {
     readonly providerOptions: ForeignHostCapability<SimpleStreamOptions>;
@@ -69,26 +69,26 @@ export type CompleteAdvisorAttemptsOptions = {
 //region Public API
 
 /**
- * Complete Advisor through at most one no-text retry under a shared deadline.
- *
- * @param options - provider boundary, deadline, and diagnostic identity
- *
- * @returns successful Advisor response containing user-visible text
- *
- * @mutates options - provider callback consumes supplied host capabilities and `AbortSignal.any` stores dependent-signal relations
- *
- * @throws {@link AdvisorCompletionError} when provider fails, aborts, times out, requests a tool, or returns no text twice
- *
- * @example
- * ```typescript
- * await completeAdvisorAttempts({ modelSlug, timeoutMs, providerOptions, complete });
- * ```
+ Complete Advisor through at most one no-text retry under a shared deadline.
+ 
+ @param options - provider boundary, deadline, and diagnostic identity
+ 
+ @returns successful Advisor response containing user-visible text
+ 
+ @mutates options - provider callback consumes supplied host capabilities and `AbortSignal.any` stores dependent-signal relations
+ 
+ @throws {@link AdvisorCompletionError} when provider fails, aborts, times out, requests a tool, or returns no text twice
+ 
+ @example
+ ```typescript
+ await completeAdvisorAttempts({ modelSlug, timeoutMs, providerOptions, complete });
+ ```
  */
 export async function completeAdvisorAttempts(
   options: ForeignHostCapability<CompleteAdvisorAttemptsOptions>,
 ): Promise<AssistantMessage> {
   /**
-   * Shared operation deadline for every attempt.
+   Shared operation deadline for every attempt.
    */
   const deadline = createAdvisorDeadline({
     timeoutMs: options.timeoutMs,
@@ -98,7 +98,7 @@ export async function completeAdvisorAttempts(
     ...(options.signal === undefined ? {} : { callerSignal: options.signal, }),
   },);
   /**
-   * First terminal provider response.
+   First terminal provider response.
    */
   const firstResponse = await completeAdvisorAttempt({
     complete: options.complete,
@@ -110,7 +110,7 @@ export async function completeAdvisorAttempts(
   if (responseHasText(firstResponse,))
     return firstResponse;
   /**
-   * Second terminal provider response after one successful no-text response.
+   Second terminal provider response after one successful no-text response.
    */
   const secondResponse = await completeAdvisorAttempt({
     complete: options.complete,
@@ -137,25 +137,25 @@ export async function completeAdvisorAttempts(
 //region Attempt execution
 
 /**
- * Execute and classify one provider attempt under shared deadline.
- *
- * @param complete - provider invocation capability
- *
- * @param sharedProviderOptions - options shared by every attempt
- *
- * @param deadline - shared operation deadline
- *
- * @param modelSlug - selected model identity
- *
- * @param attempt - current attempt number
- *
- * @returns successful terminal response, which may contain no text
- *
- * @mutates complete - provider callback can consume or retain supplied host capabilities
- *
- * @mutates deadline - provider callback can consume or retain combined signal capability
- *
- * @throws {@link AdvisorCompletionError} when provider attempt fails
+ Execute and classify one provider attempt under shared deadline.
+ 
+ @param complete - provider invocation capability
+ 
+ @param sharedProviderOptions - options shared by every attempt
+ 
+ @param deadline - shared operation deadline
+ 
+ @param modelSlug - selected model identity
+ 
+ @param attempt - current attempt number
+ 
+ @returns successful terminal response, which may contain no text
+ 
+ @mutates complete - provider callback can consume or retain supplied host capabilities
+ 
+ @mutates deadline - provider callback can consume or retain combined signal capability
+ 
+ @throws {@link AdvisorCompletionError} when provider attempt fails
  */
 async function completeAdvisorAttempt(
   {
@@ -178,7 +178,7 @@ async function completeAdvisorAttempt(
     attempt,
   },);
   /**
-   * Provider options with shared signal and remaining deadline.
+   Provider options with shared signal and remaining deadline.
    */
   const attemptOptions: SimpleStreamOptions = {
     ...sharedProviderOptions,
@@ -186,7 +186,7 @@ async function completeAdvisorAttempt(
     timeoutMs: remainingDeadlineMs(deadline,),
   };
   /**
-   * Terminal provider response from abort-aware boundary.
+   Terminal provider response from abort-aware boundary.
    */
   const response = await (async function invokeProvider(): Promise<AssistantMessage> {
     try {
@@ -218,17 +218,17 @@ async function completeAdvisorAttempt(
 //region Response classification
 
 /**
- * Throw for unsuccessful terminal provider responses.
- *
- * @param response - terminal provider response
- *
- * @param deadline - shared operation deadline
- *
- * @param modelSlug - selected model identity
- *
- * @param attempt - provider attempt number
- *
- * @throws {@link AdvisorCompletionError} for error, abort, or unexpected tool use
+ Throw for unsuccessful terminal provider responses.
+ 
+ @param response - terminal provider response
+ 
+ @param deadline - shared operation deadline
+ 
+ @param modelSlug - selected model identity
+ 
+ @param attempt - provider attempt number
+ 
+ @throws {@link AdvisorCompletionError} for error, abort, or unexpected tool use
  */
 function throwForFailedResponse(
   {
@@ -266,17 +266,17 @@ function throwForFailedResponse(
 }
 
 /**
- * Convert thrown provider boundary value into classified Advisor failure.
- *
- * @param error - thrown provider boundary value
- *
- * @param deadline - shared operation deadline
- *
- * @param modelSlug - selected model identity
- *
- * @param attempt - provider attempt number
- *
- * @returns classified Advisor completion error
+ Convert thrown provider boundary value into classified Advisor failure.
+ 
+ @param error - thrown provider boundary value
+ 
+ @param deadline - shared operation deadline
+ 
+ @param modelSlug - selected model identity
+ 
+ @param attempt - provider attempt number
+ 
+ @returns classified Advisor completion error
  */
 function completionErrorFromCaught(
   {
@@ -292,7 +292,7 @@ function completionErrorFromCaught(
   }>>,
 ): AdvisorCompletionError {
   /**
-   * Deadline failure taking precedence over provider boundary text.
+   Deadline failure taking precedence over provider boundary text.
    */
   const deadlineError = deadlineEndError({
     deadline,
@@ -302,7 +302,7 @@ function completionErrorFromCaught(
   if ((typeof deadlineError) !== 'symbol')
     return deadlineError;
   /**
-   * Primitive provider failure text safe to retain.
+   Primitive provider failure text safe to retain.
    */
   const errorText = ((typeof error) === 'object')
     && (error !== null)
@@ -318,22 +318,22 @@ function completionErrorFromCaught(
 }
 
 /**
- * Extract provider error and redacted diagnostic text.
- *
- * @param response - failed provider response
- *
- * @returns visible diagnostic text
+ Extract provider error and redacted diagnostic text.
+ 
+ @param response - failed provider response
+ 
+ @returns visible diagnostic text
  */
 function responseFailureText(
   response: ForeignBorrowed<AssistantMessage>,
 ): string {
   /**
-   * Trimmed provider error, when present.
+   Trimmed provider error, when present.
    */
   const errorMessage = response.errorMessage
     ?.trim();
   /**
-   * Redacted provider diagnostic summary retaining primitive fields only.
+   Redacted provider diagnostic summary retaining primitive fields only.
    */
   const diagnostics = responseDiagnosticsText(response,);
   if ((errorMessage !== undefined) && (errorMessage !== ''))
@@ -346,11 +346,11 @@ function responseFailureText(
 }
 
 /**
- * Format provider diagnostics without handing borrowed object identity to unresolved code.
- *
- * @param response - failed provider response
- *
- * @returns compact primitive diagnostic summary
+ Format provider diagnostics without handing borrowed object identity to unresolved code.
+ 
+ @param response - failed provider response
+ 
+ @returns compact primitive diagnostic summary
  */
 function responseDiagnosticsText(
   response: ForeignBorrowed<AssistantMessage>,
@@ -363,7 +363,7 @@ function responseDiagnosticsText(
       diagnostic: ForeignBorrowed<NonNullable<AssistantMessage['diagnostics']>[number]>,
     ) {
       /**
-       * Error message retained from current diagnostic.
+       Error message retained from current diagnostic.
        */
       const errorMessage = diagnostic
         .error
@@ -376,11 +376,11 @@ function responseDiagnosticsText(
 }
 
 /**
- * Test whether response contains user-visible Advisor text.
- *
- * @param response - terminal provider response
- *
- * @returns whether any non-empty text block exists
+ Test whether response contains user-visible Advisor text.
+ 
+ @param response - terminal provider response
+ 
+ @returns whether any non-empty text block exists
  */
 function responseHasText(
   response: ForeignBorrowed<AssistantMessage>,

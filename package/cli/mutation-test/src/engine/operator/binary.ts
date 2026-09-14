@@ -1,14 +1,14 @@
 /**
- * Arithmetic, equality, and logical operator swaps.
- *
- * Replacement spans cover only the operator token (located with the
- * comment-aware scanner), so operand text, parentheses, and comments
- * survive untouched.
- *
- * @example
- * ```ts
- * binaryOperatorReplacements({ node, parent: undefined, source: 'a + b' });
- * ```
+ Arithmetic, equality, and logical operator swaps.
+ 
+ Replacement spans cover only the operator token (located with the
+ comment-aware scanner), so operand text, parentheses, and comments
+ survive untouched.
+ 
+ @example
+ ```ts
+ binaryOperatorReplacements({ node, parent: undefined, source: 'a + b' });
+ ```
  */
 
 import { findOperatorToken, } from '../operator-token.ts';
@@ -20,7 +20,7 @@ import type {
 } from '../types.ts';
 
 /**
- * Arithmetic operator swap table, mirroring Stryker's ArithmeticOperator.
+ Arithmetic operator swap table, mirroring Stryker's ArithmeticOperator.
  */
 const ARITHMETIC_SWAPS: Readonly<Record<string, string>> = {
   '+': '-',
@@ -31,8 +31,8 @@ const ARITHMETIC_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Equality operator swap table, mirroring Stryker's EqualityOperator
- * boundary and negation variants.
+ Equality operator swap table, mirroring Stryker's EqualityOperator
+ boundary and negation variants.
  */
 const EQUALITY_SWAPS: Readonly<Record<string, readonly string[]>> = {
   '<': [
@@ -58,7 +58,7 @@ const EQUALITY_SWAPS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Logical operator swap table, mirroring Stryker's LogicalOperator.
+ Logical operator swap table, mirroring Stryker's LogicalOperator.
  */
 const LOGICAL_SWAPS: Readonly<Record<string, string>> = {
   '&&': '||',
@@ -67,16 +67,16 @@ const LOGICAL_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Builds one token-span replacement for a binary-like expression.
- *
- * @param options - Expression node, source, family, and new operator text.
- *
- * @returns Replacement swapping the operator token.
- *
- * @example
- * ```ts
- * tokenSwap({ node, source, operator: 'arithmetic', currentToken: '+', newToken: '-' });
- * ```
+ Builds one token-span replacement for a binary-like expression.
+ 
+ @param options - Expression node, source, family, and new operator text.
+ 
+ @returns Replacement swapping the operator token.
+ 
+ @example
+ ```ts
+ tokenSwap({ node, source, operator: 'arithmetic', currentToken: '+', newToken: '-' });
+ ```
  */
 function tokenSwap(options: {
   readonly node: EstreeNode;
@@ -86,7 +86,7 @@ function tokenSwap(options: {
   readonly newToken: string;
 },): Replacement {
   /**
-   * Operator token start between operand spans.
+   Operator token start between operand spans.
    */
   const tokenStart = findOperatorToken({
     source: options.source,
@@ -115,16 +115,16 @@ function tokenSwap(options: {
 }
 
 /**
- * Emits operator swaps for one BinaryExpression or LogicalExpression.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Token-span replacements, possibly empty.
- *
- * @example
- * ```ts
- * binaryOperatorReplacements({ node, parent: undefined, source });
- * ```
+ Emits operator swaps for one BinaryExpression or LogicalExpression.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Token-span replacements, possibly empty.
+ 
+ @example
+ ```ts
+ binaryOperatorReplacements({ node, parent: undefined, source });
+ ```
  */
 export function binaryOperatorReplacements(options: {
   readonly node: EstreeNode;
@@ -132,7 +132,7 @@ export function binaryOperatorReplacements(options: {
   readonly source: string;
 },): readonly Replacement[] {
   /**
-   * Operator token declared by the expression node.
+   Operator token declared by the expression node.
    */
   const token = options.node
     .operator;
@@ -144,7 +144,7 @@ export function binaryOperatorReplacements(options: {
     .type
     === 'BinaryExpression') {
     /**
-     * Arithmetic swap for this token, when applicable.
+     Arithmetic swap for this token, when applicable.
      */
     const arithmetic = ARITHMETIC_SWAPS[token];
 
@@ -158,7 +158,7 @@ export function binaryOperatorReplacements(options: {
       },),];
 
     /**
-     * Equality swap list for this token, when applicable.
+     Equality swap list for this token, when applicable.
      */
     const equality = EQUALITY_SWAPS[token];
 
@@ -180,7 +180,7 @@ export function binaryOperatorReplacements(options: {
     .type
     === 'LogicalExpression') {
     /**
-     * Logical swap for this token, when applicable.
+     Logical swap for this token, when applicable.
      */
     const logical = LOGICAL_SWAPS[token];
 

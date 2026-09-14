@@ -76,7 +76,7 @@ fuzz_target!(|input: RuleFileAndContent| {
 
     // Every finding's line index stays within the buffer; the format itself is pinned in
     // detail by `fuzz_scan_format`, so here we only bound the line index.
-    let max_line = content.iter().filter(|&&byte| byte == b'\n').count() + 1;
+    let max_line = content.iter().filter(|&&byte| return byte == b'\n').count() + 1;
     let engine_error = format!("{PATH}: engine error");
     for hit in &hits {
         if hit == &engine_error {

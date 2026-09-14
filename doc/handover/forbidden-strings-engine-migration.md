@@ -604,9 +604,14 @@ Updated:
     stays honest),
      hoists the podman example's uid:gid into a variable,
     and quotes the android-exempt-unused task path whose `-unused:run`
-    tail matched the curl credential rule (that rule has no leading
-    word boundary;
-     any `...-u<word>:<word>` doc line can match it).
+    tail matched the curl credential rule.
+    At that cutover,
+     the rule had no leading token boundary and any
+    `...-u<word>:<word>` doc line could match it.
+    The later decision in
+    `doc/decision/forbidden-strings-curl-auth-user-boundary.md`
+    partially supersedes that behavior:
+     line start or horizontal whitespace must now precede the option.
     The commit also went through the gate cleanly on
     `doc/planning/forbidden-strings-rule-port-review.md`,
      ending that

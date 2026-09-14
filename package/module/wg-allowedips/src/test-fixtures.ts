@@ -1,62 +1,62 @@
 /**
- * Address record returned by deterministic resolver fixtures.
+ Address record returned by deterministic resolver fixtures.
  */
 type LookupAddress = {
   readonly address: string;
 };
 
 /**
- * ASN fixture networks keyed by normalized ASN.
+ ASN fixture networks keyed by normalized ASN.
  */
 type AsnNetworkRecords = Readonly<Record<string, readonly string[]>>;
 
 /**
- * Error raised when fixture receives unregistered hostname.
+ Error raised when fixture receives unregistered hostname.
  */
 class UnexpectedLookupError extends Error {
   /**
-   * Stable error type name.
+   Stable error type name.
    */
   override name = 'UnexpectedLookupError';
 }
 
 /**
- * Deterministic operating-system-style hostname absence.
+ Deterministic operating-system-style hostname absence.
  */
 class FixtureDnsNotFoundError extends Error {
   /**
-   * Stable resolver code consumed by domain handling.
+   Stable resolver code consumed by domain handling.
    */
   readonly code = 'ENOTFOUND';
 
   /**
-   * Stable error type name.
+   Stable error type name.
    */
   override name = 'FixtureDnsNotFoundError';
 }
 
 /**
- * Error raised when fixture receives unregistered ASN.
+ Error raised when fixture receives unregistered ASN.
  */
 class UnexpectedAsnLookupError extends Error {
   /**
-   * Stable error type name.
+   Stable error type name.
    */
   override name = 'UnexpectedAsnLookupError';
 }
 
 /**
- * Error raised when expected failing operation resolves.
+ Error raised when expected failing operation resolves.
  */
 class ExpectedFailureError extends Error {
   /**
-   * Stable error type name.
+   Stable error type name.
    */
   override name = 'ExpectedFailureError';
 }
 
 /**
- * Deterministic resolver records shared by generation tests.
+ Deterministic resolver records shared by generation tests.
  */
 const LOOKUP_RECORDS: Readonly<Record<string, readonly LookupAddress[]>> = {
   'allowed.example': [
@@ -76,7 +76,7 @@ const LOOKUP_RECORDS: Readonly<Record<string, readonly LookupAddress[]>> = {
 };
 
 /**
- * Hostnames reproducing Node `ENOTFOUND` resolver failure.
+ Hostnames reproducing Node `ENOTFOUND` resolver failure.
  */
 const NOT_FOUND_HOSTNAMES: ReadonlySet<string> = new Set([
   'missing-one.example',
@@ -84,10 +84,10 @@ const NOT_FOUND_HOSTNAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Deterministic ASN records covering CIDR,
- * address,
- * empty,
- * and invalid responses.
+ Deterministic ASN records covering CIDR,
+ address,
+ empty,
+ and invalid responses.
  */
 const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
   AS64500: [
@@ -108,18 +108,18 @@ const ASN_NETWORK_RECORDS: AsnNetworkRecords = {
 };
 
 /**
- * Deterministically resolves fixture hostnames.
- *
- * @param hostname - Fixture hostname.
- *
- * @returns Registered fixture addresses.
- *
- * @throws {@link UnexpectedLookupError} when hostname has no fixture.
- *
- * @example
- * ```ts
- * fixtureLookup({ hostname: 'allowed.example' });
- * ```
+ Deterministically resolves fixture hostnames.
+ 
+ @param hostname - Fixture hostname.
+ 
+ @returns Registered fixture addresses.
+ 
+ @throws {@link UnexpectedLookupError} when hostname has no fixture.
+ 
+ @example
+ ```ts
+ fixtureLookup({ hostname: 'allowed.example' });
+ ```
  */
 export function fixtureLookup(
   { hostname, }: { readonly hostname: string; },
@@ -127,7 +127,7 @@ export function fixtureLookup(
   if (NOT_FOUND_HOSTNAMES.has(hostname,))
     throw new FixtureDnsNotFoundError(`getaddrinfo ENOTFOUND ${hostname}`,);
   /**
-   * Registered addresses for requested hostname.
+   Registered addresses for requested hostname.
    */
   const records = LOOKUP_RECORDS[hostname];
   if (records === undefined)
@@ -136,24 +136,24 @@ export function fixtureLookup(
 }
 
 /**
- * Deterministically resolves fixture ASNs.
- *
- * @param asn - Normalized fixture ASN.
- *
- * @returns Registered network and address records.
- *
- * @throws {@link UnexpectedAsnLookupError} when ASN has no fixture.
- *
- * @example
- * ```ts
- * fixtureAsnLookup({ asn: 'AS64500' });
- * ```
+ Deterministically resolves fixture ASNs.
+ 
+ @param asn - Normalized fixture ASN.
+ 
+ @returns Registered network and address records.
+ 
+ @throws {@link UnexpectedAsnLookupError} when ASN has no fixture.
+ 
+ @example
+ ```ts
+ fixtureAsnLookup({ asn: 'AS64500' });
+ ```
  */
 export function fixtureAsnLookup(
   { asn, }: { readonly asn: string; },
 ): readonly string[] {
   /**
-   * Registered networks for requested ASN.
+   Registered networks for requested ASN.
    */
   const records = ASN_NETWORK_RECORDS[asn];
   if (records === undefined)
@@ -162,18 +162,18 @@ export function fixtureAsnLookup(
 }
 
 /**
- * Captures rejection from asynchronous operation.
- *
- * @param operation - Operation expected to reject.
- *
- * @returns Rejection value.
- *
- * @throws {@link ExpectedFailureError} when operation resolves.
- *
- * @example
- * ```ts
- * await captureError({ operation: async () => { throw new Error('fixture'); } });
- * ```
+ Captures rejection from asynchronous operation.
+ 
+ @param operation - Operation expected to reject.
+ 
+ @returns Rejection value.
+ 
+ @throws {@link ExpectedFailureError} when operation resolves.
+ 
+ @example
+ ```ts
+ await captureError({ operation: async () => { throw new Error('fixture'); } });
+ ```
  */
 export async function captureError(
   { operation, }: { readonly operation: () => Promise<unknown>; },

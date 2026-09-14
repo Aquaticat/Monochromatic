@@ -1,17 +1,17 @@
 /**
- * Property-based fuzz tests for `firstWhitespaceToken` in `./registry-parse.ts`.
- *
- * Properties: the returned token never contains an ASCII whitespace
- * character; an empty or all-whitespace line yields the empty token; and a
- * line built as `leadingWhitespace + token + separator + tail` recovers
- * exactly `token`. The token alphabet deliberately includes Unicode
- * whitespace-like code points (U+00A0) and an astral code point, which the
- * function treats as ordinary token characters because it matches only the
- * six ASCII `\s` characters.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Property-based fuzz tests for `firstWhitespaceToken` in `./registry-parse.ts`.
+ 
+ Properties: the returned token never contains an ASCII whitespace
+ character; an empty or all-whitespace line yields the empty token; and a
+ line built as `leadingWhitespace + token + separator + tail` recovers
+ exactly `token`. The token alphabet deliberately includes Unicode
+ whitespace-like code points (U+00A0) and an astral code point, which the
+ function treats as ordinary token characters because it matches only the
+ six ASCII `\s` characters.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -34,13 +34,13 @@ import { firstWhitespaceToken, } from './registry-parse.ts';
 //region Constants and arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * The six ASCII whitespace characters `firstWhitespaceToken` recognizes,
- * matching regex `\s` for ASCII.
+ The six ASCII whitespace characters `firstWhitespaceToken` recognizes,
+ matching regex `\s` for ASCII.
  */
 const ASCII_WHITESPACE = [
   ' ',
@@ -52,19 +52,19 @@ const ASCII_WHITESPACE = [
 ] as const;
 
 /**
- * Arbitrary run of ASCII whitespace, possibly empty.
+ Arbitrary run of ASCII whitespace, possibly empty.
  */
 const whitespaceArbitrary = string({ unit: constantFrom(...ASCII_WHITESPACE,), },);
 
 /**
- * Arbitrary single ASCII whitespace character used to terminate a token.
+ Arbitrary single ASCII whitespace character used to terminate a token.
  */
 const separatorArbitrary = constantFrom(...ASCII_WHITESPACE,);
 
 /**
- * Arbitrary non-empty token of characters that are not ASCII whitespace,
- * including a Unicode no-break space and an astral code point the function
- * keeps inside the token.
+ Arbitrary non-empty token of characters that are not ASCII whitespace,
+ including a Unicode no-break space and an astral code point the function
+ keeps inside the token.
  */
 const tokenArbitrary = string({
   minLength: 1,
@@ -93,7 +93,7 @@ await describe({
             string(),
             async function tokenHasNoWhitespace(line,) {
               /**
-               * Leading token extracted from the line.
+               Leading token extracted from the line.
                */
               const token = firstWhitespaceToken(line,);
               ASCII_WHITESPACE.forEach(function absent(whitespace,) {

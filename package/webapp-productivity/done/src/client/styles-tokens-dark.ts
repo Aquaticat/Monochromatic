@@ -1,13 +1,13 @@
 /**
- * Dark mode overrides for design tokens.
- *
- * Swaps foreground/background primitive color references
- * when the user prefers a dark color scheme.
+ Dark mode overrides for design tokens.
+ 
+ Swaps foreground/background primitive color references
+ when the user prefers a dark color scheme.
  */
 import { $ as css, } from './css.ts';
 
 /**
- * Dark mode overrides: swaps foreground/background primitives.
+ Dark mode overrides: swaps foreground/background primitives.
  */
 export const darkMode: string = css({
   at: 'media',

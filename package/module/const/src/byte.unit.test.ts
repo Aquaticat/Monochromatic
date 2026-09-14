@@ -1,7 +1,7 @@
 /**
- * Tests for byte and bit unit constants.
- *
- * @module
+ Tests for byte and bit unit constants.
+ 
+ @module
  */
 
 import {

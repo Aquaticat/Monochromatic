@@ -1,7 +1,7 @@
 /**
- * Pi guardrail config path helpers.
- *
- * @module
+ Pi guardrail config path helpers.
+ 
+ @module
  */
 
 import { join, } from 'node:path';
@@ -14,16 +14,16 @@ import {
 //region Path helpers
 
 /**
- * Resolves global guardrail config path for a home directory.
- *
- * @param home - home directory
- *
- * @returns absolute config path
- *
- * @example
- * ```typescript
- * configPathForHome({ home: '/home/user' });
- * ```
+ Resolves global guardrail config path for a home directory.
+ 
+ @param home - home directory
+ 
+ @returns absolute config path
+ 
+ @example
+ ```typescript
+ configPathForHome({ home: '/home/user' });
+ ```
  */
 function configPathForHome({ home, }: { readonly home: string; }): string {
   return join(

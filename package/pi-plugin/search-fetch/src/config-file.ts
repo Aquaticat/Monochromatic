@@ -1,7 +1,7 @@
 /**
- * Pi Search Fetch config file parsing and migration.
- *
- * @module
+ Pi Search Fetch config file parsing and migration.
+ 
+ @module
  */
 
 import {
@@ -31,18 +31,18 @@ import type {
 } from './config-types.ts';
 
 /**
- * Migrate legacy Pi Linkup config into new Search Fetch config path when needed.
- *
- * @param home - home directory
- *
- * @param configPath - new config path
- *
- * @returns migration result
- *
- * @example
- * ```ts
- * await migrateLegacyConfigIfPresent({ home: '/tmp/home', configPath: '/tmp/home/new.json' });
- * ```
+ Migrate legacy Pi Linkup config into new Search Fetch config path when needed.
+ 
+ @param home - home directory
+ 
+ @param configPath - new config path
+ 
+ @returns migration result
+ 
+ @example
+ ```ts
+ await migrateLegacyConfigIfPresent({ home: '/tmp/home', configPath: '/tmp/home/new.json' });
+ ```
  */
 async function migrateLegacyConfigIfPresent(
   {
@@ -54,25 +54,25 @@ async function migrateLegacyConfigIfPresent(
   },
 ): Promise<LegacyMigrationResult> {
   /**
-   * Local value for legacyPath.
+   Local value for legacyPath.
    */
   const legacyPath = legacyConfigPathForHome({ home, },);
   /**
-   * Local value for legacyReadResult.
+   Local value for legacyReadResult.
    */
   const legacyReadResult = await readOptionalConfigJson({ configPath: legacyPath, },);
   if (!legacyReadResult.loaded)
     return { migrated: false, };
 
   /**
-   * Local value for legacyConfig.
+   Local value for legacyConfig.
    */
   const legacyConfig = validateLegacyConfigShape({
     value: legacyReadResult.value,
     configPath: legacyPath,
   },);
   /**
-   * Local value for migratedValue.
+   Local value for migratedValue.
    */
   const migratedValue: ConfigFileShape = {
     ...(legacyConfig.apiKey === undefined ? {} : { linkupApiKey: legacyConfig.apiKey, }),
@@ -101,9 +101,9 @@ async function migrateLegacyConfigIfPresent(
 }
 
 /**
- * Remove migrated legacy config when it is still present.
- *
- * @param legacyPath - legacy config path
+ Remove migrated legacy config when it is still present.
+ 
+ @param legacyPath - legacy config path
  */
 async function removeLegacyConfig({ legacyPath, }: { readonly legacyPath: string; }): Promise<void> {
   try {
@@ -117,25 +117,25 @@ async function removeLegacyConfig({ legacyPath, }: { readonly legacyPath: string
 }
 
 /**
- * Read and parse optional config JSON.
- *
- * @param configPath - absolute config path
- *
- * @returns parsed JSON result, or absent result when file is absent
- *
- * @throws when reading fails for reason other than missing file or JSON parsing fails
- *
- * @example
- * ```ts
- * await readOptionalConfigJson({ configPath: '/tmp/pi-search-fetch.json' });
- * ```
+ Read and parse optional config JSON.
+ 
+ @param configPath - absolute config path
+ 
+ @returns parsed JSON result, or absent result when file is absent
+ 
+ @throws when reading fails for reason other than missing file or JSON parsing fails
+ 
+ @example
+ ```ts
+ await readOptionalConfigJson({ configPath: '/tmp/pi-search-fetch.json' });
+ ```
  */
 async function readOptionalConfigJson(
   { configPath, }: { readonly configPath: string; },
 ): Promise<ConfigJsonReadResult> {
   try {
     /**
-     * Local value for content.
+     Local value for content.
      */
     const content = await readFile(
       configPath,
@@ -157,13 +157,13 @@ async function readOptionalConfigJson(
 }
 
 /**
- * Parse config JSON content.
- *
- * @param content - raw file content
- *
- * @param configPath - config path used in diagnostics
- *
- * @returns parsed JSON value
+ Parse config JSON content.
+ 
+ @param content - raw file content
+ 
+ @param configPath - config path used in diagnostics
+ 
+ @returns parsed JSON value
  */
 function parseConfigJson(
   {
@@ -179,7 +179,7 @@ function parseConfigJson(
   }
   catch (error: unknown) {
     /**
-     * Local value for detail.
+     Local value for detail.
      */
     const detail = caughtValueText(error,);
     throw new Error(
@@ -190,11 +190,11 @@ function parseConfigJson(
 }
 
 /**
- * Return whether error is a missing-file filesystem error.
- *
- * @param error - unknown read error
- *
- * @returns whether error has ENOENT code
+ Return whether error is a missing-file filesystem error.
+ 
+ @param error - unknown read error
+ 
+ @returns whether error has ENOENT code
  */
 function isMissingFileError(error: unknown,): boolean {
   return isErrorWithCode(error,)
@@ -202,11 +202,11 @@ function isMissingFileError(error: unknown,): boolean {
 }
 
 /**
- * Return whether error is an Error with a system code.
- *
- * @param error - unknown error
- *
- * @returns whether error has a code property
+ Return whether error is an Error with a system code.
+ 
+ @param error - unknown error
+ 
+ @returns whether error has a code property
  */
 function isErrorWithCode(error: unknown,): error is ErrorWithCode {
   return (Error.isError(error,))

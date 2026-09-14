@@ -15,16 +15,16 @@ import {
 const DIR = '/repo/package/module/x/src';
 
 /**
- * Tests one path against the shipped default fixture globs.
- *
- * @param path - normalized absolute path to classify
- *
- * @returns whether a default glob covers it
- *
- * @example
- * ```ts
- * matchesDefault('/repo/src/fixture.json');
- * ```
+ Tests one path against the shipped default fixture globs.
+ 
+ @param path - normalized absolute path to classify
+ 
+ @returns whether a default glob covers it
+ 
+ @example
+ ```ts
+ matchesDefault('/repo/src/fixture.json');
+ ```
  */
 function matchesDefault(path: string,): boolean {
   return isFixtureModule({

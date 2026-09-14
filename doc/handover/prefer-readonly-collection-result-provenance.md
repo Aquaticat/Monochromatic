@@ -10,8 +10,10 @@ Worktree:
  `/home/user/worktrees/readonly-result-provenance`.
 Issues:
  #414 the defect,
- #415 the trust baseline (closed, decided),
- #416 the shorthand provenance defect (closed, fixed).
+ #415 the trust baseline (closed,
+ decided),
+ #416 the shorthand provenance defect (closed,
+ fixed).
 
 ## Why this work exists
 
@@ -371,7 +373,8 @@ consumes it,
    which reproduces this issue's recorded numbers and attributes
   the whole delta to the rule.
    Recorded in `doc/decision/prefer-readonly-result-provenance.md`,
-  "Consequences of the provenance replacement, measured".
+  "Consequences of the provenance replacement,
+   measured".
    The after-count read 232 when taken from the
   feature worktree,
    which has no `tsgolint`,
@@ -465,7 +468,8 @@ counts identical across both runs,
 no parameter became opaque that was not opaque before.
  Recorded in
 `doc/decision/prefer-readonly-result-provenance.md`,
- "The receiver question was the value question, and it
+ "The receiver question was the value question,
+ and it
 should have been the element question".
 
 The full write-up is on issue #417.

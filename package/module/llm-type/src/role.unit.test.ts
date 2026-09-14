@@ -1,7 +1,7 @@
 /**
- * Tests for chat roles.
- *
- * @module
+ Tests for chat roles.
+ 
+ @module
  */
 
 import {

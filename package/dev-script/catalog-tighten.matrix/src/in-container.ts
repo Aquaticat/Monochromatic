@@ -1,12 +1,12 @@
 /**
- * In-container entrypoint for one catalog-tighten matrix scenario.
- *
- * Runs inside a podman container with the monorepo mounted read-only at `/repo`
- * and a writable tmpfs at `/work`. Reads a {@link Scenario} from argv, writes the
- * fixture workspace into `/work`, installs it with pnpm (via corepack) under the
- * scenario's layout, provisions pnpm on PATH, applies the scenario's post-install
- * mutation, runs catalog-tighten against the fixture, and asserts the tool
- * tightens, reports a MISS or an UNDCL, or fails cleanly as the scenario expects.
+ In-container entrypoint for one catalog-tighten matrix scenario.
+ 
+ Runs inside a podman container with the monorepo mounted read-only at `/repo`
+ and a writable tmpfs at `/work`. Reads a {@link Scenario} from argv, writes the
+ fixture workspace into `/work`, installs it with pnpm (via corepack) under the
+ scenario's layout, provisions pnpm on PATH, applies the scenario's post-install
+ mutation, runs catalog-tighten against the fixture, and asserts the tool
+ tightens, reports a MISS or an UNDCL, or fails cleanly as the scenario expects.
  */
 
 import {
@@ -41,15 +41,15 @@ import {
 //region Types
 
 /**
- * Outcome of running the tool: whether it exited zero, and its combined output.
+ Outcome of running the tool: whether it exited zero, and its combined output.
  */
 type ToolResult = {
   /**
-   * Whether the tool exited zero.
+   Whether the tool exited zero.
    */
   readonly ok: boolean;
   /**
-   * Combined stdout and stderr; the tighten line is on stdout, the MISS line on stderr.
+   Combined stdout and stderr; the tighten line is on stdout, the MISS line on stderr.
    */
   readonly output: string;
 };
@@ -59,19 +59,19 @@ type ToolResult = {
 //region Setup steps
 
 /**
- * Writes the fixture workspace for `scenario` into {@link WORK_DIR}: the
- * workspace file built by {@link buildWorkspaceYaml}, the root manifest pinned
- * to `fixturePnpm` via {@link buildRootPackageJson}, and both consumer packages
- * written via {@link consumerPackageJson}.
- *
- * @param scenario - scenario whose settings shape the workspace file
- *
- * @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved, written into `packageManager`
- *
- * @example
- * ```ts
- * await writeFixture({ scenario: SCENARIOS[0], fixturePnpm: "pnpm\@11.11.0" });
- * ```
+ Writes the fixture workspace for `scenario` into {@link WORK_DIR}: the
+ workspace file built by {@link buildWorkspaceYaml}, the root manifest pinned
+ to `fixturePnpm` via {@link buildRootPackageJson}, and both consumer packages
+ written via {@link consumerPackageJson}.
+ 
+ @param scenario - scenario whose settings shape the workspace file
+ 
+ @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved, written into `packageManager`
+ 
+ @example
+ ```ts
+ await writeFixture({ scenario: SCENARIOS[0], fixturePnpm: "pnpm\@11.11.0" });
+ ```
  */
 async function writeFixture(
   {
@@ -98,7 +98,7 @@ async function writeFixture(
   );
   await Promise.all(CONSUMER_DIRS.map(async function writeConsumer(dir,): Promise<void> {
     /**
-     * Absolute consumer directory; created before its manifest is written.
+     Absolute consumer directory; created before its manifest is written.
      */
     const absoluteDir = join(
       WORK_DIR,
@@ -119,16 +119,16 @@ async function writeFixture(
 }
 
 /**
- * Installs the fixture with `fixturePnpm` via corepack. Layout settings live in
- * the workspace file, so this is a plain install; corepack caches pnpm under
- * `HOME` (tmpfs) and the download prompt is disabled for non-interactive runs.
- *
- * @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved
- *
- * @example
- * ```ts
- * await installFixture("pnpm\@11.11.0");
- * ```
+ Installs the fixture with `fixturePnpm` via corepack. Layout settings live in
+ the workspace file, so this is a plain install; corepack caches pnpm under
+ `HOME` (tmpfs) and the download prompt is disabled for non-interactive runs.
+ 
+ @param fixturePnpm - `pnpm@<version>` spec the monorepo resolved
+ 
+ @example
+ ```ts
+ await installFixture("pnpm\@11.11.0");
+ ```
  */
 async function installFixture(fixturePnpm: string,): Promise<void> {
   await spawn(
@@ -151,15 +151,15 @@ async function installFixture(fixturePnpm: string,): Promise<void> {
 }
 
 /**
- * Installs the corepack `pnpm` shim into {@link PNPM_BIN_DIR}, so the tool's
- * `pnpm config get modules-dir` finds `pnpm` on PATH under the read-only rootfs.
- * The shim resolves the pinned version from the fixture's `packageManager`
- * field, reusing the cached install offline.
- *
- * @example
- * ```ts
- * await enablePnpm();
- * ```
+ Installs the corepack `pnpm` shim into {@link PNPM_BIN_DIR}, so the tool's
+ `pnpm config get modules-dir` finds `pnpm` on PATH under the read-only rootfs.
+ The shim resolves the pinned version from the fixture's `packageManager`
+ field, reusing the cached install offline.
+ 
+ @example
+ ```ts
+ await enablePnpm();
+ ```
  */
 async function enablePnpm(): Promise<void> {
   await mkdir(
@@ -189,35 +189,35 @@ async function enablePnpm(): Promise<void> {
 //region Run and assert
 
 /**
- * Runs catalog-tighten `--dry-run` from {@link TOOL_ENTRY} against the
- * fixture, prepending the pnpm shim directory to PATH. Captures a non-zero
- * exit as `ok: false` rather than throwing, so the caller can assert the
- * error scenarios.
- *
- * @returns whether the tool exited zero, and its stdout
- *
- * @example
- * ```ts
- * const result = await runTool();
- * ```
+ Runs catalog-tighten `--dry-run` from {@link TOOL_ENTRY} against the
+ fixture, prepending the pnpm shim directory to PATH. Captures a non-zero
+ exit as `ok: false` rather than throwing, so the caller can assert the
+ error scenarios.
+ 
+ @returns whether the tool exited zero, and its stdout
+ 
+ @example
+ ```ts
+ const result = await runTool();
+ ```
  */
 async function runTool(): Promise<ToolResult> {
   /**
-   * Current container PATH value; may be unset.
+   Current container PATH value; may be unset.
    */
   const { PATH: rawPath, } = process.env;
   /**
-   * PATH defaulted to empty when unset.
+   PATH defaulted to empty when unset.
    */
   const basePath = rawPath
     ?? '';
   /**
-   * PATH with the pnpm shim directory prepended, so the tool finds `pnpm`.
+   PATH with the pnpm shim directory prepended, so the tool finds `pnpm`.
    */
   const toolPath = `${PNPM_BIN_DIR}:${basePath}`;
   try {
     /**
-     * Tool result on a zero exit; stdout carries the per-entry status lines.
+     Tool result on a zero exit; stdout carries the per-entry status lines.
      */
     const result = await spawn(
       'node',
@@ -250,18 +250,18 @@ async function runTool(): Promise<ToolResult> {
 }
 
 /**
- * Asserts the tool result matches the scenario's expectation, checking the
- * output against {@link EXPECTED_TIGHTENED} and the {@link FIXTURE_PACKAGE}
- * MISS and UNDCL lines, throwing a labelled error on mismatch.
- *
- * @param scenario - scenario under test
- *
- * @param result - tool result to check
- *
- * @example
- * ```ts
- * assertOutcome({ scenario: SCENARIOS[0], result: { ok: true, stdout: '...' } });
- * ```
+ Asserts the tool result matches the scenario's expectation, checking the
+ output against {@link EXPECTED_TIGHTENED} and the {@link FIXTURE_PACKAGE}
+ MISS and UNDCL lines, throwing a labelled error on mismatch.
+ 
+ @param scenario - scenario under test
+ 
+ @param result - tool result to check
+ 
+ @example
+ ```ts
+ assertOutcome({ scenario: SCENARIOS[0], result: { ok: true, stdout: '...' } });
+ ```
  */
 function assertOutcome(
   {
@@ -273,22 +273,22 @@ function assertOutcome(
   },
 ): void {
   /**
-   * Tool exit status and combined output for this scenario.
+   Tool exit status and combined output for this scenario.
    */
   const {
     ok,
     output,
   } = result;
   /**
-   * Whether the output reports a MISS for the fixture package (the MISS line is on stderr).
+   Whether the output reports a MISS for the fixture package (the MISS line is on stderr).
    */
   const reportedMiss = output.includes(`MISS  ${FIXTURE_PACKAGE}`,);
   /**
-   * Whether the output reports an UNDCL for the fixture package (store-present but undeclared; on stderr).
+   Whether the output reports an UNDCL for the fixture package (store-present but undeclared; on stderr).
    */
   const reportedUndeclared = output.includes(`UNDCL ${FIXTURE_PACKAGE}`,);
   /**
-   * Whether the output reports the expected tightened line (on stdout).
+   Whether the output reports the expected tightened line (on stdout).
    */
   const tightened = output.includes(EXPECTED_TIGHTENED,);
 
@@ -323,26 +323,26 @@ function assertOutcome(
 //region Main
 
 /**
- * argv index of the scenario JSON the orchestrator passes.
+ argv index of the scenario JSON the orchestrator passes.
  */
 const SCENARIO_ARG_INDEX = 2;
 
 /**
- * Raw scenario JSON argument; absent only on misuse.
+ Raw scenario JSON argument; absent only on misuse.
  */
 const scenarioJson = process.argv[SCENARIO_ARG_INDEX];
 if (scenarioJson === undefined)
   throw new Error('Usage: in-container.ts <scenario-json>',);
 
 /**
- * Scenario to run, deserialised from the orchestrator's argument.
+ Scenario to run, deserialised from the orchestrator's argument.
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the orchestrator serialises a Scenario it owns
 const scenario = JSON.parse(scenarioJson,) as Scenario;
 
 /**
- * Monorepo `pnpm@<version>` spec the orchestrator resolved and passed in, so the
- * fixture installs with the pnpm the repo actually runs.
+ Monorepo `pnpm@<version>` spec the orchestrator resolved and passed in, so the
+ fixture installs with the pnpm the repo actually runs.
  */
 const fixturePnpm = process.env[FIXTURE_PNPM_ENV];
 if (fixturePnpm === undefined) {
@@ -360,7 +360,7 @@ await enablePnpm();
 await applyMutation(scenario,);
 
 /**
- * Tool outcome to assert against the scenario's expectation.
+ Tool outcome to assert against the scenario's expectation.
  */
 const result = await runTool();
 assertOutcome({
@@ -369,6 +369,6 @@ assertOutcome({
 },);
 console.info(`[${scenario.label}] PASS (${scenario.expect})`,);
 
-export {};
+
 
 //endregion Main

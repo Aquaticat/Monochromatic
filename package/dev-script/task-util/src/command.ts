@@ -1,34 +1,34 @@
 #!/usr/bin/env node
 
 /**
- * Command executor wrapper for mise tasks.
- *
- * This script works around task runner limitations where tasks with `allowFailure: true`
- * can't be dependencies.
- *
- * By wrapping commands in this executor, we can control exit codes while still
- * showing all output and errors to the user.
- *
- * Usage:
- *   task-command --allowFailure; oxlint  # Always exits with 0
- *   task-command; oxlint                 # Exits with command's exit code
- *
- * The `--` separator is required to distinguish script args from command args.
- *
- * @example
- * ```bash
- * # Always exit with 0
- * task-command --allowFailure; oxlint
- *
- * # Exit with command's exit code
- * task-command; oxlint
- *
- * # Execute through shell
- * task-command --shell; "echo hello && echo world"
- *
- * # Execute with timeout of 5 seconds
- * task-command --timeout 5000; npm test
- * ```
+ Command executor wrapper for mise tasks.
+ 
+ This script works around task runner limitations where tasks with `allowFailure: true`
+ can't be dependencies.
+ 
+ By wrapping commands in this executor, we can control exit codes while still
+ showing all output and errors to the user.
+ 
+ Usage:
+   task-command --allowFailure; oxlint  # Always exits with 0
+   task-command; oxlint                 # Exits with command's exit code
+ 
+ The `--` separator is required to distinguish script args from command args.
+ 
+ @example
+ ```bash
+ # Always exit with 0
+ task-command --allowFailure; oxlint
+ 
+ # Exit with command's exit code
+ task-command; oxlint
+ 
+ # Execute through shell
+ task-command --shell; "echo hello && echo world"
+ 
+ # Execute with timeout of 5 seconds
+ task-command --timeout 5000; npm test
+ ```
  */
 
 // TODO: deprecate Optique
@@ -55,13 +55,13 @@ import dedent from 'string-dedent';
 import { match, } from 'ts-pattern';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
-export {};
+
 
 //region Parser definition: defines CLI flags and rest arguments after --
 
 /**
- * TODO: deprecate Optique
- * Optique parser for the task-command CLI
+ TODO: deprecate Optique
+ Optique parser for the task-command CLI
  */
 const parser = object({
   allowFailure: option(
@@ -85,8 +85,8 @@ const parser = object({
 //endregion Parser definition
 
 /**
- * TODO: deprecate Optique
- * Parsed CLI arguments from process.argv
+ TODO: deprecate Optique
+ Parsed CLI arguments from process.argv
  */
 const args = runSync(
   parser,
@@ -97,7 +97,7 @@ const args = runSync(
 );
 
 /**
- * Destructured command and its arguments from the rest args after `--`
+ Destructured command and its arguments from the rest args after `--`
  */
 const [command, ...commandArgs] = args.rest;
 

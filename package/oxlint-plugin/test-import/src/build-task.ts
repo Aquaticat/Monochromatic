@@ -1,12 +1,12 @@
 /**
- * Build-task detection for the buildless-package exemption.
- *
- * A package defining no build task ships no artifact, so requiring its tests to
- * import one would be vacuous rather than merely inconvenient. Keying the
- * exemption on the task rather than on file layout makes it self-healing: adding
- * a build task re-arms the rule with no change here.
- *
- * @module
+ Build-task detection for the buildless-package exemption.
+ 
+ A package defining no build task ships no artifact, so requiring its tests to
+ import one would be vacuous rather than merely inconvenient. Keying the
+ exemption on the task rather than on file layout makes it self-healing: adding
+ a build task re-arms the rule with no change here.
+ 
+ @module
  */
 
 import { readFileSync, } from 'node:fs';
@@ -15,57 +15,57 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /**
- * Logger for build-task probing.
+ Logger for build-task probing.
  */
 const l = tagged({ tag: 'build-task', },);
 
 /**
- * Task file every package declares its mise tasks in.
+ Task file every package declares its mise tasks in.
  */
 const TASK_FILE = 'mise.toml';
 
 /**
- * Prefix of a TOML table header naming a task.
+ Prefix of a TOML table header naming a task.
  */
 const TASK_TABLE_PREFIX = 'tasks.';
 
 /**
- * Task name that produces the package's artifact.
+ Task name that produces the package's artifact.
  */
 const BUILD_TASK = 'build';
 
 /**
- * Prefix of narrower build task names such as `build:js:node`.
+ Prefix of narrower build task names such as `build:js:node`.
  */
 const BUILD_TASK_PREFIX = 'build:';
 
 /**
- * Extracts the task name from one TOML table header line.
- *
- * Recognizes both `[tasks.build]` and the quoted `[tasks."build:js"]` spelling
- * that names containing colons require.
- *
- * @param line - already-trimmed line from the task file
- *
- * @returns task name, or an empty string when the line is not a task header
- *
- * @example
- * ```ts
- * taskNameOfHeader({ line: '[tasks."build:js"]' });
- * ```
- *
- * @internal
+ Extracts the task name from one TOML table header line.
+ 
+ Recognizes both `[tasks.build]` and the quoted `[tasks."build:js"]` spelling
+ that names containing colons require.
+ 
+ @param line - already-trimmed line from the task file
+ 
+ @returns task name, or an empty string when the line is not a task header
+ 
+ @example
+ ```ts
+ taskNameOfHeader({ line: '[tasks."build:js"]' });
+ ```
+ 
+ @internal
  */
 export function taskNameOfHeader({ line, }: {
   /**
-   * Already-trimmed line from the task file.
+   Already-trimmed line from the task file.
    */
   readonly line: string;
 },): string {
   if ((!line.startsWith('[',)) || (!line.endsWith(']',)))
     return '';
   /**
-   * Header contents between the brackets.
+   Header contents between the brackets.
    */
   const header = line.slice(
     1,
@@ -74,7 +74,7 @@ export function taskNameOfHeader({ line, }: {
   if (!header.startsWith(TASK_TABLE_PREFIX,))
     return '';
   /**
-   * Task name, still carrying quotes when the name needed them.
+   Task name, still carrying quotes when the name needed them.
    */
   const quoted = header.slice(TASK_TABLE_PREFIX.length,);
   if (quoted.startsWith('"',)
@@ -90,22 +90,22 @@ export function taskNameOfHeader({ line, }: {
 }
 
 /**
- * Tests whether a task name produces build output.
- *
- * @param name - task name from a table header
- *
- * @returns true for `build` and for any `build:` scoped task
- *
- * @example
- * ```ts
- * isBuildTaskName({ name: 'build:js:node' });
- * ```
- *
- * @internal
+ Tests whether a task name produces build output.
+ 
+ @param name - task name from a table header
+ 
+ @returns true for `build` and for any `build:` scoped task
+ 
+ @example
+ ```ts
+ isBuildTaskName({ name: 'build:js:node' });
+ ```
+ 
+ @internal
  */
 export function isBuildTaskName({ name, }: {
   /**
-   * Task name from a table header.
+   Task name from a table header.
    */
   readonly name: string;
 },): boolean {
@@ -113,23 +113,23 @@ export function isBuildTaskName({ name, }: {
 }
 
 /**
- * Reads one package's task file, treating an unreadable file as empty.
- *
- * A package without a task file declares no tasks at all, which is exactly the
- * buildless case the exemption targets, so absence needs no separate signal.
- *
- * @param taskFile - absolute path of the task file to read
- *
- * @returns file contents, or an empty string when the file cannot be read
- *
- * @example
- * ```ts
- * readTaskFile({ taskFile: '/repo/package/module/x/mise.toml' });
- * ```
+ Reads one package's task file, treating an unreadable file as empty.
+ 
+ A package without a task file declares no tasks at all, which is exactly the
+ buildless case the exemption targets, so absence needs no separate signal.
+ 
+ @param taskFile - absolute path of the task file to read
+ 
+ @returns file contents, or an empty string when the file cannot be read
+ 
+ @example
+ ```ts
+ readTaskFile({ taskFile: '/repo/package/module/x/mise.toml' });
+ ```
  */
 function readTaskFile({ taskFile, }: {
   /**
-   * Absolute path of the task file to read.
+   Absolute path of the task file to read.
    */
   readonly taskFile: string;
 },): string {
@@ -148,27 +148,27 @@ function readTaskFile({ taskFile, }: {
 }
 
 /**
- * Reads a package's task file and reports whether it declares any build task.
- *
- * @param packageRoot - absolute package root to probe
- *
- * @returns true when the task file declares `build` or any `build:` task
- *
- * @example
- * ```ts
- * declaresBuildTask({ packageRoot: '/repo/package/module/x' });
- * ```
- *
- * @internal
+ Reads a package's task file and reports whether it declares any build task.
+ 
+ @param packageRoot - absolute package root to probe
+ 
+ @returns true when the task file declares `build` or any `build:` task
+ 
+ @example
+ ```ts
+ declaresBuildTask({ packageRoot: '/repo/package/module/x' });
+ ```
+ 
+ @internal
  */
 export function declaresBuildTask({ packageRoot, }: {
   /**
-   * Absolute package root to probe.
+   Absolute package root to probe.
    */
   readonly packageRoot: string;
 },): boolean {
   /**
-   * Task file contents for this package, empty when the package declares no tasks.
+   Task file contents for this package, empty when the package declares no tasks.
    */
   const text = readTaskFile({
     taskFile: join(

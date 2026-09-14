@@ -11,8 +11,10 @@ This runbook is the operator procedure for the parts a human runs by hand:
 deploy or redeploy the Worker,
 set or rotate the upload token,
 prepare a machine to push new images,
-roll back to GitHub LFS,
+confirm README images render on GitHub,
 and confirm the GitHub LFS bill actually drops.
+Rolling back to GitHub LFS is not supported for now;
+the "Restore" section records what that means.
 
 Bridges tried,
  so this is not an unconsidered handoff:
@@ -108,7 +110,7 @@ TODO
     run the dry run instead.
 
    ```sh
-   mise run "//package/config/lfs-r2-worker:build"
+   mise run "//package/config/lfs-r2-worker:deploy:dry-run"
    ```
 
    Expected:
@@ -191,7 +193,35 @@ TODO
    Expected exact output:
    `8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8  -`
 
-2. A fresh clone resolves LFS from the Worker and verifies clean.
+2. The Worker serves the same object under a path suffix with an image content type,
+   which is the URL shape README images use.
+
+   ```sh
+   curl --silent --head \
+     "https://monochromatic-lfs.an1298.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8/wolf-s.png"
+   ```
+
+   Expected:
+    the headers include `HTTP/2 200`,
+   `content-type: image/png`,
+   `content-length: 320`,
+   and `cache-control: public, max-age=31536000, immutable`.
+
+3. Every Worker URL embedded in repository Markdown resolves to the right bytes.
+
+   ```sh
+   mise run "//package/config/lfs-r2-worker:check:markdown-urls"
+   ```
+
+   Expected:
+    one `ok` line per URL,
+   no `FAIL` line,
+   and a final `N/N Worker object URLs verified` where both numbers match.
+   Then open `https://github.com/Aquaticat/Monochromatic/blob/main/package/music-player/README.md`
+   in a logged-out browser and confirm every gallery image shows a picture,
+   not pointer text.
+
+4. A fresh clone resolves LFS from the Worker and verifies clean.
 
    ```sh
    git clone --depth 1 https://github.com/Aquaticat/Monochromatic /tmp/lfs-check
@@ -201,7 +231,7 @@ TODO
    Expected exact output:
     `Git LFS fsck OK`.
 
-3. The GitHub LFS bandwidth bill drops over the following days.
+5. The GitHub LFS bandwidth bill drops over the following days.
    In GitHub,
     open **Settings**,
     then **Billing and licensing**,
@@ -212,43 +242,25 @@ TODO
     the anonymous and unauthenticated bandwidth line trends toward
    `0 GB` per day after the cutover date,
    since raw clones now read `.lfsconfig` and fetch from R2.
-   The objects remain in GitHub LFS storage (well under the free `10 GB`),
-   so storage stays billed at `$0` and the web UI still renders the images.
+   Objects that predate the cutover remain in GitHub LFS storage (well under the free `10 GB`),
+   so storage stays billed at `$0`.
+   The web UI renders README images from the Worker URLs,
+   never from GitHub LFS (issue #476).
 
 ## Restore
 
 Status:
-TODO
+Not supported for now
 
-To roll back to GitHub LFS,
- remove the redirect.
-Clones immediately fall back to GitHub's stored objects,
-because the objects were never purged from GitHub LFS.
-
-1. Delete the redirect and push.
-
-   ```sh
-   git rm .lfsconfig
-   git commit -m "revert(*): roll LFS back to GitHub"
-   git push
-   ```
-
-   Expected:
-    the commit removes `.lfsconfig`;
-   a subsequent fresh clone fetches LFS from GitHub and `git lfs fsck` prints
-   `Git LFS fsck OK`.
-
-2. On any machine configured to push,
-    drop the local override so it stops using the Worker.
-
-   ```sh
-   git config --local --unset lfs.url
-   ```
-
-   Expected:
-    no output;
-   `git config --get lfs.url` then prints nothing.
-
-To tear down the Cloudflare resources entirely (only after rollback),
-delete the Worker with `wrangler delete --name monochromatic-lfs`
-and the bucket with `cf r2 buckets delete monochromatic-lfs`.
+Rolling back to GitHub LFS is not supported for now.
+The decision is recorded in `doc/planning/lfs-readme-image-rendering.md`.
+Two facts make the old "delete `.lfsconfig`" procedure insufficient:
+objects pushed since the cutover exist only in R2,
+and committed Markdown names this Worker's object URLs,
+so removing the redirect alone would leave clones missing objects and READMEs pointing at the Worker.
+If a rollback is ever needed,
+treat it as a planned project (re-upload every object to GitHub LFS,
+rewrite the Markdown links,
+then drop `.lfsconfig`),
+not as a runbook step.
+Never tear down the Worker or the bucket while `.lfsconfig` and the Markdown links still name them.

@@ -1,7 +1,7 @@
 /**
- * Tests for `resolveByPath` and dotted-key handling.
- *
- * @module
+ Tests for `resolveByPath` and dotted-key handling.
+ 
+ @module
  */
 
 import {

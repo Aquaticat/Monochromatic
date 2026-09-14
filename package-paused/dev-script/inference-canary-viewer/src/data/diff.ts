@@ -6,7 +6,10 @@
  */
 
 import spawn from 'nano-spawn';
-import { findGitRepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
+import {
+  findRootCached,
+  GIT_REPOSITORY,
+} from '@monochromatic-dev/module-fs-path/ts';
 import dedent from 'string-dedent';
 
 /**
@@ -107,7 +110,7 @@ async function captureGitDiffStdout({
     /**
      * Git repository root, resolved to satisfy cli-git's repo-root guard.
      */
-    const gitRoot = await findGitRepoRootCached();
+    const gitRoot = await findRootCached({ marker: GIT_REPOSITORY, },);
     /**
      * Spawn result holding stdout on the success path.
      */

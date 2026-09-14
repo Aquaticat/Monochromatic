@@ -1,7 +1,7 @@
 /**
- * {@link tomlGetCommentAfter}: trailing inline comment on the same source line.
- *
- * @module
+ {@link tomlGetCommentAfter}: trailing inline comment on the same source line.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -18,16 +18,16 @@ import type {
 } from './types.ts';
 
 /**
- * The same-line trailing comment for the entry at `path`.
- *
- * @returns Object whose `comment` field is the trailing comment, or absent.
- *
- * @throws {@link TomlPathNotFoundError} when `path` does not exist.
- *
- * @example
- * ```toml
- * key = "value"  # trailing
- * ```
+ The same-line trailing comment for the entry at `path`.
+ 
+ @returns Object whose `comment` field is the trailing comment, or absent.
+ 
+ @throws {@link TomlPathNotFoundError} when `path` does not exist.
+ 
+ @example
+ ```toml
+ key = "value"  # trailing
+ ```
  */
 export function tomlGetCommentAfter(
   {
@@ -39,7 +39,7 @@ export function tomlGetCommentAfter(
   },
 ): { readonly comment?: TomlComment; } {
   /**
-   * Entry block at the path; its clean end offset anchors the trailing scan.
+   Entry block at the path; its clean end offset anchors the trailing scan.
    */
   const located = locateBlock({
     blocks: edit.blocks,
@@ -51,7 +51,7 @@ export function tomlGetCommentAfter(
     );
   }
   /**
-   * Clean end offset after which a same-line comment attaches, or `-1`.
+   Clean end offset after which a same-line comment attaches, or `-1`.
    */
   const from = endOf({ located, },);
   if (from === (-1))
@@ -64,19 +64,19 @@ export function tomlGetCommentAfter(
 }
 
 /**
- * Clean end offset for a located entry, or `-1` when synthetic.
- *
- * Char offsets are non-negative, so `-1` unambiguously signals "no clean source
- * position" without a nullish union.
- *
- * @param located - Located block whose clean end offset anchors the scan.
- *
- * @returns Clean end offset, or `-1` when synthetic.
- *
- * @example
- * ```ts
- * endOf({ located: locateBlock({ blocks, path, },), },);
- * ```
+ Clean end offset for a located entry, or `-1` when synthetic.
+ 
+ Char offsets are non-negative, so `-1` unambiguously signals "no clean source
+ position" without a nullish union.
+ 
+ @param located - Located block whose clean end offset anchors the scan.
+ 
+ @returns Clean end offset, or `-1` when synthetic.
+ 
+ @example
+ ```ts
+ endOf({ located: locateBlock({ blocks, path, },), },);
+ ```
  */
 function endOf(
   { located, }: { readonly located: ReturnType<typeof locateBlock>; },
@@ -98,7 +98,7 @@ function endOf(
         .headerOrigin
         .range[1] : -1;
   /**
-   * Last array-of-tables instance is where a trailing comment attaches.
+   Last array-of-tables instance is where a trailing comment attaches.
    */
   const last = nonNullishOrThrow(located.tables
     .at(-1,),);

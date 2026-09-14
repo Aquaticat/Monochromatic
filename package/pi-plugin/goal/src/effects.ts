@@ -1,7 +1,7 @@
 /**
- * Pi runtime adapter for semantic goal transition effects.
- *
- * @module
+ Pi runtime adapter for semantic goal transition effects.
+ 
+ @module
  */
 
 import type {
@@ -15,6 +15,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  GOAL_COMPLETION_ENTRY_TYPE,
   GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
   GOAL_STATE_ENTRY_TYPE,
   GOAL_STATUS_KEY,
@@ -22,27 +23,27 @@ import {
 import type { GoalEffect, } from './types.ts';
 
 /**
- * Root goal extension logger.
+ Root goal extension logger.
  */
 const logger: Logger = tagged({ tag: 'pi-goal', },);
 
 /**
- * Apply ordered goal effects at Pi's mutation boundary.
- *
- * @param effects - semantic effects from pure controller transition
- *
- * @param pi - Pi extension API owning session writes and message sends
- *
- * @param context - current lifecycle context owning UI footer and notifications
- *
- * @mutates pi - persistence and custom-message effects append session records
- *
- * @mutates context - footer and notification effects update Pi UI state
- *
- * @example
- * ```ts
- * applyGoalEffects({ effects, pi, context });
- * ```
+ Apply ordered goal effects at Pi's mutation boundary.
+ 
+ @param effects - semantic effects from pure controller transition
+ 
+ @param pi - Pi extension API owning session writes and message sends
+ 
+ @param context - current lifecycle context owning UI footer and notifications
+ 
+ @mutates pi - persistence and custom-message effects append session records
+ 
+ @mutates context - footer and notification effects update Pi UI state
+ 
+ @example
+ ```ts
+ applyGoalEffects({ effects, pi, context });
+ ```
  */
 function applyGoalEffects(
   {
@@ -89,6 +90,13 @@ function applyGoalEffects(
     if (effect.type === 'persist_review_unavailable_diagnostic') {
       pi.appendEntry(
         GOAL_REVIEW_UNAVAILABLE_ENTRY_TYPE,
+        effect.diagnostic,
+      );
+      continue;
+    }
+    if (effect.type === 'persist_completion_diagnostic') {
+      pi.appendEntry(
+        GOAL_COMPLETION_ENTRY_TYPE,
         effect.diagnostic,
       );
       continue;

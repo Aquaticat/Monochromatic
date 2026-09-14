@@ -1,5 +1,5 @@
 /**
- * Tests for shell command terminal title summaries.
+ Tests for shell command terminal title summaries.
  */
 
 import {
@@ -46,7 +46,7 @@ await describe({
       name: 'falls back to raw command when parsing fails',
       fn: async () => {
         /**
-         * Shell source with unterminated quote.
+         Shell source with unterminated quote.
          */
         const rawCommand = 'echo "unterminated';
         expect(terminalTitleCommand(rawCommand,),).toBe(rawCommand,);

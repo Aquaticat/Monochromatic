@@ -8,35 +8,35 @@ import type {
 } from './model.ts';
 
 /**
- * Mutable durable transaction state hidden inside one synchronization call.
- *
- * @example
- * ```ts
- * const state: JournalState = { pending };
- * ```
+ Mutable durable transaction state hidden inside one synchronization call.
+ 
+ @example
+ ```ts
+ const state: JournalState = { pending };
+ ```
  */
 export type JournalState = {
   /**
-   * Latest journal path and record.
+   Latest journal path and record.
    */
   pending: PendingWorktreeCopyJournal;
 };
 
 /**
- * Persists installation phase before destination mutation.
- *
- * @param state - mutable latest journal state
- *
- * @mutates state - replaces latest pending record after durable phase write
- *
- * @example
- * ```ts
- * await beginInstalling(state);
- * ```
+ Persists installation phase before destination mutation.
+ 
+ @param state - mutable latest journal state
+ 
+ @mutates state - replaces latest pending record after durable phase write
+ 
+ @example
+ ```ts
+ await beginInstalling(state);
+ ```
  */
 export async function beginInstalling(state: JournalState,): Promise<void> {
   /**
-   * Installing record replacing staged phase.
+   Installing record replacing staged phase.
    */
   const record: WorktreeCopyJournal = {
     ...state.pending
@@ -56,18 +56,18 @@ export async function beginInstalling(state: JournalState,): Promise<void> {
 }
 
 /**
- * Persists one selected destination-path intent before filesystem mutation.
- *
- * @param state - mutable latest journal state
- *
- * @param relativePath - repository path about to be installed
- *
- * @mutates state - replaces latest pending record after durable intent write
- *
- * @example
- * ```ts
- * await recordEntryIntent({ state, relativePath: 'cache/data' });
- * ```
+ Persists one selected destination-path intent before filesystem mutation.
+ 
+ @param state - mutable latest journal state
+ 
+ @param relativePath - repository path about to be installed
+ 
+ @mutates state - replaces latest pending record after durable intent write
+ 
+ @example
+ ```ts
+ await recordEntryIntent({ state, relativePath: 'cache/data' });
+ ```
  */
 export async function recordEntryIntent({
   state,
@@ -82,7 +82,7 @@ export async function recordEntryIntent({
     .includes(relativePath,))
     return;
   /**
-   * Updated durable installation-intent list.
+   Updated durable installation-intent list.
    */
   const record: WorktreeCopyJournal = {
     ...state.pending
@@ -108,18 +108,18 @@ export async function recordEntryIntent({
 }
 
 /**
- * Persists one proven post-creation filesystem identity.
- *
- * @param state - mutable latest journal state
- *
- * @param entry - path and exact identity captured after exclusive creation
- *
- * @mutates state - replaces latest pending record after durable creation write
- *
- * @example
- * ```ts
- * await recordCreatedEntry({ state, entry });
- * ```
+ Persists one proven post-creation filesystem identity.
+ 
+ @param state - mutable latest journal state
+ 
+ @param entry - path and exact identity captured after exclusive creation
+ 
+ @mutates state - replaces latest pending record after durable creation write
+ 
+ @example
+ ```ts
+ await recordCreatedEntry({ state, entry });
+ ```
  */
 export async function recordCreatedEntry({
   state,
@@ -139,7 +139,7 @@ export async function recordCreatedEntry({
     return;
   }
   /**
-   * Updated durable proven-creation list.
+   Updated durable proven-creation list.
    */
   const record: WorktreeCopyJournal = {
     ...state.pending

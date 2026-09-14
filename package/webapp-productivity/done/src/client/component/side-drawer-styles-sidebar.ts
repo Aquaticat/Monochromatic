@@ -1,8 +1,8 @@
 /**
- * Inline sidebar styles for the `<side-drawer>` web component.
- *
- * Renders the persistent sidebar visible above the desktop breakpoint
- * and hidden on narrower viewports where the popover panel is used instead.
+ Inline sidebar styles for the `<side-drawer>` web component.
+ 
+ Renders the persistent sidebar visible above the desktop breakpoint
+ and hidden on narrower viewports where the popover panel is used instead.
  */
 import {
   cssCalc,
@@ -14,16 +14,16 @@ import { $ as css, } from '../css.ts';
 import { flexColumn, } from '../mixins.ts';
 
 /** Viewport breakpoint matching the body flex-wrap threshold.
- *  Below this width the sidebar stacks and the inline nav hides. */
+  Below this width the sidebar stacks and the inline nav hides. */
 const DESKTOP_BREAKPOINT = '48rem';
 
 /**
- * Full percentage for sidebar block-size.
+ Full percentage for sidebar block-size.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Compiled CSS rules for the `<side-drawer>` inline sidebar.
+ Compiled CSS rules for the `<side-drawer>` inline sidebar.
  */
 export const SIDE_DRAWER_SIDEBAR_STYLES: string[] = [
   css({

@@ -19,16 +19,16 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Minimal mutant fixture factory for shard and report tests.
- *
- * @param options - Distinguishing id and file.
- *
- * @returns Mutant with fixed span coordinates.
- *
- * @example
- * ```ts
- * fixtureMutant({ id: 'm1', file: 'src/a.ts' });
- * ```
+ Minimal mutant fixture factory for shard and report tests.
+ 
+ @param options - Distinguishing id and file.
+ 
+ @returns Mutant with fixed span coordinates.
+ 
+ @example
+ ```ts
+ fixtureMutant({ id: 'm1', file: 'src/a.ts' });
+ ```
  */
 function fixtureMutant(options: {
   readonly id: string;
@@ -58,7 +58,7 @@ await describe({
           name: 'parses package, toggles, resources, and positional sources',
           fn: async () => {
             /**
-             * Parsed options for a fully-specified invocation.
+             Parsed options for a fully-specified invocation.
              */
             const options = parseCliOptions([
               '--package',
@@ -137,7 +137,7 @@ await describe({
           name: 'never mixes files in one shard and chunks big files',
           fn: async () => {
             /**
-             * Manifests for two files, one exceeding the shard size.
+             Manifests for two files, one exceeding the shard size.
              */
             const manifests = composeShards({
               groups: [
@@ -196,7 +196,7 @@ await describe({
           name: 'regroups ids by file through the lookup',
           fn: async () => {
             /**
-             * Reshard manifests for two ids of one file at size 1.
+             Reshard manifests for two ids of one file at size 1.
              */
             const manifests = composeReshard({
               ids: [
@@ -288,7 +288,7 @@ await describe({
           name: 'totals statuses, counts suppressions, and formats findings',
           fn: async () => {
             /**
-             * Outcome with one of each interesting status.
+             Outcome with one of each interesting status.
              */
             const outcome: RunOutcome = {
               results: [
@@ -326,7 +326,7 @@ await describe({
               shardCount: 4,
             };
             /**
-             * Report generated from the fixture outcome.
+             Report generated from the fixture outcome.
              */
             const report = buildRunReport({
               outcome,
@@ -342,7 +342,7 @@ await describe({
             },);
 
             /**
-             * Terminal rendering of the fixture report.
+             Terminal rendering of the fixture report.
              */
             const summary = formatTerminalSummary(report,);
             expect(summary,).toContain('Survived: src/a.ts:1:0 arithmetic',);

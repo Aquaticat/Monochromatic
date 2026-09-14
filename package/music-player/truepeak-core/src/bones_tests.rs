@@ -5,12 +5,12 @@ use super::*;
 // Independent bitwise CRC-8 (poly 0x07, init 0), so the table in the module is not
 // checking itself.
 fn crc8_bitwise(bytes: &[u8]) -> u8 {
-    bytes.iter().fold(0u8, |mut crc, &byte| {
+    return bytes.iter().fold(0u8, |mut crc, &byte| {
         crc ^= byte;
         for _ in 0..8 {
             crc = if crc & 0x80 != 0 { (crc << 1) ^ 0x07 } else { crc << 1 };
         }
-        crc
+        return crc
     })
 }
 
@@ -19,7 +19,7 @@ fn crc8_bitwise(bytes: &[u8]) -> u8 {
 fn crc8_table_matches_check_vector() {
     let crc = b"123456789"
         .iter()
-        .fold(0u8, |accumulator, &byte| CRC8_TABLE[usize::from(accumulator ^ byte)]);
+        .fold(0u8, |accumulator, &byte| return CRC8_TABLE[usize::from(accumulator ^ byte)]);
     assert_eq!(crc, 0xf4);
     assert_eq!(crc8_bitwise(b"123456789"), 0xf4);
 }
@@ -61,7 +61,7 @@ fn synthetic_flac(payload_sizes: &[usize]) -> Vec<u8> {
         // Payload bytes carry no 0xff so the walk cannot false-sync inside them.
         buf.extend(std::iter::repeat_n(0x00, *payload));
     }
-    buf
+    return buf
 }
 
 // The walk confirms every synthetic frame and measures their byte spans.

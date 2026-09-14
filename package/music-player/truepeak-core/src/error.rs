@@ -110,7 +110,7 @@ impl fmt::Display for TruePeakError {
             // ```ts
             // return `true-peak decode failed: ${message}`;
             // ```
-            Self::Decode { message } => write!(formatter, "true-peak decode failed: {message}"),
+            Self::Decode { message } => return write!(formatter, "true-peak decode failed: {message}"),
             // What:     `Self::Seek { message } => write!(...)`. Same shape for seeks.
             // Why:      Surface the seek cause.
             //
@@ -118,7 +118,7 @@ impl fmt::Display for TruePeakError {
             // ```ts
             // return `true-peak seek failed: ${message}`;
             // ```
-            Self::Seek { message } => write!(formatter, "true-peak seek failed: {message}"),
+            Self::Seek { message } => return write!(formatter, "true-peak seek failed: {message}"),
         }
     }
 }

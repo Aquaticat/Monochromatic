@@ -1,10 +1,10 @@
 /**
- * Unary and update operator mutations.
- *
- * @example
- * ```ts
- * unaryUpdateReplacements({ node, parent: undefined, source });
- * ```
+ Unary and update operator mutations.
+ 
+ @example
+ ```ts
+ unaryUpdateReplacements({ node, parent: undefined, source });
+ ```
  */
 
 import { childNode, } from '../node-access.ts';
@@ -14,8 +14,8 @@ import type {
 } from '../types.ts';
 
 /**
- * Numeric unary swap table; `~` drops entirely, mirroring Stryker's
- * UnaryOperator. `!` belongs to the boolean family instead.
+ Numeric unary swap table; `~` drops entirely, mirroring Stryker's
+ UnaryOperator. `!` belongs to the boolean family instead.
  */
 const UNARY_SWAPS: Readonly<Record<string, string>> = {
   '+': '-',
@@ -23,7 +23,7 @@ const UNARY_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Update operator swap table, mirroring Stryker's UpdateOperator.
+ Update operator swap table, mirroring Stryker's UpdateOperator.
  */
 const UPDATE_SWAPS: Readonly<Record<string, string>> = {
   '++': '--',
@@ -31,16 +31,16 @@ const UPDATE_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Emits unary and update operator replacements for one node.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * unaryUpdateReplacements({ node: updateExpression, parent: undefined, source });
- * ```
+ Emits unary and update operator replacements for one node.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ unaryUpdateReplacements({ node: updateExpression, parent: undefined, source });
+ ```
  */
 export function unaryUpdateReplacements(options: {
   readonly node: EstreeNode;
@@ -51,7 +51,7 @@ export function unaryUpdateReplacements(options: {
     .type
     === 'UnaryExpression') {
     /**
-     * Argument expression text reused by swap and drop variants.
+     Argument expression text reused by swap and drop variants.
      */
     const argumentText = options.source
       .slice(
@@ -67,7 +67,7 @@ export function unaryUpdateReplacements(options: {
         .end,
     );
     /**
-     * Unary operator token declared by the expression.
+     Unary operator token declared by the expression.
      */
     const token = (typeof options.node
       .operator) === 'string'
@@ -87,7 +87,7 @@ export function unaryUpdateReplacements(options: {
       },];
 
     /**
-     * Swapped unary operator, when the token participates in the family.
+     Swapped unary operator, when the token participates in the family.
      */
     const swapped = UNARY_SWAPS[token];
 
@@ -109,7 +109,7 @@ export function unaryUpdateReplacements(options: {
     .type
     === 'UpdateExpression') {
     /**
-     * Update operator token declared by the expression.
+     Update operator token declared by the expression.
      */
     const token = (typeof options.node
       .operator) === 'string'
@@ -117,7 +117,7 @@ export function unaryUpdateReplacements(options: {
         .operator
       : '';
     /**
-     * Swapped update operator for this token.
+     Swapped update operator for this token.
      */
     const swapped = UPDATE_SWAPS[token];
 
@@ -125,7 +125,7 @@ export function unaryUpdateReplacements(options: {
       return [];
 
     /**
-     * Updated variable expression text.
+     Updated variable expression text.
      */
     const argumentText = options.source
       .slice(

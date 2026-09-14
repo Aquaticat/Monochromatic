@@ -7,7 +7,7 @@ import {
 import { parsePrivilegeContext, } from '../dist/final/node/privilege-context-data.mjs';
 
 /**
- * Valid serialized caller context with every optional field.
+ Valid serialized caller context with every optional field.
  */
 const VALID_CONTEXT = {
   environment: {
@@ -17,6 +17,8 @@ const VALID_CONTEXT = {
     WG_QUICKER_CALLER_PATH: '/home/caller/bin:/usr/bin',
     WG_QUICKER_EXEMPT_COMMAND: '/repo/target/release/wg-quicker-exempt',
     WG_QUICKER_EXEMPT_UID: '1000',
+    WG_QUICKER_OPENSNITCH_DAEMON_CONFIG: '/etc/opensnitchd/default-config.json',
+    WG_QUICKER_OPENSNITCH_SYSTEM_FIREWALL_CONFIG: '/etc/opensnitchd/system-fw.json',
     WG_QUICKER_RUNTIME_DIRECTORY: '/run/wg-quicker',
     XDG_CACHE_HOME: '/home/caller/.cache',
   },
@@ -25,7 +27,7 @@ const VALID_CONTEXT = {
 };
 
 /**
- * Invalid serialized context cases and expected diagnostics.
+ Invalid serialized context cases and expected diagnostics.
  */
 const INVALID_CONTEXTS = [
   {

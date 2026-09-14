@@ -1,17 +1,17 @@
 /**
- * Path-based signal detection.
- *
- * Owns the path-handling lobe of the flagger:
- * - `pathSignals`: top-level "should this path be flagged?" check.
- * - `resolvePath`/`isUnder`/`isHomeDotfile`: helpers used by
- *   `pathSignals` and the bash-parser to make path comparisons
- *   that respect `~` expansion, cwd containment, and home dotfiles.
- *
- * Path logic stays separate from content/text logic
- * (`content-signals.ts`) and tool-event introspection
- * (`tool-helpers.ts`) so each lobe can change independently.
- *
- * @module
+ Path-based signal detection.
+ 
+ Owns the path-handling lobe of the flagger:
+ - `pathSignals`: top-level "should this path be flagged?" check.
+ - `resolvePath`/`isUnder`/`isHomeDotfile`: helpers used by
+   `pathSignals` and the bash-parser to make path comparisons
+   that respect `~` expansion, cwd containment, and home dotfiles.
+ 
+ Path logic stays separate from content/text logic
+ (`content-signals.ts`) and tool-event introspection
+ (`tool-helpers.ts`) so each lobe can change independently.
+ 
+ @module
  */
 
 import { realpath, } from 'node:fs/promises';
@@ -24,17 +24,17 @@ import type { SignalContext, } from './types.ts';
 //region Logging
 
 /**
- * Logger root for auto-mode after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for auto-mode after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'auto-mode', },);
 
 /**
- * Tagged logger for the path-signals module.
+ Tagged logger for the path-signals module.
  */
 const moduleLogger = tagged({
   tag: 'path-signals',
@@ -44,59 +44,59 @@ const moduleLogger = tagged({
 //endregion Logging
 
 /**
- * Sentinel for paths whose canonical filesystem target cannot be resolved.
- *
- * @example
- * ```typescript
- * const missing = REALPATH_UNAVAILABLE;
- * ```
+ Sentinel for paths whose canonical filesystem target cannot be resolved.
+ 
+ @example
+ ```typescript
+ const missing = REALPATH_UNAVAILABLE;
+ ```
  */
 const REALPATH_UNAVAILABLE = Symbol('path signal realpath unavailable for target',);
 
 /**
- * Result from attempting filesystem canonicalisation.
- *
- * @example
- * ```typescript
- * const result: RealpathResult = REALPATH_UNAVAILABLE;
- * ```
+ Result from attempting filesystem canonicalisation.
+ 
+ @example
+ ```typescript
+ const result: RealpathResult = REALPATH_UNAVAILABLE;
+ ```
  */
 type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
 
 /**
- * Check if a file path should trigger flagging.
- *
- * Bug fix: `isSystemPath` removed from upstream. It caused
- * false positives on `/var/home/user` which is a common
- * home directory on some Linux systems. The `!isUnder(resolved, cwd)`
- * check already catches paths outside the project directory.
- *
- * Delegates to {@link resolvePath} and {@link tryRealpath} to canonicalise
- * the target, {@link isAllowlistedPath} to honor per-call allowlists,
- * {@link isUnder} for cwd containment, {@link isHomeDotfile} for home
- * dotfile detection, and {@link hasSecretPathSignal} for secret-looking
- * names; {@link realpathOrLexical} canonicalises cwd and home for the
- * comparison.
- *
- * @returns `true` if the path should be flagged
- *
- * @example
- * ```typescript
- * pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/account-home" } }); // true
- * pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/account-home" } }); // false
- * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
- * pathSignals({
- *   filePath: nodePath.join(currentAgentTempDir, 'example/src/index.ts'),
- *   ctx,
- *   allowlistedDirs: [currentAgentTempDir],
- * }); // false
- * const allowlistedDirs = ["/home/user/.agents/skills/example"];
- * pathSignals({
- *   filePath: "/home/user/.agents/skills/example/.env",
- *   ctx,
- *   allowlistedDirs,
- * }); // true
- * ```
+ Check if a file path should trigger flagging.
+ 
+ Bug fix: `isSystemPath` removed from upstream. It caused
+ false positives on `/var/home/user` which is a common
+ home directory on some Linux systems. The `!isUnder(resolved, cwd)`
+ check already catches paths outside the project directory.
+ 
+ Delegates to {@link resolvePath} and {@link tryRealpath} to canonicalise
+ the target, {@link isAllowlistedPath} to honor per-call allowlists,
+ {@link isUnder} for cwd containment, {@link isHomeDotfile} for home
+ dotfile detection, and {@link hasSecretPathSignal} for secret-looking
+ names; {@link realpathOrLexical} canonicalises cwd and home for the
+ comparison.
+ 
+ @returns `true` if the path should be flagged
+ 
+ @example
+ ```typescript
+ pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/account-home" } }); // true
+ pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/account-home" } }); // false
+ const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
+ pathSignals({
+   filePath: nodePath.join(currentAgentTempDir, 'example/src/index.ts'),
+   ctx,
+   allowlistedDirs: [currentAgentTempDir],
+ }); // false
+ const allowlistedDirs = ["/home/user/.agents/skills/example"];
+ pathSignals({
+   filePath: "/home/user/.agents/skills/example/.env",
+   ctx,
+   allowlistedDirs,
+ }); // true
+ ```
  */
 async function pathSignals(
   {
@@ -107,43 +107,43 @@ async function pathSignals(
     readonly filePath: string;
     readonly ctx: SignalContext;
     /**
-     * Directories whose contents should not trip location-based signals for this call.
+     Directories whose contents should not trip location-based signals for this call.
      */
     readonly allowlistedDirs?: readonly string[];
   },
 ): Promise<boolean> {
   /**
-   * Cached lexical resolution shared by cwd containment, allowlist, dotfile, and secret checks.
+   Cached lexical resolution shared by cwd containment, allowlist, dotfile, and secret checks.
    */
   const resolved = resolvePath({
     filePath,
     cwd: ctx.cwd,
   },);
   /**
-   * Canonical target path when `filePath` exists; missing paths fall back to lexical checks.
+   Canonical target path when `filePath` exists; missing paths fall back to lexical checks.
    */
   const canonicalResolved = await tryRealpath(resolved,);
   /**
-   * Path used for location checks; canonical targets prevent symlink escape bypasses.
+   Path used for location checks; canonical targets prevent symlink escape bypasses.
    */
   const signalPath = canonicalResolved === REALPATH_UNAVAILABLE
     ? resolved
     : canonicalResolved;
   /**
-   * Cwd used for containment checks; canonicalised when the target was canonicalised too.
+   Cwd used for containment checks; canonicalised when the target was canonicalised too.
    */
   const signalCwd = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.cwd
     : await realpathOrLexical(ctx.cwd,);
   /**
-   * Home used for dotfile checks; canonicalised when the target was canonicalised too.
+   Home used for dotfile checks; canonicalised when the target was canonicalised too.
    */
   const signalHome = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.home
     : await realpathOrLexical(ctx.home,);
 
   /**
-   * Whether this call targets a per-call allowlisted directory such as a loaded skill root.
+   Whether this call targets a per-call allowlisted directory such as a loaded skill root.
    */
   const allowlisted = await isAllowlistedPath({
     canonicalResolved,
@@ -179,28 +179,28 @@ async function pathSignals(
 }
 
 /**
- * Check whether canonical target is under any canonical allowlisted directory.
- *
- * Canonicalises each allowlisted root with {@link tryRealpath} before
- * comparing containment with {@link isUnder}.
- *
- * @param canonicalResolved - canonical target path, when target exists
- *
- * @param cwd - working directory used for resolving relative allowlist entries
- *
- * @param allowlistedDirs - directory roots trusted for this read-like operation
- *
- * @returns whether canonical target stays inside canonical allowlist boundary
- *
- * @example
- * ```typescript
- * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
- * isAllowlistedPath({
- *   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/index.ts'),
- *   cwd: "/project",
- *   allowlistedDirs: [currentAgentTempDir],
- * }); // true
- * ```
+ Check whether canonical target is under any canonical allowlisted directory.
+ 
+ Canonicalises each allowlisted root with {@link tryRealpath} before
+ comparing containment with {@link isUnder}.
+ 
+ @param canonicalResolved - canonical target path, when target exists
+ 
+ @param cwd - working directory used for resolving relative allowlist entries
+ 
+ @param allowlistedDirs - directory roots trusted for this read-like operation
+ 
+ @returns whether canonical target stays inside canonical allowlist boundary
+ 
+ @example
+ ```typescript
+ const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
+ isAllowlistedPath({
+   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/index.ts'),
+   cwd: "/project",
+   allowlistedDirs: [currentAgentTempDir],
+ }); // true
+ ```
  */
 async function isAllowlistedPath(
   {
@@ -217,13 +217,13 @@ async function isAllowlistedPath(
     return false;
 
   /**
-   * Concurrent canonicalization and containment work for allowlisted roots.
+   Concurrent canonicalization and containment work for allowlisted roots.
    */
   const containmentPromises: Promise<boolean>[] = [];
   for (const allowlistedDir of allowlistedDirs) {
     containmentPromises[containmentPromises.length] = (async function containsCanonicalPath(): Promise<boolean> {
       /**
-       * Canonical allowlisted root; missing roots fail closed.
+       Canonical allowlisted root; missing roots fail closed.
        */
       const canonicalDir = await tryRealpath(nodePath.resolve(
         cwd,
@@ -237,7 +237,7 @@ async function isAllowlistedPath(
     })();
   }
   /**
-   * Per-allowlist containment decisions for current canonical target.
+   Per-allowlist containment decisions for current canonical target.
    */
   const containmentDecisions = await Promise.all(containmentPromises,);
   for (const containsTarget of containmentDecisions) {
@@ -248,26 +248,26 @@ async function isAllowlistedPath(
 }
 
 /**
- * Check raw, lexical, and canonical path spellings against
- * {@link SECRET_PATH_PATTERN} for secret-looking names.
- *
- * @param filePath - original path string supplied to tool call
- *
- * @param resolved - lexical absolute path after cwd or home expansion
- *
- * @param canonicalResolved - canonical filesystem target, when target exists
- *
- * @returns whether any spelling exposes secret-related path markers
- *
- * @example
- * ```typescript
- * const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
- * hasSecretPathSignal({
- *   filePath: nodePath.join(currentAgentTempDir, 'link'),
- *   resolved: nodePath.join(currentAgentTempDir, 'link'),
- *   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/.env'),
- * }); // true
- * ```
+ Check raw, lexical, and canonical path spellings against
+ {@link SECRET_PATH_PATTERN} for secret-looking names.
+ 
+ @param filePath - original path string supplied to tool call
+ 
+ @param resolved - lexical absolute path after cwd or home expansion
+ 
+ @param canonicalResolved - canonical filesystem target, when target exists
+ 
+ @returns whether any spelling exposes secret-related path markers
+ 
+ @example
+ ```typescript
+ const currentAgentTempDir = nodePath.join(homedir(), 'temp', 'agent');
+ hasSecretPathSignal({
+   filePath: nodePath.join(currentAgentTempDir, 'link'),
+   resolved: nodePath.join(currentAgentTempDir, 'link'),
+   canonicalResolved: nodePath.join(currentAgentTempDir, 'repo/.env'),
+ }); // true
+ ```
  */
 function hasSecretPathSignal(
   {
@@ -281,7 +281,7 @@ function hasSecretPathSignal(
   },
 ): boolean {
   /**
-   * Path spellings tested so symlinks cannot hide secret-looking target names.
+   Path spellings tested so symlinks cannot hide secret-looking target names.
    */
   const candidates = [
     filePath,
@@ -296,16 +296,16 @@ function hasSecretPathSignal(
 }
 
 /**
- * Resolve filesystem path to canonical target without throwing for absent paths.
- *
- * @param path - filesystem path that may include symlinks
- *
- * @returns canonical filesystem path, or sentinel when missing or inaccessible
- *
- * @example
- * ```typescript
- * const canonical = tryRealpath(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
- * ```
+ Resolve filesystem path to canonical target without throwing for absent paths.
+ 
+ @param path - filesystem path that may include symlinks
+ 
+ @returns canonical filesystem path, or sentinel when missing or inaccessible
+ 
+ @example
+ ```typescript
+ const canonical = tryRealpath(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
+ ```
  */
 async function tryRealpath(
   path: string,
@@ -315,7 +315,7 @@ async function tryRealpath(
   }
   catch (error) {
     /**
-     * Sub-logger tagged with this function name so the handled realpath failure stays traceable.
+     Sub-logger tagged with this function name so the handled realpath failure stays traceable.
      */
     const innerL = tagged({
       tag: tryRealpath.name,
@@ -327,23 +327,23 @@ async function tryRealpath(
 }
 
 /**
- * Resolve filesystem path to canonical target via {@link tryRealpath},
- * falling back to original spelling.
- *
- * @param path - filesystem path that may include symlinks
- *
- * @returns canonical filesystem path when available, otherwise original path
- *
- * @example
- * ```typescript
- * const path = realpathOrLexical(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
- * ```
+ Resolve filesystem path to canonical target via {@link tryRealpath},
+ falling back to original spelling.
+ 
+ @param path - filesystem path that may include symlinks
+ 
+ @returns canonical filesystem path when available, otherwise original path
+ 
+ @example
+ ```typescript
+ const path = realpathOrLexical(nodePath.join(homedir(), 'temp', 'agent', 'repo'));
+ ```
  */
 async function realpathOrLexical(
   path: string,
 ): Promise<string> {
   /**
-   * Result from realpath probe before sentinel fallback.
+   Result from realpath probe before sentinel fallback.
    */
   const result = await tryRealpath(path,);
   if (result === REALPATH_UNAVAILABLE)
@@ -352,14 +352,14 @@ async function realpathOrLexical(
 }
 
 /**
- * Resolve a file path relative to cwd, handling `~` expansion.
- *
- * @returns the resolved absolute path
- *
- * @example
- * ```typescript
- * resolvePath({ filePath: "~/.bashrc", cwd: "/project" }); // `${homedir()}/.bashrc`
- * ```
+ Resolve a file path relative to cwd, handling `~` expansion.
+ 
+ @returns the resolved absolute path
+ 
+ @example
+ ```typescript
+ resolvePath({ filePath: "~/.bashrc", cwd: "/project" }); // `${homedir()}/.bashrc`
+ ```
  */
 function resolvePath(
   {
@@ -386,15 +386,15 @@ function resolvePath(
 }
 
 /**
- * Check if a resolved path is under a given directory.
- *
- * @returns `true` if the path is under or equal to the directory
- *
- * @example
- * ```typescript
- * isUnder({ resolved: "/home/user/project/src", dir: "/home/user/project" }); // true
- * isUnder({ resolved: "/etc/passwd", dir: "/home/user/project" }); // false
- * ```
+ Check if a resolved path is under a given directory.
+ 
+ @returns `true` if the path is under or equal to the directory
+ 
+ @example
+ ```typescript
+ isUnder({ resolved: "/home/user/project/src", dir: "/home/user/project" }); // true
+ isUnder({ resolved: "/etc/passwd", dir: "/home/user/project" }); // false
+ ```
  */
 function isUnder(
   {
@@ -406,7 +406,7 @@ function isUnder(
   },
 ): boolean {
   /**
-   * Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`.
+   Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`.
    */
   const norm = dir.endsWith('/',) ? dir : `${dir}/`;
   return (resolved === dir) || resolved
@@ -414,16 +414,16 @@ function isUnder(
 }
 
 /**
- * Check if a resolved path is a dotfile or dotdir in the home directory,
- * using {@link isUnder} for the home-containment check.
- *
- * @returns `true` if the path is a dotfile/dotdir in home
- *
- * @example
- * ```typescript
- * isHomeDotfile({ resolved: "/home/user/.ssh/id_rsa", home: "/home/user" }); // true
- * isHomeDotfile({ resolved: "/home/user/project/file", home: "/home/user" }); // false
- * ```
+ Check if a resolved path is a dotfile or dotdir in the home directory,
+ using {@link isUnder} for the home-containment check.
+ 
+ @returns `true` if the path is a dotfile/dotdir in home
+ 
+ @example
+ ```typescript
+ isHomeDotfile({ resolved: "/home/user/.ssh/id_rsa", home: "/home/user" }); // true
+ isHomeDotfile({ resolved: "/home/user/project/file", home: "/home/user" }); // false
+ ```
  */
 function isHomeDotfile(
   {
@@ -441,17 +441,17 @@ function isHomeDotfile(
     return false;
   }
   /**
-   * Slice of `resolved` after the home prefix; the leading `/` (if any) is consumed below.
+   Slice of `resolved` after the home prefix; the leading `/` (if any) is consumed below.
    */
   const afterHome = resolved.slice(home.length,);
   /**
-   * Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`.
+   Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`.
    */
   const relative = afterHome.startsWith('/',)
     ? afterHome.slice(1,)
     : afterHome;
   /**
-   * Default `''` covers the empty-relative case (path equals home directory).
+   Default `''` covers the empty-relative case (path equals home directory).
    */
   const [first = '',] = relative.split('/',);
   return first.startsWith('.',);

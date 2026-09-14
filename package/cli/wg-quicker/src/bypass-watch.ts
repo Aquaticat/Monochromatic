@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Persistent route-change watcher for application bypass table.
- *
- * @module
+ Persistent route-change watcher for application bypass table.
+ 
+ @module
  */
 
 import {
@@ -24,22 +24,22 @@ import { synchronizeBypassRoutes, } from './tunnel-bypass-route.ts';
 import type { BypassState, } from './tunnel-bypass-types.ts';
 
 /**
- * Delay before replacing an unexpectedly exited route monitor.
+ Delay before replacing an unexpectedly exited route monitor.
  */
 const MONITOR_RESTART_DELAY_MS = 100;
 
 /**
- * Sentinel representing no active route-monitor child.
+ Sentinel representing no active route-monitor child.
  */
 const MONITOR_ABSENT: unique symbol = Symbol('route monitor is absent',);
 
 /**
- * Module logger for watcher lifecycle.
+ Module logger for watcher lifecycle.
  */
 const l = tagged({ tag: 'bypass-watch', },);
 
 /**
- * Mutable watcher lifecycle shared by signal handler and monitor session.
+ Mutable watcher lifecycle shared by signal handler and monitor session.
  */
 type WatchLifecycle = {
   monitor: ChildProcess | typeof MONITOR_ABSENT;
@@ -47,20 +47,20 @@ type WatchLifecycle = {
 };
 
 /**
- * Reports whether route-monitor line can reflect main-table default change.
- *
- * Events for claimed bypass table are excluded to prevent synchronization loop.
- *
- * @param line - One `ip monitor route` line.
- *
- * @param state - Claimed table identity.
- *
- * @returns Whether watcher should resynchronize both families.
- *
- * @example
- * ```ts
- * isPhysicalDefaultEvent({ line: 'default via 192.0.2.1', state });
- * ```
+ Reports whether route-monitor line can reflect main-table default change.
+ 
+ Events for claimed bypass table are excluded to prevent synchronization loop.
+ 
+ @param line - One `ip monitor route` line.
+ 
+ @param state - Claimed table identity.
+ 
+ @returns Whether watcher should resynchronize both families.
+ 
+ @example
+ ```ts
+ isPhysicalDefaultEvent({ line: 'default via 192.0.2.1', state });
+ ```
  */
 function isPhysicalDefaultEvent(
   {
@@ -72,7 +72,7 @@ function isPhysicalDefaultEvent(
   },
 ): boolean {
   /**
-   * Trimmed event with optional deletion marker removed.
+   Trimmed event with optional deletion marker removed.
    */
   const event = line.trim()
     .startsWith('Deleted ',)
@@ -84,7 +84,7 @@ function isPhysicalDefaultEvent(
   if (event.includes(` table ${String(state.table,)}`,))
     return false;
   /**
-   * Table attribute when event explicitly names one.
+   Table attribute when event explicitly names one.
    */
   const tableIndex = event.indexOf(' table ',);
   if (tableIndex === (-1))
@@ -94,19 +94,19 @@ function isPhysicalDefaultEvent(
 }
 
 /**
- * Runs one route-monitor child until stop or unexpected exit.
- *
- * Monitor starts before synchronization,
- * so events occurring during initial copy remain queued for line processing.
- *
- * @param state - Persisted ownership state.
- *
- * @param lifecycle - Shared stop request and active child.
- *
- * @example
- * ```ts
- * await runMonitorSession({ state, lifecycle });
- * ```
+ Runs one route-monitor child until stop or unexpected exit.
+ 
+ Monitor starts before synchronization,
+ so events occurring during initial copy remain queued for line processing.
+ 
+ @param state - Persisted ownership state.
+ 
+ @param lifecycle - Shared stop request and active child.
+ 
+ @example
+ ```ts
+ await runMonitorSession({ state, lifecycle });
+ ```
  */
 async function runMonitorSession(
   {
@@ -118,7 +118,7 @@ async function runMonitorSession(
   },
 ): Promise<void> {
   /**
-   * Route netlink monitor covering both address families.
+   Route netlink monitor covering both address families.
    */
   const monitor = spawnChild(
     'ip',
@@ -136,7 +136,7 @@ async function runMonitorSession(
   );
   lifecycle.monitor = monitor;
   /**
-   * Spawn failures retained for explicit diagnostic.
+   Spawn failures retained for explicit diagnostic.
    */
   const spawnFailureMessages: string[] = [];
   monitor.once(
@@ -146,18 +146,18 @@ async function runMonitorSession(
     },
   );
   /**
-   * Close event promise registered before synchronization and line iteration.
+   Close event promise registered before synchronization and line iteration.
    */
   const closed = once(
     monitor,
     'close',
   );
   /**
-   * Captured monitor diagnostics consumed concurrently.
+   Captured monitor diagnostics consumed concurrently.
    */
   const stderr = text(monitor.stderr,);
   /**
-   * Line iterator over queued netlink events.
+   Line iterator over queued netlink events.
    */
   const lines = createInterface({ input: monitor.stdout, },);
   try {
@@ -182,11 +182,11 @@ async function runMonitorSession(
   }
   lifecycle.monitor = MONITOR_ABSENT;
   /**
-   * Captured monitor diagnostics after child close.
+   Captured monitor diagnostics after child close.
    */
   const diagnostic = await stderr;
   /**
-   * First spawn failure when monitor could not start.
+   First spawn failure when monitor could not start.
    */
   const [spawnFailureMessage,] = spawnFailureMessages;
   if (spawnFailureMessage !== undefined)
@@ -199,16 +199,16 @@ async function runMonitorSession(
 }
 
 /**
- * Watches route events and replaces failed monitor children until terminated.
- *
- * @param state - Persisted ownership state.
- *
- * @param statePath - State path whose watcher sidecar signals readiness.
- *
- * @example
- * ```ts
- * await watchBypassRoutes({ state, statePath });
- * ```
+ Watches route events and replaces failed monitor children until terminated.
+ 
+ @param state - Persisted ownership state.
+ 
+ @param statePath - State path whose watcher sidecar signals readiness.
+ 
+ @example
+ ```ts
+ await watchBypassRoutes({ state, statePath });
+ ```
  */
 export async function watchBypassRoutes(
   {
@@ -220,21 +220,21 @@ export async function watchBypassRoutes(
   },
 ): Promise<void> {
   /**
-   * Function-scoped logger for interface watcher.
+   Function-scoped logger for interface watcher.
    */
   const fl = tagged({
     tag: watchBypassRoutes.name,
     l,
   },);
   /**
-   * Mutable stop request and active monitor reference.
+   Mutable stop request and active monitor reference.
    */
   const lifecycle: WatchLifecycle = {
     monitor: MONITOR_ABSENT,
     requested: false,
   };
   /**
-   * Requests watcher shutdown and terminates active monitor.
+   Requests watcher shutdown and terminates active monitor.
    */
   function stopMonitoring(): void {
     fl.debug('received termination signal',);
@@ -252,7 +252,7 @@ export async function watchBypassRoutes(
     stopMonitoring,
   );
   /**
-   * Process identity registration removed on clean or failed exit.
+   Process identity registration removed on clean or failed exit.
    */
   await using registration = await registerBypassWatcher({
     statePath,
@@ -278,7 +278,7 @@ export async function watchBypassRoutes(
 }
 
 /**
- * State path supplied by detached watcher launcher.
+ State path supplied by detached watcher launcher.
  */
 const [statePath,] = process.argv
   .slice(2,);
@@ -286,7 +286,7 @@ if (statePath === undefined)
   throw new BypassRouteError('Usage: bypass-watch <state-path>',);
 
 /**
- * Validated persisted state watched by detached process.
+ Validated persisted state watched by detached process.
  */
 const state = await readBypassStatePath({ path: statePath, },);
 await watchBypassRoutes({

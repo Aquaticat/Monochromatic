@@ -187,7 +187,7 @@ pub fn send_frame_callbacks(state: &mut Compositor) {
     // Why:      Tell the client "your last frame was shown; draw the next one".
     state.space.elements().for_each(|window| {
         window.send_frame(&output, elapsed, Some(Duration::ZERO), |_, _| {
-            Some(output.clone())
+            return Some(output.clone())
         });
     });
 

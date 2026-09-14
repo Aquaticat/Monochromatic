@@ -1,27 +1,27 @@
 /**
- * TypeScript type definitions for all Claude Code hook events.
- *
- * Covers every hook event in the Claude Code lifecycle with typed inputs, outputs,
- * and tool-specific input shapes for built-in tools.
- *
- * @see [Hooks reference](https://docs.anthropic.com/en/docs/claude-code/hooks)
- *
- * @example
- * ```ts
- * import type { HookInput } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
- *
- * const event = JSON.parse(raw) as HookInput;
- * switch (event.hook_event_name) {
- *   case 'PreToolUse':
- *     console.log(event.tool_name, event.tool_input);
- *     break;
- *   case 'Stop':
- *     console.log(event.stop_hook_active);
- *     break;
- * }
- * ```
- *
- * @module
+ TypeScript type definitions for all Claude Code hook events.
+ 
+ Covers every hook event in the Claude Code lifecycle with typed inputs, outputs,
+ and tool-specific input shapes for built-in tools.
+ 
+ @see [Hooks reference](https://docs.anthropic.com/en/docs/claude-code/hooks)
+ 
+ @example
+ ```ts
+ import type { HookInput } from '@monochromatic-dev/claude-code-plugin-hook-type/ts';
+ 
+ const event = JSON.parse(raw) as HookInput;
+ switch (event.hook_event_name) {
+   case 'PreToolUse':
+     console.log(event.tool_name, event.tool_input);
+     break;
+   case 'Stop':
+     console.log(event.stop_hook_active);
+     break;
+ }
+ ```
+ 
+ @module
  */
 
 import type {
@@ -70,17 +70,17 @@ export type * from './transcript.ts';
 //region Discriminated unions
 
 /**
- * Discriminated union of all hook event inputs.
- * Narrows via `hook_event_name`.
- *
- * @example
- * ```ts
- * function handle(event: HookInput) {
- *   if (event.hook_event_name === 'PreToolUse') {
- *     event.tool_name; // narrowed to PreToolUseInput
- *   }
- * }
- * ```
+ Discriminated union of all hook event inputs.
+ Narrows via `hook_event_name`.
+ 
+ @example
+ ```ts
+ function handle(event: HookInput) {
+   if (event.hook_event_name === 'PreToolUse') {
+     event.tool_name; // narrowed to PreToolUseInput
+   }
+ }
+ ```
  */
 type HookInput =
   | SessionStartInput

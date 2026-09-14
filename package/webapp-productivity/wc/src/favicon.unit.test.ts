@@ -1,8 +1,8 @@
 /**
- * Tests for the build-time favicon: the SVG `w<` wordmark and its
- * sharp-rasterized PNG form.
- *
- * @module
+ Tests for the build-time favicon: the SVG `w<` wordmark and its
+ sharp-rasterized PNG form.
+ 
+ @module
  */
 
 import { Buffer, } from 'node:buffer';
@@ -21,58 +21,58 @@ import {
 } from './favicon.ts';
 
 /**
- * Stick count of the whole wordmark: the w's four strokes plus the
- * chevron's two.
+ Stick count of the whole wordmark: the w's four strokes plus the
+ chevron's two.
  */
 const STICK_COUNT = 6;
 
 /**
- * Grayscale byte every ground (background) sample must stay at or
- * below: `oklch(0.1 0 0)` is nearly black in sRGB.
+ Grayscale byte every ground (background) sample must stay at or
+ below: `oklch(0.1 0 0)` is nearly black in sRGB.
  */
 const GROUND_BYTE_MAX = 10;
 
 /**
- * Grayscale byte the ink must reach: `oklch(0.9 0 0)` is bright in
- * sRGB.
+ Grayscale byte the ink must reach: `oklch(0.9 0 0)` is bright in
+ sRGB.
  */
 const INK_BYTE_MIN = 200;
 
 /**
- * Per-channel wiggle allowed on an "achromatic" pixel: rasterizer
- * rounding may land antialiased channels one step apart.
+ Per-channel wiggle allowed on an "achromatic" pixel: rasterizer
+ rounding may land antialiased channels one step apart.
  */
 const ACHROMATIC_TOLERANCE = 1;
 
 /**
- * Decoded favicon raster: dimensions plus each pixel's gray value.
+ Decoded favicon raster: dimensions plus each pixel's gray value.
  */
 type DecodedFavicon = Readonly<{
   /**
-   * Raster width in pixels.
+   Raster width in pixels.
    */
   width: number;
   /**
-   * Raster height in pixels.
+   Raster height in pixels.
    */
   height: number;
   /**
-   * Gray value per pixel, rows top to bottom.
+   Gray value per pixel, rows top to bottom.
    */
   grays: readonly number[];
 }>;
 
 /**
- * Reads the gray byte of one hex color inside the SVG markup, right
- * after a paint-attribute marker like `fill="#`.
- *
- * @param svg - SVG markup searched
- *
- * @param marker - attribute prefix directly before the hex digits
- *
- * @returns first channel byte of the hex color
- *
- * @throws Error when the marker is absent
+ Reads the gray byte of one hex color inside the SVG markup, right
+ after a paint-attribute marker like `fill="#`.
+ 
+ @param svg - SVG markup searched
+ 
+ @param marker - attribute prefix directly before the hex digits
+ 
+ @returns first channel byte of the hex color
+ 
+ @throws Error when the marker is absent
  */
 function channelByteAfter(
   {
@@ -88,12 +88,12 @@ function channelByteAfter(
   }
 
   /**
-   * Index of the marker inside the markup.
+   Index of the marker inside the markup.
    */
   const markerIndex = svg.indexOf(marker,);
 
   /**
-   * First two hex digits after the marker.
+   First two hex digits after the marker.
    */
   const hex = svg.slice(
     markerIndex + marker.length,
@@ -107,15 +107,15 @@ function channelByteAfter(
 }
 
 /**
- * Renders the favicon PNG and decodes it back to raw pixels through
- * sharp, asserting each pixel is achromatic (all channels within
- * {@link ACHROMATIC_TOLERANCE} of the red channel) on the way.
- *
- * @returns decoded dimensions and per-pixel grays
+ Renders the favicon PNG and decodes it back to raw pixels through
+ sharp, asserting each pixel is achromatic (all channels within
+ {@link ACHROMATIC_TOLERANCE} of the red channel) on the way.
+ 
+ @returns decoded dimensions and per-pixel grays
  */
 async function decodeFaviconGrays(): Promise<DecodedFavicon> {
   /**
-   * Rendered favicon PNG bytes.
+   Rendered favicon PNG bytes.
    */
   const png = Buffer.from(
     await renderFaviconPngBase64(),
@@ -123,19 +123,19 @@ async function decodeFaviconGrays(): Promise<DecodedFavicon> {
   );
 
   /**
-   * Raw-pixel decoder for the rendered PNG.
+   Raw-pixel decoder for the rendered PNG.
    */
   const decoder = sharp(png,)
     .raw();
 
   /**
-   * Decoded pixel bytes plus raster metadata.
+   Decoded pixel bytes plus raster metadata.
    */
   const { data, info, } = await decoder.toBuffer({ resolveWithObject: true, },);
 
   /**
-   * Gray value of every pixel; collecting them asserts each pixel is
-   * achromatic on the way.
+   Gray value of every pixel; collecting them asserts each pixel is
+   achromatic on the way.
    */
   const grays = Array.from(
     { length: info.width * info.height, },
@@ -144,22 +144,22 @@ async function decodeFaviconGrays(): Promise<DecodedFavicon> {
       index,
     ): number {
       /**
-       * Offset of this pixel's R byte.
+       Offset of this pixel's R byte.
        */
       const offset = index * info.channels;
 
       /**
-       * Red channel, the gray value under test.
+       Red channel, the gray value under test.
        */
       const gray = data.readUInt8(offset,);
 
       /**
-       * Green channel, compared against the red.
+       Green channel, compared against the red.
        */
       const green = data.readUInt8(offset + 1,);
 
       /**
-       * Blue channel, compared against the red.
+       Blue channel, compared against the red.
        */
       const blue = data.readUInt8(offset + 2,);
 
@@ -191,7 +191,7 @@ await describe({
           name: 'declares a FAVICON_SIZE-square viewport',
           fn: async function declaresViewport(): Promise<void> {
             /**
-             * Rendered SVG markup.
+             Rendered SVG markup.
              */
             const svg = renderFaviconSvg();
 
@@ -207,12 +207,12 @@ await describe({
           name: 'draws six round-capped sticks of one shared width',
           fn: async function drawsSticks(): Promise<void> {
             /**
-             * Rendered SVG markup.
+             Rendered SVG markup.
              */
             const svg = renderFaviconSvg();
 
             /**
-             * Move commands inside the path: one per stick spine.
+             Move commands inside the path: one per stick spine.
              */
             const moveCommands = svg.split('M ',).length - 1;
 
@@ -225,7 +225,7 @@ await describe({
           name: 'inks near-white on a near-black ground',
           fn: async function paintsPaletteStops(): Promise<void> {
             /**
-             * Rendered SVG markup.
+             Rendered SVG markup.
              */
             const svg = renderFaviconSvg();
 
@@ -258,7 +258,7 @@ await describe({
           name: 'rasterizes to a FAVICON_SIZE-square image',
           fn: async function rastersSquarePng(): Promise<void> {
             /**
-             * Decoded favicon raster.
+             Decoded favicon raster.
              */
             const decoded = await decodeFaviconGrays();
 
@@ -270,14 +270,14 @@ await describe({
           name: 'draws achromatic ink on an achromatic near-black ground',
           fn: async function drawsGrayscaleWordmark(): Promise<void> {
             /**
-             * Decoded favicon raster; decoding already asserted every
-             * pixel is achromatic.
+             Decoded favicon raster; decoding already asserted every
+             pixel is achromatic.
              */
             const decoded = await decodeFaviconGrays();
 
             /**
-             * Corner pixel: bare ground, since the wordmark is
-             * centered.
+             Corner pixel: bare ground, since the wordmark is
+             centered.
              */
             const [corner,] = decoded.grays;
 

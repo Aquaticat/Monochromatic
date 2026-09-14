@@ -1,17 +1,14 @@
 /**
- * Completion-review domain contracts.
- *
- * @module
+ Settlement-review domain contracts.
+ 
+ @module
  */
 
 import type {
   Api,
   Model,
 } from '@earendil-works/pi-ai';
-import type {
-  AgentToolResult,
-  ExtensionContext,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { StructuredReviewAuth, } from '@monochromatic-dev/pi-shared-model-review/ts';
 
@@ -21,36 +18,34 @@ import type {
 } from './types.ts';
 
 /**
- * Strict secondary-review decision.
+ Strict private secondary-review decision.
  */
 type GoalReviewVerdict = {
   readonly approved: boolean;
-  readonly feedback: string;
+  readonly rationale: string;
+  readonly remainingWork: string;
 };
 
 /**
- * Locally validated completion request and stale-result capture.
+ Settlement identity captured before asynchronous review.
  */
-type ValidGoalCompletionRequest = {
+type GoalSettlementReviewRequest = {
   readonly goal: ActiveGoalState;
-  readonly goalId: string;
-  readonly summary: string;
   readonly runtimeEpoch: GoalRuntimeEpoch;
   readonly branchLeafId: string;
-  readonly toolCallId: string;
+  readonly settlementSequence: number;
 };
 
 /**
- * Serialized post-start evidence independent of reviewer model budget.
+ Serialized post-start evidence independent of reviewer model budget.
  */
 type GoalReviewEvidence = {
   readonly objective: string;
-  readonly summary: string;
   readonly transcriptChunks: readonly string[];
 };
 
 /**
- * Authenticated distinct reviewer and candidate-specific prompt.
+ Authenticated distinct reviewer and candidate-specific prompt.
  */
 type GoalReviewerCandidate = {
   readonly model: ForeignBorrowed<Model<Api>>;
@@ -61,9 +56,9 @@ type GoalReviewerCandidate = {
 };
 
 /**
- * Successful independent review with transport audit.
+ Successful independent review with transport audit.
  */
-type GoalCompletionReview = {
+type GoalSettlementReview = {
   readonly verdict: GoalReviewVerdict;
   readonly reviewerIdentity: string;
   readonly attemptedReviewerIdentities: readonly string[];
@@ -71,44 +66,31 @@ type GoalCompletionReview = {
 };
 
 /**
- * Production completion reviewer capability.
+ Production settlement reviewer capability.
  */
-type GoalCompletionReviewer = (
+type GoalSettlementReviewer = (
   input: {
-    readonly request: ValidGoalCompletionRequest;
+    readonly request: GoalSettlementReviewRequest;
     readonly context: ForeignBorrowed<ExtensionContext>;
     readonly signal?: AbortSignal;
   },
-) => Promise<GoalCompletionReview>;
+) => Promise<GoalSettlementReview>;
 
 /**
- * Structured result details returned by `goal_complete`.
+ Harness-internal outcome of one settlement review.
  */
-type GoalCompletionDetails = {
-  readonly outcome:
-    | 'approved'
-    | 'denied'
-    | 'rejected'
-    | 'stale'
-    | 'review_unavailable';
-  readonly reviewerIdentity?: string;
-  readonly reviewerFeedback?: string;
-  readonly attemptedReviewerIdentities?: readonly string[];
-  readonly transcriptTruncated?: boolean;
-};
-
-/**
- * Complete Pi tool result for goal completion.
- */
-type GoalCompletionResult = AgentToolResult<GoalCompletionDetails>;
+type GoalSettlementDisposition =
+  | 'approved'
+  | 'continued'
+  | 'review_unavailable'
+  | 'stale';
 
 export type {
-  GoalCompletionDetails,
-  GoalCompletionReview,
-  GoalCompletionResult,
-  GoalCompletionReviewer,
-  GoalReviewEvidence,
   GoalReviewerCandidate,
+  GoalReviewEvidence,
   GoalReviewVerdict,
-  ValidGoalCompletionRequest,
+  GoalSettlementDisposition,
+  GoalSettlementReview,
+  GoalSettlementReviewer,
+  GoalSettlementReviewRequest,
 };

@@ -1,7 +1,7 @@
 /**
- * Tests for `applyCapitalization` and `joinTokens`.
- *
- * @module
+ Tests for `applyCapitalization` and `joinTokens`.
+ 
+ @module
  */
 
 import {

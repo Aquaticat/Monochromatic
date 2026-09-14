@@ -1,7 +1,7 @@
 /**
- * Tests for global pi settings restoration.
- *
- * @module
+ Tests for global pi settings restoration.
+ 
+ @module
  */
 
 import {
@@ -28,16 +28,16 @@ type SettingsFileHarness = {
 };
 
 /**
- * Creates in-memory settings file accessors.
- *
- * @param initialContent - starting settings JSON text
- *
- * @returns fake settings reader and writer
- *
- * @example
- * ```typescript
- * const harness = createSettingsFileHarness({ initialContent: '{"defaultThinkingLevel":"xhigh"}' });
- * ```
+ Creates in-memory settings file accessors.
+ 
+ @param initialContent - starting settings JSON text
+ 
+ @returns fake settings reader and writer
+ 
+ @example
+ ```typescript
+ const harness = createSettingsFileHarness({ initialContent: '{"defaultThinkingLevel":"xhigh"}' });
+ ```
  */
 function createSettingsFileHarness(
   {

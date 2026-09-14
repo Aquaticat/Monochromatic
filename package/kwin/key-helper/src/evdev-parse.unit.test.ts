@@ -1,9 +1,9 @@
 /**
- * Tests for the pure evdev helpers: sysfs bitmap parsing and the double-shift
- * detector reducer. The reducer cases capture the exact fire/no-fire rules so the
- * detector cannot silently regress.
- *
- * @module
+ Tests for the pure evdev helpers: sysfs bitmap parsing and the double-shift
+ detector reducer. The reducer cases capture the exact fire/no-fire rules so the
+ detector cannot silently regress.
+ 
+ @module
  */
 
 import {
@@ -29,16 +29,16 @@ const SECOND_TAP_FAST_MS = 1_100;
 const SECOND_TAP_SLOW_MS = 1_400;
 
 /**
- * Fold a press then release of Shift into the detector, returning the result of
- * the release (where a double-shift, if any, fires).
- *
- * @param state - State to start from
- * @param releaseNow - Timestamp of the release event
- * @returns Reducer result for the release event
- * @example
- * ```ts
- * tapShift({ state: INITIAL_SHIFT_STATE, releaseNow: 1000 });
- * ```
+ Fold a press then release of Shift into the detector, returning the result of
+ the release (where a double-shift, if any, fires).
+ 
+ @param state - State to start from
+ @param releaseNow - Timestamp of the release event
+ @returns Reducer result for the release event
+ @example
+ ```ts
+ tapShift({ state: INITIAL_SHIFT_STATE, releaseNow: 1000 });
+ ```
  */
 function tapShift({ state, releaseNow }: { state: ShiftState; releaseNow: number }): {
   state: ShiftState;

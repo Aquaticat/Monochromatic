@@ -5,12 +5,12 @@ use crate::policy::default_policy;
 
 // Independent bitwise CRC-8 (poly 0x07, init 0) for building synthetic frames.
 fn crc8_bitwise(bytes: &[u8]) -> u8 {
-    bytes.iter().fold(0u8, |mut crc, &byte| {
+    return bytes.iter().fold(0u8, |mut crc, &byte| {
         crc ^= byte;
         for _ in 0..8 {
             crc = if crc & 0x80 != 0 { (crc << 1) ^ 0x07 } else { crc << 1 };
         }
-        crc
+        return crc
     })
 }
 
@@ -32,7 +32,7 @@ fn synthetic_flac(payload_sizes: &[usize]) -> Vec<u8> {
         buf.push(crc8_bitwise(&header));
         buf.extend(std::iter::repeat_n(0x00, *payload));
     }
-    buf
+    return buf
 }
 
 // FLAC bytes yield lossless provenance with bones; the hot frame's slot leads the seeds.

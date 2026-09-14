@@ -10,7 +10,7 @@ import {
 import { typeFestResolvesFrom, } from '../../dist/final/node/index.mjs';
 
 /**
- * Fixture source root, in a package that does declare the dependency.
+ Fixture source root, in a package that does declare the dependency.
  */
 const FIXTURES = fixtureSourceRoot({
   fixturePackageName: 'oxlint-no-restricted-syntax',

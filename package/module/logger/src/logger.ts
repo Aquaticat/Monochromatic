@@ -1,63 +1,92 @@
+import { createDefaultSinks, } from '#default-sinks';
+
 import { createLogger, } from './create-logger.ts';
-import { createConsoleSink, } from './sink/console.ts';
-import { createFileSink, } from './sink/file.ts';
-import { createIndexedDbSink, } from './sink/indexed-db.ts';
-import { createLocalStorageSink, } from './sink/local-storage.ts';
-import { createSessionStorageSink, } from './sink/session-storage.ts';
+
 import type {
+  Level,
   Logger,
-  Sink,
 } from './types.ts';
 
 /**
- * Default sink backends to attempt, in priority order. Each runtime keeps
- * only the sinks whose `verify` confirms its backend: {@link createConsoleSink}
- * everywhere, {@link createIndexedDbSink} in browsers,
- * {@link createSessionStorageSink} wherever web storage round-trips (browsers,
- * Node 22+, Deno), {@link createLocalStorageSink} wherever `localStorage`
- * round-trips (browsers, Deno, Node launched with `--localstorage-file`),
- * {@link createFileSink} under Node. The noop sink is intentionally absent so
- * a process with no working backend surfaces the "No logging backends
- * available" error instead of silently discarding. The OPFS sink is exported
- * but no longer a default: its stream stages writes until a close that a
- * crash never performs, so IndexedDB holds the persistent-browser slot; see
- * `DECISIONS.md`.
+ Default logger instance and its readiness promise, built on first use.
  */
-const defaultSinks: readonly Sink[] = [
-  createConsoleSink(),
-  createIndexedDbSink(),
-  createSessionStorageSink(),
-  createLocalStorageSink(),
-  createFileSink(),
-];
+type DefaultInstance = {
+  readonly initPromise: Promise<void>;
+  readonly logger: Logger;
+};
 
 /**
- * Default multi-sink logger plus its eager readiness promise, built by
- * applying {@link createLogger} to {@link defaultSinks}.
+ Memo for the default instance. Empty until the first log or flush call, so
+ importing this module (or `tagged`, which reaches it) runs no sink
+ discovery: no timers, no I/O, no storage probes. Runtimes that forbid those
+ in global scope (Cloudflare Workers, issue #493) therefore pay nothing at
+ import and verify their sinks inside whatever handler logs first.
  */
-const {
-  initPromise: defaultInitPromise,
-  logger: defaultLogger,
-} = createLogger({ sinks: defaultSinks, },);
+const memo: { current?: DefaultInstance; } = {};
 
 /**
- * Eager readiness promise. Consumers do not need to await this before logging;
- * {@link Logger.flush} awaits it internally, and startup records replay to
- * async sinks as they become available.
+ Builds the default instance on first use and returns it afterwards.
+
+ @returns Default logger and its readiness promise.
+
+ @example
+ ```ts
+ const { logger } = defaultInstance();
+ ```
  */
-export const initPromise: Promise<void> = defaultInitPromise;
+function defaultInstance(): DefaultInstance {
+  memo.current ??= createLogger({ sinks: createDefaultSinks(), },);
+  return memo.current;
+}
 
 /**
- * Multi-sink logger that writes to all available backends.
- * Startup records replay to async sinks that verify after the log call;
- * log calls throw only after initialization proves no backend is available.
- *
- * @example
- * ```ts
- * import { logger, } from '\@monochromatic-dev/module-logger/logger';
- *
- * logger.error('unexpected shutdown',);
- * await logger.flush();
- * ```
+ Builds one level method that forwards to the default instance, creating it
+ on the first call.
+
+ @param level - Severity the method logs at.
+
+ @returns Forwarding level method.
  */
-export const logger: Logger = defaultLogger;
+function forward(level: Level,): (message: string,) => void {
+  return function logAtLevel(message: string,): void {
+    defaultInstance()
+      .logger[level](message,);
+  };
+}
+
+/**
+ Awaits the default instance's own `flush`, creating the instance first so a
+ flush before any log still verifies the sinks and drains them.
+ */
+async function flush(): Promise<void> {
+  await defaultInstance()
+    .logger
+    .flush();
+}
+
+/**
+ Multi-sink logger that writes to all available backends, built lazily on
+ the first call. Startup records replay to async sinks that verify after
+ the log call. Log calls throw only when initialization proves no backend is
+ available, which the console sink prevents in every supported runtime.
+ `flush()` awaits verification internally, so no readiness promise is
+ exported: awaiting one at module top level was the mistake this design
+ removes.
+
+ @example
+ ```ts
+ import { logger, } from '\@monochromatic-dev/module-logger';
+
+ logger.error('unexpected shutdown',);
+ await logger.flush();
+ ```
+ */
+export const logger: Logger = {
+  debug: forward('debug',),
+  error: forward('error',),
+  fatal: forward('fatal',),
+  flush,
+  info: forward('info',),
+  trace: forward('trace',),
+  warn: forward('warn',),
+};

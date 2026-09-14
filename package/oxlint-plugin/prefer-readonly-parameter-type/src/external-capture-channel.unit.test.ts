@@ -1,38 +1,38 @@
 /**
- * Whether a capture handed to an external package's retained callback is charged.
- *
- * Its own test, over a dependency this file writes, because no other route exists. The external channel
- * needs an installed package with a locked version whose shipped implementation the analyzer can load,
- * and this workspace has none it can reach: a `workspace:*` dependency appears in `pnpm-lock.yaml` only
- * as `link:package/...`, never as a `name@version` key, so `packageVersionIsLocked` answers false for
- * every package the repo owns.
- *
- * Authoring one satisfies every gate, because `packageVersionIsLocked` walks ancestors of
- * `consumerProject.configFileName` rather than the repository root. A disposable consumer directory
- * therefore owns its own lockfile, its own configured project, and its own `node_modules`.
- *
- * What the authored lockfile does **not** prove: that pnpm would emit that key for a package installed
- * this way. It would not. A `file:` tarball is keyed `name@file:/absolute/path`, and a workspace link is
- * keyed `link:`, so neither reaches the gate. The key shape here is copied from this repository's own
- * `pnpm-lock.yaml`, and the gate under test reads a lockfile rather than an installer, so a copied shape
- * is the sound input. The boundary is worth stating rather than leaving implied.
- *
- * Driven through the effect summaries rather than through oxlint, which keeps this test about one thing.
- * The end-to-end falsification was run separately, and it produced both halves at once:
- *
- * ```text
- * consumer.ts:15: ... is exposed to these unresolved calls: capture-retainer-probe@1.0.0 . retainCallback
- * consumer.ts:25: Parameter "config" can be deeply readonly: property row is writable.
- * ```
- *
- * That run needed `--threads=1` at the time, because the whole external channel was then failing with
- * `spawn ENOMEM` under oxlint's default worker count. That was a separate defect, since fixed by starting
- * the external implementation child before oxlint reserves its per-worker buffers, and
- * `external-channel-workers.unit.test.ts` guards it at the default count. This test cannot see that
- * failure at all: plain `node` spawns the second child without trouble, which is exactly why the other
- * test exists.
- *
- * @module
+ Whether a capture handed to an external package's retained callback is charged.
+ 
+ Its own test, over a dependency this file writes, because no other route exists. The external channel
+ needs an installed package with a locked version whose shipped implementation the analyzer can load,
+ and this workspace has none it can reach: a `workspace:*` dependency appears in `pnpm-lock.yaml` only
+ as `link:package/...`, never as a `name@version` key, so `packageVersionIsLocked` answers false for
+ every package the repo owns.
+ 
+ Authoring one satisfies every gate, because `packageVersionIsLocked` walks ancestors of
+ `consumerProject.configFileName` rather than the repository root. A disposable consumer directory
+ therefore owns its own lockfile, its own configured project, and its own `node_modules`.
+ 
+ What the authored lockfile does **not** prove: that pnpm would emit that key for a package installed
+ this way. It would not. A `file:` tarball is keyed `name@file:/absolute/path`, and a workspace link is
+ keyed `link:`, so neither reaches the gate. The key shape here is copied from this repository's own
+ `pnpm-lock.yaml`, and the gate under test reads a lockfile rather than an installer, so a copied shape
+ is the sound input. The boundary is worth stating rather than leaving implied.
+ 
+ Driven through the effect summaries rather than through oxlint, which keeps this test about one thing.
+ The end-to-end falsification was run separately, and it produced both halves at once:
+ 
+ ```text
+ consumer.ts:15: ... is exposed to these unresolved calls: capture-retainer-probe@1.0.0 . retainCallback
+ consumer.ts:25: Parameter "config" can be deeply readonly: property row is writable.
+ ```
+ 
+ That run needed `--threads=1` at the time, because the whole external channel was then failing with
+ `spawn ENOMEM` under oxlint's default worker count. That was a separate defect, since fixed by starting
+ the external implementation child before oxlint reserves its per-worker buffers, and
+ `external-channel-workers.unit.test.ts` guards it at the default count. This test cannot see that
+ failure at all: plain `node` spawns the second child without trouble, which is exactly why the other
+ test exists.
+ 
+ @module
  */
 
 import {
@@ -59,26 +59,26 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Authored dependency name, which must not name anything installed.
+ Authored dependency name, which must not name anything installed.
  */
 const PACKAGE_NAME = 'capture-retainer-probe';
 
 /**
- * Authored dependency version, matched exactly by the fixture lockfile key.
+ Authored dependency version, matched exactly by the fixture lockfile key.
  */
 const PACKAGE_VERSION = '1.0.0';
 
 /**
- * Shipped implementation, whose effects the analyzer proves by reading this source.
- *
- * `retainCallback` keeps both arguments past its own return, which is what makes its summary non-empty
- * and therefore what makes the external gate open at all. `stampRow` writes its formal, so a consumer
- * handing it caller state is charged a proven mutation rather than opacity, and that difference is the
- * fixture's own proof that the external path ran.
- *
- * `runCallback` invokes rather than keeps, which reaches a different branch of the formal selection:
- * retention arrives as an opaque formal and invocation as an invoked one. Without it, deleting
- * invocation from that selection would leave this suite green while a measured false offer returned.
+ Shipped implementation, whose effects the analyzer proves by reading this source.
+ 
+ `retainCallback` keeps both arguments past its own return, which is what makes its summary non-empty
+ and therefore what makes the external gate open at all. `stampRow` writes its formal, so a consumer
+ handing it caller state is charged a proven mutation rather than opacity, and that difference is the
+ fixture's own proof that the external path ran.
+ 
+ `runCallback` invokes rather than keeps, which reaches a different branch of the formal selection:
+ retention arrives as an opaque formal and invocation as an invoked one. Without it, deleting
+ invocation from that selection would leave this suite green while a measured false offer returned.
  */
 const IMPLEMENTATION_SOURCE = `const heldCallbacks = [];
 const heldRows = [];
@@ -109,10 +109,10 @@ export function stampAndIgnoreCallback(callback, row) {
 `;
 
 /**
- * Shipped declarations, which are what the consumer's checker resolves each call against.
- *
- * `retainCallback` declares `() => void` while the consumer hands it `() => Row`. That substitution is
- * legal, which is the whole reason a reading closure reaches caller state here.
+ Shipped declarations, which are what the consumer's checker resolves each call against.
+ 
+ `retainCallback` declares `() => void` while the consumer hands it `() => Row`. That substitution is
+ legal, which is the whole reason a reading closure reaches caller state here.
  */
 const DECLARATION_SOURCE = `export declare function retainCallback(callback: () => void, row: { label: string; }): number;
 export declare function stampRow(row: { label: string; }): void;
@@ -122,22 +122,22 @@ export declare function stampAndIgnoreCallback(callback: () => void, row: { labe
 `;
 
 /**
- * Second authored dependency, declaring no runtime entry and named so its root has a code suffix.
- *
- * Both properties are deliberate and each pins one half of the resolution it exercises. Declaring no
- * `exports`, `main` or `module` is the shape `ignore@7.0.6` ships, which Node resolves by falling back to
- * an index file. Ending the name in `.js` means the package root itself carries a supported suffix, so a
- * resolver that accepts any existing path would hand back the directory.
+ Second authored dependency, declaring no runtime entry and named so its root has a code suffix.
+ 
+ Both properties are deliberate and each pins one half of the resolution it exercises. Declaring no
+ `exports`, `main` or `module` is the shape `ignore@7.0.6` ships, which Node resolves by falling back to
+ an index file. Ending the name in `.js` means the package root itself carries a supported suffix, so a
+ resolver that accepts any existing path would hand back the directory.
  */
 const INDEX_FALLBACK_NAME = 'entryless-probe.js';
 
 /**
- * Shipped implementation of the package that declares no entry.
- *
- * Writes its formal rather than keeping a callback, because a kept callback cannot discriminate. Opacity
- * from a resolved external retention and opacity from the unresolved boundary are the same set, so a
- * capture reads the same whether resolution worked or not. A proven mutation is written by the external
- * path alone.
+ Shipped implementation of the package that declares no entry.
+ 
+ Writes its formal rather than keeping a callback, because a kept callback cannot discriminate. Opacity
+ from a resolved external retention and opacity from the unresolved boundary are the same set, so a
+ capture reads the same whether resolution worked or not. A proven mutation is written by the external
+ path alone.
  */
 const INDEX_FALLBACK_IMPLEMENTATION = `export function stampEntry(row) {
   row.label = 'entryless';
@@ -145,13 +145,13 @@ const INDEX_FALLBACK_IMPLEMENTATION = `export function stampEntry(row) {
 `;
 
 /**
- * Declarations of the package that declares no entry, reached through its `types` field.
+ Declarations of the package that declares no entry, reached through its `types` field.
  */
 const INDEX_FALLBACK_DECLARATION = `export declare function stampEntry(row: { label: string; }): void;
 `;
 
 /**
- * Consumer source, one callable per claim.
+ Consumer source, one callable per claim.
  */
 const CONSUMER_SOURCE = `import { retainCallback, retainRow, runCallback, stampAndIgnoreCallback, stampRow, } from '${PACKAGE_NAME}';
 import { stampEntry, } from '${INDEX_FALLBACK_NAME}';
@@ -235,7 +235,7 @@ export function handRowProducerToExternalRunner(config: Config,): void {
 `;
 
 /**
- * Disposable consumer workspace owning its own lockfile, configured project and dependency.
+ Disposable consumer workspace owning its own lockfile, configured project and dependency.
  */
 type ExternalCaptureFixture = {
   readonly consumerPath: string;
@@ -243,25 +243,25 @@ type ExternalCaptureFixture = {
 };
 
 /**
- * Materializes the consumer workspace and the dependency it resolves against.
- *
- * @returns fixture removed when the enclosing scope ends.
- *
- * @example
- * ```ts
- * using fixture = externalCaptureFixture();
- * ```
+ Materializes the consumer workspace and the dependency it resolves against.
+ 
+ @returns fixture removed when the enclosing scope ends.
+ 
+ @example
+ ```ts
+ using fixture = externalCaptureFixture();
+ ```
  */
 function externalCaptureFixture(): ExternalCaptureFixture {
   /**
-   * Consumer root, outside every repository lockfile's reach.
+   Consumer root, outside every repository lockfile's reach.
    */
   const root = mkdtempSync(join(
     tmpdir(),
     'readonly-external-capture-',
   ),);
   /**
-   * Installed dependency root, whose `node_modules` segment is what package identity reads.
+   Installed dependency root, whose `node_modules` segment is what package identity reads.
    */
   const packageRoot = join(
     root,
@@ -306,7 +306,7 @@ function externalCaptureFixture(): ExternalCaptureFixture {
     DECLARATION_SOURCE,
   );
   /**
-   * Root of the dependency that declares no runtime entry, mirroring `ignore@7.0.6`.
+   Root of the dependency that declares no runtime entry, mirroring `ignore@7.0.6`.
    */
   const fallbackRoot = join(
     root,
@@ -395,7 +395,7 @@ snapshots:
     )}\n`,
   );
   /**
-   * Consumer source path, whose ancestors supply the configured project and the lockfile.
+   Consumer source path, whose ancestors supply the configured project and the lockfile.
    */
   const consumerPath = join(
     root,
@@ -438,7 +438,7 @@ await describe({
          * reached the code", and a fixture that stopped reaching it would otherwise look like a pass. */
         using fixture = externalCaptureFixture();
         /**
-         * Consumer session, whose configured project is the fixture's own.
+         Consumer session, whose configured project is the fixture's own.
          */
         const session = openSemanticFile({
           fileName: fixture.consumerPath,
@@ -446,27 +446,27 @@ await describe({
           hasBOM: false,
         },);
         /**
-         * Effects over the consumer, resolving the authored dependency through the external channel.
+         Effects over the consumer, resolving the authored dependency through the external channel.
          */
         const index = buildEffectSummaryIndex({
           project: session.project,
           activeSourceFile: session.sourceFile,
         },);
         /**
-         * Reads one index set of one consumer callable.
-         *
-         * @param functionName - Consumer callable to inspect.
-         *
-         * @param read - Which index set to take off the summary.
-         *
-         * @returns those parameter indexes in ascending order.
-         *
-         * @throws when the name does not resolve to a callable carrying a summary.
-         *
-         * @example
-         * ```ts
-         * consumerIndexes({ functionName: 'stampThroughExternal', read: opaqueOf });
-         * ```
+         Reads one index set of one consumer callable.
+         
+         @param functionName - Consumer callable to inspect.
+         
+         @param read - Which index set to take off the summary.
+         
+         @returns those parameter indexes in ascending order.
+         
+         @throws when the name does not resolve to a callable carrying a summary.
+         
+         @example
+         ```ts
+         consumerIndexes({ functionName: 'stampThroughExternal', read: opaqueOf });
+         ```
          */
         function consumerIndexes({
           functionName,
@@ -479,20 +479,20 @@ await describe({
           },) => Iterable<number>;
         },): readonly number[] {
           /**
-           * Name node of the requested consumer declaration.
+           Name node of the requested consumer declaration.
            */
           const nameNode = session.nodeAtOffset(
             CONSUMER_SOURCE.indexOf(`function ${functionName}`,)
               + 'function '.length,
           );
           /**
-           * Declaration owning that name.
+           Declaration owning that name.
            */
           const declaration = nameNode.parent;
           if (!isFunctionLikeDeclaration(declaration,))
             throw new Error(`Expected a declaration for ${functionName}.`,);
           /**
-           * Effect summary for that declaration.
+           Effect summary for that declaration.
            */
           const summary = index.get(declaration,);
           if (summary === NO_EFFECT_SUMMARY)
@@ -503,16 +503,16 @@ await describe({
             },);
         }
         /**
-         * Reads the opaque parameter indexes of one consumer callable.
-         *
-         * @param functionName - Consumer callable to inspect.
-         *
-         * @returns opaque parameter indexes in ascending order.
-         *
-         * @example
-         * ```ts
-         * consumerOpaque('handRowProducerToExternalRetainer');
-         * ```
+         Reads the opaque parameter indexes of one consumer callable.
+         
+         @param functionName - Consumer callable to inspect.
+         
+         @returns opaque parameter indexes in ascending order.
+         
+         @example
+         ```ts
+         consumerOpaque('handRowProducerToExternalRetainer');
+         ```
          */
         function consumerOpaque(functionName: string,): readonly number[] {
           return consumerIndexes({
@@ -523,16 +523,16 @@ await describe({
           },);
         }
         /**
-         * Reads the written parameter indexes of one consumer callable.
-         *
-         * @param functionName - Consumer callable to inspect.
-         *
-         * @returns written parameter indexes in ascending order.
-         *
-         * @example
-         * ```ts
-         * consumerWritten('stampThroughExternal');
-         * ```
+         Reads the written parameter indexes of one consumer callable.
+         
+         @param functionName - Consumer callable to inspect.
+         
+         @returns written parameter indexes in ascending order.
+         
+         @example
+         ```ts
+         consumerWritten('stampThroughExternal');
+         ```
          */
         function consumerWritten(functionName: string,): readonly number[] {
           return consumerIndexes({

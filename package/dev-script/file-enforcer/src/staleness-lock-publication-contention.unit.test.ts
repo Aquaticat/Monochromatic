@@ -23,12 +23,12 @@ import {
 //region Contender observation helpers
 
 /**
- * Delay long enough for competing acquisition to observe staged lock.
+ Delay long enough for competing acquisition to observe staged lock.
  */
 const CONTENDER_OBSERVATION_DELAY_MS = 50;
 
 /**
- * Result from competing acquisition or observation delay.
+ Result from competing acquisition or observation delay.
  */
 type ContenderObservation =
   | Readonly<{
@@ -40,16 +40,16 @@ type ContenderObservation =
   }>;
 
 /**
- * Acquires manifest lock and identifies successful acquisition.
- *
- * @param manifestPath - Manifest path whose lock already has staged owner.
- *
- * @returns Acquired lock result.
- *
- * @example
- * ```ts
- * const result = await acquireContender('/tmp/manifest.json');
- * ```
+ Acquires manifest lock and identifies successful acquisition.
+ 
+ @param manifestPath - Manifest path whose lock already has staged owner.
+ 
+ @returns Acquired lock result.
+ 
+ @example
+ ```ts
+ const result = await acquireContender('/tmp/manifest.json');
+ ```
  */
 async function acquireContender(manifestPath: string,): Promise<ContenderObservation> {
   return {
@@ -59,14 +59,14 @@ async function acquireContender(manifestPath: string,): Promise<ContenderObserva
 }
 
 /**
- * Reports that contender remained pending through observation delay.
- *
- * @returns Pending observation result.
- *
- * @example
- * ```ts
- * const result = await observeContenderPending();
- * ```
+ Reports that contender remained pending through observation delay.
+ 
+ @returns Pending observation result.
+ 
+ @example
+ ```ts
+ const result = await observeContenderPending();
+ ```
  */
 async function observeContenderPending(): Promise<ContenderObservation> {
   await wait(CONTENDER_OBSERVATION_DELAY_MS,);
@@ -96,7 +96,7 @@ await describe({
         const lockPath = `${manifestPath}.lock`;
         await mkdir(lockPath,);
         /**
-         * Complete live-owner metadata held at private publication stage.
+         Complete live-owner metadata held at private publication stage.
          */
         const ownerText = `${JSON.stringify(
           {
@@ -112,11 +112,11 @@ await describe({
         },);
 
         /**
-         * Real acquisition started while owner remains privately staged.
+         Real acquisition started while owner remains privately staged.
          */
         const contenderPromise = acquireContender(manifestPath,);
         /**
-         * First result distinguishes premature acquisition from waiting.
+         First result distinguishes premature acquisition from waiting.
          */
         const firstObservation = await Promise.race([
           contenderPromise,
@@ -133,7 +133,7 @@ await describe({
         await removeLockOwnerPublication(lockPath,);
 
         /**
-         * Contender acquisition completed only after predecessor release.
+         Contender acquisition completed only after predecessor release.
          */
         const acquiredContender = await contenderPromise;
         if (acquiredContender.kind !== 'acquired')

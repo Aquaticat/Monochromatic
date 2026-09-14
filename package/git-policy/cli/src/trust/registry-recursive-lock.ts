@@ -1,5 +1,5 @@
 /**
- * Recoverable registry-wide recursive-operation lease. @module
+ Recoverable registry-wide recursive-operation lease. @module
  */
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
@@ -19,37 +19,37 @@ import {
 } from './registry-io.ts';
 
 /**
- * Lock acquisition retry delay in milliseconds.
+ Lock acquisition retry delay in milliseconds.
  */
 const LOCK_RETRY_DELAY_MS = 10;
 /**
- * Bounded lock acquisition attempts.
+ Bounded lock acquisition attempts.
  */
 const LOCK_RETRY_ATTEMPTS = 100;
 /**
- * Existing live owner currently holds lock.
+ Existing live owner currently holds lock.
  */
 const RECURSIVE_LOCK_BUSY: unique symbol = Symbol('RECURSIVE_OPERATION lock is held by live process',);
 /**
- * Recursive registry lock owner metadata.
+ Recursive registry lock owner metadata.
  */
 type RecursiveLockOwner = Readonly<{
   /**
-   * Lock schema.
+   Lock schema.
    */
   schemaVersion: 1;
   /**
-   * Owning operating-system process.
+   Owning operating-system process.
    */
   ownerPid: number;
 }>;
 
 /**
- * Reports whether owner process still exists.
- *
- * @param ownerPid - recorded process ID
- *
- * @returns whether process remains alive
+ Reports whether owner process still exists.
+ 
+ @param ownerPid - recorded process ID
+ 
+ @returns whether process remains alive
  */
 function processExists(ownerPid: number,): boolean {
   try {
@@ -66,15 +66,15 @@ function processExists(ownerPid: number,): boolean {
 }
 
 /**
- * Reads validated lock owner.
- *
- * @param ownerPath - private owner metadata path
- *
- * @returns validated owner
+ Reads validated lock owner.
+ 
+ @param ownerPath - private owner metadata path
+ 
+ @returns validated owner
  */
 async function readOwner(ownerPath: string,): Promise<RecursiveLockOwner> {
   /**
-   * Parsed owner metadata behind unknown boundary.
+   Parsed owner metadata behind unknown boundary.
    */
   const value: unknown = JSON.parse(await readFile(
     ownerPath,
@@ -95,11 +95,11 @@ async function readOwner(ownerPath: string,): Promise<RecursiveLockOwner> {
 }
 
 /**
- * Creates owner metadata and disposable cleanup for created lock directory.
- *
- * @param lockDirectory - exact lock directory
- *
- * @returns disposable lock
+ Creates owner metadata and disposable cleanup for created lock directory.
+ 
+ @param lockDirectory - exact lock directory
+ 
+ @returns disposable lock
  */
 async function initializeLock(lockDirectory: string,): Promise<AsyncDisposable> {
   await protectPath({
@@ -107,14 +107,14 @@ async function initializeLock(lockDirectory: string,): Promise<AsyncDisposable> 
     directory: true,
   },);
   /**
-   * Private owner metadata installed only after complete write and fsync.
+   Private owner metadata installed only after complete write and fsync.
    */
   const ownerPath = join(
     lockDirectory,
     'owner.json',
   );
   /**
-   * Private sibling hidden from lock readers during owner initialization.
+   Private sibling hidden from lock readers during owner initialization.
    */
   const pendingOwnerPath = join(
     lockDirectory,
@@ -149,11 +149,11 @@ async function initializeLock(lockDirectory: string,): Promise<AsyncDisposable> 
 }
 
 /**
- * Attempts one acquisition and recovers dead owner.
- *
- * @param lockDirectory - exact recursive lock directory
- *
- * @returns disposable lock or busy sentinel
+ Attempts one acquisition and recovers dead owner.
+ 
+ @param lockDirectory - exact recursive lock directory
+ 
+ @returns disposable lock or busy sentinel
  */
 async function attemptAcquire(lockDirectory: string,): Promise<AsyncDisposable | typeof RECURSIVE_LOCK_BUSY> {
   try {
@@ -165,7 +165,7 @@ async function attemptAcquire(lockDirectory: string,): Promise<AsyncDisposable |
   catch (error: unknown) {
     try {
       /**
-       * Existing lock owner metadata.
+       Existing lock owner metadata.
        */
       const owner = await readOwner(join(
         lockDirectory,
@@ -205,16 +205,16 @@ async function attemptAcquire(lockDirectory: string,): Promise<AsyncDisposable |
 }
 
 /**
- * Acquires recoverable registry-wide recursive-operation lease.
- *
- * @param registryRoot - complete registry root
- *
- * @returns disposable exclusive lock
- *
- * @example
- * ```ts
- * await using lock = await acquireRecursiveRegistryLock({ registryRoot });
- * ```
+ Acquires recoverable registry-wide recursive-operation lease.
+ 
+ @param registryRoot - complete registry root
+ 
+ @returns disposable exclusive lock
+ 
+ @example
+ ```ts
+ await using lock = await acquireRecursiveRegistryLock({ registryRoot });
+ ```
  */
 export async function acquireRecursiveRegistryLock({
   registryRoot,
@@ -223,20 +223,20 @@ export async function acquireRecursiveRegistryLock({
 }>,): Promise<AsyncDisposable> {
   await ensureRegistryRoot(registryRoot,);
   /**
-   * Exact registry-wide recursive operation lock.
+   Exact registry-wide recursive operation lock.
    */
   const lockDirectory = join(
     registryRoot,
     'recursive-operation.lock',
   );
   /**
-   * Serialized bounded acquisition attempts.
+   Serialized bounded acquisition attempts.
    */
   const result = await Array.from({ length: LOCK_RETRY_ATTEMPTS, },)
     .reduce<Promise<AsyncDisposable | typeof RECURSIVE_LOCK_BUSY>>(
       async function retryAfter(previous,) {
         /**
-         * Prior successful lock or busy sentinel.
+         Prior successful lock or busy sentinel.
          */
         const prior = await previous;
         if (prior !== RECURSIVE_LOCK_BUSY)

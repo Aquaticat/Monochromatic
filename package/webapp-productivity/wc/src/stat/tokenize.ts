@@ -1,15 +1,15 @@
 /**
- * Pure text-tokenization primitives shared by {@link analyzeText} and
- * {@link computeFrequency}: grapheme, word, sentence, line, and paragraph
- * splitting, plus a small max-length reducer. No regular expressions;
- * Unicode segmentation runs through `Intl.Segmenter`, line/paragraph
- * splitting runs through plain string methods.
+ Pure text-tokenization primitives shared by {@link analyzeText} and
+ {@link computeFrequency}: grapheme, word, sentence, line, and paragraph
+ splitting, plus a small max-length reducer. No regular expressions;
+ Unicode segmentation runs through `Intl.Segmenter`, line/paragraph
+ splitting runs through plain string methods.
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Shared segmenter for grapheme-cluster splitting, via {@link splitGraphemes}.
+ Shared segmenter for grapheme-cluster splitting, via {@link splitGraphemes}.
  */
 const GRAPHEME_SEGMENTER = new Intl.Segmenter(
   undefined,
@@ -17,7 +17,7 @@ const GRAPHEME_SEGMENTER = new Intl.Segmenter(
 );
 
 /**
- * Shared segmenter for word-like splitting, via {@link splitWords}.
+ Shared segmenter for word-like splitting, via {@link splitWords}.
  */
 const WORD_SEGMENTER = new Intl.Segmenter(
   undefined,
@@ -25,7 +25,7 @@ const WORD_SEGMENTER = new Intl.Segmenter(
 );
 
 /**
- * Shared segmenter for sentence splitting, via {@link splitSentences}.
+ Shared segmenter for sentence splitting, via {@link splitSentences}.
  */
 const SENTENCE_SEGMENTER = new Intl.Segmenter(
   undefined,
@@ -33,29 +33,29 @@ const SENTENCE_SEGMENTER = new Intl.Segmenter(
 );
 
 /**
- * Reads the raw substring off a segment produced by `Intl.Segmenter`, the
- * mapper {@link splitGraphemes} passes to `Array.from`.
- *
- * @param segment - segment to read
- *
- * @returns substring covered by segment
+ Reads the raw substring off a segment produced by `Intl.Segmenter`, the
+ mapper {@link splitGraphemes} passes to `Array.from`.
+ 
+ @param segment - segment to read
+ 
+ @returns substring covered by segment
  */
 function segmentText(segment: Readonly<Intl.SegmentData>,): string {
   return segment.segment;
 }
 
 /**
- * Splits text into grapheme clusters, what a person perceives as a single
- * character (correctly handles combining marks and multi-codepoint emoji).
- *
- * @param text - text to split
- *
- * @returns grapheme clusters in order
- *
- * @example
- * ```ts
- * splitGraphemes('á'); // ['á'] (a + combining acute accent collapses to one grapheme)
- * ```
+ Splits text into grapheme clusters, what a person perceives as a single
+ character (correctly handles combining marks and multi-codepoint emoji).
+ 
+ @param text - text to split
+ 
+ @returns grapheme clusters in order
+ 
+ @example
+ ```ts
+ splitGraphemes('á'); // ['á'] (a + combining acute accent collapses to one grapheme)
+ ```
  */
 export function splitGraphemes(text: string,): string[] {
   return Array.from(
@@ -65,16 +65,16 @@ export function splitGraphemes(text: string,): string[] {
 }
 
 /**
- * Counts grapheme clusters in text, via {@link splitGraphemes}.
- *
- * @param text - text to measure
- *
- * @returns grapheme cluster count
- *
- * @example
- * ```ts
- * countGraphemes('👨‍👩‍👧'); // 1 (single multi-codepoint emoji grapheme)
- * ```
+ Counts grapheme clusters in text, via {@link splitGraphemes}.
+ 
+ @param text - text to measure
+ 
+ @returns grapheme cluster count
+ 
+ @example
+ ```ts
+ countGraphemes('👨‍👩‍👧'); // 1 (single multi-codepoint emoji grapheme)
+ ```
  */
 export function countGraphemes(text: string,): number {
   return splitGraphemes(text,)
@@ -82,16 +82,16 @@ export function countGraphemes(text: string,): number {
 }
 
 /**
- * Counts UTF-8 encoded bytes in text.
- *
- * @param text - text to measure
- *
- * @returns byte length
- *
- * @example
- * ```ts
- * countBytes('café'); // 5 (e-acute encodes as 2 bytes in UTF-8)
- * ```
+ Counts UTF-8 encoded bytes in text.
+ 
+ @param text - text to measure
+ 
+ @returns byte length
+ 
+ @example
+ ```ts
+ countBytes('café'); // 5 (e-acute encodes as 2 bytes in UTF-8)
+ ```
  */
 export function countBytes(text: string,): number {
   return new TextEncoder()
@@ -100,21 +100,21 @@ export function countBytes(text: string,): number {
 }
 
 /**
- * Splits text into word-like segments, via Unicode word segmentation.
- * Punctuation-only and whitespace-only segments are dropped.
- *
- * @param text - text to split
- *
- * @returns word-like segments in order
- *
- * @example
- * ```ts
- * splitWords('こんにちは、世界'); // ['こんにちは', '世界'] (no spaces needed between CJK words)
- * ```
+ Splits text into word-like segments, via Unicode word segmentation.
+ Punctuation-only and whitespace-only segments are dropped.
+ 
+ @param text - text to split
+ 
+ @returns word-like segments in order
+ 
+ @example
+ ```ts
+ splitWords('こんにちは、世界'); // ['こんにちは', '世界'] (no spaces needed between CJK words)
+ ```
  */
 export function splitWords(text: string,): string[] {
   /**
-   * Word-like segments collected by one pass over the segmenter output.
+   Word-like segments collected by one pass over the segmenter output.
    */
   const words: string[] = [];
 
@@ -128,27 +128,27 @@ export function splitWords(text: string,): string[] {
 }
 
 /**
- * Splits text into sentences, via Unicode sentence segmentation. Trims
- * surrounding whitespace and drops empty results.
- *
- * @param text - text to split
- *
- * @returns trimmed, non-empty sentences in order
- *
- * @example
- * ```ts
- * splitSentences('She left. She returned.'); // ['She left.', 'She returned.']
- * ```
+ Splits text into sentences, via Unicode sentence segmentation. Trims
+ surrounding whitespace and drops empty results.
+ 
+ @param text - text to split
+ 
+ @returns trimmed, non-empty sentences in order
+ 
+ @example
+ ```ts
+ splitSentences('She left. She returned.'); // ['She left.', 'She returned.']
+ ```
  */
 export function splitSentences(text: string,): string[] {
   /**
-   * Trimmed, non-empty sentences collected by one pass over the segmenter output.
+   Trimmed, non-empty sentences collected by one pass over the segmenter output.
    */
   const sentences: string[] = [];
 
   for (const segment of SENTENCE_SEGMENTER.segment(text,)) {
     /**
-     * Trimmed substring for the current sentence segment.
+     Trimmed substring for the current sentence segment.
      */
     const sentence = segment.segment
       .trim();
@@ -162,19 +162,19 @@ export function splitSentences(text: string,): string[] {
 }
 
 /**
- * Splits text into lines, using editor-style counting: a single trailing
- * newline does not add a phantom empty line, but a blank line that exists
- * before end-of-text still counts.
- *
- * @param text - text to split
- *
- * @returns lines in order, without line terminators
- *
- * @example
- * ```ts
- * splitLines('a\nb\n'); // ['a', 'b'] (trailing newline doesn't add a third line)
- * splitLines('a\n\n'); // ['a', ''] (blank line before end-of-text still counts)
- * ```
+ Splits text into lines, using editor-style counting: a single trailing
+ newline does not add a phantom empty line, but a blank line that exists
+ before end-of-text still counts.
+ 
+ @param text - text to split
+ 
+ @returns lines in order, without line terminators
+ 
+ @example
+ ```ts
+ splitLines('a\nb\n'); // ['a', 'b'] (trailing newline doesn't add a third line)
+ splitLines('a\n\n'); // ['a', ''] (blank line before end-of-text still counts)
+ ```
  */
 export function splitLines(text: string,): string[] {
   if (text.length === 0) {
@@ -182,7 +182,7 @@ export function splitLines(text: string,): string[] {
   }
 
   /**
-   * Text with every line terminator normalized to a plain `\n`.
+   Text with every line terminator normalized to a plain `\n`.
    */
   const normalized = text
     .replaceAll(
@@ -194,8 +194,8 @@ export function splitLines(text: string,): string[] {
       '\n',
     );
   /**
-   * Lines split on `\n`, still carrying a trailing empty segment when
-   * {@link normalized} ends with a newline.
+   Lines split on `\n`, still carrying a trailing empty segment when
+   {@link normalized} ends with a newline.
    */
   const segments = normalized.split(
     '\n',
@@ -213,22 +213,22 @@ export function splitLines(text: string,): string[] {
 }
 
 /**
- * Reports whether a line is blank (empty or whitespace-only), the
- * predicate {@link splitParagraphs} and {@link analyzeText} share to
- * detect paragraph breaks and to exclude blank lines from the line count.
- *
- * @param line - line to test
- *
- * @returns true when line has no non-whitespace content
- *
- * @example
- * ```ts
- * isBlankLine('   '); // true
- * ```
+ Reports whether a line is blank (empty or whitespace-only), the
+ predicate {@link splitParagraphs} and {@link analyzeText} share to
+ detect paragraph breaks and to exclude blank lines from the line count.
+ 
+ @param line - line to test
+ 
+ @returns true when line has no non-whitespace content
+ 
+ @example
+ ```ts
+ isBlankLine('   '); // true
+ ```
  */
 export function isBlankLine(line: string,): boolean {
   /**
-   * Line with surrounding whitespace removed.
+   Line with surrounding whitespace removed.
    */
   const trimmed = line.trim();
 
@@ -236,25 +236,25 @@ export function isBlankLine(line: string,): boolean {
 }
 
 /**
- * Splits text into paragraphs, where paragraphs are separated by one or
- * more blank (whitespace-only) lines.
- *
- * @param text - text to split
- *
- * @returns paragraphs in order, each joining its source lines with a newline
- *
- * @example
- * ```ts
- * splitParagraphs('one\ntwo\n\nthree'); // ['one\ntwo', 'three']
- * ```
+ Splits text into paragraphs, where paragraphs are separated by one or
+ more blank (whitespace-only) lines.
+ 
+ @param text - text to split
+ 
+ @returns paragraphs in order, each joining its source lines with a newline
+ 
+ @example
+ ```ts
+ splitParagraphs('one\ntwo\n\nthree'); // ['one\ntwo', 'three']
+ ```
  */
 export function splitParagraphs(text: string,): string[] {
   /**
-   * Paragraphs completed so far, each joining its source lines with a newline.
+   Paragraphs completed so far, each joining its source lines with a newline.
    */
   const paragraphs: string[] = [];
   /**
-   * Lines collected for the paragraph currently being built.
+   Lines collected for the paragraph currently being built.
    */
   let current: string[] = [];
 
@@ -277,18 +277,18 @@ export function splitParagraphs(text: string,): string[] {
 }
 
 /**
- * Computes the largest length among items, via a caller-supplied length function.
- *
- * @param items - items to measure
- *
- * @param lengthOf - length function applied to each item
- *
- * @returns largest length found, or 0 when items is empty
- *
- * @example
- * ```ts
- * computeMaxLength({ items: ['a', 'bb', 'ccc'], lengthOf: (item) => item.length }); // 3
- * ```
+ Computes the largest length among items, via a caller-supplied length function.
+ 
+ @param items - items to measure
+ 
+ @param lengthOf - length function applied to each item
+ 
+ @returns largest length found, or 0 when items is empty
+ 
+ @example
+ ```ts
+ computeMaxLength({ items: ['a', 'bb', 'ccc'], lengthOf: (item) => item.length }); // 3
+ ```
  */
 export function computeMaxLength<T,>(
   {
@@ -300,7 +300,7 @@ export function computeMaxLength<T,>(
   }>>,
 ): number {
   /**
-   * Largest length seen so far.
+   Largest length seen so far.
    */
   let max = 0;
 

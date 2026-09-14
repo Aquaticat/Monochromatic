@@ -1,36 +1,36 @@
 /**
- * End-user boundary test for the Electron counter under pure Wayland.
- *
- * The test hosts Electron inside this repo's nested Wayland compositor,
- * launches the app with `DISPLAY` unset, activates the rendered button through
- * compositor keyboard input, and waits for the main process to mirror renderer
- * state into a JSON file.
- *
- * @example
- * ```ts
- * await runElectronCounterWaylandBoundaryTest();
- * ```
+ End-user boundary test for the Electron counter under pure Wayland.
+ 
+ The test hosts Electron inside this repo's nested Wayland compositor,
+ launches the app with `DISPLAY` unset, activates the rendered button through
+ compositor keyboard input, and waits for the main process to mirror renderer
+ state into a JSON file.
+ 
+ @example
+ ```ts
+ await runElectronCounterWaylandBoundaryTest();
+ ```
  */
 
 import { runWaylandElectronBoundaryTest, } from '@monochromatic-dev/desktop-app-electron-infra/ts/wayland-test';
 
 /**
- * Environment variable consumed by the Electron app's main process.
- *
- * @example
- * ```ts
- * console.log(statePathEnvironmentVariable);
- * ```
+ Environment variable consumed by the Electron app's main process.
+ 
+ @example
+ ```ts
+ console.log(statePathEnvironmentVariable);
+ ```
  */
 const statePathEnvironmentVariable = 'MONOCHROMATIC_ELECTRON_COUNTER_STATE_PATH';
 
 /**
- * Runs the complete pure-Wayland interaction test.
- *
- * @example
- * ```ts
- * await runElectronCounterWaylandBoundaryTest();
- * ```
+ Runs the complete pure-Wayland interaction test.
+ 
+ @example
+ ```ts
+ await runElectronCounterWaylandBoundaryTest();
+ ```
  */
 async function runElectronCounterWaylandBoundaryTest(): Promise<void> {
   await runWaylandElectronBoundaryTest({

@@ -42,7 +42,7 @@ pub struct Track {
 
 /// The default bin resolution for corpora that predate the `bin_seconds` field.
 fn one_second() -> f64 {
-    1.0
+    return 1.0
 }
 
 /// Read a JSONL corpus file into one `Track` per non-empty line.
@@ -63,7 +63,7 @@ pub fn load_tracks(path: &Path) -> Result<Vec<Track>> {
         let track: Track = serde_json::from_str(&line)?;
         tracks.push(track);
     }
-    Ok(tracks)
+    return Ok(tracks)
 }
 
 /// One provenance metadata row: the path and whether it is a reliably-not-hot source.
@@ -97,5 +97,5 @@ pub fn load_safe_paths(path: &Path) -> Result<HashSet<String>> {
             safe.insert(row.path);
         }
     }
-    Ok(safe)
+    return Ok(safe)
 }

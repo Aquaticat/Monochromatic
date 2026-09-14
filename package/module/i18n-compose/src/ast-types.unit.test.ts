@@ -1,9 +1,9 @@
 /**
- * Type-level tests asserting that the AST rejects impossible grammatical
- * states. These rely on `expectTypeOf` from the test harness, which
- * re-exports `expect-type`.
- *
- * @module
+ Type-level tests asserting that the AST rejects impossible grammatical
+ states. These rely on `expectTypeOf` from the test harness, which
+ re-exports `expect-type`.
+ 
+ @module
  */
 
 import {

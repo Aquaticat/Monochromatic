@@ -11,11 +11,11 @@ import {
 } from './mjs-validator.ts';
 
 /**
- * Encodes MJS fixture source.
- *
- * @param source - JavaScript source text
- *
- * @returns UTF-8 source bytes
+ Encodes MJS fixture source.
+ 
+ @param source - JavaScript source text
+ 
+ @returns UTF-8 source bytes
  */
 function encode(source: string,): Uint8Array {
   return new TextEncoder().encode(source,);

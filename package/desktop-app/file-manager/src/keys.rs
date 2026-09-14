@@ -35,9 +35,9 @@ pub(crate) fn install_column_nav(inner: &Rc<StripInner>) {
             return glib::Propagation::Proceed;
         };
         match key {
-            Key::Left => focus_relative_column(&inner, -1),
-            Key::Right => focus_relative_column(&inner, 1),
-            _ => glib::Propagation::Proceed,
+            Key::Left => return focus_relative_column(&inner, -1),
+            Key::Right => return focus_relative_column(&inner, 1),
+            _ => return glib::Propagation::Proceed,
         }
     });
     inner.layout.add_column_key_controller(keys);
@@ -61,5 +61,5 @@ fn focus_relative_column(inner: &Rc<StripInner>, delta: i32) -> glib::Propagatio
         return glib::Propagation::Proceed;
     }
     inner.layout.set_focused_column(target);
-    glib::Propagation::Stop
+    return glib::Propagation::Stop
 }

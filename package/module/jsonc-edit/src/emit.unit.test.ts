@@ -1,9 +1,9 @@
 /**
- * Unit tests for the emit helpers: scalar text (raw reuse versus re-encoding),
- * re-indented fast-path JSON, single-line detection, trailing comment text, and
- * leading comment lines (block kept as a block, or folded to safe `//` lines).
- *
- * @module
+ Unit tests for the emit helpers: scalar text (raw reuse versus re-encoding),
+ re-indented fast-path JSON, single-line detection, trailing comment text, and
+ leading comment lines (block kept as a block, or folded to safe `//` lines).
+ 
+ @module
  */
 
 import {
@@ -13,14 +13,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  emitPlainJson,
+  emitScalar,
   isSingleLineComment,
   leadingComment,
   trailingComment,
-} from './emit-comment.ts';
-import {
-  emitPlainJson,
-  emitScalar,
-} from './emit-value.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'emit',

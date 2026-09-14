@@ -19,18 +19,18 @@ import type {
 } from './staleness-types.ts';
 
 /**
- * Returns whether a manifest entry belongs to the active config file.
- *
- * @param entry - Manifest entry to inspect.
- *
- * @param configPaths - Active config paths that every matching entry must include.
- *
- * @returns Whether the entry was recorded for the active config.
- *
- * @example
- * ```ts
- * const belongs = entryBelongsToActiveConfig({ entry, configPaths: new Set(['/repo/file-enforcer.config.ts']) });
- * ```
+ Returns whether a manifest entry belongs to the active config file.
+ 
+ @param entry - Manifest entry to inspect.
+ 
+ @param configPaths - Active config paths that every matching entry must include.
+ 
+ @returns Whether the entry was recorded for the active config.
+ 
+ @example
+ ```ts
+ const belongs = entryBelongsToActiveConfig({ entry, configPaths: new Set(['/repo/file-enforcer.config.ts']) });
+ ```
  */
 function entryBelongsToActiveConfig(
   {
@@ -49,21 +49,21 @@ function entryBelongsToActiveConfig(
 }
 
 /**
- * Checks whether every persisted manifest entry for current config is fresh:
- * loads the manifest via {@link resolveManifestPath} and {@link loadManifest},
- * then verifies freshness with {@link stampsAreFresh} before re-registering
- * watched paths through {@link registerFreshPaths}.
- * This is a diagnostic/helper API; config import must still run so TypeScript
- * config code can discover untracked and newly-added effects.
- *
- * @param manifestPath - Optional custom manifest path.
- *
- * @returns Whether all persisted entries are fresh.
- *
- * @example
- * ```ts
- * const fresh = await freshStalenessManifest({});
- * ```
+ Checks whether every persisted manifest entry for current config is fresh:
+ loads the manifest via {@link resolveManifestPath} and {@link loadManifest},
+ then verifies freshness with {@link stampsAreFresh} before re-registering
+ watched paths through {@link registerFreshPaths}.
+ This is a diagnostic/helper API; config import must still run so TypeScript
+ config code can discover untracked and newly-added effects.
+ 
+ @param manifestPath - Optional custom manifest path.
+ 
+ @returns Whether all persisted entries are fresh.
+ 
+ @example
+ ```ts
+ const fresh = await freshStalenessManifest({});
+ ```
  */
 export async function freshStalenessManifest(
   {
@@ -71,21 +71,21 @@ export async function freshStalenessManifest(
   }: StalenessOptions,
 ): Promise<boolean> {
   /**
-   * Absolute manifest path selected the same way writer calls select it.
+   Absolute manifest path selected the same way writer calls select it.
    */
   const resolvedManifestPath = await resolveManifestPath(manifestPath === undefined
     ? {}
     : { manifestPath, },);
   /**
-   * Manifest loaded from the selected path.
+   Manifest loaded from the selected path.
    */
   const manifest = await loadManifest(resolvedManifestPath,);
   /**
-   * Active config dependency paths for this process invocation.
+   Active config dependency paths for this process invocation.
    */
   const configPaths = new Set(configDependencyPaths(),);
   /**
-   * Persisted entries for the active config path.
+   Persisted entries for the active config path.
    */
   const entries = Object.values(manifest.entries,)
     .filter(function keepActiveConfigEntry(entry,): boolean {
@@ -98,21 +98,21 @@ export async function freshStalenessManifest(
     return false;
 
   /**
-   * Unique source stamps across every active entry.
+   Unique source stamps across every active entry.
    */
   const sourceFiles = uniqueStampsByPath({
     entries,
     selectStamps: selectSources,
   },);
   /**
-   * Unique destination stamps across every active entry.
+   Unique destination stamps across every active entry.
    */
   const destinationFiles = uniqueStampsByPath({
     entries,
     selectStamps: selectDestinations,
   },);
   /**
-   * Unique glob path-set stamps across every active entry.
+   Unique glob path-set stamps across every active entry.
    */
   const sourceGlobs = uniqueGlobStamps(entries,);
   if (!await stampsAreFresh({

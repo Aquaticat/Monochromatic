@@ -26,14 +26,14 @@ import {
 //region Manifest fixture helpers
 
 /**
- * Creates an isolated temp directory for manifest regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temp directory for manifest regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -43,14 +43,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes an isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -63,16 +63,16 @@ async function teardown(tempDir: string,): Promise<void> {
 }
 
 /**
- * Hashes content with the same algorithm the staleness manifest records.
- *
- * @param content - Content to hash.
- *
- * @returns SHA-256 hex digest.
- *
- * @example
- * ```ts
- * const hash = sha256('content');
- * ```
+ Hashes content with the same algorithm the staleness manifest records.
+ 
+ @param content - Content to hash.
+ 
+ @returns SHA-256 hex digest.
+ 
+ @example
+ ```ts
+ const hash = sha256('content');
+ ```
  */
 function sha256(content: string,): string {
   return createHash('sha256',)
@@ -81,18 +81,18 @@ function sha256(content: string,): string {
 }
 
 /**
- * Captures expected stale-manifest validation error.
- *
- * @param manifestPath - Manifest path that should fail validation.
- *
- * @returns Error thrown by freshness check.
- *
- * @throws When freshness check unexpectedly succeeds.
- *
- * @example
- * ```ts
- * const error = await captureFreshStalenessManifestError({ manifestPath });
- * ```
+ Captures expected stale-manifest validation error.
+ 
+ @param manifestPath - Manifest path that should fail validation.
+ 
+ @returns Error thrown by freshness check.
+ 
+ @throws When freshness check unexpectedly succeeds.
+ 
+ @example
+ ```ts
+ const error = await captureFreshStalenessManifestError({ manifestPath });
+ ```
  */
 async function captureFreshStalenessManifestError(
   { manifestPath, }: { readonly manifestPath: string; },
@@ -132,7 +132,7 @@ await describe({
         );
 
         /**
-         * Error produced by corrupt manifest validation.
+         Error produced by corrupt manifest validation.
          */
         const caught = await captureFreshStalenessManifestError({ manifestPath, },);
 

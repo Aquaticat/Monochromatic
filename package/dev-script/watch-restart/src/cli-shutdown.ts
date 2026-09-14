@@ -3,21 +3,21 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { WatchRestartHandle, } from './start.ts';
 
 /**
- * Installs a one-shot SIGINT/SIGTERM handler that stops the
- * orchestrator and exits the process.
- *
- * One-shot: subsequent signals during shutdown skip the handler so a
- * frustrated double-Ctrl+C does not race two `stop()` calls; the
- * second signal lands as a hard exit via Node's default disposition.
- *
- * @param signal - signal name to handle
- *
- * @param handle - orchestrator handle whose `stop()` runs first
- *
- * @example
- * ```ts
- * installShutdownHandler({ signal: 'SIGINT', handle, },);
- * ```
+ Installs a one-shot SIGINT/SIGTERM handler that stops the
+ orchestrator and exits the process.
+ 
+ One-shot: subsequent signals during shutdown skip the handler so a
+ frustrated double-Ctrl+C does not race two `stop()` calls; the
+ second signal lands as a hard exit via Node's default disposition.
+ 
+ @param signal - signal name to handle
+ 
+ @param handle - orchestrator handle whose `stop()` runs first
+ 
+ @example
+ ```ts
+ installShutdownHandler({ signal: 'SIGINT', handle, },);
+ ```
  */
 export function installShutdownHandler(
   {
@@ -38,7 +38,7 @@ export function installShutdownHandler(
         }
         catch (error) {
           /**
-           * Human-readable error string used in the shutdown-failure stderr line.
+           Human-readable error string used in the shutdown-failure stderr line.
            */
           const message = caughtValueText(error,);
           console.error(`shutdown failed: ${message}`,);

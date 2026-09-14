@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden;background:#000}</style></helmet>
+<div style="background:#000;width:100vw;height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;box-sizing:border-box;padding-bottom:88px;font-family:Roboto,system-ui,sans-serif">
+<div style="width:{{ boxW }};height:{{ boxH }};flex:0 0 auto;overflow:visible"><div style="width:418px;height:883px;transform:scale({{ scale }});transform-origin:top left;outline:1px solid #26262E;color:#E6E0E9;display:flex;flex-direction:column;overflow:hidden;background:#000">
+  <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #26262E">
+    <div style="flex:1 1 auto"></div>
+    <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open</div>
+  </div>
+  <div style="flex:1 1 auto;min-height:0;display:flex;overflow:hidden">
+    <div style="flex:0 0 48px;min-height:0;overflow:auto;display:flex;flex-direction:column;border-right:1px solid #121216;scrollbar-width:none">
+      <sc-for list="{{ rail }}" as="c" hint-placeholder-count="27">
+        <div onClick="{{ c.pick }}" style="width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;font-size:14px;font-weight:500;cursor:pointer;color:{{ c.fg }};border-top:{{ c.rule }}"><span style="width:32px;height:32px;border-radius:16px;display:grid;place-items:center;background:{{ c.bg }}">{{ c.label }}</span></div>
+      </sc-for>
+    </div>
+    <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column">
+      <div style="flex:0 0 auto;display:flex;align-items:baseline;gap:8px;padding:12px 16px 6px"><span style="font-size:22px;line-height:28px;color:#D0BCFF">{{ heading }}</span><span style="font-size:11px;color:#8E8894;font-family:ui-monospace,monospace">{{ extentNote }}</span></div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+          <sc-for list="{{ shown }}" as="r" hint-placeholder-count="36">
+            <div onClick="{{ r.pick }}" style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 8px;font-size:14px;cursor:pointer;background:{{ r.bg }};color:{{ r.fg }};font-weight:{{ r.weight }};min-width:0"><span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:0 0 auto;min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 16px;border-top:1px solid #121216;background:#0A0A0D;font-size:14px;font-weight:500;color:#E8DEF8"><span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ selected }}</span></div>
+      </sc-if>
+    </div>
+  </div>
+</div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;padding:8px 16px;color:#8E8894;font-size:11px;line-height:14px;font-family:ui-monospace,monospace;background:#000">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:418,&quot;height&quot;:979}}">
+class Component extends DCLogic {
+  state = { rail: null, cell: "latinC", selected: "Camellia", scale: 1 };
+  componentDidMount() {
+    this.fit = () => this.setState({ scale: Math.min(1, window.innerWidth / 418, (window.innerHeight - 96) / 883) });
+    this.fit(); window.addEventListener("resize", this.fit);
+    Promise.all([import("./artists.js"), import("./buckets.js")])
+      .then(([a, b]) => this.setState({ rail: b.railFor(a.ARTISTS), total: a.ARTISTS.length }));
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); }
+  renderVals() {
+    const s = this.state;
+    const sections = s.rail || [];
+    let active = null;
+    sections.forEach((sec) => sec.cells.forEach((c) => { if (c.key === s.cell) active = c; }));
+    const shown = active ? active.names : [];
+    const rows = Math.ceil(shown.length / 3);
+    const screens = (rows * 48) / 734;
+
+    const rail = [];
+    sections.forEach((sec, si) => sec.cells.forEach((c, ci) => {
+      const on = c.key === s.cell;
+      rail.push({
+        label: c.label, fg: on ? "#E8DEF8" : "#CAC4D0", bg: on ? "#4A4458" : "transparent",
+        rule: si > 0 && ci === 0 ? "1px solid #26262E" : "0",
+        pick: () => this.setState({ cell: c.key })
+      });
+    }));
+
+    return {
+      scale: s.scale, boxW: Math.round(418 * s.scale) + "px", boxH: Math.round(883 * s.scale) + "px",
+      rail, heading: active ? active.label : "",
+      extentNote: shown.length + " names · " + rows + " rows · " + screens.toFixed(1) + " screens",
+      hasSelection: true, selected: s.selected,
+      shown: shown.map((n) => {
+        const sel = n === s.selected;
+        return { name: n, bg: sel ? "#4A4458" : "transparent", fg: sel ? "#E8DEF8" : "#E6E0E9", weight: sel ? 500 : 400, pick: () => this.setState({ selected: n }) };
+      }),
+      caption: "PK-E — plain text, three columns, 48dp rows, no chips and no sub-letter segmentation. Three across is what keeps the extent down: the biggest letter here is about a screen and a half instead of four (the counter above the names is live — click through the rail). The cost is truncation at ~118dp per column, so the selected name is spelled out in full along the bottom edge."
+    };
+  }
+}
+</script>
+</body>
+</html>

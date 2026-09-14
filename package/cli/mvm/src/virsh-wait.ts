@@ -1,10 +1,10 @@
 /**
- * VM lifecycle polling operations.
- *
- * Provides guest agent readiness checks and graceful shutdown
- * waiting logic for libvirt VMs.
- *
- * @module
+ VM lifecycle polling operations.
+ 
+ Provides guest agent readiness checks and graceful shutdown
+ waiting logic for libvirt VMs.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -15,50 +15,50 @@ import { VM_PREFIX, } from './config.ts';
 import { virsh, } from './virsh.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 /**
- * Milliseconds between guest agent ping attempts.
+ Milliseconds between guest agent ping attempts.
  */
 const AGENT_POLL_INTERVAL_MS = MS_PER_SECOND;
 
 /**
- * Default maximum milliseconds to wait for guest agent before giving up.
+ Default maximum milliseconds to wait for guest agent before giving up.
  */
 const DEFAULT_AGENT_TIMEOUT_MS = 15_000;
 
 /**
- * Milliseconds between VM state polls when waiting for shutdown.
+ Milliseconds between VM state polls when waiting for shutdown.
  */
 const SHUTDOWN_POLL_INTERVAL_MS = MS_PER_SECOND;
 
 /**
- * Maximum milliseconds to wait for graceful shutdown.
+ Maximum milliseconds to wait for graceful shutdown.
  */
 const SHUTDOWN_TIMEOUT_MS = 120_000;
 
 /**
- * Polls the QEMU guest agent until it responds, indicating the VM has fully booted
- * and is ready to accept commands.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @param timeoutMs - Maximum milliseconds to wait (defaults to 15s)
- *
- * @throws Error when the guest agent does not respond within the timeout
- *
- * @example
- * ```ts
- * await waitForGuestAgent({ name: 'dev-01' });
- * await waitForGuestAgent({ name: 'template', timeoutMs: 120_000 });
- * ```
+ Polls the QEMU guest agent until it responds, indicating the VM has fully booted
+ and is ready to accept commands.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @param timeoutMs - Maximum milliseconds to wait (defaults to 15s)
+ 
+ @throws Error when the guest agent does not respond within the timeout
+ 
+ @example
+ ```ts
+ await waitForGuestAgent({ name: 'dev-01' });
+ await waitForGuestAgent({ name: 'template', timeoutMs: 120_000 });
+ ```
  */
 export async function waitForGuestAgent({
   name,
@@ -68,29 +68,29 @@ export async function waitForGuestAgent({
   readonly timeoutMs?: number;
 },): Promise<void> {
   /**
-   * Logger scoped to this call so retry logs are namespaced.
+   Logger scoped to this call so retry logs are namespaced.
    */
   const rl = tagged({
     tag: waitForGuestAgent.name,
     l,
   },);
   /**
-   * Prefixed libvirt domain name; what {@link virsh} expects on the wire.
+   Prefixed libvirt domain name; what {@link virsh} expects on the wire.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**
-   * Pre-serialised `guest-ping` payload; reused on every poll.
+   Pre-serialised `guest-ping` payload; reused on every poll.
    */
   const pingPayload = JSON.stringify({ execute: 'guest-ping', },);
   /**
-   * Wall-clock reference for the timeout check; epoch ms at entry.
+   Wall-clock reference for the timeout check; epoch ms at entry.
    */
   const startTime = Date.now();
 
   rl.info(`waiting for guest agent on ${name}...`,);
 
   /**
-   * Retry state; a failed attempt below the deadline explicitly requests the next poll.
+   Retry state; a failed attempt below the deadline explicitly requests the next poll.
    */
   const polling = { retryPending: true, };
   while (polling.retryPending) {
@@ -110,7 +110,7 @@ export async function waitForGuestAgent({
         throw error;
 
       /**
-       * Milliseconds since polling began; compared against `timeoutMs` to give up.
+       Milliseconds since polling began; compared against `timeoutMs` to give up.
        */
       const elapsed = Date.now()
         - startTime;
@@ -135,29 +135,29 @@ export async function waitForGuestAgent({
 }
 
 /**
- * Sends a graceful shutdown request to a VM via the guest agent.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @example
- * ```ts
- * await shutdownVm({ name: 'dev-01' });
- * ```
+ Sends a graceful shutdown request to a VM via the guest agent.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @example
+ ```ts
+ await shutdownVm({ name: 'dev-01' });
+ ```
  */
 export async function shutdownVm({ name, }: { readonly name: string; },): Promise<void> {
   /**
-   * Logger scoped to this shutdown call so the diagnostic catch is namespaced.
+   Logger scoped to this shutdown call so the diagnostic catch is namespaced.
    */
   const rl = tagged({
     tag: shutdownVm.name,
     l,
   },);
   /**
-   * Prefixed libvirt domain name; what {@link virsh} expects on the wire.
+   Prefixed libvirt domain name; what {@link virsh} expects on the wire.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**
-   * Serialised `guest-shutdown` request; the response is ignored because the agent dies mid-shutdown.
+   Serialised `guest-shutdown` request; the response is ignored because the agent dies mid-shutdown.
    */
   const payload = JSON.stringify({ execute: 'guest-shutdown', },);
   try {
@@ -178,38 +178,38 @@ export async function shutdownVm({ name, }: { readonly name: string; },): Promis
 }
 
 /**
- * Polls VM state until it reaches "shut off", indicating graceful shutdown completed.
- *
- * @param name - VM name without the mvm- prefix
- *
- * @throws Error when the VM does not shut down within the timeout
- *
- * @example
- * ```ts
- * await waitForShutdown({ name: 'dev-01' });
- * ```
+ Polls VM state until it reaches "shut off", indicating graceful shutdown completed.
+ 
+ @param name - VM name without the mvm- prefix
+ 
+ @throws Error when the VM does not shut down within the timeout
+ 
+ @example
+ ```ts
+ await waitForShutdown({ name: 'dev-01' });
+ ```
  */
 export async function waitForShutdown({ name, }: { readonly name: string; },): Promise<void> {
   /**
-   * Logger scoped to this call so polling logs are namespaced.
+   Logger scoped to this call so polling logs are namespaced.
    */
   const rl = tagged({
     tag: waitForShutdown.name,
     l,
   },);
   /**
-   * Prefixed libvirt domain name; what `virsh domstate` expects on the wire.
+   Prefixed libvirt domain name; what `virsh domstate` expects on the wire.
    */
   const fullName = `${VM_PREFIX}${name}`;
   /**
-   * Wall-clock reference for the timeout check; epoch ms at entry.
+   Wall-clock reference for the timeout check; epoch ms at entry.
    */
   const startTime = Date.now();
 
   rl.info(`waiting for VM ${name} to shut down...`,);
 
   /**
-   * Latest libvirt domain state; polling continues until it reaches `shut off`.
+   Latest libvirt domain state; polling continues until it reaches `shut off`.
    */
   const polling = {
     state: await virsh({ args: [
@@ -219,7 +219,7 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
   };
   while (polling.state !== 'shut off') {
     /**
-     * Milliseconds since polling began; compared against the shutdown timeout to give up.
+     Milliseconds since polling began; compared against the shutdown timeout to give up.
      */
     const elapsed = Date.now()
       - startTime;

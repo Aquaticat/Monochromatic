@@ -1,8 +1,8 @@
 /**
- * E2e tests for `replicateElementAsParentContent`, `replicateElementAsContentOf`,
- * and `deepCloneNode`.
- *
- * @module
+ E2e tests for `replicateElementAsParentContent`, `replicateElementAsContentOf`,
+ and `deepCloneNode`.
+ 
+ @module
  */
 import {
   expect,

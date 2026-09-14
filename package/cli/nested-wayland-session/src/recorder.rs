@@ -163,7 +163,7 @@ pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format) -> 
     let token = state
         .loop_handle
         .insert_source(Timer::from_duration(period), |_, _, state: &mut Compositor| {
-            tick(state)
+            return tick(state)
         })
         .map_err(|err| anyhow::anyhow!("registering the capture timer failed: {err}"))?;
 
@@ -190,7 +190,7 @@ pub fn start(state: &mut Compositor, dir: PathBuf, fps: f64, format: Format) -> 
 
     // What:     `Ok(())`. Success.
     // Why:      Recording is live.
-    Ok(())
+    return Ok(())
 }
 
 /// Stop recording: remove the timer, drain and join the encoder pool, and report stats.
@@ -228,7 +228,7 @@ pub fn stop(state: &mut Compositor) -> Option<RecordStats> {
 
     // What:     `Some(RecordStats { ... })`. Bundle the stats (tail expression).
     // Why:      Hand them back for the control response.
-    Some(RecordStats {
+    return Some(RecordStats {
         captured: recorder.captured,
         dropped: recorder.dropped,
         failures,
@@ -261,7 +261,7 @@ fn tick(state: &mut Compositor) -> TimeoutAction {
 
     // What:     `action`. The next-deadline instruction (tail expression).
     // Why:      Tell calloop when to fire again.
-    action
+    return action
 }
 
 /// Per-tick capture logic for the recorder.
@@ -313,7 +313,7 @@ impl Recorder {
         // What:     `TimeoutAction::ToInstant(self.next_tick)`. Fire again at the absolute
         //           next deadline (tail expression).
         // Why:      Hold the target rate precisely.
-        TimeoutAction::ToInstant(self.next_tick)
+        return TimeoutAction::ToInstant(self.next_tick)
     }
 
     /// Read one frame into `buffer` and submit it to the encoder pool.
@@ -379,11 +379,11 @@ fn worker_count() -> usize {
     //           `n.get()` unwraps the `NonZero<usize>`.
     // Why:      The basis for the pool size.
     let cores = std::thread::available_parallelism()
-        .map(|n| n.get())
+        .map(|n| return n.get())
         .unwrap_or(MIN_WORKERS);
 
     // What:     `cores.saturating_sub(RESERVED_CORES).max(MIN_WORKERS)`. Reserve cores, then
     //           enforce the floor. `saturating_sub` avoids underflow on tiny machines.
     // Why:      Leave headroom while guaranteeing at least `MIN_WORKERS` encoders.
-    cores.saturating_sub(RESERVED_CORES).max(MIN_WORKERS)
+    return cores.saturating_sub(RESERVED_CORES).max(MIN_WORKERS)
 }

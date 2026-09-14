@@ -25,55 +25,55 @@ import {
 import type { SymbolDescriptionVerdict, } from './types.ts';
 
 /**
- * Classifies a static Symbol description, returning the first matching failure
- * branch in the calibrated order, or a pass. Tokenizes via
- * {@link splitDescriptionWords} and {@link lowerWords}, reads namespace shape
- * via {@link namespaceParts}, and checks structural markers and repetition
- * via {@link hasSpecificityMarker}, {@link repeatsSamePhraseAcrossBecause},
- * {@link repeatedMeaningfulWord}, {@link allAlphabeticWordsUppercase},
- * {@link isBareCamelIdentifier}, and {@link endsVerbLike}. Ported from the
- * persisted benchmark classifier, not the threshold baseline.
- *
- * @param description - raw static Symbol description text
- *
- * @returns pass verdict, or fail verdict with the branch message id
- *
- * @example
- * ```ts
- * classifySymbolDescription({ description: 'github token expired' }); // { status: 'pass' }
- * classifySymbolDescription({ description: 'meow' });
- * // { status: 'fail', messageId: 'tooFewWords' }
- * ```
+ Classifies a static Symbol description, returning the first matching failure
+ branch in the calibrated order, or a pass. Tokenizes via
+ {@link splitDescriptionWords} and {@link lowerWords}, reads namespace shape
+ via {@link namespaceParts}, and checks structural markers and repetition
+ via {@link hasSpecificityMarker}, {@link repeatsSamePhraseAcrossBecause},
+ {@link repeatedMeaningfulWord}, {@link allAlphabeticWordsUppercase},
+ {@link isBareCamelIdentifier}, and {@link endsVerbLike}. Ported from the
+ persisted benchmark classifier, not the threshold baseline.
+ 
+ @param description - raw static Symbol description text
+ 
+ @returns pass verdict, or fail verdict with the branch message id
+ 
+ @example
+ ```ts
+ classifySymbolDescription({ description: 'github token expired' }); // { status: 'pass' }
+ classifySymbolDescription({ description: 'meow' });
+ // { status: 'fail', messageId: 'tooFewWords' }
+ ```
  */
 export function classifySymbolDescription(
   { description, }: { readonly description: string; },
 ): SymbolDescriptionVerdict {
   /**
-   * Words in source order with original casing.
+   Words in source order with original casing.
    */
   const words = splitDescriptionWords({ description, },);
   /**
-   * Lowercased words for case-insensitive comparison.
+   Lowercased words for case-insensitive comparison.
    */
   const lowered = lowerWords({ words, },);
   /**
-   * Count of distinct lowercased words.
+   Count of distinct lowercased words.
    */
   const distinctCount = new Set(lowered,).size;
   /**
-   * Namespace structure of the description.
+   Namespace structure of the description.
    */
   const namespace = namespaceParts({ description, },);
   /**
-   * Whether any structural specificity marker is present.
+   Whether any structural specificity marker is present.
    */
   const marker = hasSpecificityMarker({
     description,
     words,
   },);
   /**
-   * Whether a meaningful word repeats, using the narrow `because` form when
-   * the connective is present.
+   Whether a meaningful word repeats, using the narrow `because` form when
+   the connective is present.
    */
   const repeated = lowered.includes(BECAUSE_CONNECTIVE,)
     ? repeatsSamePhraseAcrossBecause({
@@ -129,7 +129,7 @@ export function classifySymbolDescription(
   if ((!namespace.isNamespaced) && (words.length === SHORT_PHRASE_WORD_COUNT)
     && (!marker)) {
     /**
-     * Third word of a 3-word phrase, gated for verb-like endings.
+     Third word of a 3-word phrase, gated for verb-like endings.
      */
     const thirdWord = words.at(2,);
     if ((thirdWord !== undefined) && (!endsVerbLike({ word: thirdWord, },)))

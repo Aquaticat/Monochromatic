@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden;background:#000}</style></helmet>
+<div style="background:#000;width:100vw;height:100vh;overflow:hidden;position:relative;box-sizing:border-box;padding:16px 16px 76px;display:flex;align-items:center;justify-content:center;gap:24px;font-family:Roboto,system-ui,sans-serif">
+
+  <div style="width:{{ boxW }};height:{{ boxH }};flex:0 0 auto">
+    <div style="width:411px;height:923px;transform:scale({{ scale }});transform-origin:top left;outline:1px solid #26262E;color:#E6E0E9;display:flex;flex-direction:column;overflow:hidden;background:#000">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #26262E">
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500">Camellia<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+      </div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto">
+        <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E;background:#0A0A0D">
+        <div style="text-align:center"><div style="font-size:16px;font-weight:500">Another Xronixle</div><div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums">1 of 16 · −1.2 dBTP</div></div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px">
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+          <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+          <div style="position:absolute;right:0;top:50%;margin-top:-24px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"></path></svg></div>
+        </div>
+      </div>
+      <div style="flex:0 0 4px;display:flex;background:#22222A"><div style="width:{{ pct }};background:#D0BCFF"></div></div>
+    </div>
+  </div>
+
+  <div style="width:{{ boxW }};height:{{ boxH }};flex:0 0 auto">
+    <div style="width:411px;height:923px;transform:scale({{ scale }});transform-origin:top left;outline:1px solid #26262E;color:#E6E0E9;display:flex;flex-direction:column;overflow:hidden;background:#000">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #26262E">
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500">Camellia<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+      </div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto">
+        <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E;background:#0A0A0D">
+        <div style="text-align:center"><div style="font-size:16px;font-weight:500">Another Xronixle</div><div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums">1 of 16 · −1.2 dBTP</div></div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px">
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+          <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+          <div style="position:absolute;right:0;top:50%;margin-top:-24px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"></path></svg></div>
+        </div>
+      </div>
+      <div style="flex:0 0 auto;min-height:56px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:0 8px 0 16px;background:#0A0A0D;border-top:1px solid #121216">
+        <span style="flex:1 1 auto;min-width:0;font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ scanLabel }}</span>
+        <div onClick="{{ togglePause }}" style="flex:0 0 100px;width:100px;min-height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer">{{ pauseLabel }}</div>
+      </div>
+    </div>
+  </div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;padding:8px 16px;color:#8E8894;font-size:11px;line-height:14px;font-family:ui-monospace,monospace;background:#000">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:1040}}">
+class Component extends DCLogic {
+  state = { scale: 1, done: 412, paused: false };
+  componentDidMount() {
+    this.fit = () => this.setState({ scale: Math.min(0.9, (window.innerWidth - 96) / 2 / 411, (window.innerHeight - 110) / 923) });
+    this.fit(); window.addEventListener("resize", this.fit);
+    this.t = setInterval(() => { if (!this.state.paused) this.setState((s) => ({ done: Math.min(1218, s.done + 2) })); }, 400);
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); clearInterval(this.t); }
+  renderVals() {
+    const s = this.state;
+    const titles = [
+      ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+      ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+      ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"]
+    ];
+    return {
+      scale: s.scale, boxW: Math.round(411 * s.scale) + "px", boxH: Math.round(923 * s.scale) + "px",
+      pct: Math.round((s.done / 1218) * 100) + "%",
+      scanLabel: "Analysing true peak · " + s.done.toLocaleString("en-US") + " of 1,218",
+      pauseLabel: s.paused ? "Resume" : "Pause",
+      togglePause: () => this.setState({ paused: !s.paused }),
+      tracks: titles.map((t, i) => ({
+        num: i === 0 ? "▶" : String(i + 1), numFg: i === 0 ? "#D0BCFF" : "#5A5561",
+        title: t[0], sub: t[1] + " · " + t[2] + " dBTP", bg: i === 0 ? "#332F3F" : "transparent"
+      })),
+      caption: "SCAN-E (left) — a 2dp determinate line on the very bottom edge, nothing else: it occupies the 4px always, so nothing reflows when analysis starts or ends; no text, no control. SCAN-F (right) — a 56dp bar with the count and a fixed-width Pause that is always rendered (never appears/disappears mid-scan, unlike scan-a). Both leave when analysis finishes; the deck above is identical. Compare against scan-b."
+    };
+  }
+}
+</script>
+</body>
+</html>

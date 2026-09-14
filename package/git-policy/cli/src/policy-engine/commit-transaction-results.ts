@@ -1,7 +1,7 @@
 /**
- * Stable policy results for transaction-specific failures.
- *
- * @module
+ Stable policy results for transaction-specific failures.
+ 
+ @module
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -14,24 +14,24 @@ import {
 import type { PolicyEngineResult, } from './types.ts';
 
 /**
- * Produces transaction failure before policy pass exists.
- *
- * @param args - exact wrapper arguments
- *
- * @param message - failure description
- *
- * @param code - stable transaction failure classification
- *
- * @param trigger - lifecycle point owning failure
- *
- * @param path - optional path owning failure
- *
- * @returns blocking engine result
- *
- * @example
- * ```ts
- * initialTransactionFailure({ args: ['commit'], message: 'blocked' });
- * ```
+ Produces transaction failure before policy pass exists.
+ 
+ @param args - exact wrapper arguments
+ 
+ @param message - failure description
+ 
+ @param code - stable transaction failure classification
+ 
+ @param trigger - lifecycle point owning failure
+ 
+ @param path - optional path owning failure
+ 
+ @returns blocking engine result
+ 
+ @example
+ ```ts
+ initialTransactionFailure({ args: ['commit'], message: 'blocked' });
+ ```
  */
 export function initialTransactionFailure({
   args,
@@ -63,24 +63,24 @@ export function initialTransactionFailure({
 }
 
 /**
- * Produces failure retaining transformed command facts.
- *
- * @param previous - latest policy pass
- *
- * @param message - transaction failure description
- *
- * @param code - stable transaction failure classification
- *
- * @param trigger - lifecycle point owning failure
- *
- * @param path - optional path owning failure
- *
- * @returns blocking engine result
- *
- * @example
- * ```ts
- * transactionFailure({ previous, message: 'blocked' });
- * ```
+ Produces failure retaining transformed command facts.
+ 
+ @param previous - latest policy pass
+ 
+ @param message - transaction failure description
+ 
+ @param code - stable transaction failure classification
+ 
+ @param trigger - lifecycle point owning failure
+ 
+ @param path - optional path owning failure
+ 
+ @returns blocking engine result
+ 
+ @example
+ ```ts
+ transactionFailure({ previous, message: 'blocked' });
+ ```
  */
 export function transactionFailure({
   previous,
@@ -112,18 +112,18 @@ export function transactionFailure({
 }
 
 /**
- * Produces stable changed-pass-limit failure.
- *
- * @param previous - latest provisional policy pass
- *
- * @param trigger - fixable lifecycle point
- *
- * @returns blocking pass-limit result
- *
- * @example
- * ```ts
- * fixPassLimitFailure({ previous, trigger: 'direct-fix' });
- * ```
+ Produces stable changed-pass-limit failure.
+ 
+ @param previous - latest provisional policy pass
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @returns blocking pass-limit result
+ 
+ @example
+ ```ts
+ fixPassLimitFailure({ previous, trigger: 'direct-fix' });
+ ```
  */
 export function fixPassLimitFailure({
   previous,
@@ -141,20 +141,20 @@ export function fixPassLimitFailure({
 }
 
 /**
- * Produces stable invalid patch-target failure.
- *
- * @param previous - latest provisional policy pass
- *
- * @param trigger - fixable lifecycle point
- *
- * @param path - stale or mutable patch target
- *
- * @returns blocking invalid-patch result
- *
- * @example
- * ```ts
- * patchTargetFailure({ previous, trigger: 'pre-forward', path: 'a.txt' });
- * ```
+ Produces stable invalid patch-target failure.
+ 
+ @param previous - latest provisional policy pass
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @param path - stale or mutable patch target
+ 
+ @returns blocking invalid-patch result
+ 
+ @example
+ ```ts
+ patchTargetFailure({ previous, trigger: 'pre-forward', path: 'a.txt' });
+ ```
  */
 export function patchTargetFailure({
   previous,
@@ -175,24 +175,24 @@ export function patchTargetFailure({
 }
 
 /**
- * Classifies private patch validation and Git application failures.
- *
- * @param previous - latest provisional policy pass
- *
- * @param trigger - fixable lifecycle point
- *
- * @param path - declared patch target
- *
- * @param error - validation or Git application failure
- *
- * @returns blocking classified patch result
- *
- * @mutates error - `caughtValueText` may invoke string-conversion hooks.
- *
- * @example
- * ```ts
- * patchApplicationFailure({ previous, trigger: 'direct-fix', path: 'a.txt', error });
- * ```
+ Classifies private patch validation and Git application failures.
+ 
+ @param previous - latest provisional policy pass
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @param path - declared patch target
+ 
+ @param error - validation or Git application failure
+ 
+ @returns blocking classified patch result
+ 
+ @mutates error - `caughtValueText` may invoke string-conversion hooks.
+ 
+ @example
+ ```ts
+ patchApplicationFailure({ previous, trigger: 'direct-fix', path: 'a.txt', error });
+ ```
  */
 export function patchApplicationFailure({
   previous,
@@ -215,20 +215,20 @@ export function patchApplicationFailure({
 }
 
 /**
- * Produces stable exact candidate-cycle failure.
- *
- * @param previous - latest provisional policy pass
- *
- * @param trigger - fixable lifecycle point
- *
- * @param message - lifecycle-specific cycle explanation
- *
- * @returns blocking cycle result
- *
- * @example
- * ```ts
- * fixCycleFailure({ previous, trigger: 'pre-forward', message: 'Repeated state.' });
- * ```
+ Produces stable exact candidate-cycle failure.
+ 
+ @param previous - latest provisional policy pass
+ 
+ @param trigger - fixable lifecycle point
+ 
+ @param message - lifecycle-specific cycle explanation
+ 
+ @returns blocking cycle result
+ 
+ @example
+ ```ts
+ fixCycleFailure({ previous, trigger: 'pre-forward', message: 'Repeated state.' });
+ ```
  */
 export function fixCycleFailure({
   previous,

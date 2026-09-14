@@ -1,13 +1,13 @@
 /**
- * Settings key-value store access layer.
- *
- * The `settings` table holds instance configuration as simple key-value pairs.
- * Keys are plain strings; values are stored as TEXT (callers JSON.stringify complex values).
+ Settings key-value store access layer.
+ 
+ The `settings` table holds instance configuration as simple key-value pairs.
+ Keys are plain strings; values are stored as TEXT (callers JSON.stringify complex values).
  */
 import db from '../db.ts';
 
 /**
- * Database row shape for the settings table.
+ Database row shape for the settings table.
  */
 type SettingRow = {
   readonly key: string;
@@ -15,28 +15,28 @@ type SettingRow = {
 };
 
 /**
- * Sentinel returned by {@link getSetting} when no row matches the key.
- *
- * A unique `Symbol` keeps "missing" out of a nullish union (banned by
- * `no-nullish-union`); callers narrow with `=== SETTING_ABSENT`.
+ Sentinel returned by {@link getSetting} when no row matches the key.
+ 
+ A unique `Symbol` keeps "missing" out of a nullish union (banned by
+ `no-nullish-union`); callers narrow with `=== SETTING_ABSENT`.
  */
 export const SETTING_ABSENT: unique symbol = Symbol('settings row absent for requested key',);
 
 /**
- * Retrieves a single setting by key.
- *
- * @param key - Setting identifier
- *
- * @returns Stored value, or {@link SETTING_ABSENT} when the key does not exist
- *
- * @example
- * ```ts
- * const apiKey = await getSetting('openai-api-key');
- * ```
+ Retrieves a single setting by key.
+ 
+ @param key - Setting identifier
+ 
+ @returns Stored value, or {@link SETTING_ABSENT} when the key does not exist
+ 
+ @example
+ ```ts
+ const apiKey = await getSetting('openai-api-key');
+ ```
  */
 export async function getSetting(key: string,): Promise<string | typeof SETTING_ABSENT> {
   /**
-   * Single-row result from the lookup; nullish when the key is missing.
+   Single-row result from the lookup; nullish when the key is missing.
    */
   const row: unknown = await (await db.prepare('SELECT value FROM settings WHERE key = ?',))
     .get(key,);
@@ -47,16 +47,16 @@ export async function getSetting(key: string,): Promise<string | typeof SETTING_
 }
 
 /**
- * Upserts a setting: inserts the key if absent, replaces the value if present.
- *
- * @param key - Setting identifier
- *
- * @param value - Text payload to store
- *
- * @example
- * ```ts
- * await setSetting({ key: 'openai-api-key', value: 'sk-...', });
- * ```
+ Upserts a setting: inserts the key if absent, replaces the value if present.
+ 
+ @param key - Setting identifier
+ 
+ @param value - Text payload to store
+ 
+ @example
+ ```ts
+ await setSetting({ key: 'openai-api-key', value: 'sk-...', });
+ ```
  */
 export async function setSetting({
   key,
@@ -76,20 +76,20 @@ export async function setSetting({
 }
 
 /**
- * Deletes a setting by key.
- *
- * @param key - Setting identifier
- *
- * @returns `true` when the key existed and was removed
- *
- * @example
- * ```ts
- * const removed = await deleteSetting('openai-api-key');
- * ```
+ Deletes a setting by key.
+ 
+ @param key - Setting identifier
+ 
+ @returns `true` when the key existed and was removed
+ 
+ @example
+ ```ts
+ const removed = await deleteSetting('openai-api-key');
+ ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
   /**
-   * Captures the run result so the caller can learn whether a row was actually removed.
+   Captures the run result so the caller can learn whether a row was actually removed.
    */
   const result = await (await db.prepare('DELETE FROM settings WHERE key = ?',))
     .run(key,);
@@ -98,20 +98,20 @@ export async function deleteSetting(key: string,): Promise<boolean> {
 }
 
 /**
- * Returns all settings as a key-value record.
- *
- * @returns All settings as key-value pairs
- *
- * @example
- * ```ts
- * const settings = await getAllSettings();
- * // { 'openai-api-key': 'sk-...', 'location': 'home' }
- * ```
+ Returns all settings as a key-value record.
+ 
+ @returns All settings as key-value pairs
+ 
+ @example
+ ```ts
+ const settings = await getAllSettings();
+ // { 'openai-api-key': 'sk-...', 'location': 'home' }
+ ```
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns SettingRow shape */
   /**
-   * Materialises the full settings table so callers receive a single snapshot record.
+   Materialises the full settings table so callers receive a single snapshot record.
    */
   const rows = (await (await db
     .prepare('SELECT key, value FROM settings ORDER BY key ASC',))

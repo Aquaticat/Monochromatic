@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlSetHeaderComment`.
- *
- * @module
+ Tests for `tomlSetHeaderComment`.
+ 
+ @module
  */
 
 import {

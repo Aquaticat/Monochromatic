@@ -1,7 +1,7 @@
 /**
- * Forbidden-strings policy adapter tests.
- *
- * @module
+ Forbidden-strings policy adapter tests.
+ 
+ @module
  */
 import {
   chmod,
@@ -20,17 +20,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  ABSENT_GIT_VALUE,
-  type CandidateFile,
-  type PolicyContext,
-} from '@monochromatic-dev/git-policy-api/ts';
-import {
   ForbiddenStringsPluginError,
   forbiddenStringsPlugin,
   forbiddenStringsPolicy,
   parseScannerOutput,
   scanCandidates,
-} from './index.ts';
+} from '@monochromatic-dev/git-policy-forbidden-strings';
+
+/** Candidate type owned by built scanner-adapter interface under test. */
+type CandidateFile = Parameters<typeof scanCandidates>[0]['candidates'][number];
+
+/** Policy context type owned by built policy interface under test. */
+type PolicyContext = Parameters<NonNullable<typeof forbiddenStringsPolicy.check>>[0]['context'];
 
 /** Executable fixture mode. */
 const EXECUTABLE_MODE = 0o755;
@@ -48,9 +49,9 @@ type TestDirectory = Readonly<{
 }>;
 
 /**
- * Creates disposable adapter directory.
- *
- * @returns disposable directory
+ Creates disposable adapter directory.
+ 
+ @returns disposable directory
  */
 async function createTestDirectory(): Promise<TestDirectory> {
   /** Temporary root. */
@@ -64,13 +65,13 @@ async function createTestDirectory(): Promise<TestDirectory> {
 }
 
 /**
- * Creates executable scanner fixture.
- *
- * @param directory - fixture directory
- *
- * @param body - Node program body
- *
- * @returns executable path
+ Creates executable scanner fixture.
+ 
+ @param directory - fixture directory
+ 
+ @param body - Node program body
+ 
+ @returns executable path
  */
 async function writeScanner({
   directory,
@@ -87,11 +88,11 @@ async function writeScanner({
 }
 
 /**
- * Creates exact lazy policy candidate.
- *
- * @param path - repository-relative path
- *
- * @returns candidate fixture
+ Creates exact lazy policy candidate.
+ 
+ @param path - repository-relative path
+ 
+ @returns candidate fixture
  */
 function candidate(path: string,): CandidateFile {
   return {
@@ -107,11 +108,11 @@ function candidate(path: string,): CandidateFile {
 }
 
 /**
- * Captures expected plugin error.
- *
- * @param operation - operation expected to reject
- *
- * @returns plugin infrastructure error
+ Captures expected plugin error.
+ 
+ @param operation - operation expected to reject
+ 
+ @returns plugin infrastructure error
  */
 async function capturePluginError(
   operation: () => Promise<unknown>,
@@ -178,7 +179,7 @@ await describe({
         /** Exact materialized scanner path. */
         const scannerPath = '/tmp/plugin-owned/candidate-0';
         /**
-         * Lookup shared by both parses.
+         Lookup shared by both parses.
          */
         function lookup(path: string,): CandidateFile {
           if (path !== scannerPath)
@@ -298,7 +299,7 @@ await describe({
           },
           git: {
             candidates: function candidates() { return Promise.resolve(landed,); },
-            headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
+            headOid: function headOid() { return Promise.resolve('head',); },
             landedCommitOid: function landedCommitOid() { return Promise.resolve('landed',); },
             pushUpdates: function pushUpdates() { return Promise.resolve([],); },
           },
@@ -323,8 +324,8 @@ await describe({
           body: `if (process.argv.length !== 6) { process.stderr.write('unexpected candidate count'); process.exitCode = 2; }`,
         },);
         /** Paths scanner excludes only at canonical repository locations,
-         * mirroring the pruned three-entry SCANNER_SELF_MATCH_PATHS plus the
-         * cwd-default rules file. */
+         mirroring the pruned three-entry SCANNER_SELF_MATCH_PATHS plus the
+         cwd-default rules file. */
         const excludedPaths = [
           'forbidden-strings.local.txt',
           'package/cli/forbidden-strings/data/betterleaks-default-config.toml',
@@ -341,9 +342,9 @@ await describe({
           };
         },);
         /** Same basename outside canonical location must remain scannable, the
-         * retired root example path is ordinary scannable content now that
-         * the baseline lives inside the scanner package, and the stale
-         * algebra_tests.rs entry pruned by #389 scans like any other file. */
+         retired root example path is ordinary scannable content now that
+         the baseline lives inside the scanner package, and the stale
+         algebra_tests.rs entry pruned by #389 scans like any other file. */
         const retainedCandidates = [
           candidate('nested/forbidden-strings.local.example.txt',),
           candidate('forbidden-strings.local.example.txt',),

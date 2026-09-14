@@ -11,17 +11,17 @@ import { IGNORE_PATH, } from './path.ts';
 import type { DeepReadonly, } from './types.ts';
 
 /**
- * Logger root for rss after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for rss after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'rss', },);
 
 /**
- * Tagged logger for the ignore module.
+ Tagged logger for the ignore module.
  */
 const l = tagged({
   tag: 'ignore',
@@ -29,21 +29,21 @@ const l = tagged({
 },);
 
 /**
- * Sentinel returned when the ignore directory does not exist.
- * Distinct non-nullish value so {@link readIgnoreDir} never widens to a banned `T | undefined`.
+ Sentinel returned when the ignore directory does not exist.
+ Distinct non-nullish value so {@link readIgnoreDir} never widens to a banned `T | undefined`.
  */
 const IGNORE_DIR_ABSENT = Symbol('ignore directory missing on disk',);
 
 /**
- * Reads the ignore directory entries, returning {@link IGNORE_DIR_ABSENT} when it is missing.
- * Module-scoped because it captures nothing from any caller.
- *
- * @returns Directory entries, or {@link IGNORE_DIR_ABSENT} when the directory does not exist
- *
- * @example
- * ```ts
- * const entries = await readIgnoreDir();
- * ```
+ Reads the ignore directory entries, returning {@link IGNORE_DIR_ABSENT} when it is missing.
+ Module-scoped because it captures nothing from any caller.
+ 
+ @returns Directory entries, or {@link IGNORE_DIR_ABSENT} when the directory does not exist
+ 
+ @example
+ ```ts
+ const entries = await readIgnoreDir();
+ ```
  */
 async function readIgnoreDir(): Promise<Dirent[] | typeof IGNORE_DIR_ABSENT> {
   try {
@@ -54,7 +54,7 @@ async function readIgnoreDir(): Promise<Dirent[] | typeof IGNORE_DIR_ABSENT> {
   }
   catch (error) {
     /**
-     * Inner logger tagged with this function name for traceable log lines.
+     Inner logger tagged with this function name for traceable log lines.
      */
     const innerL = tagged({
       tag: readIgnoreDir.name,
@@ -66,17 +66,17 @@ async function readIgnoreDir(): Promise<Dirent[] | typeof IGNORE_DIR_ABSENT> {
 }
 
 /**
- * Reads one ignore directory entry's file contents as UTF-8 text.
- * Module-scoped because it captures nothing from any caller.
- *
- * @param dirent - Directory entry whose backing file is read
- *
- * @returns File contents as UTF-8 text
- *
- * @example
- * ```ts
- * const text = await readIgnoreFile(dirent);
- * ```
+ Reads one ignore directory entry's file contents as UTF-8 text.
+ Module-scoped because it captures nothing from any caller.
+ 
+ @param dirent - Directory entry whose backing file is read
+ 
+ @returns File contents as UTF-8 text
+ 
+ @example
+ ```ts
+ const text = await readIgnoreFile(dirent);
+ ```
  */
 function readIgnoreFile(dirent: DeepReadonly<Dirent>,): Promise<string> {
   return readFile(
@@ -91,27 +91,27 @@ function readIgnoreFile(dirent: DeepReadonly<Dirent>,): Promise<string> {
 //region Ignore content loading: Reads raw JSONL content for salt derivation and link filtering
 
 /**
- * Reads the raw text content of all ignore JSONL files.
- * Used both for content-derived memoize salt and for link filtering.
- * Lists entries via {@link readIgnoreDir} and reads each one with {@link readIgnoreFile}.
- *
- * @returns Concatenated raw text from all ignore files, or empty string if directory is missing
- *
- * @example
- * ```ts
- * const content = await getIgnoreContent();
- * ```
+ Reads the raw text content of all ignore JSONL files.
+ Used both for content-derived memoize salt and for link filtering.
+ Lists entries via {@link readIgnoreDir} and reads each one with {@link readIgnoreFile}.
+ 
+ @returns Concatenated raw text from all ignore files, or empty string if directory is missing
+ 
+ @example
+ ```ts
+ const content = await getIgnoreContent();
+ ```
  */
 export async function getIgnoreContent(): Promise<string> {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: getIgnoreContent.name,
     l,
   },);
   /**
-   * Directory entries, or the absent sentinel when the ignore directory is missing.
+   Directory entries, or the absent sentinel when the ignore directory is missing.
    */
   const filesInDir = await readIgnoreDir();
   if (filesInDir === IGNORE_DIR_ABSENT) {
@@ -119,7 +119,7 @@ export async function getIgnoreContent(): Promise<string> {
     return '';
   }
   /**
-   * Per-file contents read in parallel, joined back into one stream for callers.
+   Per-file contents read in parallel, joined back into one stream for callers.
    */
   const contents = await mapIterableAsync({
     fn: readIgnoreFile,
@@ -129,31 +129,31 @@ export async function getIgnoreContent(): Promise<string> {
 }
 
 /**
- * Parses ignored links from raw ignore file content.
- *
- * @param content - Raw JSONL text from ignore files
- *
- * @returns Set of link URLs that should be excluded from rendering
- *
- * @example
- * ```ts
- * const links = parseIgnoredLinks('{"link":"https://example.com"}\n');
- * ```
+ Parses ignored links from raw ignore file content.
+ 
+ @param content - Raw JSONL text from ignore files
+ 
+ @returns Set of link URLs that should be excluded from rendering
+ 
+ @example
+ ```ts
+ const links = parseIgnoredLinks('{"link":"https://example.com"}\n');
+ ```
  */
 export function parseIgnoredLinks(content: string,): Set<string> {
   /**
-   * Inner logger tagged with this function name for traceable log lines.
+   Inner logger tagged with this function name for traceable log lines.
    */
   const innerL = tagged({
     tag: parseIgnoredLinks.name,
     l,
   },);
   /**
-   * Accumulator for unique link URLs so duplicate ignore entries collapse.
+   Accumulator for unique link URLs so duplicate ignore entries collapse.
    */
   const links = new Set<string>();
   /**
-   * Trimmed, non-empty lines so the JSON parser does not choke on whitespace.
+   Trimmed, non-empty lines so the JSON parser does not choke on whitespace.
    */
   const lines = content
     .split('\n',)
@@ -167,13 +167,13 @@ export function parseIgnoredLinks(content: string,): Set<string> {
   for (const line of lines) {
     try {
       /**
-       * Parsed entry kept as unknown so the shape check below narrows it explicitly.
+       Parsed entry kept as unknown so the shape check below narrows it explicitly.
        */
       const parsed: unknown = JSON.parse(line,);
       if ((parsed !== null) && ((typeof parsed) === 'object')
         && ('link' in parsed)) {
         /**
-         * Destructured link field so the type guard runs on a named binding.
+         Destructured link field so the type guard runs on a named binding.
          */
         const { link, } = parsed;
         if (((typeof link) === 'string') && (link !== ''))

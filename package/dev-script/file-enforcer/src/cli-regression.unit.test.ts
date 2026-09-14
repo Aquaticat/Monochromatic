@@ -19,7 +19,7 @@ import {
 //region CLI fixture helpers
 
 /**
- * Source CLI entry used by repo mise tasks.
+ Source CLI entry used by repo mise tasks.
  */
 const CLI_PATH = join(
   import.meta.dirname,
@@ -27,8 +27,8 @@ const CLI_PATH = join(
 );
 
 /**
- * Source public entry imported by generated config fixtures so CLI context and
- * builder context share one module instance.
+ Source public entry imported by generated config fixtures so CLI context and
+ builder context share one module instance.
  */
 const SOURCE_INDEX_URL = pathToFileURL(join(
   import.meta.dirname,
@@ -36,14 +36,14 @@ const SOURCE_INDEX_URL = pathToFileURL(join(
 ),).href;
 
 /**
- * Creates an isolated temp directory for CLI regression tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temp directory for CLI regression tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(
@@ -53,14 +53,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes an isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -73,14 +73,14 @@ async function teardown(tempDir: string,): Promise<void> {
 }
 
 /**
- * Runs the source CLI in a fixture directory.
- *
- * @param cwd - Directory containing `file-enforcer.config.ts`.
- *
- * @example
- * ```ts
- * await runCli({ cwd: tempDir });
- * ```
+ Runs the source CLI in a fixture directory.
+ 
+ @param cwd - Directory containing `file-enforcer.config.ts`.
+ 
+ @example
+ ```ts
+ await runCli({ cwd: tempDir });
+ ```
  */
 async function runCli({ cwd, }: { readonly cwd: string; },): Promise<void> {
   await spawn(
@@ -91,16 +91,16 @@ async function runCli({ cwd, }: { readonly cwd: string; },): Promise<void> {
 }
 
 /**
- * Returns JSON text for a generated TypeScript string literal.
- *
- * @param value - Value to quote.
- *
- * @returns JavaScript string literal source.
- *
- * @example
- * ```ts
- * const literal = jsString('/tmp/path');
- * ```
+ Returns JSON text for a generated TypeScript string literal.
+ 
+ @param value - Value to quote.
+ 
+ @returns JavaScript string literal source.
+ 
+ @example
+ ```ts
+ const literal = jsString('/tmp/path');
+ ```
  */
 function jsString(value: string,): string {
   return JSON.stringify(value,);

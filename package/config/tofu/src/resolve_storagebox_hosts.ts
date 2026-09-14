@@ -5,48 +5,48 @@ import {
 import { json, } from 'node:stream/consumers';
 
 /**
- * OpenTofu `data.external` query carrying comma-separated Storage Box hostnames.
- *
- * @example
- * ```ts
- * const query: StorageboxHostsQuery = { hostnames: 'u123456.your-storagebox.de' };
- * ```
+ OpenTofu `data.external` query carrying comma-separated Storage Box hostnames.
+ 
+ @example
+ ```ts
+ const query: StorageboxHostsQuery = { hostnames: 'u123456.your-storagebox.de' };
+ ```
  */
 type StorageboxHostsQuery = {
   readonly hostnames: string;
 };
 
 /**
- * DNS record family supported by Storage Box hostname resolution.
- *
- * @example
- * ```ts
- * const family: AddressFamily = 'A';
- * ```
+ DNS record family supported by Storage Box hostname resolution.
+ 
+ @example
+ ```ts
+ const family: AddressFamily = 'A';
+ ```
  */
 type AddressFamily = 'A' | 'AAAA';
 
 /**
- * Unknown JSON object shape used before field-specific type guards run.
- *
- * @example
- * ```ts
- * const object: UnknownRecord = { hostnames: 'u123456.your-storagebox.de' };
- * ```
+ Unknown JSON object shape used before field-specific type guards run.
+ 
+ @example
+ ```ts
+ const object: UnknownRecord = { hostnames: 'u123456.your-storagebox.de' };
+ ```
  */
 type UnknownRecord = Record<PropertyKey, unknown>;
 
 /**
- * Checks whether unknown value is object-like enough for property guards.
- *
- * @param value - Candidate JSON value.
- *
- * @returns Whether value supports property checks.
- *
- * @example
- * ```ts
- * isRecord({ hostnames: 'u123456.your-storagebox.de' }); // true
- * ```
+ Checks whether unknown value is object-like enough for property guards.
+ 
+ @param value - Candidate JSON value.
+ 
+ @returns Whether value supports property checks.
+ 
+ @example
+ ```ts
+ isRecord({ hostnames: 'u123456.your-storagebox.de' }); // true
+ ```
  */
 function isRecord(value: unknown,): value is UnknownRecord {
   return ((typeof value) === 'object')
@@ -54,16 +54,16 @@ function isRecord(value: unknown,): value is UnknownRecord {
 }
 
 /**
- * Checks whether unknown value is OpenTofu Storage Box hostname query input.
- *
- * @param value - Candidate OpenTofu query value.
- *
- * @returns Whether value carries hostname text.
- *
- * @example
- * ```ts
- * isStorageboxHostsQuery({ hostnames: 'u123456.your-storagebox.de' }); // true
- * ```
+ Checks whether unknown value is OpenTofu Storage Box hostname query input.
+ 
+ @param value - Candidate OpenTofu query value.
+ 
+ @returns Whether value carries hostname text.
+ 
+ @example
+ ```ts
+ isStorageboxHostsQuery({ hostnames: 'u123456.your-storagebox.de' }); // true
+ ```
  */
 function isStorageboxHostsQuery(value: unknown,): value is StorageboxHostsQuery {
   return isRecord(value,)
@@ -71,18 +71,18 @@ function isStorageboxHostsQuery(value: unknown,): value is StorageboxHostsQuery 
 }
 
 /**
- * Parses OpenTofu query input or throws with context.
- *
- * @param value - Candidate OpenTofu query value.
- *
- * @returns Validated Storage Box hostname query.
- *
- * @throws When value lacks hostname text.
- *
- * @example
- * ```ts
- * parseStorageboxHostsQuery({ hostnames: 'u123456.your-storagebox.de' });
- * ```
+ Parses OpenTofu query input or throws with context.
+ 
+ @param value - Candidate OpenTofu query value.
+ 
+ @returns Validated Storage Box hostname query.
+ 
+ @throws When value lacks hostname text.
+ 
+ @example
+ ```ts
+ parseStorageboxHostsQuery({ hostnames: 'u123456.your-storagebox.de' });
+ ```
  */
 function parseStorageboxHostsQuery(value: unknown,): StorageboxHostsQuery {
   if (isStorageboxHostsQuery(value,))
@@ -92,18 +92,18 @@ function parseStorageboxHostsQuery(value: unknown,): StorageboxHostsQuery {
 }
 
 /**
- * Validates and normalizes one configured Storage Box hostname.
- *
- * @param hostname - Candidate hostname from tfvars.
- *
- * @returns Hostname accepted for DNS resolution.
- *
- * @throws When hostname is wildcard or outside `your-storagebox.de`.
- *
- * @example
- * ```ts
- * assertStorageboxHostname('u123456.your-storagebox.de');
- * ```
+ Validates and normalizes one configured Storage Box hostname.
+ 
+ @param hostname - Candidate hostname from tfvars.
+ 
+ @returns Hostname accepted for DNS resolution.
+ 
+ @throws When hostname is wildcard or outside `your-storagebox.de`.
+ 
+ @example
+ ```ts
+ assertStorageboxHostname('u123456.your-storagebox.de');
+ ```
  */
 function assertStorageboxHostname(hostname: string,): string {
   if (hostname.includes('*',))
@@ -116,18 +116,18 @@ function assertStorageboxHostname(hostname: string,): string {
 }
 
 /**
- * Resolves one DNS address family, returning empty list when family has no records.
- *
- * @param hostname - Concrete Storage Box hostname.
- *
- * @param family - DNS address family to resolve.
- *
- * @returns Address records for family, or empty list when resolver reports none.
- *
- * @example
- * ```ts
- * await resolveAddressFamily({ hostname: 'u123456.your-storagebox.de', family: 'A' });
- * ```
+ Resolves one DNS address family, returning empty list when family has no records.
+ 
+ @param hostname - Concrete Storage Box hostname.
+ 
+ @param family - DNS address family to resolve.
+ 
+ @returns Address records for family, or empty list when resolver reports none.
+ 
+ @example
+ ```ts
+ await resolveAddressFamily({ hostname: 'u123456.your-storagebox.de', family: 'A' });
+ ```
  */
 async function resolveAddressFamily({
   hostname,
@@ -152,28 +152,28 @@ async function resolveAddressFamily({
 }
 
 /**
- * Resolves one Storage Box hostname into `/32` and `/128` CIDRs, after
- * validating it with {@link assertStorageboxHostname}.
- *
- * @param hostname - Concrete Storage Box hostname.
- *
- * @returns CIDRs suitable for hcloud `destination_ips`.
- *
- * @throws When hostname resolves to no A or AAAA records.
- *
- * @example
- * ```ts
- * await resolveStorageboxHostname('u123456.your-storagebox.de');
- * ```
+ Resolves one Storage Box hostname into `/32` and `/128` CIDRs, after
+ validating it with {@link assertStorageboxHostname}.
+ 
+ @param hostname - Concrete Storage Box hostname.
+ 
+ @returns CIDRs suitable for hcloud `destination_ips`.
+ 
+ @throws When hostname resolves to no A or AAAA records.
+ 
+ @example
+ ```ts
+ await resolveStorageboxHostname('u123456.your-storagebox.de');
+ ```
  */
 async function resolveStorageboxHostname(hostname: string,): Promise<readonly string[]> {
   /**
-   * Hostname after suffix and wildcard validation.
+   Hostname after suffix and wildcard validation.
    */
   const storageboxHostname = assertStorageboxHostname(hostname,);
 
   /**
-   * IPv4 and IPv6 DNS records for hostname.
+   IPv4 and IPv6 DNS records for hostname.
    */
   const [
     ipv4Addresses,
@@ -194,14 +194,14 @@ async function resolveStorageboxHostname(hostname: string,): Promise<readonly st
     throw new Error(`Storage Box hostname resolved to no A or AAAA records: ${storageboxHostname}`,);
 
   /**
-   * IPv4 CIDR destinations for hcloud firewall rule.
+   IPv4 CIDR destinations for hcloud firewall rule.
    */
   const ipv4Cidrs = ipv4Addresses.map(function ipv4ToCidr(address,): string {
     return `${address}/32`;
   },);
 
   /**
-   * IPv6 CIDR destinations for hcloud firewall rule.
+   IPv6 CIDR destinations for hcloud firewall rule.
    */
   const ipv6Cidrs = ipv6Addresses.map(function ipv6ToCidr(address,): string {
     return `${address}/128`;
@@ -214,17 +214,17 @@ async function resolveStorageboxHostname(hostname: string,): Promise<readonly st
 }
 
 /**
- * Raw OpenTofu `data.external` payload read from stdin.
+ Raw OpenTofu `data.external` payload read from stdin.
  */
 const rawInput: unknown = await json(process.stdin,);
 
 /**
- * Validated OpenTofu query payload.
+ Validated OpenTofu query payload.
  */
 const input = parseStorageboxHostsQuery(rawInput,);
 
 /**
- * Concrete Storage Box hostnames to resolve.
+ Concrete Storage Box hostnames to resolve.
  */
 const hostnames = input.hostnames
   .split(',',)
@@ -238,14 +238,14 @@ const hostnames = input.hostnames
   },);
 
 /**
- * Resolves all configured Storage Box hostnames and writes comma-separated CIDRs.
+ Resolves all configured Storage Box hostnames and writes comma-separated CIDRs.
  */
 const cidrLists = await Promise.all(hostnames.map(function resolveHostname(hostname,): Promise<readonly string[]> {
   return resolveStorageboxHostname(hostname,);
 },),);
 
 /**
- * Comma-joined CIDR list ready to stream out to OpenTofu.
+ Comma-joined CIDR list ready to stream out to OpenTofu.
  */
 const result = cidrLists
   .flat()

@@ -1,7 +1,7 @@
 /**
- * Package call identity recovered from exported declaration owner.
- *
- * @module
+ Package call identity recovered from exported declaration owner.
+ 
+ @module
  */
 
 import type {
@@ -29,25 +29,25 @@ import {
 } from './package-implementation-resolution.ts';
 
 /**
- * Finds nearest named exported owner around declaration.
- *
- * @param declaration - Selected package method declaration.
- *
- * @returns owner name or package-call unavailable sentinel.
+ Finds nearest named exported owner around declaration.
+ 
+ @param declaration - Selected package method declaration.
+ 
+ @returns owner name or package-call unavailable sentinel.
  */
 function declarationOwnerName(
   declaration: Node,
 ): string | typeof PACKAGE_CALL_IDENTITY_UNAVAILABLE {
   /** Parent cursor seeking class,
-   * interface,
-   * type alias,
-   * or exported variable owner.
+   interface,
+   type alias,
+   or exported variable owner.
    */
   const cursor: { current: Node; } = { current: declaration.parent, };
   while (!isSourceFile(cursor.current,)) {
     if (isClassLikeDeclaration(cursor.current,)) {
       /**
-       * Optional class or class-expression name.
+       Optional class or class-expression name.
        */
       const { name, } = cursor.current;
       if ((name !== undefined) && isIdentifier(name,))
@@ -57,7 +57,7 @@ function declarationOwnerName(
       || isTypeAliasDeclaration(cursor.current,)
       || isVariableDeclaration(cursor.current,)) {
       /**
-       * Required named declaration binding.
+       Required named declaration binding.
        */
       const { name, } = cursor.current;
       if (isIdentifier(name,))
@@ -70,23 +70,23 @@ function declarationOwnerName(
 }
 
 /**
- * Recovers package export and member identity from declaration owner.
- *
- * Used for instance and retained-object methods whose call receiver is not an
- * import binding.
- *
- * @param identity - Exact package owning declaration.
- *
- * @param call - Invoked package method call.
- *
- * @param declaration - Selected package method declaration.
- *
- * @returns exact package call identity or unavailable sentinel.
- *
- * @example
- * ```ts
- * packageDeclarationCallIdentity({ identity, call, declaration });
- * ```
+ Recovers package export and member identity from declaration owner.
+ 
+ Used for instance and retained-object methods whose call receiver is not an
+ import binding.
+ 
+ @param identity - Exact package owning declaration.
+ 
+ @param call - Invoked package method call.
+ 
+ @param declaration - Selected package method declaration.
+ 
+ @returns exact package call identity or unavailable sentinel.
+ 
+ @example
+ ```ts
+ packageDeclarationCallIdentity({ identity, call, declaration });
+ ```
  */
 export function packageDeclarationCallIdentity({
   identity,
@@ -100,7 +100,7 @@ export function packageDeclarationCallIdentity({
   if (!isPropertyAccessExpression(call.expression,))
     return PACKAGE_CALL_IDENTITY_UNAVAILABLE;
   /**
-   * Module specifier whose types entry exactly owns declaration source.
+   Module specifier whose types entry exactly owns declaration source.
    */
   const moduleSpecifier = packageModuleSpecifierForDeclaration({
     identity,
@@ -110,7 +110,7 @@ export function packageDeclarationCallIdentity({
   if (moduleSpecifier === PACKAGE_IMPLEMENTATION_UNAVAILABLE)
     return PACKAGE_CALL_IDENTITY_UNAVAILABLE;
   /**
-   * Runtime export owner matching declaration container.
+   Runtime export owner matching declaration container.
    */
   const exportName = declarationOwnerName(declaration,);
   return exportName === PACKAGE_CALL_IDENTITY_UNAVAILABLE

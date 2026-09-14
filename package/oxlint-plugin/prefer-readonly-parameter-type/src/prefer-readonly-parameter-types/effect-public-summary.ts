@@ -1,15 +1,15 @@
 /**
- * Public effect-summary projection from mutable fixed-point state.
- *
- * Every set crossing this boundary is projected from slots to the parameters that own them.
- * Projection loses precision and never soundness: a parameter answers for every slot beneath
- * it, so a write recorded against one property still marks the parameter affected. The rule's
- * report, overload agreement and external-package effects all speak in parameters, and this is
- * the single place the two vocabularies meet. Foreign ownership speaks in parameters too but
- * never enters here: it is proven per callable on demand through `EffectSummaryIndex`, because
- * it is the one fact whose cost a consumer should be able to decline.
- *
- * @module
+ Public effect-summary projection from mutable fixed-point state.
+ 
+ Every set crossing this boundary is projected from slots to the parameters that own them.
+ Projection loses precision and never soundness: a parameter answers for every slot beneath
+ it, so a write recorded against one property still marks the parameter affected. The rule's
+ report, overload agreement and external-package effects all speak in parameters, and this is
+ the single place the two vocabularies meet. Foreign ownership speaks in parameters too but
+ never enters here: it is proven per callable on demand through `EffectSummaryIndex`, because
+ it is the one fact whose cost a consumer should be able to decline.
+ 
+ @module
  */
 
 import { affectedBindingNames, } from './effect-affected-bindings.ts';
@@ -32,18 +32,18 @@ import type {
 } from './effect-summary-index.ts';
 
 /**
- * Converts completed mutable summary to public immutable view.
- *
- * @param summary - Completed fixed-point summary.
- *
- * @param declaration - Callable the summary describes, resolving binding names.
- *
- * @returns copied public effect summary.
- *
- * @example
- * ```ts
- * effectPublicSummary({ summary, declaration });
- * ```
+ Converts completed mutable summary to public immutable view.
+ 
+ @param summary - Completed fixed-point summary.
+ 
+ @param declaration - Callable the summary describes, resolving binding names.
+ 
+ @returns copied public effect summary.
+ 
+ @example
+ ```ts
+ effectPublicSummary({ summary, declaration });
+ ```
  */
 export function effectPublicSummary({
   summary,
@@ -53,43 +53,43 @@ export function effectPublicSummary({
   readonly declaration: EffectCallableDeclaration;
 }): CallableEffectSummary {
   /**
-   * Slot ownership this summary's facts are projected through.
+   Slot ownership this summary's facts are projected through.
    */
   const ownership = summary.slots;
   /**
-   * Parameters carrying a proven referent write.
+   Parameters carrying a proven referent write.
    */
   const mutated = parametersOfSlots({
     ownership,
     slots: summary.mutated,
   },);
   /**
-   * Parameters whose value this callable invokes.
+   Parameters whose value this callable invokes.
    */
   const invoked = parametersOfSlots({
     ownership,
     slots: summary.invoked,
   },);
   /**
-   * Parameters carrying unresolved reachability.
+   Parameters carrying unresolved reachability.
    */
   const opaque = parametersOfSlots({
     ownership,
     slots: summary.opaque,
   },);
   /**
-   * Opaque slots a report may name a binding for.
-   *
-   * The slot set stays whole for every verdict and narrows only here, where names are
-   * chosen. A destructured parameter gives each binding its own slot, so one binding
-   * stored and another passed to an unresolved call arrive with different causes, and a
-   * subject built from every opaque slot says the stored one is used by the call.
-   * `reportMixedBindingCauses` in `readonly-structural-store-invalid.ts` is that shape.
+   Opaque slots a report may name a binding for.
+   
+   The slot set stays whole for every verdict and narrows only here, where names are
+   chosen. A destructured parameter gives each binding its own slot, so one binding
+   stored and another passed to an unresolved call arrive with different causes, and a
+   subject built from every opaque slot says the stored one is used by the call.
+   `reportMixedBindingCauses` in `readonly-structural-store-invalid.ts` is that shape.
    */
   const reportableOpaqueSlots = new Set(
     [...summary.opaque,].filter(function slotCanBeNamed(slot,): boolean {
       /**
-       * Provenance recorded against this slot alone, absent when nothing reached it.
+       Provenance recorded against this slot alone, absent when nothing reached it.
        */
       const slotBoundaries = summary.opaqueProvenanceBySlot
         .get(slot,);
@@ -159,7 +159,7 @@ export function effectPublicSummary({
           PublicCallbackRelation,
         ] {
           /**
-           * Projected relation, parameter-level on both ends.
+           Projected relation, parameter-level on both ends.
            */
           const projected = {
             callbackParameterIndex: ownership.parameterOfSlot[relation.callbackSlot]

@@ -18,32 +18,32 @@ import {
 } from './compose.ts';
 
 /**
- * Logger root for watch-restart after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
- * ```
+ Logger root for watch-restart after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: defaultLogger, },);
+ ```
  */
 const defaultLogger = tagged({ tag: 'watch-restart', },);
 
 /**
- * Milliseconds the "async filter resolves correctly" test holds before
- * resolving; small enough not to slow the suite, large enough to be a
- * real microtask boundary rather than synchronous.
+ Milliseconds the "async filter resolves correctly" test holds before
+ resolving; small enough not to slow the suite, large enough to be a
+ real microtask boundary rather than synchronous.
  */
 const ASYNC_FILTER_DELAY_MS = 5;
 
 /**
- * Builds a minimal {@link WatchCtx}; compose passes the ctx through
- * to inner filters but never inspects it itself.
- *
- * @returns context object
- *
- * @example
- * ```ts
- * const ctx = makeCtx();
- * ```
+ Builds a minimal {@link WatchCtx}; compose passes the ctx through
+ to inner filters but never inspects it itself.
+ 
+ @returns context object
+ 
+ @example
+ ```ts
+ const ctx = makeCtx();
+ ```
  */
 function makeCtx(): WatchCtx {
   return {
@@ -54,14 +54,14 @@ function makeCtx(): WatchCtx {
 }
 
 /**
- * Builds a {@link WatchEvent}; defaults give a `change` to `file.ts`.
- *
- * @returns fully-populated event with `kind === 'change'`
- *
- * @example
- * ```ts
- * const event = makeEvent();
- * ```
+ Builds a {@link WatchEvent}; defaults give a `change` to `file.ts`.
+ 
+ @returns fully-populated event with `kind === 'change'`
+ 
+ @example
+ ```ts
+ const event = makeEvent();
+ ```
  */
 function makeEvent(): WatchEvent {
   return {
@@ -74,27 +74,27 @@ function makeEvent(): WatchEvent {
 }
 
 /**
- * Builds a {@link WatchFilter} that records its name in `callLog` on each
- * invocation and returns the configured result.
- *
- * The recording array (`callLog`) is a single const-bound `string[]`
- * shared across the test body and the filter closure; tests inspect it
- * after running compose to assert short-circuit (or its absence). Using
- * an array of names instead of a counter keeps order of calls visible.
- *
- * @param name - identifier appended to `callLog` on each call
- *
- * @param result - boolean (or promise of boolean) the filter resolves to
- *
- * @param callLog - external array the filter appends to on each call
- *
- * @returns a recording filter suitable for handing to composeFilters/anyFilter
- *
- * @example
- * ```ts
- * const calls: string[] = [];
- * const f = recordingFilter({ name: 'f', result: true, callLog: calls, },);
- * ```
+ Builds a {@link WatchFilter} that records its name in `callLog` on each
+ invocation and returns the configured result.
+ 
+ The recording array (`callLog`) is a single const-bound `string[]`
+ shared across the test body and the filter closure; tests inspect it
+ after running compose to assert short-circuit (or its absence). Using
+ an array of names instead of a counter keeps order of calls visible.
+ 
+ @param name - identifier appended to `callLog` on each call
+ 
+ @param result - boolean (or promise of boolean) the filter resolves to
+ 
+ @param callLog - external array the filter appends to on each call
+ 
+ @returns a recording filter suitable for handing to composeFilters/anyFilter
+ 
+ @example
+ ```ts
+ const calls: string[] = [];
+ const f = recordingFilter({ name: 'f', result: true, callLog: calls, },);
+ ```
  */
 function recordingFilter(
   {

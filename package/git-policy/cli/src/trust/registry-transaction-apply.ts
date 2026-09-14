@@ -1,5 +1,5 @@
 /**
- * Provenance transaction lock and record application. @module
+ Provenance transaction lock and record application. @module
  */
 import type { ReadonlyDeep, } from 'type-fest';
 import {
@@ -28,13 +28,13 @@ import type {
 } from './registry-transaction-types.ts';
 
 /**
- * Acquires every record lock concurrently after deterministic planning.
- *
- * @param registryRoot - complete registry root
- *
- * @param journal - transaction journal
- *
- * @returns acquired lock paths
+ Acquires every record lock concurrently after deterministic planning.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param journal - transaction journal
+ 
+ @returns acquired lock paths
  */
 async function acquireLocks({
   registryRoot,
@@ -44,7 +44,7 @@ async function acquireLocks({
   journal: TransactionJournal;
 }>,): Promise<readonly string[]> {
   /**
-   * Deterministic exact lock paths.
+   Deterministic exact lock paths.
    */
   const lockPaths = journal.operations
     .map(function operationLock(operation,) {
@@ -54,7 +54,7 @@ async function acquireLocks({
     },)}.lock`;
   },);
   /**
-   * Every independent lock acquisition result.
+   Every independent lock acquisition result.
    */
   const results = await Promise.allSettled(lockPaths.map(async function acquireLock(lockPath,) {
     await mkdir(
@@ -68,7 +68,7 @@ async function acquireLocks({
     return lockPath;
   },),);
   /**
-   * Successfully acquired lock subset.
+   Successfully acquired lock subset.
    */
   const acquired = results.flatMap(function fulfilledLock(
     result: ReadonlyDeep<(typeof results)[number]>,
@@ -76,7 +76,7 @@ async function acquireLocks({
     return result.status === 'fulfilled' ? [result.value,] : [];
   },);
   /**
-   * First lock failure when contention occurred.
+   First lock failure when contention occurred.
    */
   const failure = results.find(function rejectedLock(
     result: ReadonlyDeep<(typeof results)[number]>,
@@ -103,15 +103,15 @@ async function acquireLocks({
 }
 
 /**
- * Applies one idempotent record operation.
- *
- * @param registryRoot - complete registry root
- *
- * @param transactionId - journal transaction ID
- *
- * @param operation - final record state
- *
- * @mutates operation - `JSON.stringify` may invoke hooks on retained authorizing roots.
+ Applies one idempotent record operation.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param transactionId - journal transaction ID
+ 
+ @param operation - final record state
+ 
+ @mutates operation - `JSON.stringify` may invoke hooks on retained authorizing roots.
  */
 async function applyOperation({
   registryRoot,
@@ -123,7 +123,7 @@ async function applyOperation({
   operation: ProvenanceOperation;
 },): Promise<void> {
   /**
-   * Exact record directory.
+   Exact record directory.
    */
   const directory = recordDirectory({
     registryRoot,
@@ -131,7 +131,7 @@ async function applyOperation({
   },);
   if (operation.action === 'remove') {
     /**
-     * Recoverable removed sibling.
+     Recoverable removed sibling.
      */
     const removedDirectory = `${directory}.removed-${transactionId}`;
     try {
@@ -155,14 +155,14 @@ async function applyOperation({
     return;
   }
   /**
-   * Current record retained with final provenance.
+   Current record retained with final provenance.
    */
   const record = await readRecord({
     registryRoot,
     directory,
   },);
   /**
-   * Private replacement metadata path.
+   Private replacement metadata path.
    */
   const temporaryPath = join(
     directory,
@@ -197,22 +197,22 @@ async function applyOperation({
 }
 
 /**
- * Settles one journal and releases every lock.
- *
- * @param registryRoot - complete registry root
- *
- * @param journalPath - private journal path
- *
- * @param journal - validated journal
- *
- * @param recovering - whether prior owner terminated
- *
- * @mutates journal - `JSON.stringify` may invoke hooks on retained authorizing roots.
- *
- * @example
- * ```ts
- * await settleProvenanceJournal(input);
- * ```
+ Settles one journal and releases every lock.
+ 
+ @param registryRoot - complete registry root
+ 
+ @param journalPath - private journal path
+ 
+ @param journal - validated journal
+ 
+ @param recovering - whether prior owner terminated
+ 
+ @mutates journal - `JSON.stringify` may invoke hooks on retained authorizing roots.
+ 
+ @example
+ ```ts
+ await settleProvenanceJournal(input);
+ ```
  */
 export async function settleProvenanceJournal({
   registryRoot,
@@ -226,7 +226,7 @@ export async function settleProvenanceJournal({
   readonly recovering: boolean;
 },): Promise<void> {
   /**
-   * Exact validated transaction journal parent.
+   Exact validated transaction journal parent.
    */
   const journalDirectory = dirname(journalPath,);
   if (journalDirectory !== join(
@@ -254,14 +254,14 @@ export async function settleProvenanceJournal({
     },),);
   }
   /**
-   * Locks held through complete journal application.
+   Locks held through complete journal application.
    */
   const locks = await acquireLocks({
     registryRoot,
     journal,
   },);
   /**
-   * Automatic lock cleanup on success or failure.
+   Automatic lock cleanup on success or failure.
    */
   await using lockCleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -277,7 +277,7 @@ export async function settleProvenanceJournal({
     },
   };
   /**
-   * Concurrent operation applications accumulated without another effect boundary.
+   Concurrent operation applications accumulated without another effect boundary.
    */
   const operationApplications: Promise<void>[] = [];
   for (const operation of journal.operations) {

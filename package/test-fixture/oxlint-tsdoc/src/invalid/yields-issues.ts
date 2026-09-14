@@ -4,16 +4,16 @@
 //   tsdoc(require-yields-check): @yields on non-generator
 
 /**
- * Generates numbers.
+ Generates numbers.
  */
 function* missingYields(): Generator<number> {
   yield 1;
 }
 
 /**
- * Not a generator.
- *
- * @yields nothing
+ Not a generator.
+ 
+ @yields nothing
  */
 function yieldsOnNonGenerator(): void {}
 

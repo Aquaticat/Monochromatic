@@ -42,7 +42,7 @@ Each target encodes one invariant.
 (input length plus SHA-256,
  never raw bytes).
 
-The three targets share a single tuned dictionary at
+The targets share a single tuned dictionary at
 `dictionary/forbidden-strings.dict` (one dictionary,
  not per-target).
  Each target has its own per-target seed corpus under `seed/<target>/`
@@ -82,6 +82,15 @@ The three targets share a single tuned dictionary at
   the flag policy every process),
    and reversing the rule order renumbers ids but never changes which positions
   match (rule-order invariance).
+- **`fuzz_cache_envelope`** -- hostile compiled-artifact framing.
+  Drives the scanner-owned runtime cache decoder with arbitrary artifact bytes and
+  arbitrary authoritative source bytes.
+  Every malformed magic value,
+  length,
+  identity,
+  name marker,
+  digest,
+  and engine payload must return a verdict without panic or out-of-bounds access.
 
 ## Local commands (via mise)
 

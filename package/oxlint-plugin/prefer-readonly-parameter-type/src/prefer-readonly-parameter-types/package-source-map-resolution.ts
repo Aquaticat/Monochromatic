@@ -1,7 +1,7 @@
 /**
- * Shipped implementation source-map resolution and content identity.
- *
- * @module
+ Shipped implementation source-map resolution and content identity.
+ 
+ @module
  */
 
 import {
@@ -17,19 +17,19 @@ import {
 import { contentDigest, } from './effect-summary-cache-identity.ts';
 
 /**
- * Source-map reference marker in generated JavaScript.
+ Source-map reference marker in generated JavaScript.
  */
 const SOURCE_MAP_MARKER = 'sourceMappingURL=';
 
 /**
- * Sentinel when implementation has no usable source map.
+ Sentinel when implementation has no usable source map.
  */
 const SOURCE_MAP_UNAVAILABLE: unique symbol = Symbol(
   'shipped implementation source map could not be resolved',
 );
 
 /**
- * Supported inspectable source suffixes.
+ Supported inspectable source suffixes.
  */
 const SOURCE_SUFFIXES: ReadonlySet<string> = new Set([
   '.js',
@@ -43,7 +43,7 @@ const SOURCE_SUFFIXES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Implementation analysis path and exact evidence digest.
+ Implementation analysis path and exact evidence digest.
  */
 export type ImplementationAnalysisEvidence = {
   readonly analysisPath: string;
@@ -51,11 +51,11 @@ export type ImplementationAnalysisEvidence = {
 };
 
 /**
- * Tests whether parsed source map has one source list.
- *
- * @param value - Parsed source-map JSON.
- *
- * @returns whether source fields can be inspected.
+ Tests whether parsed source map has one source list.
+ 
+ @param value - Parsed source-map JSON.
+ 
+ @returns whether source fields can be inspected.
  */
 function isSourceMap(value: unknown,): value is {
   readonly sources: readonly unknown[];
@@ -68,27 +68,27 @@ function isSourceMap(value: unknown,): value is {
 }
 
 /**
- * Extracts authored source-map reference without regular expression rescanning.
- *
- * @param implementationText - Shipped implementation text.
- *
- * @returns map reference or unavailable sentinel.
+ Extracts authored source-map reference without regular expression rescanning.
+ 
+ @param implementationText - Shipped implementation text.
+ 
+ @returns map reference or unavailable sentinel.
  */
 function sourceMapReference(
   implementationText: string,
 ): string | typeof SOURCE_MAP_UNAVAILABLE {
   /**
-   * Final source-map marker offset in generated implementation.
+   Final source-map marker offset in generated implementation.
    */
   const markerIndex = implementationText.lastIndexOf(SOURCE_MAP_MARKER,);
   if (markerIndex === (-1))
     return SOURCE_MAP_UNAVAILABLE;
   /**
-   * Reference start after marker.
+   Reference start after marker.
    */
   const start = markerIndex + SOURCE_MAP_MARKER.length;
   /**
-   * Newline and block-comment terminator candidates.
+   Newline and block-comment terminator candidates.
    */
   const endCandidates = [
     implementationText.indexOf(
@@ -107,13 +107,13 @@ function sourceMapReference(
     return offset >= 0;
   },);
   /**
-   * Earliest delimiter or end of text.
+   Earliest delimiter or end of text.
    */
   const end = endCandidates.length === 0
     ? implementationText.length
     : Math.min(...endCandidates,);
   /**
-   * Trimmed source-map reference.
+   Trimmed source-map reference.
    */
   const reference = implementationText.slice(
     start,
@@ -126,13 +126,13 @@ function sourceMapReference(
 }
 
 /**
- * Resolves source-map path from authored reference or adjacent convention.
- *
- * @param implementationPath - Shipped runtime implementation path.
- *
- * @param implementationText - Shipped runtime implementation text.
- *
- * @returns existing map path or unavailable sentinel.
+ Resolves source-map path from authored reference or adjacent convention.
+ 
+ @param implementationPath - Shipped runtime implementation path.
+ 
+ @param implementationText - Shipped runtime implementation text.
+ 
+ @returns existing map path or unavailable sentinel.
  */
 function sourceMapPath({
   implementationPath,
@@ -142,11 +142,11 @@ function sourceMapPath({
   readonly implementationText: string;
 }): string | typeof SOURCE_MAP_UNAVAILABLE {
   /**
-   * Authored source-map reference when present.
+   Authored source-map reference when present.
    */
   const reference = sourceMapReference(implementationText,);
   /**
-   * Authored path or conventional adjacent fallback.
+   Authored path or conventional adjacent fallback.
    */
   const candidate = reference === SOURCE_MAP_UNAVAILABLE
     ? `${implementationPath}.map`
@@ -161,15 +161,15 @@ function sourceMapPath({
 }
 
 /**
- * Resolves one existing package-local source from source map.
- *
- * @param packageRoot - Exact package root constraining trusted sources.
- *
- * @param mapPath - Shipped source-map path.
- *
- * @param mapText - Shipped source-map JSON.
- *
- * @returns existing source path or unavailable sentinel.
+ Resolves one existing package-local source from source map.
+ 
+ @param packageRoot - Exact package root constraining trusted sources.
+ 
+ @param mapPath - Shipped source-map path.
+ 
+ @param mapText - Shipped source-map JSON.
+ 
+ @returns existing source path or unavailable sentinel.
  */
 function mappedSourcePath({
   packageRoot,
@@ -181,7 +181,7 @@ function mappedSourcePath({
   readonly mapText: string;
 }): string | typeof SOURCE_MAP_UNAVAILABLE {
   /**
-   * Parsed untrusted source-map JSON.
+   Parsed untrusted source-map JSON.
    */
   const parsed: unknown = JSON.parse(mapText,);
   if ((!isSourceMap(parsed,))
@@ -191,13 +191,13 @@ function mappedSourcePath({
     || ((typeof parsed.sources[0]) !== 'string'))
     return SOURCE_MAP_UNAVAILABLE;
   /**
-   * Optional source root accepted only as string.
+   Optional source root accepted only as string.
    */
   const sourceRoot = (typeof parsed.sourceRoot) === 'string'
     ? parsed.sourceRoot
     : '';
   /**
-   * Package-local mapped source candidate.
+   Package-local mapped source candidate.
    */
   const candidate = resolve(
     dirname(mapPath,),
@@ -214,18 +214,18 @@ function mappedSourcePath({
 }
 
 /**
- * Resolves inspectable implementation source and complete evidence digest.
- *
- * @param packageRoot - Exact package root.
- *
- * @param implementationPath - Shipped runtime implementation entry.
- *
- * @returns runtime analysis path and exact digest including mapped source evidence when available.
- *
- * @example
- * ```ts
- * implementationAnalysisEvidence({ packageRoot, implementationPath });
- * ```
+ Resolves inspectable implementation source and complete evidence digest.
+ 
+ @param packageRoot - Exact package root.
+ 
+ @param implementationPath - Shipped runtime implementation entry.
+ 
+ @returns runtime analysis path and exact digest including mapped source evidence when available.
+ 
+ @example
+ ```ts
+ implementationAnalysisEvidence({ packageRoot, implementationPath });
+ ```
  */
 export function implementationAnalysisEvidence({
   packageRoot,
@@ -236,7 +236,7 @@ export function implementationAnalysisEvidence({
 }): ImplementationAnalysisEvidence {
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes demanded implementation and source-map evidence. */
   /**
-   * Exact shipped implementation text.
+   Exact shipped implementation text.
    */
   const implementationText = readFileSync(
     implementationPath,
@@ -244,7 +244,7 @@ export function implementationAnalysisEvidence({
   );
   /* oxlint-enable no-restricted-syntax/no-sync */
   /**
-   * Existing source-map path when referenced or adjacent.
+   Existing source-map path when referenced or adjacent.
    */
   const mapPath = sourceMapPath({
     implementationPath,
@@ -258,7 +258,7 @@ export function implementationAnalysisEvidence({
   }
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes demanded source-map bytes. */
   /**
-   * Exact shipped source-map text.
+   Exact shipped source-map text.
    */
   const mapText = readFileSync(
     mapPath,
@@ -266,7 +266,7 @@ export function implementationAnalysisEvidence({
   );
   /* oxlint-enable no-restricted-syntax/no-sync */
   /**
-   * Existing package-local mapped source when map is unambiguous.
+   Existing package-local mapped source when map is unambiguous.
    */
   const sourcePath = mappedSourcePath({
     packageRoot,
@@ -281,7 +281,7 @@ export function implementationAnalysisEvidence({
   }
   /* oxlint-disable no-restricted-syntax/no-sync -- Synchronous semantic visitor hashes exact mapped source as cache evidence. */
   /**
-   * Exact mapped source text.
+   Exact mapped source text.
    */
   const sourceText = readFileSync(
     sourcePath,

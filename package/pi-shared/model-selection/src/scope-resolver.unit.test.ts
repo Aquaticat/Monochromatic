@@ -1,7 +1,7 @@
 /**
- * Unit tests for effective scope resolution.
- *
- * @module
+ Unit tests for effective scope resolution.
+ 
+ @module
  */
 
 import {
@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { resolveEffectiveScope, } from './scope.ts';
+import { resolveEffectiveScope, } from '../dist/final/node/index.mjs';
 import { fixtureModel, } from './test-fixtures.ts';
 
 //region Fixtures

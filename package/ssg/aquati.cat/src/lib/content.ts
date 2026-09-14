@@ -1,15 +1,15 @@
 /**
- * Content loading and organization for MDX blog posts.
- *
- * Globs MDX files from `src/content/{lang}/`, parses YAML frontmatter with
- * an inline parser backed by the `yaml` package, validates with Zod, and
- * provides grouping utilities.
- * Filesystem paths give `lang` and `name` directly; no string splitting needed.
- *
- * Uses a custom frontmatter parser instead of `gray-matter` because `gray-matter`
- * pulls in a large dependency tree and uses `eval` internally (via `js-yaml`'s
- * unsafe loading), which is both a security concern and unnecessary for trusted
- * YAML-only frontmatter.
+ Content loading and organization for MDX blog posts.
+ 
+ Globs MDX files from `src/content/{lang}/`, parses YAML frontmatter with
+ an inline parser backed by the `yaml` package, validates with Zod, and
+ provides grouping utilities.
+ Filesystem paths give `lang` and `name` directly; no string splitting needed.
+ 
+ Uses a custom frontmatter parser instead of `gray-matter` because `gray-matter`
+ pulls in a large dependency tree and uses `eval` internally (via `js-yaml`'s
+ unsafe loading), which is both a security concern and unnecessary for trusted
+ YAML-only frontmatter.
  */
 import { readFile, } from 'node:fs/promises';
 import {
@@ -35,30 +35,30 @@ import {
 //region Frontmatter
 
 /**
- * Opening delimiter for YAML frontmatter blocks.
+ Opening delimiter for YAML frontmatter blocks.
  */
 const FRONTMATTER_OPEN = '---';
 
 /**
- * Unicode Byte Order Mark code point, stripped from file content before parsing.
+ Unicode Byte Order Mark code point, stripped from file content before parsing.
  */
 const BOM = 0xFE_FF;
 
 /**
- * Parses YAML frontmatter delimited by `---` from a raw string.
- *
- * Splits at the first two `---` lines to extract the YAML block and body.
- * Returns empty data when no valid frontmatter is found.
- *
- * @param raw - full file content including frontmatter
- *
- * @returns parsed YAML data and remaining body content
- *
- * @example
- * ```ts
- * const { data, content } = parseFrontmatter('---\ntitle: Hello\n---\nbody');
- * // data = { title: 'Hello' }, content = 'body'
- * ```
+ Parses YAML frontmatter delimited by `---` from a raw string.
+ 
+ Splits at the first two `---` lines to extract the YAML block and body.
+ Returns empty data when no valid frontmatter is found.
+ 
+ @param raw - full file content including frontmatter
+ 
+ @returns parsed YAML data and remaining body content
+ 
+ @example
+ ```ts
+ const { data, content } = parseFrontmatter('---\ntitle: Hello\n---\nbody');
+ // data = { title: 'Hello' }, content = 'body'
+ ```
  */
 function parseFrontmatter(raw: string,): {
   data: Record<string, unknown>;
@@ -66,7 +66,7 @@ function parseFrontmatter(raw: string,): {
 } {
   /* Strip optional leading BOM. */
   /**
-   * BOM-trimmed input used for every subsequent index computation.
+   BOM-trimmed input used for every subsequent index computation.
    */
   const str = raw.codePointAt(0,)
     === BOM ? raw.slice(1,) : raw;
@@ -80,7 +80,7 @@ function parseFrontmatter(raw: string,): {
 
   /* Skip past the opening `---` and its trailing newline. */
   /**
-   * Index of the first newline after the opening fence, or `-1` when malformed.
+   Index of the first newline after the opening fence, or `-1` when malformed.
    */
   const afterOpen = str.indexOf(
     '\n',
@@ -94,15 +94,15 @@ function parseFrontmatter(raw: string,): {
   }
 
   /**
-   * Scan for the closing `---` that sits at the start of a line.
-   * Start searching from the character right after the first newline.
+   Scan for the closing `---` that sits at the start of a line.
+   Start searching from the character right after the first newline.
    */
   /**
-   * Starting offset for the closing-fence scan; first character after the opening newline.
+   Starting offset for the closing-fence scan; first character after the opening newline.
    */
   const searchFrom = afterOpen + 1;
   /**
-   * Cursor advanced through the loop while hunting for a column-zero closing fence.
+   Cursor advanced through the loop while hunting for a column-zero closing fence.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor advanced across multiple loop iterations
   let closeStart = searchFrom;
@@ -123,7 +123,7 @@ function parseFrontmatter(raw: string,): {
     if ((idx === 0) || (str[idx - 1]
       === '\n')) {
       /**
-       * Offset just past the closing fence; the next char must be newline or EOF for a valid close.
+       Offset just past the closing fence; the next char must be newline or EOF for a valid close.
        */
       const afterDelim = idx + FRONTMATTER_OPEN
         .length;
@@ -138,14 +138,14 @@ function parseFrontmatter(raw: string,): {
             === '\r')
       ) {
         /**
-         * YAML body between the opening and closing fences fed to {@link parseYaml}.
+         YAML body between the opening and closing fences fed to {@link parseYaml}.
          */
         const yamlBlock = str.slice(
           searchFrom,
           idx,
         );
         /**
-         * Body start cursor advanced past CR/LF so the post body excludes the closing fence.
+         Body start cursor advanced past CR/LF so the post body excludes the closing fence.
          */
         let bodyStart = afterDelim;
         if (str[bodyStart]
@@ -173,11 +173,11 @@ function parseFrontmatter(raw: string,): {
 //region Schema
 
 /**
- * Valibot schema for the author-written portion of MDX post frontmatter.
- *
- * Covers only the fields the human writes in the YAML header.
- * Publication and update dates are derived from git history at build
- * time rather than stored in frontmatter; see `./git-dates.ts`.
+ Valibot schema for the author-written portion of MDX post frontmatter.
+ 
+ Covers only the fields the human writes in the YAML header.
+ Publication and update dates are derived from git history at build
+ time rather than stored in frontmatter; see `./git-dates.ts`.
  */
 export const postFileFrontmatterSchema: v.GenericSchema<{
   title: string;
@@ -190,9 +190,9 @@ export const postFileFrontmatterSchema: v.GenericSchema<{
 },);
 
 /**
- * Coerces string, number, or Date inputs into a Date instance.
- * Lets the same schema validate both native `Date` objects (from freshly
- * derived dates) and ISO strings (from JSON-deserialized cache entries).
+ Coerces string, number, or Date inputs into a Date instance.
+ Lets the same schema validate both native `Date` objects (from freshly
+ derived dates) and ISO strings (from JSON-deserialized cache entries).
  */
 const coerceDateSchema = v.pipe(
   v.union([
@@ -207,13 +207,13 @@ const coerceDateSchema = v.pipe(
 );
 
 /**
- * Valibot schema for the fully-resolved post frontmatter used downstream
- * (rendering, RSS, sort keys).
- *
- * Combines the author-written file schema with `published`/`updated`
- * dates resolved by `./git-dates.ts`. {@link coerceDateSchema} accepts
- * both native `Date` objects (from freshly derived dates) and ISO
- * strings (from JSON-deserialized cache entries).
+ Valibot schema for the fully-resolved post frontmatter used downstream
+ (rendering, RSS, sort keys).
+ 
+ Combines the author-written file schema with `published`/`updated`
+ dates resolved by `./git-dates.ts`. {@link coerceDateSchema} accepts
+ both native `Date` objects (from freshly derived dates) and ISO
+ strings (from JSON-deserialized cache entries).
  */
 export const postFrontmatterSchema: v.GenericSchema<
   {
@@ -243,7 +243,7 @@ export const postFrontmatterSchema: v.GenericSchema<
 //region Types
 
 /**
- * Fully-resolved frontmatter as carried by `Post.data`.
+ Fully-resolved frontmatter as carried by `Post.data`.
  */
 export type PostFrontmatter = {
   readonly title: string;
@@ -254,23 +254,23 @@ export type PostFrontmatter = {
 };
 
 /**
- * Post loaded from disk with author-written frontmatter validated,
- * but `published`/`updated` not yet resolved.
- *
- * Returned by {@link loadContent}. Downstream consumers receive fully-resolved
- * {@link Post} objects built by {@link attachDates} after git dates are derived.
+ Post loaded from disk with author-written frontmatter validated,
+ but `published`/`updated` not yet resolved.
+ 
+ Returned by {@link loadContent}. Downstream consumers receive fully-resolved
+ {@link Post} objects built by {@link attachDates} after git dates are derived.
  */
 export type LoadedPost = {
   /**
-   * Two-letter language code derived from parent directory name, validated against known locales.
+   Two-letter language code derived from parent directory name, validated against known locales.
    */
   readonly lang: Locale;
   /**
-   * Post slug derived from filename without extension.
+   Post slug derived from filename without extension.
    */
   readonly name: string;
   /**
-   * Validated author-written frontmatter (title, description, tags).
+   Validated author-written frontmatter (title, description, tags).
    */
   readonly fileData: {
     readonly title: string;
@@ -278,49 +278,49 @@ export type LoadedPost = {
     readonly tags: readonly string[];
   };
   /**
-   * Optional human-authored date fields retained only for divergence warnings.
+   Optional human-authored date fields retained only for divergence warnings.
    */
   readonly authoredDates: AuthoredDateFields;
   /**
-   * Raw MDX body content (frontmatter stripped).
+   Raw MDX body content (frontmatter stripped).
    */
   readonly body: string;
   /**
-   * Absolute path to the source MDX file.
+   Absolute path to the source MDX file.
    */
   readonly filePath: string;
   /**
-   * SHA-256 hex digest of the raw file contents, computed during loading.
+   SHA-256 hex digest of the raw file contents, computed during loading.
    */
   readonly contentHash: string;
 };
 
 /**
- * Blog post with fully-resolved frontmatter (author-written + git-derived dates).
+ Blog post with fully-resolved frontmatter (author-written + git-derived dates).
  */
 export type Post = {
   /**
-   * Two-letter language code derived from parent directory name, validated against known locales.
+   Two-letter language code derived from parent directory name, validated against known locales.
    */
   readonly lang: Locale;
   /**
-   * Post slug derived from filename without extension.
+   Post slug derived from filename without extension.
    */
   readonly name: string;
   /**
-   * Fully-resolved frontmatter data.
+   Fully-resolved frontmatter data.
    */
   readonly data: PostFrontmatter;
   /**
-   * Raw MDX body content (frontmatter stripped).
+   Raw MDX body content (frontmatter stripped).
    */
   readonly body: string;
   /**
-   * Absolute path to the source MDX file.
+   Absolute path to the source MDX file.
    */
   readonly filePath: string;
   /**
-   * SHA-256 hex digest of the raw file contents, computed during loading.
+   SHA-256 hex digest of the raw file contents, computed during loading.
    */
   readonly contentHash: string;
 };
@@ -330,70 +330,70 @@ export type Post = {
 //region Loading
 
 /**
- * Loads all MDX posts from the content directory.
- *
- * Globs `src/content` for `.mdx` files, extracts `lang` from the parent
- * directory name and `name` from the filename (minus extension).
- * Does not resolve `published`/`updated`: those are derived from git
- * separately by `./git-dates.ts` and attached via `attachDates`.
- *
- * @param contentDir - path to content directory containing `{lang}/*.mdx`
- *
- * @returns array of loaded posts awaiting date resolution
- *
- * @throws on frontmatter validation failure
- *
- * @example
- * ```ts
- * const loaded = await loadContent('src/content');
- * ```
+ Loads all MDX posts from the content directory.
+ 
+ Globs `src/content` for `.mdx` files, extracts `lang` from the parent
+ directory name and `name` from the filename (minus extension).
+ Does not resolve `published`/`updated`: those are derived from git
+ separately by `./git-dates.ts` and attached via `attachDates`.
+ 
+ @param contentDir - path to content directory containing `{lang}/*.mdx`
+ 
+ @returns array of loaded posts awaiting date resolution
+ 
+ @throws on frontmatter validation failure
+ 
+ @example
+ ```ts
+ const loaded = await loadContent('src/content');
+ ```
  */
 export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
   /**
-   * Glob expansion result; `.files` holds the matched paths used downstream.
+   Glob expansion result; `.files` holds the matched paths used downstream.
    */
   const result = await readdir(`${contentDir}/**/*.mdx`,);
   /**
-   * MDX file paths feeding the per-file parse fan-out.
+   MDX file paths feeding the per-file parse fan-out.
    */
   const filePaths = result.files;
 
   return Promise.all(
     filePaths.map(async function parsePost(filePath,) {
       /**
-       * Raw file text used for both hashing and frontmatter parsing.
+       Raw file text used for both hashing and frontmatter parsing.
        */
       const raw = await readFile(
         filePath,
         'utf8',
       );
       /**
-       * Content-addressed hash used as the cache invalidation key.
+       Content-addressed hash used as the cache invalidation key.
        */
       const contentHash = sha256(raw,);
       /**
-       * Destructured parse result; renamed fields disambiguate from outer post data.
+       Destructured parse result; renamed fields disambiguate from outer post data.
        */
       const {
         data: rawData,
         content: body,
       } = parseFrontmatter(raw,);
       /**
-       * Schema-validated frontmatter fields authored in the MDX file.
+       Schema-validated frontmatter fields authored in the MDX file.
        */
       const fileData = v.parse(
         postFileFrontmatterSchema,
         rawData,
       );
       /**
-       * Optional date fields retained for warnings when they contradict git history.
+       Optional date fields retained for warnings when they contradict git history.
        */
       const authoredDates = readAuthoredDates({
         rawData,
         filePath,
       },);
       /**
-       * Locale segment of the file path before narrowing to the {@link Locale} type.
+       Locale segment of the file path before narrowing to the {@link Locale} type.
        */
       const rawLang = basename(dirname(filePath,),);
       if (!isLocale(rawLang,)) {
@@ -402,11 +402,11 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         );
       }
       /**
-       * Narrowed locale used as the post `lang`.
+       Narrowed locale used as the post `lang`.
        */
       const lang: Locale = rawLang;
       /**
-       * Slug name derived from the filename minus the `.mdx` extension.
+       Slug name derived from the filename minus the `.mdx` extension.
        */
       const name = basename(
         filePath,
@@ -427,7 +427,7 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
 }
 
 /**
- * Derived dates for one post, keyed by absolute file path in `attachDates`.
+ Derived dates for one post, keyed by absolute file path in `attachDates`.
  */
 export type ResolvedDates = {
   readonly published: Date;
@@ -435,27 +435,27 @@ export type ResolvedDates = {
 };
 
 /**
- * Combines loaded posts with resolved git dates and returns sorted `Post[]`.
- *
- * The caller (typically `build.ts`) is responsible for producing the
- * `datesByFilePath` map; either from cache (when HEAD is unchanged)
- * or by calling {@link getPostDates} for files missing from the cache.
- *
- * Posts are returned sorted by `updated` descending, matching the previous
- * behavior of the combined loader.
- *
- * @param loadedPosts - posts produced by `loadContent`
- *
- * @param datesByFilePath - map from absolute file path to resolved dates
- *
- * @returns fully-resolved posts, sorted by `updated` descending
- *
- * @throws when a loaded post has no entry in `datesByFilePath`
- *
- * @example
- * ```ts
- * const posts = attachDates({ loadedPosts, datesByFilePath });
- * ```
+ Combines loaded posts with resolved git dates and returns sorted `Post[]`.
+ 
+ The caller (typically `build.ts`) is responsible for producing the
+ `datesByFilePath` map; either from cache (when HEAD is unchanged)
+ or by calling {@link getPostDates} for files missing from the cache.
+ 
+ Posts are returned sorted by `updated` descending, matching the previous
+ behavior of the combined loader.
+ 
+ @param loadedPosts - posts produced by `loadContent`
+ 
+ @param datesByFilePath - map from absolute file path to resolved dates
+ 
+ @returns fully-resolved posts, sorted by `updated` descending
+ 
+ @throws when a loaded post has no entry in `datesByFilePath`
+ 
+ @example
+ ```ts
+ const posts = attachDates({ loadedPosts, datesByFilePath });
+ ```
  */
 export function attachDates(
   {
@@ -467,11 +467,11 @@ export function attachDates(
   },
 ): Post[] {
   /**
-   * Hydrated posts assembled before the stable multi-key sort.
+   Hydrated posts assembled before the stable multi-key sort.
    */
   const posts: Post[] = loadedPosts.map(function toPost(lp,) {
     /**
-     * Resolved dates for this post; missing entries indicate a caller bug.
+     Resolved dates for this post; missing entries indicate a caller bug.
      */
     const dates = datesByFilePath.get(lp.filePath,);
     if (dates === undefined) {
@@ -507,7 +507,7 @@ export function attachDates(
     b,
   ) {
     /**
-     * Primary sort key in milliseconds; descending.
+     Primary sort key in milliseconds; descending.
      */
     const updatedDelta = b.data
       .updated
@@ -519,7 +519,7 @@ export function attachDates(
     if (updatedDelta !== 0)
       return updatedDelta;
     /**
-     * Tie-break used when many posts share the same updated timestamp.
+     Tie-break used when many posts share the same updated timestamp.
      */
     const publishedDelta = b.data
       .published

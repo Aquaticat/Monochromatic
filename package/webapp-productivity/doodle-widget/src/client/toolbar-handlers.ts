@@ -1,8 +1,8 @@
 /**
- * Toolbar event handler setup for the doodle widget.
- *
- * Wires up color picker, size slider, clear, export, and upload
- * controls to their respective actions.
+ Toolbar event handler setup for the doodle widget.
+ 
+ Wires up color picker, size slider, clear, export, and upload
+ controls to their respective actions.
  */
 
 import { setSvgBackground, } from './background.ts';
@@ -21,7 +21,7 @@ import type {
 import { clearTextEntries, } from './text.ts';
 
 /**
- * Valid export formats, keyed for the isExportFormat membership test
+ Valid export formats, keyed for the isExportFormat membership test
  */
 const EXPORT_FORMATS: Record<ExportFormat, true> = {
   pdf: true,
@@ -30,28 +30,28 @@ const EXPORT_FORMATS: Record<ExportFormat, true> = {
 };
 
 /**
- * Checks whether a string is a valid export format.
- *
- * @param value - string to check
- *
- * @returns `true` if value is a recognized export format
+ Checks whether a string is a valid export format.
+ 
+ @param value - string to check
+ 
+ @returns `true` if value is a recognized export format
  */
 function isExportFormat(value: string,): value is ExportFormat {
   return value in EXPORT_FORMATS;
 }
 
 /**
- * Runs the exporter matching the format.
- *
- * {@link exportAsPdf} and {@link exportAsPng} rasterize the canvas
- * asynchronously, so they are awaited; {@link exportAsSvg} serializes
- * vector markup synchronously, so it is invoked directly. A uniform
- * `Promise<void>`-returning interface keeps the dispatch free of a
- * `void | Promise<void>` union.
- *
- * @param format - validated export format
- *
- * @param deps - shared {@link ExportDeps} export dependencies
+ Runs the exporter matching the format.
+ 
+ {@link exportAsPdf} and {@link exportAsPng} rasterize the canvas
+ asynchronously, so they are awaited; {@link exportAsSvg} serializes
+ vector markup synchronously, so it is invoked directly. A uniform
+ `Promise<void>`-returning interface keeps the dispatch free of a
+ `void | Promise<void>` union.
+ 
+ @param format - validated export format
+ 
+ @param deps - shared {@link ExportDeps} export dependencies
  */
 async function runExport({
   format,
@@ -72,89 +72,89 @@ async function runExport({
 }
 
 /**
- * Dependencies for toolbar handler setup.
+ Dependencies for toolbar handler setup.
  */
 type ToolbarHandlerDeps = {
   /**
-   * Color picker input
+   Color picker input
    */
   readonly colorPicker: HTMLInputElement;
   /**
-   * Stroke width slider
+   Stroke width slider
    */
   readonly sizeSlider: HTMLInputElement;
   /**
-   * Clear button
+   Clear button
    */
   readonly clearBtn: HTMLButtonElement;
   /**
-   * Export button
+   Export button
    */
   readonly exportBtn: HTMLButtonElement;
   /**
-   * Export format dropdown
+   Export format dropdown
    */
   readonly formatSelect: HTMLSelectElement;
   /**
-   * Upload trigger button
+   Upload trigger button
    */
   readonly uploadBtn: HTMLButtonElement;
   /**
-   * Hidden file input
+   Hidden file input
    */
   readonly uploadInput: HTMLInputElement;
   /**
-   * Page element (coordinate reference for export sizing)
+   Page element (coordinate reference for export sizing)
    */
   readonly page: HTMLDivElement;
   /**
-   * SVG overlay element
+   SVG overlay element
    */
   readonly svgOverlay: HTMLDivElement;
   /**
-   * Drawing canvas element
+   Drawing canvas element
    */
   readonly drawCanvas: HTMLCanvasElement;
   /**
-   * Text layer element
+   Text layer element
    */
   readonly textLayer: HTMLDivElement;
   /**
-   * Canvas 2D rendering context
+   Canvas 2D rendering context
    */
   readonly ctx: CanvasRenderingContext2D;
   /**
-   * Returns current canvas dimensions
+   Returns current canvas dimensions
    */
   readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
   /**
-   * Resizes and redraws the canvas
+   Resizes and redraws the canvas
    */
   readonly sizeCanvas: () => void;
   /**
-   * Pushes current state to undo history after a completed action
+   Pushes current state to undo history after a completed action
    */
   readonly pushSnapshot: () => void;
 };
 
 /**
- * Attaches event listeners for all toolbar controls.
- *
- * @param deps - toolbar elements and shared state accessors, see {@link ToolbarHandlerDeps}
- *
- * @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `sizeSlider.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `uploadInput.click` can dispatch retained listeners.
- *
- * @example
- * ```ts
- * setupToolbarHandlers(deps);
- * ```
+ Attaches event listeners for all toolbar controls.
+ 
+ @param deps - toolbar elements and shared state accessors, see {@link ToolbarHandlerDeps}
+ 
+ @mutates deps - `clearBtn.addEventListener`, `colorPicker.addEventListener`, `exportBtn.addEventListener`, `sizeSlider.addEventListener`, `uploadBtn.addEventListener`, and `uploadInput.addEventListener` change event targets and retain handlers; `uploadInput.click` can dispatch retained listeners.
+ 
+ @example
+ ```ts
+ setupToolbarHandlers(deps);
+ ```
  */
 export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   /**
-   * Destructured up front so each handler closure captures the same handles.
+   Destructured up front so each handler closure captures the same handles.
    */
   const {
     colorPicker,
@@ -192,7 +192,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     'click',
     function handleClear(): void {
       /**
-       * Canvas dimensions captured per click so the clear region matches the current layout.
+       Canvas dimensions captured per click so the clear region matches the current layout.
        */
       const {
         cw,
@@ -214,7 +214,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     'click',
     function handleExportClick(): void {
       /**
-       * Selected export format from the dropdown
+       Selected export format from the dropdown
        */
       const format = formatSelect.value;
       if (!isExportFormat(format,))
@@ -239,18 +239,18 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   );
 
   /**
-   * Processes a user-selected SVG background file.
-   *
-   * Reads the file as text and renders it in the SVG overlay layer
-   * via {@link setSvgBackground}.
-   *
-   * @param file - uploaded SVG file
+   Processes a user-selected SVG background file.
+   
+   Reads the file as text and renders it in the SVG overlay layer
+   via {@link setSvgBackground}.
+   
+   @param file - uploaded SVG file
    */
   async function processBackgroundFile(file: File,): Promise<void> {
     clearStrokes();
     clearTextEntries();
     /**
-     * Raw SVG markup read from the uploaded file
+     Raw SVG markup read from the uploaded file
      */
     const svgMarkup = await file.text();
     setSvgBackground({
@@ -265,7 +265,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     'change',
     function handleFileChange(): void {
       /**
-       * Selected file from the upload input
+       Selected file from the upload input
        */
       const file = uploadInput.files
         ?.item(0,)

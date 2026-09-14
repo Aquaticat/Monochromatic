@@ -1,7 +1,7 @@
 /**
- * Scenario collection for packed cli-git lifecycle latency benchmark.
- *
- * @module
+ Scenario collection for packed cli-git lifecycle latency benchmark.
+ 
+ @module
  */
 
 import { measure, } from './lifecycle-latency-command.ts';
@@ -29,15 +29,15 @@ import {
 import { assertStableWarmups, } from './lifecycle-latency-warmup.ts';
 
 /**
- * Collects alternating paired direct and wrapper commands.
- *
- * @param scenario - paired command declaration
- *
- * @returns enforced wrapper-added summary
+ Collects alternating paired direct and wrapper commands.
+ 
+ @param scenario - paired command declaration
+ 
+ @returns enforced wrapper-added summary
  */
 async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary> {
   /**
-   * Complete sequential pair collection.
+   Complete sequential pair collection.
    */
   const allSamples = await measurementIndices()
     .reduce(
@@ -46,23 +46,23 @@ async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary
       index,
     ) {
       /**
-       * Earlier sequential pair samples.
+       Earlier sequential pair samples.
        */
       const previous = await previousPromise;
       /**
-       * Alternating execution order for systematic-noise control.
+       Alternating execution order for systematic-noise control.
        */
       const wrapperFirst = (index % 2) === 1;
       /**
-       * Optional wrapper duration measured before direct Git.
+       Optional wrapper duration measured before direct Git.
        */
       const firstWrapperMs = wrapperFirst ? await measure(scenario.wrapper,) : undefined;
       /**
-       * Paired direct Git duration.
+       Paired direct Git duration.
        */
       const directMs = await measure(scenario.direct,);
       /**
-       * Wrapper duration from selected execution order.
+       Wrapper duration from selected execution order.
        */
       const wrapperMs = firstWrapperMs ?? await measure(scenario.wrapper,);
       return [
@@ -88,13 +88,13 @@ async function collectPaired(scenario: PairedScenario,): Promise<ScenarioSummary
 }
 
 /**
- * Collects stateful pairs after preparing equivalent command state.
- *
- * @param scenario - prepared pair declaration
- *
- * @param fixture - prepared trust facts
- *
- * @returns enforced wrapper-added summary
+ Collects stateful pairs after preparing equivalent command state.
+ 
+ @param scenario - prepared pair declaration
+ 
+ @param fixture - prepared trust facts
+ 
+ @returns enforced wrapper-added summary
  */
 async function collectPreparedPaired({
   scenario,
@@ -104,7 +104,7 @@ async function collectPreparedPaired({
   fixture: LifecycleFixture;
 }>,): Promise<ScenarioSummary> {
   /**
-   * Complete sequential prepared pair collection.
+   Complete sequential prepared pair collection.
    */
   const allSamples = await measurementIndices()
     .reduce(
@@ -113,30 +113,30 @@ async function collectPreparedPaired({
         index,
       ) {
         /**
-         * Earlier sequential prepared pairs.
+         Earlier sequential prepared pairs.
          */
         const previous = await previousPromise;
         /**
-         * Direct and wrapped requests over one newly prepared state.
+         Direct and wrapped requests over one newly prepared state.
          */
         const pair = await scenario.prepare({
           iteration: index,
           fixture,
         },);
         /**
-         * Alternating execution order for systematic-noise control.
+         Alternating execution order for systematic-noise control.
          */
         const wrapperFirst = (index % 2) === 1;
         /**
-         * Optional wrapper duration measured before direct Git.
+         Optional wrapper duration measured before direct Git.
          */
         const firstWrapperMs = wrapperFirst ? await measure(pair.wrapper,) : undefined;
         /**
-         * Paired direct Git duration.
+         Paired direct Git duration.
          */
         const directMs = await measure(pair.direct,);
         /**
-         * Wrapper duration from selected execution order.
+         Wrapper duration from selected execution order.
          */
         const wrapperMs = firstWrapperMs ?? await measure(pair.wrapper,);
         return [
@@ -162,22 +162,22 @@ async function collectPreparedPaired({
 }
 
 /**
- * Runs complete required lifecycle benchmark matrix.
- *
- * @param fixture - prepared trust facts
- *
- * @returns ordered scenario summaries
- *
- * @example
- * ```ts
- * await collectLifecycleScenarios(fixture);
- * ```
+ Runs complete required lifecycle benchmark matrix.
+ 
+ @param fixture - prepared trust facts
+ 
+ @returns ordered scenario summaries
+ 
+ @example
+ ```ts
+ await collectLifecycleScenarios(fixture);
+ ```
  */
 export async function collectLifecycleScenarios(
   fixture: LifecycleFixture,
 ): Promise<readonly ScenarioSummary[]> {
   /**
-   * Paired summaries collected sequentially to avoid cross-scenario contention.
+   Paired summaries collected sequentially to avoid cross-scenario contention.
    */
   const paired = await PAIRED_SCENARIOS.reduce(
     async function appendPaired(
@@ -192,15 +192,15 @@ export async function collectLifecycleScenarios(
     Promise.resolve<readonly ScenarioSummary[]>([],),
   );
   /**
-   * Post-commit summary collected before relaxed config mutation.
+   Post-commit summary collected before relaxed config mutation.
    */
   const postCommit = await collectPostCommit();
   /**
-   * Wide-commit summary collected over the same trusted commit repositories.
+   Wide-commit summary collected over the same trusted commit repositories.
    */
   const wideCommit = await collectWideCommit();
   /**
-   * Stateful paired summaries collected sequentially over shared trusted state.
+   Stateful paired summaries collected sequentially over shared trusted state.
    */
   const preparedPaired = await PREPARED_PAIRED_SCENARIOS.reduce(
     async function appendPreparedPaired(

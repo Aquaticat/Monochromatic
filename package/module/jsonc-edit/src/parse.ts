@@ -23,9 +23,9 @@ import type {
 //region Constants
 
 /**
- * Maximum container nesting depth. Structural recursion is bounded so a
- * deeply-nested attacker-controlled document cannot overflow the call stack;
- * beyond this the parser throws rather than crashing.
+ Maximum container nesting depth. Structural recursion is bounded so a
+ deeply-nested attacker-controlled document cannot overflow the call stack;
+ beyond this the parser throws rather than crashing.
  */
 const MAX_DEPTH = 512;
 
@@ -34,25 +34,25 @@ const MAX_DEPTH = 512;
 //region Parser
 
 /**
- * Parses one JSONC value starting at `index`, recursing into containers and
- * delegating scalars. Comments strictly inside the value are attached here; the
- * leading and trailing comments around it are attached by the caller.
- *
- * @param source - Full JSONC source.
- *
- * @param index - Offset of the value's first character.
- *
- * @param depth - Current nesting depth, guarded against overflow.
- *
- * @returns Parsed node and end offset.
- *
- * @throws JsoncParseError on malformed input or excessive nesting.
- *
- * @example
- * ```ts
- * parseValue({ source: 'true', index: 0, depth: 0 });
- * // => { node: { kind: 'boolean', value: true }, end: 4 }
- * ```
+ Parses one JSONC value starting at `index`, recursing into containers and
+ delegating scalars. Comments strictly inside the value are attached here; the
+ leading and trailing comments around it are attached by the caller.
+ 
+ @param source - Full JSONC source.
+ 
+ @param index - Offset of the value's first character.
+ 
+ @param depth - Current nesting depth, guarded against overflow.
+ 
+ @returns Parsed node and end offset.
+ 
+ @throws JsoncParseError on malformed input or excessive nesting.
+ 
+ @example
+ ```ts
+ parseValue({ source: 'true', index: 0, depth: 0 });
+ // => { node: { kind: 'boolean', value: true }, end: 4 }
+ ```
  */
 export function parseValue({
   source,
@@ -70,7 +70,7 @@ export function parseValue({
     },);
 
   /**
-   * First character of the value, selecting container versus scalar parsing.
+   First character of the value, selecting container versus scalar parsing.
    */
   const char = source[index];
   if (char === '{')
@@ -92,24 +92,24 @@ export function parseValue({
 }
 
 /**
- * Parses an array body starting at the `[`. Elements carry their leading and
- * trailing comments; a trailing comma before the close is tolerated.
- *
- * @param source - Full JSONC source.
- *
- * @param index - Offset of the opening bracket.
- *
- * @param depth - Current nesting depth.
- *
- * @returns Parsed array node and end offset.
- *
- * @throws JsoncParseError when the array is malformed or unterminated.
- *
- * @example
- * ```ts
- * parseArray({ source: '[1, 2,]', index: 0, depth: 0 });
- * // => { node: { kind: 'array', elements: [...] }, end: 7 }
- * ```
+ Parses an array body starting at the `[`. Elements carry their leading and
+ trailing comments; a trailing comma before the close is tolerated.
+ 
+ @param source - Full JSONC source.
+ 
+ @param index - Offset of the opening bracket.
+ 
+ @param depth - Current nesting depth.
+ 
+ @returns Parsed array node and end offset.
+ 
+ @throws JsoncParseError when the array is malformed or unterminated.
+ 
+ @example
+ ```ts
+ parseArray({ source: '[1, 2,]', index: 0, depth: 0 });
+ // => { node: { kind: 'array', elements: [...] }, end: 7 }
+ ```
  */
 function parseArray({
   source,
@@ -121,12 +121,12 @@ function parseArray({
   readonly depth: number;
 },): ValueScan {
   /**
-   * Accumulated element nodes, built in place during the scan.
+   Accumulated element nodes, built in place during the scan.
    */
   const elements: JsoncValue[] = [];
   for (let cursor = index + 1; ;) {
     /**
-     * Leading comments and next significant offset.
+     Leading comments and next significant offset.
      */
     const lead = skipTrivia({
       source,
@@ -147,7 +147,7 @@ function parseArray({
         end: cursor + 1,
       };
     /**
-     * Element value scanned at the cursor.
+     Element value scanned at the cursor.
      */
     const valueScan = parseValue({
       source,
@@ -156,7 +156,7 @@ function parseArray({
     },);
     cursor = valueScan.end;
     /**
-     * Trailing same-line comments and comma after the element.
+     Trailing same-line comments and comma after the element.
      */
     const trailing = captureTrailing({
       source,
@@ -174,7 +174,7 @@ function parseArray({
     );
     if (!trailing.commaSeen) {
       /**
-       * Lookahead confirming only a close may follow when no comma was seen.
+       Lookahead confirming only a close may follow when no comma was seen.
        */
       const peek = skipTrivia({
         source,
@@ -190,26 +190,26 @@ function parseArray({
 }
 
 /**
- * Parses an object body starting at the `{`. Each key carries the comment that
- * precedes it; each value carries the comment between colon and value plus its
- * trailing comment. Duplicate keys are preserved as separate entries, and a
- * trailing comma before the close is tolerated.
- *
- * @param source - Full JSONC source.
- *
- * @param index - Offset of the opening brace.
- *
- * @param depth - Current nesting depth.
- *
- * @returns Parsed record node and end offset.
- *
- * @throws JsoncParseError when the object is malformed or unterminated.
- *
- * @example
- * ```ts
- * parseRecord({ source: '{"a":1,}', index: 0, depth: 0 });
- * // => { node: { kind: 'record', entries: [...] }, end: 8 }
- * ```
+ Parses an object body starting at the `{`. Each key carries the comment that
+ precedes it; each value carries the comment between colon and value plus its
+ trailing comment. Duplicate keys are preserved as separate entries, and a
+ trailing comma before the close is tolerated.
+ 
+ @param source - Full JSONC source.
+ 
+ @param index - Offset of the opening brace.
+ 
+ @param depth - Current nesting depth.
+ 
+ @returns Parsed record node and end offset.
+ 
+ @throws JsoncParseError when the object is malformed or unterminated.
+ 
+ @example
+ ```ts
+ parseRecord({ source: '{"a":1,}', index: 0, depth: 0 });
+ // => { node: { kind: 'record', entries: [...] }, end: 8 }
+ ```
  */
 function parseRecord({
   source,
@@ -221,7 +221,7 @@ function parseRecord({
   readonly depth: number;
 },): ValueScan {
   /**
-   * Accumulated key-to-value entries.
+   Accumulated key-to-value entries.
    */
   const entries: {
     key: JsoncKey;
@@ -229,7 +229,7 @@ function parseRecord({
   }[] = [];
   for (let cursor = index + 1; ;) {
     /**
-     * Leading comments before the key, and next significant offset.
+     Leading comments before the key, and next significant offset.
      */
     const lead = skipTrivia({
       source,
@@ -255,7 +255,7 @@ function parseRecord({
         offset: cursor,
       },);
     /**
-     * Parsed entry, with cursor advanced past its value and trailing comma.
+     Parsed entry, with cursor advanced past its value and trailing comma.
      */
     const entry = parseEntry({
       source,
@@ -270,7 +270,7 @@ function parseRecord({
     },);
     if (!entry.commaSeen) {
       /**
-       * Lookahead confirming only a close may follow when no comma was seen.
+       Lookahead confirming only a close may follow when no comma was seen.
        */
       const peek = skipTrivia({
         source,
@@ -286,27 +286,27 @@ function parseRecord({
 }
 
 /**
- * Parses one `"key": value` entry, attaching the comment before the key, any
- * comment between key and colon, the comment between colon and value, and the
- * value's trailing comment.
- *
- * @param source - Full JSONC source.
- *
- * @param index - Offset of the key's opening quote.
- *
- * @param depth - Current nesting depth.
- *
- * @param leadComments - Comments that preceded the key.
- *
- * @returns Key, value, whether a comma followed, and the end offset.
- *
- * @throws JsoncParseError when the colon is missing.
- *
- * @example
- * ```ts
- * parseEntry({ source: '"a": 1', index: 0, depth: 0, leadComments: [] });
- * // => { key: {...}, value: {...}, commaSeen: false, end: 6 }
- * ```
+ Parses one `"key": value` entry, attaching the comment before the key, any
+ comment between key and colon, the comment between colon and value, and the
+ value's trailing comment.
+ 
+ @param source - Full JSONC source.
+ 
+ @param index - Offset of the key's opening quote.
+ 
+ @param depth - Current nesting depth.
+ 
+ @param leadComments - Comments that preceded the key.
+ 
+ @returns Key, value, whether a comma followed, and the end offset.
+ 
+ @throws JsoncParseError when the colon is missing.
+ 
+ @example
+ ```ts
+ parseEntry({ source: '"a": 1', index: 0, depth: 0, leadComments: [] });
+ // => { key: {...}, value: {...}, commaSeen: false, end: 6 }
+ ```
  */
 function parseEntry({
   source,
@@ -325,14 +325,14 @@ function parseEntry({
   readonly end: number;
 } {
   /**
-   * Scanned key string token.
+   Scanned key string token.
    */
   const keyScan = scanString({
     source,
     index,
   },);
   /**
-   * Comments sitting between the key and its colon.
+   Comments sitting between the key and its colon.
    */
   const beforeColon = skipTrivia({
     source,
@@ -344,14 +344,14 @@ function parseEntry({
       offset: beforeColon.end,
     },);
   /**
-   * Comments sitting between the colon and the value.
+   Comments sitting between the colon and the value.
    */
   const beforeValue = skipTrivia({
     source,
     index: beforeColon.end + 1,
   },);
   /**
-   * Value scanned after the colon.
+   Value scanned after the colon.
    */
   const valueScan = parseValue({
     source,
@@ -359,14 +359,14 @@ function parseEntry({
     depth: depth + 1,
   },);
   /**
-   * Trailing same-line comments and comma after the value.
+   Trailing same-line comments and comma after the value.
    */
   const trailing = captureTrailing({
     source,
     index: valueScan.end,
   },);
   /**
-   * Bare key node before its leading and inter-colon comments attach.
+   Bare key node before its leading and inter-colon comments attach.
    */
   const baseKey: JsoncKey = {
     value: keyScan.value,

@@ -1,9 +1,9 @@
 /**
- * Host backend for matrix test execution.
- *
- * Runs test files directly on the host machine without containers.
- * The specified runtime must already be installed and available on PATH.
- * No prerequisite installation, no user creation.
+ Host backend for matrix test execution.
+ 
+ Runs test files directly on the host machine without containers.
+ The specified runtime must already be installed and available on PATH.
+ No prerequisite installation, no user creation.
  */
 
 import spawn from 'nano-spawn';
@@ -15,9 +15,9 @@ import type {
 //region Runtime binary resolution
 
 /**
- * Binary names for each runtime as found on PATH.
- * Unlike the container backend which uses absolute `$HOME/.../bin/runtime` paths,
- * the host backend relies on the runtime being globally installed.
+ Binary names for each runtime as found on PATH.
+ Unlike the container backend which uses absolute `$HOME/.../bin/runtime` paths,
+ the host backend relies on the runtime being globally installed.
  */
 const RUNTIME_HOST_BIN: Record<Runtime, string> = {
   bun: 'bun',
@@ -25,13 +25,13 @@ const RUNTIME_HOST_BIN: Record<Runtime, string> = {
 };
 
 /**
- * Builds the arguments array for executing a file with the given runtime on the host.
- *
- * @param runtime - Runtime to use
- *
- * @param filePath - Absolute path to the file on the host
- *
- * @returns arguments array for `nano-spawn`
+ Builds the arguments array for executing a file with the given runtime on the host.
+ 
+ @param runtime - Runtime to use
+ 
+ @param filePath - Absolute path to the file on the host
+ 
+ @returns arguments array for `nano-spawn`
  */
 function runtimeArgs({
   runtime,
@@ -57,30 +57,30 @@ function runtimeArgs({
 //endregion Runtime binary resolution
 
 /**
- * Runs a single combination directly on the host.
- *
- * Spawns the runtime binary with the arguments built by {@link runtimeArgs}.
- * The runtime must be pre-installed and available on PATH.
- * The `user` axis is included in the combination for labeling
- * but does not affect execution; the process runs as the current user.
- *
- * @param combination - Fully resolved combination to execute
- *
- * @returns stdout from the execution
- *
- * @throws Error when the runtime is not found on PATH or the test file fails
- *
- * @example
- * ```ts
- * const output = await runHost({
- *   combination: {
- *     file: '/path/to/test.ts',
- *     os: 'host:',
- *     user: 'user',
- *     runtime: 'bun',
- *   },
- * });
- * ```
+ Runs a single combination directly on the host.
+ 
+ Spawns the runtime binary with the arguments built by {@link runtimeArgs}.
+ The runtime must be pre-installed and available on PATH.
+ The `user` axis is included in the combination for labeling
+ but does not affect execution; the process runs as the current user.
+ 
+ @param combination - Fully resolved combination to execute
+ 
+ @returns stdout from the execution
+ 
+ @throws Error when the runtime is not found on PATH or the test file fails
+ 
+ @example
+ ```ts
+ const output = await runHost({
+   combination: {
+     file: '/path/to/test.ts',
+     os: 'host:',
+     user: 'user',
+     runtime: 'bun',
+   },
+ });
+ ```
  */
 export async function runHost({
   combination,
@@ -88,11 +88,11 @@ export async function runHost({
   readonly combination: Combination;
 },): Promise<string> {
   /**
-   * Resolved binary name on PATH; the host backend assumes a pre-installed runtime.
+   Resolved binary name on PATH; the host backend assumes a pre-installed runtime.
    */
   const bin = RUNTIME_HOST_BIN[combination.runtime];
   /**
-   * Argument array built once so the spawn call below stays declarative.
+   Argument array built once so the spawn call below stays declarative.
    */
   const args = runtimeArgs({
     runtime: combination.runtime,
@@ -100,7 +100,7 @@ export async function runHost({
   },);
 
   /**
-   * Spawn result kept in a binding so stderr can be forwarded before returning stdout.
+   Spawn result kept in a binding so stderr can be forwarded before returning stdout.
    */
   const result = await spawn(
     bin,

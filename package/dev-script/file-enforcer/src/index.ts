@@ -30,6 +30,13 @@ export {
   findNodeModulesRoot,
   NODE_MODULES_DIRECTORY_NAME,
 } from './io/staleness-root.ts';
+/**
+ Re-exported so built-artifact tests build an in-memory filesystem whose
+ types match the bundled copy of the root-discovery contract.
+
+ @internal
+ */
+export { createMemoryRootFilesystem, } from '@monochromatic-dev/module-fs-path/ts';
 export type {
   ContentBuilder,
   GlobResultsBuilder,

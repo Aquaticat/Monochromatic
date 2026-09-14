@@ -1,7 +1,7 @@
 /**
- * Characterization tests for Advisor model-selection behavior before shared extraction.
- *
- * @module
+ Characterization tests for Advisor model-selection behavior before shared extraction.
+ 
+ @module
  */
 
 import type {
@@ -48,6 +48,9 @@ const ADVISOR_OUTPUT_TOKENS = 32;
 /** Advisor input token estimate used by selection tests. */
 const ADVISOR_INPUT_TOKENS = 16;
 
+/** Advertised output capacity just below Advisor requirement. */
+const INSUFFICIENT_MAX_TOKENS = ADVISOR_OUTPUT_TOKENS - 1;
+
 /** Fixture context budget. */
 const CONTEXT_WINDOW = 4_096;
 
@@ -56,6 +59,8 @@ const MAX_TOKENS = 512;
 
 /** Runtime Advisor config fixture. */
 const advisorConfig: AdvisorConfig = {
+  hedgingEnabled: false,
+  collectionGraceMs: 30_000,
   enabled: true,
   timeoutMs: 1_000,
   maxAdvisorOutputTokens: ADVISOR_OUTPUT_TOKENS,
@@ -69,24 +74,26 @@ const advisorConfig: AdvisorConfig = {
 };
 
 /**
- * Build a complete pi model fixture.
- *
- * @param provider - provider slug
- *
- * @param id - model id
- *
- * @param name - display name
- *
- * @param inputCost - input price per million tokens
- *
- * @param outputCost - output price per million tokens
- *
- * @returns pi model fixture
- *
- * @example
- * ```typescript
- * modelFixture({ provider: 'openai', id: 'gpt-5', name: 'GPT', inputCost: 1, outputCost: 2 });
- * ```
+ Build a complete pi model fixture.
+ 
+ @param provider - provider slug
+ 
+ @param id - model id
+ 
+ @param name - display name
+ 
+ @param inputCost - input price per million tokens
+ 
+ @param outputCost - output price per million tokens
+ 
+ @param maxOutputTokens - optional advertised output capacity
+ 
+ @returns pi model fixture
+ 
+ @example
+ ```typescript
+ modelFixture({ provider: 'openai', id: 'gpt-5', name: 'GPT', inputCost: 1, outputCost: 2 });
+ ```
  */
 function modelFixture(
   {
@@ -95,12 +102,14 @@ function modelFixture(
     name,
     inputCost,
     outputCost,
+    maxOutputTokens,
   }: {
     readonly provider: string;
     readonly id: string;
     readonly name: string;
     readonly inputCost: number;
     readonly outputCost: number;
+    readonly maxOutputTokens?: number;
   },
 ): Model<Api> {
   return {
@@ -118,7 +127,8 @@ function modelFixture(
       cacheWrite: 0,
     },
     contextWindow: CONTEXT_WINDOW,
-    maxTokens: MAX_TOKENS,
+    maxTokens: maxOutputTokens
+      ?? MAX_TOKENS,
   } satisfies Model<Api>;
 }
 
@@ -138,6 +148,16 @@ const expensiveModel = modelFixture({
   name: 'Reviewer Expensive',
   inputCost: EXPENSIVE_INPUT,
   outputCost: EXPENSIVE_OUTPUT,
+},);
+
+/** High-cost model whose endpoint advertises too little output capacity. */
+const insufficientOutputModel = modelFixture({
+  provider: 'limited',
+  id: 'limited-reviewer',
+  name: 'Limited Reviewer',
+  inputCost: EXPENSIVE_INPUT,
+  outputCost: EXPENSIVE_OUTPUT,
+  maxOutputTokens: INSUFFICIENT_MAX_TOKENS,
 },);
 
 /** Registry-only model fixture used to distinguish out-of-scope from unknown slugs. */
@@ -171,21 +191,22 @@ const modelRegistry = {
       cheapModel,
       expensiveModel,
       thirdModel,
+      insufficientOutputModel,
     ];
   },
 } as ModelRegistry;
 
 /**
- * Capture a synchronous error from a selection action.
- *
- * @param action - action expected to throw
- *
- * @returns caught error value
- *
- * @example
- * ```typescript
- * const error = captureError(function fail() { throw new Error('x'); });
- * ```
+ Capture a synchronous error from a selection action.
+ 
+ @param action - action expected to throw
+ 
+ @returns caught error value
+ 
+ @example
+ ```typescript
+ const error = captureError(function fail() { throw new Error('x'); });
+ ```
  */
 function captureError(
   action: () => unknown,
@@ -283,6 +304,126 @@ await describe({
       },
     },),
     it({
+      name: 'excludes higher-cost default model below configured output capacity',
+      fn: async function testDefaultExcludesInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const result = selectAdvisorModel({
+          scope: mixedCapacityScope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('cheap/reviewer',);
+        expect(
+          result.defaultSelection?.ranking.map(function mapScore(score,) {
+            return score.slug;
+          },),
+        )
+          .toEqual(['cheap/reviewer',],);
+      },
+    },),
+    it({
+      name: 'accepts model advertising exactly configured output capacity',
+      fn: async function testDefaultAcceptsExactOutputCapacity() {
+        const exactCapacityModel = modelFixture({
+          provider: 'exact',
+          id: 'reviewer',
+          name: 'Exact Capacity Reviewer',
+          inputCost: CHEAP_INPUT,
+          outputCost: CHEAP_OUTPUT,
+          maxOutputTokens: ADVISOR_OUTPUT_TOKENS,
+        },);
+        const exactCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [{
+            model: exactCapacityModel,
+            canonicalSlug: 'exact/reviewer',
+          },],
+        };
+        const result = selectAdvisorModel({
+          scope: exactCapacityScope,
+          config: advisorConfig,
+          estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+          modelRegistry,
+        },);
+
+        expect(result.selected.canonicalSlug,).toBe('exact/reviewer',);
+      },
+    },),
+    it({
+      name: 'rejects explicit model below configured output capacity',
+      fn: async function testExplicitRejectsInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const caught = captureError(function selectInsufficientOutputModel() {
+          return selectAdvisorModel({
+            scope: mixedCapacityScope,
+            requestedSlug: 'limited/limited-reviewer',
+            config: advisorConfig,
+            estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+            modelRegistry,
+          },);
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `requires ${String(ADVISOR_OUTPUT_TOKENS,)} output tokens`,
+        );
+        expect((caught as Error).message,).toContain(
+          `advertises ${String(INSUFFICIENT_MAX_TOKENS,)} output tokens`,
+        );
+      },
+    },),
+    it({
+      name: 'rejects default selection when every model lacks output capacity',
+      fn: async function testDefaultRejectsInsufficientOutputScope() {
+        const insufficientCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [{
+            model: insufficientOutputModel,
+            canonicalSlug: 'limited/limited-reviewer',
+          },],
+        };
+        const caught = captureError(function selectWithoutEligibleModel() {
+          return selectAdvisorModel({
+            scope: insufficientCapacityScope,
+            config: advisorConfig,
+            estimatedInputTokens: ADVISOR_INPUT_TOKENS,
+            modelRegistry,
+          },);
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          `no scoped models advertise at least ${String(ADVISOR_OUTPUT_TOKENS,)} output tokens`,
+        );
+      },
+    },),
+    it({
       name: 'keeps ambiguous bare-id error shape',
       fn: async function testAmbiguousBareIdErrorShape() {
         const caught = captureError(function selectAmbiguousBareId() {
@@ -352,6 +493,34 @@ await describe({
         },);
 
         expect(result.selection.selected.canonicalSlug,).toBe('cheap/reviewer',);
+      },
+    },),
+    it({
+      name: 'builds context only for models meeting configured output capacity',
+      fn: async function testRunContextExcludesInsufficientOutputModel() {
+        const mixedCapacityScope: EffectiveModelScope = {
+          source: 'available',
+          entries: [
+            {
+              model: cheapModel,
+              canonicalSlug: 'cheap/reviewer',
+            },
+            {
+              model: insufficientOutputModel,
+              canonicalSlug: 'limited/limited-reviewer',
+            },
+          ],
+        };
+        const result = selectAdvisorRunContext({
+          branch: [],
+          config: advisorConfig,
+          advisorSystemPrompt: 'review carefully',
+          scope: mixedCapacityScope,
+          modelRegistry,
+        },);
+
+        expect(result.selection.selected.canonicalSlug,).toBe('cheap/reviewer',);
+        expect(result.selection.defaultSelection?.ranking,).toHaveLength(1,);
       },
     },),
   ],

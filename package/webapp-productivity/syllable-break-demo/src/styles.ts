@@ -1,8 +1,8 @@
 /**
- * CSS styles for the syllable break demo.
- *
- * Generates a stylesheet with three side-by-side comparison columns:
- * ZWS-based syllable breaking, CSS hyphens: auto, and plain overflow-wrap.
+ CSS styles for the syllable break demo.
+ 
+ Generates a stylesheet with three side-by-side comparison columns:
+ ZWS-based syllable breaking, CSS hyphens: auto, and plain overflow-wrap.
  */
 import {
   cssCh,
@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Muted text for descriptions and secondary content.
+ Muted text for descriptions and secondary content.
  */
 const COLOR_MUTED = cssOklch({
   l: 0.42,
@@ -24,7 +24,7 @@ const COLOR_MUTED = cssOklch({
 },);
 
 /**
- * Lighter muted text for code previews.
+ Lighter muted text for code previews.
  */
 const COLOR_MUTED_LIGHT = cssOklch({
   l: 0.48,
@@ -33,7 +33,7 @@ const COLOR_MUTED_LIGHT = cssOklch({
 },);
 
 /**
- * Faint text for notes and annotations.
+ Faint text for notes and annotations.
  */
 const COLOR_FAINT = cssOklch({
   l: 0.6,
@@ -42,7 +42,7 @@ const COLOR_FAINT = cssOklch({
 },);
 
 /**
- * Outline color for the output container.
+ Outline color for the output container.
  */
 const COLOR_OUTLINE = cssOklch({
   l: 0.63,
@@ -51,16 +51,16 @@ const COLOR_OUTLINE = cssOklch({
 },);
 
 /**
- * Generates the complete CSS stylesheet for the syllable break demo, using
- * {@link COLOR_MUTED}, {@link COLOR_MUTED_LIGHT}, {@link COLOR_FAINT}, and
- * {@link COLOR_OUTLINE} for its palette.
- *
- * @returns minified CSS string
- *
- * @example
- * ```ts
- * const css = renderStyles();
- * ```
+ Generates the complete CSS stylesheet for the syllable break demo, using
+ {@link COLOR_MUTED}, {@link COLOR_MUTED_LIGHT}, {@link COLOR_FAINT}, and
+ {@link COLOR_OUTLINE} for its palette.
+ 
+ @returns minified CSS string
+ 
+ @example
+ ```ts
+ const css = renderStyles();
+ ```
  */
 export function renderStyles(): string {
   return [

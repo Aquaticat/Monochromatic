@@ -1,0 +1,45 @@
+diff --git a/.nvmrc b/.nvmrc
+index d4b7699..e222811 100644
+--- a/.nvmrc
++++ b/.nvmrc
+@@ -1 +1 @@
+-20.18.1
++22.19.0
+diff --git a/package.json b/package.json
+index 1624245..5c23587 100644
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,6 @@
+   },
+   "packageManager": "pnpm@10.33.0",
+   "volta": {
+-    "node": "20.18.1"
++    "node": "22.19.0"
+   }
+ }
+diff --git a/packages/core/package.json b/packages/core/package.json
+index 8e5692a..bdf9fa3 100644
+--- a/packages/core/package.json
++++ b/packages/core/package.json
+@@ -48,7 +48,7 @@
+   "license": "MIT",
+   "packageManager": "pnpm@10.33.0",
+   "engines": {
+-    "node": ">= 20.12.0"
++    "node": ">= 22.19.0"
+   },
+   "scripts": {
+     "build": "unbuild",
+diff --git a/packages/prompts/package.json b/packages/prompts/package.json
+index 245fcdc..857b53b 100644
+--- a/packages/prompts/package.json
++++ b/packages/prompts/package.json
+@@ -48,7 +48,7 @@
+   ],
+   "packageManager": "pnpm@10.33.0",
+   "engines": {
+-    "node": ">= 20.12.0"
++    "node": ">= 22.19.0"
+   },
+   "scripts": {
+     "build": "unbuild",

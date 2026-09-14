@@ -1,7 +1,7 @@
 /**
- * Batched private-index and HEAD tree reads for commit-transaction candidates.
- *
- * @module
+ Batched private-index and HEAD tree reads for commit-transaction candidates.
+ 
+ @module
  */
 import {
   CommitTransactionGitError,
@@ -9,64 +9,64 @@ import {
 } from './commit-transaction-git.ts';
 
 /**
- * Strict Git metadata decoder.
+ Strict Git metadata decoder.
  */
 const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
 /**
- * Paths sent to one Git invocation. Candidate paths expand from pathspecs, so
- * they can outnumber the arguments this process itself received; chunking keeps
- * every invocation far below `ARG_MAX` while spawning once per chunk rather
- * than once per path.
+ Paths sent to one Git invocation. Candidate paths expand from pathspecs, so
+ they can outnumber the arguments this process itself received; chunking keeps
+ every invocation far below `ARG_MAX` while spawning once per chunk rather
+ than once per path.
  */
 const PATHSPEC_CHUNK_SIZE = 2_048;
 
 /**
- * Stage record parsed from private index.
+ Stage record parsed from private index.
  */
 export type IndexEntry = Readonly<{
   /**
-   * Raw Git mode text.
+   Raw Git mode text.
    */
   modeText: string;
   /**
-   * Git object ID.
+   Git object ID.
    */
   oid: string;
   /**
-   * Stage number text, where `0` means merged.
+   Stage number text, where `0` means merged.
    */
   stage: string;
 }>;
 
 /**
- * Tree record parsed from HEAD.
+ Tree record parsed from HEAD.
  */
 export type HeadTreeEntry = Readonly<{
   /**
-   * Raw Git mode text, including `040000` for directory transitions.
+   Raw Git mode text, including `040000` for directory transitions.
    */
   modeText: string;
   /**
-   * Git object ID.
+   Git object ID.
    */
   oid: string;
 }>;
 
 /**
- * Splits paths into invocation-sized chunks.
- *
- * @param paths - candidate repository paths
- *
- * @returns chunks preserving input order
- *
- * @example
- * ```ts
- * chunkPaths(['a', 'b']);
- * // => [['a', 'b']]
- * ```
+ Splits paths into invocation-sized chunks.
+ 
+ @param paths - candidate repository paths
+ 
+ @returns chunks preserving input order
+ 
+ @example
+ ```ts
+ chunkPaths(['a', 'b']);
+ // => [['a', 'b']]
+ ```
  */
 function chunkPaths(paths: readonly string[],): readonly (readonly string[])[] {
   return Array.from(
@@ -84,11 +84,11 @@ function chunkPaths(paths: readonly string[],): readonly (readonly string[])[] {
 }
 
 /**
- * Splits NUL-delimited Git output into metadata and path pairs.
- *
- * @param stdout - exact NUL-delimited output bytes
- *
- * @returns metadata text and repository path per record
+ Splits NUL-delimited Git output into metadata and path pairs.
+ 
+ @param stdout - exact NUL-delimited output bytes
+ 
+ @returns metadata text and repository path per record
  */
 function splitRecords(stdout: Uint8Array,): readonly (readonly [
   string,
@@ -101,7 +101,7 @@ function splitRecords(stdout: Uint8Array,): readonly (readonly [
       string
     ])[] {
       /**
-       * Metadata and path boundary.
+       Metadata and path boundary.
        */
       const tab = record.indexOf('\t',);
       return tab === (-1)
@@ -117,29 +117,29 @@ function splitRecords(stdout: Uint8Array,): readonly (readonly [
 }
 
 /**
- * Loads stage-zero-first index entries for every requested path.
- *
- * Replaces one `ls-files --stage` spawn per path. Absent paths are simply
- * missing from the result, which is how a deleted candidate is recognised.
- * Unmerged paths keep their lowest stage first, so a caller rejecting a
- * nonzero stage sees exactly what a per-path read reported.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param indexPath - private index
- *
- * @param paths - candidate repository paths
- *
- * @returns first stage record per present path
- *
- * @throws CommitTransactionGitError when index metadata is incomplete
- *
- * @example
- * ```ts
- * await loadIndexEntries({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', paths: ['a'] });
- * ```
+ Loads stage-zero-first index entries for every requested path.
+ 
+ Replaces one `ls-files --stage` spawn per path. Absent paths are simply
+ missing from the result, which is how a deleted candidate is recognised.
+ Unmerged paths keep their lowest stage first, so a caller rejecting a
+ nonzero stage sees exactly what a per-path read reported.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param indexPath - private index
+ 
+ @param paths - candidate repository paths
+ 
+ @returns first stage record per present path
+ 
+ @throws CommitTransactionGitError when index metadata is incomplete
+ 
+ @example
+ ```ts
+ await loadIndexEntries({ gitPath: '/usr/bin/git', cwd: '/repo', indexPath: '/tmp/index', paths: ['a'] });
+ ```
  */
 export async function loadIndexEntries({
   gitPath,
@@ -153,7 +153,7 @@ export async function loadIndexEntries({
   paths: readonly string[];
 }>,): Promise<ReadonlyMap<string, IndexEntry>> {
   /**
-   * Stage records for every chunk, read concurrently over disjoint paths.
+   Stage records for every chunk, read concurrently over disjoint paths.
    */
   const outputs = await Promise.all(chunkPaths(paths,)
     .map(function readChunk(chunk,) {
@@ -171,13 +171,13 @@ export async function loadIndexEntries({
       },);
     },),);
   /**
-   * First stage record per path across every chunk.
+   First stage record per path across every chunk.
    */
   const entries = new Map<string, IndexEntry>();
   for (const output of outputs) {
     for (const [meta, path,] of splitRecords(output.stdout,)) {
       /**
-       * Mode, object ID, and stage fields.
+       Mode, object ID, and stage fields.
        */
       const [modeText, oid, stage,] = meta.split(' ',);
       if ((modeText === undefined) || (oid === undefined)
@@ -199,28 +199,28 @@ export async function loadIndexEntries({
 }
 
 /**
- * Loads HEAD tree entries for every requested path.
- *
- * Replaces one `ls-tree` spawn per path. An unborn HEAD makes Git exit nonzero
- * for the whole chunk, which yields no entries and classifies every candidate
- * as added, matching a per-path read against a repository without commits.
- * Directory transitions keep their `040000` mode so callers reject them exactly
- * as a per-path read did.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @param paths - candidate repository paths
- *
- * @returns tree record per path present in HEAD
- *
- * @throws CommitTransactionGitError when HEAD tree metadata is incomplete
- *
- * @example
- * ```ts
- * await loadHeadTreeEntries({ gitPath: '/usr/bin/git', cwd: '/repo', paths: ['a'] });
- * ```
+ Loads HEAD tree entries for every requested path.
+ 
+ Replaces one `ls-tree` spawn per path. An unborn HEAD makes Git exit nonzero
+ for the whole chunk, which yields no entries and classifies every candidate
+ as added, matching a per-path read against a repository without commits.
+ Directory transitions keep their `040000` mode so callers reject them exactly
+ as a per-path read did.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @param paths - candidate repository paths
+ 
+ @returns tree record per path present in HEAD
+ 
+ @throws CommitTransactionGitError when HEAD tree metadata is incomplete
+ 
+ @example
+ ```ts
+ await loadHeadTreeEntries({ gitPath: '/usr/bin/git', cwd: '/repo', paths: ['a'] });
+ ```
  */
 export async function loadHeadTreeEntries({
   gitPath,
@@ -232,7 +232,7 @@ export async function loadHeadTreeEntries({
   paths: readonly string[];
 }>,): Promise<ReadonlyMap<string, HeadTreeEntry>> {
   /**
-   * Optional tree records for every chunk, read concurrently over disjoint paths.
+   Optional tree records for every chunk, read concurrently over disjoint paths.
    */
   const outputs = await Promise.all(chunkPaths(paths,)
     .map(function readChunk(chunk,) {
@@ -250,7 +250,7 @@ export async function loadHeadTreeEntries({
       },);
     },),);
   /**
-   * Tree record per path across every chunk.
+   Tree record per path across every chunk.
    */
   const entries = new Map<string, HeadTreeEntry>();
   for (const output of outputs) {
@@ -258,7 +258,7 @@ export async function loadHeadTreeEntries({
       continue;
     for (const [meta, path,] of splitRecords(output.stdout,)) {
       /**
-       * Mode, object type, and object ID fields.
+       Mode, object type, and object ID fields.
        */
       const [modeText, _type, oid,] = meta.split(' ',);
       if ((modeText === undefined) || (oid === undefined))

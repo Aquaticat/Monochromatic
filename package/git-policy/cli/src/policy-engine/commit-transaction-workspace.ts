@@ -1,7 +1,7 @@
 /**
- * Disposable and recoverable private-index transaction workspace.
- *
- * @module
+ Disposable and recoverable private-index transaction workspace.
+ 
+ @module
  */
 import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import { randomUUID, } from 'node:crypto';
@@ -29,88 +29,88 @@ import { runTransactionGit, } from './commit-transaction-git.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 
 /**
- * Private file mode restricted to current account.
+ Private file mode restricted to current account.
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
- * Stable per-index transaction directory name.
+ Stable per-index transaction directory name.
  */
 export const TRANSACTION_DIRECTORY_NAME = 'cli-git-transaction';
 
 /**
- * Owned private transaction state.
+ Owned private transaction state.
  */
 export type CommitTransactionWorkspace = {
   /**
-   * Durable transaction directory outside worktree content.
+   Durable transaction directory outside worktree content.
    */
   readonly directory: string;
   /**
-   * Private commit index.
+   Private commit index.
    */
   readonly commitIndexPath: string;
   /**
-   * Prepared post-commit index.
+   Prepared post-commit index.
    */
   readonly postIndexPath: string;
   /**
-   * Exact original index snapshot.
+   Exact original index snapshot.
    */
   readonly originalIndexPath: string;
   /**
-   * Durable transaction journal.
+   Durable transaction journal.
    */
   readonly journalPath: string;
   /**
-   * Private nonce-bearing reflog action for post-crash attribution.
+   Private nonce-bearing reflog action for post-crash attribution.
    */
   readonly reflogAction: string;
   /**
-   * Real index path.
+   Real index path.
    */
   readonly realIndexPath: string;
   /**
-   * Real Git lock path.
+   Real Git lock path.
    */
   readonly lockPath: string;
   /**
-   * Filesystem identity of owned lock.
+   Filesystem identity of owned lock.
    */
   readonly lockFsId: string;
   /**
-   * Device identity of owned lock object.
+   Device identity of owned lock object.
    */
   readonly lockDevice: string;
   /**
-   * Inode identity of owned lock object.
+   Inode identity of owned lock object.
    */
   readonly lockInode: string;
   /**
-   * Marks ref advancement so disposal preserves recovery artifacts.
+   Marks ref advancement so disposal preserves recovery artifacts.
    */
   readonly preserveForRecovery: () => void;
   /**
-   * Marks durable completion so disposal removes recovery artifacts.
+   Marks durable completion so disposal removes recovery artifacts.
    */
   readonly finishTransaction: () => void;
   /**
-   * Atomically installs private index through held Git lock.
+   Atomically installs private index through held Git lock.
    */
   readonly installIndex: (sourcePath: string) => Promise<void>;
   /**
-   * Removes private state unless recovery owns it.
+   Removes private state unless recovery owns it.
    */
   readonly [Symbol.asyncDispose]: () => Promise<void>;
 };
 
 /**
- * Resolves absolute Git-provided path.
- *
- * @param cwd - effective repository directory
- *
- * @param reportedPath - Git path output
- *
- * @returns absolute native path
+ Resolves absolute Git-provided path.
+ 
+ @param cwd - effective repository directory
+ 
+ @param reportedPath - Git path output
+ 
+ @returns absolute native path
  */
 function resolveGitPath({
   cwd,
@@ -128,15 +128,15 @@ function resolveGitPath({
 }
 
 /**
- * Revalidates exact owned lock name before path-based replacement.
- *
- * @param lockPath - owned lock pathname
- *
- * @param lockFsId - original filesystem identity
- *
- * @param lockDevice - original device identity
- *
- * @param lockInode - original inode identity
+ Revalidates exact owned lock name before path-based replacement.
+ 
+ @param lockPath - owned lock pathname
+ 
+ @param lockFsId - original filesystem identity
+ 
+ @param lockDevice - original device identity
+ 
+ @param lockInode - original inode identity
  */
 async function assertWorkspaceLockIdentity({
   lockPath,
@@ -150,14 +150,14 @@ async function assertWorkspaceLockIdentity({
   lockInode: string;
 }>,): Promise<void> {
   /**
-   * Current non-followed lock metadata.
+   Current non-followed lock metadata.
    */
   const metadata = await lstat(
     lockPath,
     { bigint: true, },
   );
   /**
-   * Current lock filesystem identity.
+   Current lock filesystem identity.
    */
   const filesystem = await resolveFsId({
     path: lockPath,
@@ -172,18 +172,18 @@ async function assertWorkspaceLockIdentity({
 }
 
 /**
- * Creates durable private directory and acquires exclusive real-index lock.
- *
- * @param gitPath - resolved Git executable
- *
- * @param cwd - effective repository directory
- *
- * @returns owned disposable workspace
- *
- * @example
- * ```ts
- * await createCommitTransactionWorkspace({ gitPath: '/usr/bin/git', cwd: '/repo' });
- * ```
+ Creates durable private directory and acquires exclusive real-index lock.
+ 
+ @param gitPath - resolved Git executable
+ 
+ @param cwd - effective repository directory
+ 
+ @returns owned disposable workspace
+ 
+ @example
+ ```ts
+ await createCommitTransactionWorkspace({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ ```
  */
 export async function createCommitTransactionWorkspace({
   gitPath,
@@ -193,7 +193,7 @@ export async function createCommitTransactionWorkspace({
   cwd: string;
 }>,): Promise<CommitTransactionWorkspace> {
   /**
-   * Git-provided real index and transaction paths.
+   Git-provided real index and transaction paths.
    */
   const [indexOutput, directoryOutput,] = await Promise.all([
     runTransactionGit({
@@ -216,14 +216,14 @@ export async function createCommitTransactionWorkspace({
     },),
   ],);
   /**
-   * Strict administrative path decoder.
+   Strict administrative path decoder.
    */
   const decoder = new TextDecoder(
     'utf-8',
     { fatal: true, },
   );
   /**
-   * Absolute real index path.
+   Absolute real index path.
    */
   const realIndexPath = resolveGitPath({
     cwd,
@@ -231,7 +231,7 @@ export async function createCommitTransactionWorkspace({
       .trim(),
   },);
   /**
-   * Absolute durable transaction directory.
+   Absolute durable transaction directory.
    */
   const directory = resolveGitPath({
     cwd,
@@ -239,7 +239,7 @@ export async function createCommitTransactionWorkspace({
       .trim(),
   },);
   /**
-   * Canonical administrative parent proving no transaction symlink.
+   Canonical administrative parent proving no transaction symlink.
    */
   const canonicalParent = await realpath(dirname(directory,),);
   if (resolve(
@@ -257,11 +257,11 @@ export async function createCommitTransactionWorkspace({
   },);
   await syncDirectory(canonicalParent,);
   /**
-   * Real Git lock path.
+   Real Git lock path.
    */
   const lockPath = `${realIndexPath}.lock`;
   /**
-   * Exclusive real-index lock.
+   Exclusive real-index lock.
    */
   const lockHandle = await open(
     lockPath,
@@ -273,26 +273,26 @@ export async function createCommitTransactionWorkspace({
     directory: false,
   },);
   /**
-   * Filesystem identity containing owned lock artifact.
+   Filesystem identity containing owned lock artifact.
    */
   const lockFilesystem = await resolveFsId({
     path: lockPath,
     emitDiagnostics: false,
   },);
   /**
-   * Exact owned lock object metadata.
+   Exact owned lock object metadata.
    */
   const lockMetadata = await lockHandle.stat({ bigint: true, },);
   /**
-   * Installation marker populated only after atomic replacement.
+   Installation marker populated only after atomic replacement.
    */
   const installed = new Set<'installed'>();
   /**
-   * Recovery marker populated immediately after real Git advances ref.
+   Recovery marker populated immediately after real Git advances ref.
    */
   const preserved = new Set<'preserved'>();
   /**
-   * Closed-handle marker preventing duplicate close after partial installation.
+   Closed-handle marker preventing duplicate close after partial installation.
    */
   const closed = new Set<'closed'>();
   return {
@@ -327,7 +327,7 @@ export async function createCommitTransactionWorkspace({
     },
     installIndex: async function installIndex(sourcePath: string,): Promise<void> {
       /**
-       * Exact intended index bytes.
+       Exact intended index bytes.
        */
       const bytes = await readFile(sourcePath,);
       await assertWorkspaceLockIdentity({
@@ -345,7 +345,7 @@ export async function createCommitTransactionWorkspace({
         lockInode: String(lockMetadata.ino,),
       },);
       /**
-       * Private owner-preserving installation name.
+       Private owner-preserving installation name.
        */
       const installPath = join(
         directory,

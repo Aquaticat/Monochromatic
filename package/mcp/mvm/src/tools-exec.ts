@@ -1,16 +1,21 @@
 /**
- * Command execution tool definitions: exec and run.
- * @module
+ Command execution tool definitions: exec and run.
+ @module
  */
 import {
   defineTool,
+  strictArguments,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
 import {
-  BACKEND_PROPERTY,
+  BACKEND_ARGUMENT,
   backendFromArgs,
 } from './backend.ts';
+import {
+  optionalString,
+  requiredString,
+} from './tool-arguments.ts';
 import {
   errorResponse,
   formatExecResult,
@@ -21,49 +26,37 @@ import { requiredStringArgument, } from './required-string-argument.ts';
 //region Execution tools: run commands inside VMs
 
 /**
- * MCP tool: execute a command inside a named running VM, resolved via
- * {@link backendFromArgs}.
+ MCP tool: execute a command inside a named running VM, resolved via
+ {@link backendFromArgs}.
  */
 export const execTool: ToolEntry = defineTool({
   name: 'exec_in_vm',
   entry: {
     description:
       'Runs a shell command inside a named VM and returns stdout, stderr, and exit code. libvirt uses the QEMU guest agent (bash for Linux, PowerShell for Windows); hetzner runs it in the remote login shell over SSH.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          description: 'VM name to execute in',
-        },
-        command: {
-          type: 'string',
-          description:
-            'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: [
-        'name',
-        'command',
-      ],
-    },
+    schema: strictArguments({
+      name: requiredString('VM name to execute in',),
+      command: requiredString(
+        'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
+      ),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handleExecInVm(args,) {
       /**
-       * Target VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
+       Target VM name validated as string so the backend receives a stable type regardless of MCP client encoding.
        */
       const name = requiredStringArgument(args.name,);
       /**
-       * Shell command validated as string for the same reason as `name`.
+       Shell command validated as string for the same reason as `name`.
        */
       const command = requiredStringArgument(args.command,);
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Execution result holding stdout, stderr, and exit code; formatted into the response below.
+         Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
         const result = await backend.exec({
           command,
@@ -82,47 +75,39 @@ export const execTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: create an ephemeral VM, run a command, then destroy it, on the
- * backend resolved via {@link backendFromArgs}.
+ MCP tool: create an ephemeral VM, run a command, then destroy it, on the
+ backend resolved via {@link backendFromArgs}.
  */
 export const runTool: ToolEntry = defineTool({
   name: 'run_in_vm',
   entry: {
     description:
       'Creates an ephemeral VM, runs a shell command inside it, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Runs on the selected backend.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        command: {
-          type: 'string',
-          description:
-            'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
-        },
-        from: {
-          type: 'string',
-          description:
-            'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").',
-        },
-        backend: BACKEND_PROPERTY,
-      },
-      required: ['command',],
-    },
+    schema: strictArguments({
+      command: requiredString(
+        'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
+      ),
+      from: optionalString(
+        'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").',
+      ),
+      backend: BACKEND_ARGUMENT,
+    },),
     handler: async function handleRunInVm(args,) {
       /**
-       * Shell command validated as string so the ephemeral VM receives a stable type regardless of MCP client encoding.
+       Shell command validated as string so the ephemeral VM receives a stable type regardless of MCP client encoding.
        */
       const command = requiredStringArgument(args.command,);
       /**
-       * Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
+       Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       try {
         /**
-         * Backend resolved from the optional `backend` arg, env, or default.
+         Backend resolved from the optional `backend` arg, env, or default.
          */
         const backend = await backendFromArgs(args,);
         /**
-         * Execution result holding stdout, stderr, and exit code; formatted into the response below.
+         Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
         const result = await backend.run({
           command,

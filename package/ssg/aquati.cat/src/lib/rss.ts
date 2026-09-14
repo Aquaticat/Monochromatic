@@ -1,7 +1,7 @@
 /**
- * RSS feed generation per language.
- *
- * Uses feedsmith to produce RSS 2.0 XML for each language's post collection.
+ RSS feed generation per language.
+ 
+ Uses feedsmith to produce RSS 2.0 XML for each language's post collection.
  */
 import { generateRssFeed, } from 'feedsmith';
 
@@ -13,20 +13,20 @@ import {
 import type { Post, } from './content.ts';
 
 /**
- * Generates an RSS 2.0 XML feed for a specific language.
- *
- * @param lang - two-letter language code
- *
- * @param posts - posts filtered to the target language
- *
- * @param siteUrl - base URL of the site (e.g. `https://aquati.cat`)
- *
- * @returns RSS XML string
- *
- * @example
- * ```ts
- * const xml = generateLanguageRss({ lang: 'en', posts: enPosts, siteUrl: 'https://aquati.cat' });
- * ```
+ Generates an RSS 2.0 XML feed for a specific language.
+ 
+ @param lang - two-letter language code
+ 
+ @param posts - posts filtered to the target language
+ 
+ @param siteUrl - base URL of the site (e.g. `https://aquati.cat`)
+ 
+ @returns RSS XML string
+ 
+ @example
+ ```ts
+ const xml = generateLanguageRss({ lang: 'en', posts: enPosts, siteUrl: 'https://aquati.cat' });
+ ```
  */
 export function generateLanguageRss(
   {
@@ -40,7 +40,7 @@ export function generateLanguageRss(
   },
 ): string {
   /**
-   * Newest git-derived update date across this locale's posts, used as the feed build date.
+   Newest git-derived update date across this locale's posts, used as the feed build date.
    */
   const lastBuildDate = posts
     .map(function toUpdatedDate(post,): Date {

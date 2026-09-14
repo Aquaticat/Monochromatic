@@ -21,8 +21,10 @@ import {
   uniqueRuleCodes as uniqueRules,
 } from '@monochromatic-dev/oxlint-plugin-test-support/ts';
 
-import type { ChainNode, } from './utility/chain.ts';
-import { chainBreakOffsets, } from './utility/chain-flatten.ts';
+import {
+  type ChainNode,
+  chainBreakOffsets,
+} from '../dist/final/node/index.mjs';
 
 /** Minimal token stub the chain walk reads: a value to classify and a start offset. */
 type TokenStub = {
@@ -30,6 +32,14 @@ type TokenStub = {
   readonly value: string;
   /** Byte offset of the token's start. */
   readonly start: number;
+};
+
+/** Inputs for linting one fixture with a selected configuration. */
+type LintWithConfigParams = {
+  /** Path relative to fixture source root, or absolute temp fixture path. */
+  readonly fixturePath: string;
+  /** Absolute fixture configuration path. */
+  readonly fixtureConfig: string;
 };
 
 //endregion Types
@@ -47,8 +57,8 @@ const FIXTURES = fixtureSourceRoot({
 },);
 
 /**
- * Fixture-specific oxlint config with all stylistic rules enabled and no
- * ignorePatterns that would skip test-fixture or invalid paths.
+ Fixture-specific oxlint config with all stylistic rules enabled and no
+ ignorePatterns that would skip test-fixture or invalid paths.
  */
 const FIXTURE_CONFIG = fixtureConfigPath({
   fixturePackageName: 'oxlint-stylistic',
@@ -67,19 +77,40 @@ const COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG = fixtureConfigPath({
   fileName: '.oxlintrc.comma-dangle-configured.fixture.json',
 },);
 
+/** Fixture config selecting always mode for TSDoc asterisk prefixes. */
+const ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-always.fixture.json',
+},);
+
+/** Fixture config omitting required TSDoc asterisk-prefix mode. */
+const ASTERISK_PREFIX_MISSING_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-missing.fixture.json',
+},);
+
+/** Fixture config supplying unsupported TSDoc asterisk-prefix mode. */
+const ASTERISK_PREFIX_INVALID_FIXTURE_CONFIG = fixtureConfigPath({
+  fixturePackageName: 'oxlint-stylistic',
+  fileName: '.oxlintrc.asterisk-prefix-invalid.fixture.json',
+},);
+
 /** Maximum autofix passes needed for overlapping stylistic fixes to converge. */
 const MAX_AUTOFIX_PASSES = 8;
 
 /**
- * Runs oxlint with the fixture config against a fixture path and returns
- * parsed diagnostics.
- *
- * @param fixturePath - path relative to fixture `src/` root, or absolute path
- *   to a temp fixture
- *
- * @returns array of diagnostics from stylistic rules only
+ Runs oxlint against one fixture with selected config.
+ 
+ @param params - fixture path and configuration
+ 
+ @returns array of diagnostics from stylistic rules only
  */
-async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+async function lintWithConfig(params: Readonly<LintWithConfigParams>,): Promise<readonly OxlintDiagnostic[]> {
+  /** Selected fixture path and configuration. */
+  const {
+    fixturePath,
+    fixtureConfig,
+  } = params;
   /** Resolved lint target; temp fixtures already arrive as absolute paths. */
   const target = resolveFixtureTarget({
     fixtureSourceRoot: FIXTURES,
@@ -89,25 +120,39 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   return runOxlintFixture({
     codePrefix: 'stylistic(',
     configFlag: '--config',
-    fixtureConfig: FIXTURE_CONFIG,
+    fixtureConfig,
     target,
+  },);
+}
+
+/**
+ Runs oxlint with complete fixture config against one fixture path.
+ 
+ @param fixturePath - path relative to fixture `src/` root, or absolute temp path
+ 
+ @returns array of diagnostics from stylistic rules only
+ */
+async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+  return lintWithConfig({
+    fixturePath,
+    fixtureConfig: FIXTURE_CONFIG,
   },);
 }
 
 
 /**
- * Runs oxlint --fix on a fixture until content stops changing.
- *
- * Some stylistic fixes overlap, so oxlint applies only one fix for that source
- * region per pass. Repeating until stable exercises the same boundary while
- * avoiding fixture mutation.
- *
- * @param filePath - absolute path to temp fixture copy
- *
- * @example
- * ```ts
- * await fixUntilStable(fixture.filePath);
- * ```
+ Runs oxlint --fix on a fixture until content stops changing.
+ 
+ Some stylistic fixes overlap, so oxlint applies only one fix for that source
+ region per pass. Repeating until stable exercises the same boundary while
+ avoiding fixture mutation.
+ 
+ @param filePath - absolute path to temp fixture copy
+ 
+ @example
+ ```ts
+ await fixUntilStable(fixture.filePath);
+ ```
  */
 async function fixUntilStable(filePath: string,): Promise<void> {
   for (
@@ -140,37 +185,37 @@ async function fixUntilStable(filePath: string,): Promise<void> {
 }
 
 /**
- * Casts a structural stub to a `ChainNode` for synthetic-AST construction.
- *
- * The chain walk reads only `type`, the receiver links, `start`/`end`, and a
- * member's `property`/`computed`; a hand-built stub supplies exactly those, so
- * one assertion at the boundary keeps the builders free of per-field casts.
- *
- * @param stub - object carrying the chain-walk fields for one node
- *
- * @returns stub viewed as a `ChainNode`
+ Casts a structural stub to a `ChainNode` for synthetic-AST construction.
+ 
+ The chain walk reads only `type`, the receiver links, `start`/`end`, and a
+ member's `property`/`computed`; a hand-built stub supplies exactly those, so
+ one assertion at the boundary keeps the builders free of per-field casts.
+ 
+ @param stub - object carrying the chain-walk fields for one node
+ 
+ @returns stub viewed as a `ChainNode`
  */
 function asChainNode(stub: object,): ChainNode {
   return stub as unknown as ChainNode;
 }
 
 /**
- * Builds a mock rule context whose token lookups satisfy the chain walk for
- * synthetic nodes, so the flatten can run on chains far deeper than oxlint feeds
- * a plugin in practice (where its own deep-AST handling fails first).
- *
- * `getTokenBefore` returns the dot punctuator for a property stub (no `type`)
- * and a non-`(` neighbour for a node; `getTokenAfter` returns the `+` operator
- * when a filter is supplied (the operator-token lookup) and a non-`)` neighbour
- * otherwise (the grouping-paren probe). No node is ever treated as grouped.
- *
- * @returns context stub exposing the two token accessors the walk uses
+ Builds a mock rule context whose token lookups satisfy the chain walk for
+ synthetic nodes, so the flatten can run on chains far deeper than oxlint feeds
+ a plugin in practice (where its own deep-AST handling fails first).
+ 
+ `getTokenBefore` returns the dot punctuator for a property stub (no `type`)
+ and a non-`(` neighbour for a node; `getTokenAfter` returns the `+` operator
+ when a filter is supplied (the operator-token lookup) and a non-`)` neighbour
+ otherwise (the grouping-paren probe). No node is ever treated as grouped.
+ 
+ @returns context stub exposing the two token accessors the walk uses
  */
 function mockChainContext(): Context {
   /**
-   * @param target - node or property whose preceding token is wanted
-   *
-   * @returns dot for a property stub, a non-`(` marker for a node
+   @param target - node or property whose preceding token is wanted
+   
+   @returns dot for a property stub, a non-`(` marker for a node
    */
   function getTokenBefore(target: {
     readonly type?: string;
@@ -218,22 +263,22 @@ function mockChainContext(): Context {
 }
 
 /**
- * Casts a token-accessor stub to a `Context` for the synthetic chain walk.
- *
- * @param stub - object carrying the two `sourceCode` token accessors
- *
- * @returns stub viewed as a `Context`
+ Casts a token-accessor stub to a `Context` for the synthetic chain walk.
+ 
+ @param stub - object carrying the two `sourceCode` token accessors
+ 
+ @returns stub viewed as a `Context`
  */
 function asChainContext(stub: object,): Context {
   return stub as unknown as Context;
 }
 
 /**
- * Builds a synthetic member chain `x.a.a...` of the given step count.
- *
- * @param steps - number of `.a` member steps past the leaf
- *
- * @returns outermost `MemberExpression` node of the chain
+ Builds a synthetic member chain `x.a.a...` of the given step count.
+ 
+ @param steps - number of `.a` member steps past the leaf
+ 
+ @returns outermost `MemberExpression` node of the chain
  */
 function buildMemberChain(steps: number,): ChainNode {
   /** Leaf identifier `x` at the head of the chain. */
@@ -263,11 +308,11 @@ function buildMemberChain(steps: number,): ChainNode {
 }
 
 /**
- * Builds a synthetic left-associative operator chain `a + a + ...`.
- *
- * @param operators - number of `+` operators in the chain
- *
- * @returns outermost `BinaryExpression` node of the chain
+ Builds a synthetic left-associative operator chain `a + a + ...`.
+ 
+ @param operators - number of `+` operators in the chain
+ 
+ @returns outermost `BinaryExpression` node of the chain
  */
 function buildOperatorChain(operators: number,): ChainNode {
   /** Leftmost operand `a`. */
@@ -298,11 +343,11 @@ function buildOperatorChain(operators: number,): ChainNode {
 }
 
 /**
- * Extracts unique rule codes from a set of diagnostics.
- *
- * @param diagnostics - array of oxlint diagnostics
- *
- * @returns sorted array of unique `stylistic(rule-name)` codes
+ Extracts unique rule codes from a set of diagnostics.
+ 
+ @param diagnostics - array of oxlint diagnostics
+ 
+ @returns sorted array of unique `stylistic(rule-name)` codes
  */
 //endregion Helpers
 
@@ -314,6 +359,23 @@ await describe({
     describe({
       name: 'valid fixtures',
       children: [
+        it({
+          name: 'star-less TSDoc and literal-leading asterisks pass never mode',
+          fn: async () => {
+            const diagnostics = await lint('valid/asterisk-prefix.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'starred TSDoc passes always mode',
+          fn: async () => {
+            const diagnostics = await lintWithConfig({
+              fixturePath: 'invalid/asterisk-prefix.ts',
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
         it({
           name: 'already-per-line constructs produce no violations',
           fn: async () => {
@@ -376,6 +438,107 @@ await describe({
     //endregion Valid fixtures
 
     //region Invalid fixtures: expect specific violations
+
+    describe({
+      name: 'require-asterisk-prefix',
+      children: [
+        it({
+          name: 'reports every canonical prefix in never mode',
+          fn: async () => {
+            const diagnostics = await lint('invalid/asterisk-prefix.ts',);
+            const prefixDiagnostics = diagnostics.filter(
+              function isPrefixDiagnostic(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(require-asterisk-prefix)';
+              },
+            );
+            expect(prefixDiagnostics,).toHaveLength(12,);
+            expect(prefixDiagnostics[0]?.message,).toBe(
+              'TSDoc body line cannot have an asterisk prefix in never mode.',
+            );
+          },
+        },),
+        it({
+          name: 'reports every unprefixed body line in always mode',
+          fn: async () => {
+            const diagnostics = await lintWithConfig({
+              fixturePath: 'valid/asterisk-prefix.ts',
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },);
+            const prefixDiagnostics = diagnostics.filter(
+              function isPrefixDiagnostic(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(require-asterisk-prefix)';
+              },
+            );
+            expect(prefixDiagnostics,).toHaveLength(11,);
+            expect(prefixDiagnostics[0]?.message,).toBe(
+              'TSDoc body line requires an asterisk prefix in always mode.',
+            );
+          },
+        },),
+        it({
+          name: 'rejects an omitted mode',
+          fn: async () => {
+            const caught = await (async function catchMissingModeError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    ASTERISK_PREFIX_MISSING_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'asterisk-prefix.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            expect(caught,).toBeDefined();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain('stylistic/require-asterisk-prefix',);
+          },
+        },),
+        it({
+          name: 'rejects an unsupported mode',
+          fn: async () => {
+            const caught = await (async function catchInvalidModeError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    ASTERISK_PREFIX_INVALID_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'asterisk-prefix.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            expect(caught,).toBeDefined();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain('stylistic/require-asterisk-prefix',);
+          },
+        },),
+      ],
+    },),
 
     describe({
       name: 'param-per-line',
@@ -498,11 +661,19 @@ await describe({
       name: 'no-mixed-operators',
       children: [
         it({
-          name: 'reports nested mixed-operator expressions without parens',
+          name: 'reports mixed operators and chained exponentiation without parens',
           fn: async () => {
             const diagnostics = await lint('invalid/no-mixed-operators.ts',);
             const rules = uniqueRules(diagnostics,);
+            /** Diagnostics carrying the dedicated chained-exponentiation message. */
+            const exponentiationDiagnostics = diagnostics.filter(
+              function isChainedExponentiation(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Chained exponentiation requires parentheses that expose its grouping.';
+              },
+            );
             expect(rules,).toContain('stylistic(no-mixed-operators)',);
+            expect(exponentiationDiagnostics,).toHaveLength(3,);
           },
         },),
       ],
@@ -786,6 +957,83 @@ await describe({
     describe({
       name: 'autofix',
       children: [
+        it({
+          name: '--fix removes every canonical TSDoc prefix in never mode idempotently',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'invalid',
+              'asterisk-prefix.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'asterisk-prefix.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain(
+              '/**\n Starred description.\n \n **Leading bold** remains literal content.\n \n *through* remains literal content.',
+            );
+            expect(fixedOnce,).toContain(
+              '  /**\n   Nested property description.\n   */',
+            );
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lint(fixtureCopy.filePath,),).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix adds every canonical TSDoc prefix in always mode idempotently',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'valid',
+              'asterisk-prefix.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'asterisk-prefix.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+
+            await spawn(
+              'oxlint',
+              [
+                '--fix',
+                '--config',
+                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+                fixtureCopy.filePath,
+              ],
+              { cwd: ROOT, },
+            );
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain(
+              '/**\n * Star-less description.\n *\n * **Leading bold** remains literal content.\n *\n * *through* remains literal content.',
+            );
+            expect(fixedOnce,).toContain(
+              '/**\n * Description whose closing delimiter shares its final line.\n */',
+            );
+
+            await spawn(
+              'oxlint',
+              [
+                '--fix',
+                '--config',
+                ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+                fixtureCopy.filePath,
+              ],
+              { cwd: ROOT, },
+            );
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lintWithConfig({
+              fixturePath: fixtureCopy.filePath,
+              fixtureConfig: ASTERISK_PREFIX_ALWAYS_FIXTURE_CONFIG,
+            },),).toEqual([],);
+          },
+        },),
         it({
           name: '--fix inserts missing semicolons',
           fn: async () => {
@@ -1138,6 +1386,42 @@ await describe({
             expect(after.includes('// keep this note inside the call',),).toBe(true,);
             // The member axis broke `obj.a` onto the head line.
             expect(after.includes('obj.a\n',),).toBe(true,);
+          },
+        },),
+        it({
+          name: '--fix exposes every chained-exponentiation grouping',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const exponentiationSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'no-mixed-operators.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            await using exponentiationCopy = await createTempFixtureFile({
+              fileName: 'no-mixed-operators.ts',
+              sourcePath: exponentiationSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+            /** Diagnostics before fixing, proving the fixture exercises the new branch. */
+            const beforeDiagnostics = await lint(exponentiationCopy.filePath,);
+            /** Chained-exponentiation findings before explicit grouping is inserted. */
+            const beforeExponentiationDiagnostics = beforeDiagnostics.filter(
+              function isChainedExponentiation(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Chained exponentiation requires parentheses that expose its grouping.';
+              },
+            );
+            expect(beforeExponentiationDiagnostics,).toHaveLength(3,);
+
+            await fixUntilStable(exponentiationCopy.filePath,);
+
+            /** Fixed source, inspected to prove grouping became explicit. */
+            const after = readFileSync(exponentiationCopy.filePath, 'utf8',);
+            /** Diagnostics after all overlapping fixes converge. */
+            const afterDiagnostics = await lint(exponentiationCopy.filePath,);
+            expect(after,).toContain('const r6 = 2 ** (3',);
+            expect(afterDiagnostics,).toEqual([],);
           },
         },),
         it({

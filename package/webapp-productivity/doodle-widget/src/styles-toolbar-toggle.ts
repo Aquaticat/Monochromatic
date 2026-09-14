@@ -1,10 +1,10 @@
 /**
- * Toggle-group CSS overrides for the doodle widget toolbar.
- *
- * Base control styling (padding, cursor, bg, border, radius, font) is
- * handled by the shared control selector in {@link renderToolbarStyles}.
- * This module provides toggle-specific overrides: connected border
- * joining, hidden radio inputs, and checked-state feedback.
+ Toggle-group CSS overrides for the doodle widget toolbar.
+ 
+ Base control styling (padding, cursor, bg, border, radius, font) is
+ handled by the shared control selector in {@link renderToolbarStyles}.
+ This module provides toggle-specific overrides: connected border
+ joining, hidden radio inputs, and checked-state feedback.
  */
 import {
   cssNum,
@@ -19,14 +19,14 @@ import {
 } from './style-tokens.ts';
 
 /**
- * Generates CSS rules for the radio-based toggle button group.
- *
- * @returns array of minified CSS rule strings
- *
- * @example
- * ```ts
- * const css = renderToggleGroupStyles().join('');
- * ```
+ Generates CSS rules for the radio-based toggle button group.
+ 
+ @returns array of minified CSS rule strings
+ 
+ @example
+ ```ts
+ const css = renderToggleGroupStyles().join('');
+ ```
  */
 export function renderToggleGroupStyles(): string[] {
   return [
@@ -36,7 +36,7 @@ export function renderToggleGroupStyles(): string[] {
     },),
 
     /**
-     * Hide the native radio circle
+     Hide the native radio circle
      */
     $({
       rule: '.toggle-option input',
@@ -50,7 +50,7 @@ export function renderToggleGroupStyles(): string[] {
     },),
 
     /**
-     * Override base border/radius for connected toggle items
+     Override base border/radius for connected toggle items
      */
     $({
       rule: '.toggle-option',
@@ -82,7 +82,7 @@ export function renderToggleGroupStyles(): string[] {
     },),
 
     /**
-     * Active state driven by native :checked pseudo-class
+     Active state driven by native :checked pseudo-class
      */
     $({
       rule: '.toggle-option:has(input:checked)',

@@ -1,5 +1,7 @@
 name = "monochromatic-lfs"
-main = "src/index.mjs"
+# The handler-only neutral bundle produced by `mise run build`; the deploy tasks depend on
+# that build so wrangler ships the same artifact the unit tests exercised.
+main = "dist/final/neutral/worker.mjs"
 compatibility_date = "2026-06-01"
 workers_dev = true
 

@@ -51,6 +51,14 @@ fn first_bad_flag(flags: &str) -> Option<char> {
     return flags.chars().find(|&c| return c != 'm' && c != 'x');
 }
 
+/// One classified significant rule preserving exact-literal identity before escaping.
+pub(super) struct SignificantRule {
+    /// Engine-ready pattern used by restricted-regex compiler.
+    pub(super) pattern: String,
+    /// Original exact literal bytes, absent for explicit regex syntax.
+    pub(super) literal: Option<Vec<u8>>,
+}
+
 /// Compiles one significant line into its engine pattern by the incumbent two forms.
 ///
 /// A regex line needs at least two delimiting slashes, a closing slash past the
@@ -60,7 +68,10 @@ fn first_bad_flag(flags: &str) -> Option<char> {
 /// trailing run is not all-lowercase, is a bare literal escaped into the verbose
 /// dialect and short-literal boundary-gated. The caller guarantees `line` is
 /// significant, so there is no skip case here.
-pub(super) fn significant_line_pattern(line: &str, index: usize) -> Result<String, LoadError> {
+pub(super) fn significant_line_rule(
+    line: &str,
+    index: usize,
+) -> Result<SignificantRule, LoadError> {
     let trimmed = line.trim();
     let bytes = trimmed.as_bytes();
     if bytes.len() >= 2
@@ -75,10 +86,25 @@ pub(super) fn significant_line_pattern(line: &str, index: usize) -> Result<Strin
             if let Some(flag) = first_bad_flag(flags) {
                 return Err(LoadError::UnsupportedFlag { index, flag });
             }
-            return Ok(trimmed[1..last].to_string());
+            return Ok(SignificantRule {
+                pattern: trimmed[1..last].to_string(),
+                literal: None,
+            });
         }
     }
-    return Ok(literal_pattern(trimmed));
+    return Ok(SignificantRule {
+        pattern: literal_pattern(trimmed),
+        literal: Some(trimmed.as_bytes().to_vec()),
+    })
+}
+
+/// Projects classified significant rule to engine-ready pattern for format tests.
+#[cfg(test)]
+pub(super) fn significant_line_pattern(
+    line: &str,
+    index: usize,
+) -> Result<String, LoadError> {
+    return significant_line_rule(line, index).map(|rule| return rule.pattern)
 }
 
 /// Parses a legacy line-based source into unnamed, engine-ready rules.
@@ -93,8 +119,12 @@ fn parse_legacy(text: &str) -> Result<Vec<ParsedRule>, LoadError> {
         if !is_significant(line) {
             continue;
         }
-        let pattern = significant_line_pattern(line, rules.len())?;
-        rules.push(ParsedRule { name: None, pattern });
+        let classified = significant_line_rule(line, rules.len())?;
+        rules.push(ParsedRule {
+            name: None,
+            pattern: classified.pattern,
+            literal: classified.literal,
+        });
     }
     if rules.is_empty() {
         return Err(LoadError::NoRules);

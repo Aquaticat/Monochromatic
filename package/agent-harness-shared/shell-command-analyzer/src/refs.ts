@@ -1,22 +1,22 @@
 /**
- * Raw reference and path helpers shared by shell command analysis consumers.
- *
- * @module
+ Raw reference and path helpers shared by shell command analysis consumers.
+ 
+ @module
  */
 
 //region Identifier helpers
 
 /**
- * Whether character starts POSIX-like shell identifier.
- *
- * @param c - one-character string to inspect
- *
- * @returns whether character can start variable name
- *
- * @example
- * ```ts
- * isIdentifierStart('_');
- * ```
+ Whether character starts POSIX-like shell identifier.
+ 
+ @param c - one-character string to inspect
+ 
+ @returns whether character can start variable name
+ 
+ @example
+ ```ts
+ isIdentifierStart('_');
+ ```
  */
 function isIdentifierStart(c: string,): boolean {
   return ((c >= 'A') && (c <= 'Z'))
@@ -25,16 +25,16 @@ function isIdentifierStart(c: string,): boolean {
 }
 
 /**
- * Whether character continues POSIX-like shell identifier.
- *
- * @param c - one-character string to inspect
- *
- * @returns whether character can continue variable name
- *
- * @example
- * ```ts
- * isIdentifierContinue('7');
- * ```
+ Whether character continues POSIX-like shell identifier.
+ 
+ @param c - one-character string to inspect
+ 
+ @returns whether character can continue variable name
+ 
+ @example
+ ```ts
+ isIdentifierContinue('7');
+ ```
  */
 function isIdentifierContinue(c: string,): boolean {
   return isIdentifierStart(c,)
@@ -46,37 +46,37 @@ function isIdentifierContinue(c: string,): boolean {
 //region Param reference extraction
 
 /**
- * Sentinel returned when no identifier starts at requested offset.
+ Sentinel returned when no identifier starts at requested offset.
  */
 const IDENTIFIER_NOT_FOUND: unique symbol = Symbol('shell identifier not found at requested offset',);
 
 /**
- * Identifier read result.
+ Identifier read result.
  */
 type IdentifierRead = {
   /**
-   * Identifier text.
+   Identifier text.
    */
   readonly name: string;
   /**
-   * Offset immediately after identifier.
+   Offset immediately after identifier.
    */
   readonly next: number;
 };
 
 /**
- * Find end offset for identifier that starts at `start`.
- *
- * @param source - source text to scan
- *
- * @param start - offset where identifier starts
- *
- * @returns first offset after identifier continuation run
- *
- * @example
- * ```ts
- * identifierEnd({ source: 'API_KEY}', start: 0 });
- * ```
+ Find end offset for identifier that starts at `start`.
+ 
+ @param source - source text to scan
+ 
+ @param start - offset where identifier starts
+ 
+ @returns first offset after identifier continuation run
+ 
+ @example
+ ```ts
+ identifierEnd({ source: 'API_KEY}', start: 0 });
+ ```
  */
 function identifierEnd(
   {
@@ -94,18 +94,18 @@ function identifierEnd(
 }
 
 /**
- * Read identifier from `source` starting at `start`.
- *
- * @param source - source text to scan
- *
- * @param start - offset where identifier may start
- *
- * @returns identifier text plus next offset, or sentinel when no identifier starts there
- *
- * @example
- * ```ts
- * readIdentifier({ source: 'API_KEY}', start: 0 });
- * ```
+ Read identifier from `source` starting at `start`.
+ 
+ @param source - source text to scan
+ 
+ @param start - offset where identifier may start
+ 
+ @returns identifier text plus next offset, or sentinel when no identifier starts there
+ 
+ @example
+ ```ts
+ readIdentifier({ source: 'API_KEY}', start: 0 });
+ ```
  */
 function readIdentifier(
   {
@@ -120,7 +120,7 @@ function readIdentifier(
     return IDENTIFIER_NOT_FOUND;
 
   /**
-   * Cursor advanced across identifier continuation characters.
+   Cursor advanced across identifier continuation characters.
    */
   const cursor = identifierEnd({
     source,
@@ -137,24 +137,24 @@ function readIdentifier(
 }
 
 /**
- * Extract `$VAR` and `${VAR}` references with a linear raw-text scan.
- *
- * This intentionally runs before parsing so malformed commands still surface
- * possible secret variable references to guardrails.
- *
- * @param command - raw shell command string
- *
- * @returns unique variable names found in source order
- *
- * @example
- * ```ts
- * extractParamRefs('curl $API_KEY ${TOKEN}');
- * // ['API_KEY', 'TOKEN']
- * ```
+ Extract `$VAR` and `${VAR}` references with a linear raw-text scan.
+ 
+ This intentionally runs before parsing so malformed commands still surface
+ possible secret variable references to guardrails.
+ 
+ @param command - raw shell command string
+ 
+ @returns unique variable names found in source order
+ 
+ @example
+ ```ts
+ extractParamRefs('curl $API_KEY ${TOKEN}');
+ // ['API_KEY', 'TOKEN']
+ ```
  */
 function extractParamRefs(command: string,): string[] {
   /**
-   * Ordered set of references discovered during scan.
+   Ordered set of references discovered during scan.
    */
   const refs = new Set<string>();
 
@@ -169,7 +169,7 @@ function extractParamRefs(command: string,): string[] {
       continue;
     if (command.charAt(cursor + 1,) === '{') {
       /**
-       * Identifier after `${`.
+       Identifier after `${`.
        */
       const braced = readIdentifier({
         source: command,
@@ -182,7 +182,7 @@ function extractParamRefs(command: string,): string[] {
       continue;
     }
     /**
-     * Identifier after bare `$`.
+     Identifier after bare `$`.
      */
     const simple = readIdentifier({
       source: command,
@@ -202,16 +202,16 @@ function extractParamRefs(command: string,): string[] {
 //region Path heuristics
 
 /**
- * Heuristic for path-like shell words.
- *
- * @param value - shell word value to inspect
- *
- * @returns whether value looks like filesystem path
- *
- * @example
- * ```ts
- * looksLikePath('./src/index.ts');
- * ```
+ Heuristic for path-like shell words.
+ 
+ @param value - shell word value to inspect
+ 
+ @returns whether value looks like filesystem path
+ 
+ @example
+ ```ts
+ looksLikePath('./src/index.ts');
+ ```
  */
 function looksLikePath(value: string,): boolean {
   return value.startsWith('/',)

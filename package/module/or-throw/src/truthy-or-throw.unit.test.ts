@@ -1,7 +1,7 @@
 /**
- * Tests for `truthyOrThrow`.
- *
- * @module
+ Tests for `truthyOrThrow`.
+ 
+ @module
  */
 
 import {

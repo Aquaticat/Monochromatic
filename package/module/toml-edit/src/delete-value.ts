@@ -1,14 +1,14 @@
 /**
- * Remove an existing value or entry from the block tree for {@link tomlDelete}.
- *
- * Descends through standard-table bodies, array-of-tables instances, and value
- * nodes (arrays, inline tables) to the target. Removing a whole key-value drops
- * its block (its physical span already includes the trailing comment and
- * newline); removing an array element or inline entry rebuilds the enclosing
- * value as synthetic so it re-renders canonically. Returns {@link NOT_REMOVED}
- * when the path has no existing target.
- *
- * @module
+ Remove an existing value or entry from the block tree for {@link tomlDelete}.
+ 
+ Descends through standard-table bodies, array-of-tables instances, and value
+ nodes (arrays, inline tables) to the target. Removing a whole key-value drops
+ its block (its physical span already includes the trailing comment and
+ newline); removing an array element or inline entry rebuilds the enclosing
+ value as synthetic so it re-renders canonically. Returns {@link NOT_REMOVED}
+ when the path has no existing target.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -22,19 +22,19 @@ import { isPrefix, } from './path-prefix.ts';
 import type { TomlPath, } from './types.ts';
 
 /**
- * Sentinel for "nothing removed at this path".
+ Sentinel for "nothing removed at this path".
  */
 export const NOT_REMOVED: unique symbol = Symbol('toml-edit/delete-no-existing-value-target',);
 
 /**
- * Remove the value or entry at `path` within `blocks`.
- *
- * @returns Fresh blocks, or {@link NOT_REMOVED}.
- *
- * @example
- * ```ts
- * removeAtPath({ blocks, path: ['arr', 1], },);
- * ```
+ Remove the value or entry at `path` within `blocks`.
+ 
+ @returns Fresh blocks, or {@link NOT_REMOVED}.
+ 
+ @example
+ ```ts
+ removeAtPath({ blocks, path: ['arr', 1], },);
+ ```
  */
 export function removeAtPath(
   {
@@ -49,7 +49,7 @@ export function removeAtPath(
     if (block.kind
       === 'keyvalue') {
       /**
-       * Removal outcome for this key-value: drop it, edit its value, or skip.
+       Removal outcome for this key-value: drop it, edit its value, or skip.
        */
       const outcome = removeFromKeyValue({
         kv: block,
@@ -74,7 +74,7 @@ export function removeAtPath(
       !== 'table')
       continue;
     /**
-     * Body result after descending into this table, or the not-removed sentinel.
+     Body result after descending into this table, or the not-removed sentinel.
      */
     const newBody = descendTableBody({
       table: block,
@@ -93,9 +93,9 @@ export function removeAtPath(
 }
 
 /**
- * Descend into a table's body to remove the target under `path`.
- *
- * @returns Fresh body blocks, or {@link NOT_REMOVED}.
+ Descend into a table's body to remove the target under `path`.
+ 
+ @returns Fresh body blocks, or {@link NOT_REMOVED}.
  */
 function descendTableBody(
   {
@@ -107,12 +107,12 @@ function descendTableBody(
   },
 ): readonly Block[] | typeof NOT_REMOVED {
   /**
-   * Header length; where the body-relative path begins.
+   Header length; where the body-relative path begins.
    */
   const headerLen = table.headerSegments
     .length;
   /**
-   * Array instances consume one extra segment (the matching index) first.
+   Array instances consume one extra segment (the matching index) first.
    */
   const bodyStart = table.tableKind
     === 'array' ? headerLen + 1 : headerLen;
@@ -132,10 +132,10 @@ function descendTableBody(
 }
 
 /**
- * Decide what happens to a key-value for a deletion at `path`.
- *
- * @returns `'drop'` to remove the block, a replacement key-value when a nested
- *          value changed, or {@link NOT_REMOVED}.
+ Decide what happens to a key-value for a deletion at `path`.
+ 
+ @returns `'drop'` to remove the block, a replacement key-value when a nested
+          value changed, or {@link NOT_REMOVED}.
  */
 function removeFromKeyValue(
   {
@@ -156,7 +156,7 @@ function removeFromKeyValue(
     === path.length)
     return 'drop';
   /**
-   * Value after removing the addressed nested element/entry.
+   Value after removing the addressed nested element/entry.
    */
   const newValue = removeInValue({
     value: kv.value,
@@ -172,9 +172,9 @@ function removeFromKeyValue(
 }
 
 /**
- * Remove the element/entry addressed by `rest` inside a value node.
- *
- * @returns Fresh value node, or {@link NOT_REMOVED}.
+ Remove the element/entry addressed by `rest` inside a value node.
+ 
+ @returns Fresh value node, or {@link NOT_REMOVED}.
  */
 function removeInValue(
   {
@@ -186,7 +186,7 @@ function removeInValue(
   },
 ): ValueNode | typeof NOT_REMOVED {
   /**
-   * Leading segment selecting the element or entry to descend into or drop.
+   Leading segment selecting the element or entry to descend into or drop.
    */
   const [head, ...tail] = rest;
   if ((value.kind
@@ -210,8 +210,8 @@ function removeInValue(
       };
     }
     /**
-     * Element after removing the deeper target; the bounds check above proves
-     * the index is in range, so the slot is a present value node.
+     Element after removing the deeper target; the bounds check above proves
+     the index is in range, so the slot is a present value node.
      */
     const newEl = removeInValue({
       value: nonNullishOrThrow(value.elements[head],),
@@ -239,9 +239,9 @@ function removeInValue(
 }
 
 /**
- * Remove (or descend to remove within) a matching inline-table entry.
- *
- * @returns Fresh inline-table node, or {@link NOT_REMOVED}.
+ Remove (or descend to remove within) a matching inline-table entry.
+ 
+ @returns Fresh inline-table node, or {@link NOT_REMOVED}.
  */
 function removeFromInlineTable(
   {
@@ -275,7 +275,7 @@ function removeFromInlineTable(
       };
     }
     /**
-     * Entry value after removing the deeper target.
+     Entry value after removing the deeper target.
      */
     const nested = removeInValue({
       value: entry.value,

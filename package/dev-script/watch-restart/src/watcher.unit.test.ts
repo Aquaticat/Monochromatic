@@ -23,51 +23,51 @@ import type { WatchEvent, } from './types.ts';
 import { Watcher, } from './watcher.ts';
 
 /**
- * sha256 hex of the literal bytes "hello"; used to assert pre-populate
- * writes the right digest, not just "anything".
+ sha256 hex of the literal bytes "hello"; used to assert pre-populate
+ writes the right digest, not just "anything".
  */
 const SHA256_HEX_OF_HELLO =
   '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824';
 
 /**
- * Buffer that exceeds chokidar's `awaitWriteFinish.stabilityThreshold` plus
- * a generous safety margin. 200ms is enough on the slowest CI we run.
+ Buffer that exceeds chokidar's `awaitWriteFinish.stabilityThreshold` plus
+ a generous safety margin. 200ms is enough on the slowest CI we run.
  */
 const POST_EVENT_WAIT_MS = 200;
 
 /**
- * Buffer for "no event should fire" assertions; longer than POST_EVENT_WAIT_MS
- * so the negative claim is well past chokidar's stability period.
+ Buffer for "no event should fire" assertions; longer than POST_EVENT_WAIT_MS
+ so the negative claim is well past chokidar's stability period.
  */
 const NO_EVENT_WAIT_MS = 400;
 
 /**
- * Fresh temp dir per test so chokidar's per-directory state never bleeds.
- *
- * @returns absolute path of a freshly-created temp directory
- *
- * @example
- * ```ts
- * const dir = await makeTmpDir();
- * ```
+ Fresh temp dir per test so chokidar's per-directory state never bleeds.
+ 
+ @returns absolute path of a freshly-created temp directory
+ 
+ @example
+ ```ts
+ const dir = await makeTmpDir();
+ ```
  */
 async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'watch-restart-watcher-',),);
 }
 
 /**
- * Convenience builder for the Watcher under test. Wires a shared event
- * accumulator and a fresh {@link HashCache}, returns the watcher together
- * with the captured events so the test body can introspect both.
- *
- * @param paths - watch roots passed verbatim to {@link Watcher}
- *
- * @returns watcher, hashCache, and the live event accumulator
- *
- * @example
- * ```ts
- * const { watcher, hashCache, events, } = await buildWatcher([dir,],);
- * ```
+ Convenience builder for the Watcher under test. Wires a shared event
+ accumulator and a fresh {@link HashCache}, returns the watcher together
+ with the captured events so the test body can introspect both.
+ 
+ @param paths - watch roots passed verbatim to {@link Watcher}
+ 
+ @returns watcher, hashCache, and the live event accumulator
+ 
+ @example
+ ```ts
+ const { watcher, hashCache, events, } = await buildWatcher([dir,],);
+ ```
  */
 async function buildWatcher(
   paths: readonly string[],

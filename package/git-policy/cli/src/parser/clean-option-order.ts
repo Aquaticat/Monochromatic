@@ -9,21 +9,21 @@ import {
 //region Ordered clean option state
 
 /**
- * Ordered state of clean mode flags that affect filesystem deletion.
+ Ordered state of clean mode flags that affect filesystem deletion.
  */
 export type CleanOptionState = {
   /**
-   * Final dry-run state after scanned options so far.
+   Final dry-run state after scanned options so far.
    */
   readonly dryRunActive: boolean;
   /**
-   * Final interactive state after scanned options so far.
+   Final interactive state after scanned options so far.
    */
   readonly interactiveActive: boolean;
 };
 
 /**
- * Default clean mode before explicit dry-run or interactive options appear.
+ Default clean mode before explicit dry-run or interactive options appear.
  */
 const INITIAL_CLEAN_OPTION_STATE = {
   dryRunActive: false,
@@ -35,33 +35,33 @@ const INITIAL_CLEAN_OPTION_STATE = {
 //region Long option matching
 
 /**
- * Options for matching long option aliases.
+ Options for matching long option aliases.
  */
 type LongOptionAliasMatchOptions = {
   /**
-   * Raw argv token to test.
+   Raw argv token to test.
    */
   readonly arg: string;
   /**
-   * Accepted exact long-option spellings and abbreviations.
+   Accepted exact long-option spellings and abbreviations.
    */
   readonly aliases: ReadonlySet<string>;
 };
 
 /**
- * Checks whether an argv token exactly matches one accepted long-option alias.
- *
- * @param arg - Raw argv token to test.
- *
- * @param aliases - Accepted exact long-option spellings and abbreviations.
- *
- * @returns `true` when token is one of the aliases.
- *
- * @example
- * ```ts
- * isLongOptionAlias({ arg: '--dry-run', aliases: DRY_RUN_ALIAS_SET });
- * // => true
- * ```
+ Checks whether an argv token exactly matches one accepted long-option alias.
+ 
+ @param arg - Raw argv token to test.
+ 
+ @param aliases - Accepted exact long-option spellings and abbreviations.
+ 
+ @returns `true` when token is one of the aliases.
+ 
+ @example
+ ```ts
+ isLongOptionAlias({ arg: '--dry-run', aliases: DRY_RUN_ALIAS_SET });
+ // => true
+ ```
  */
 function isLongOptionAlias({
   arg,
@@ -71,22 +71,22 @@ function isLongOptionAlias({
 }
 
 /**
- * Checks whether an argv token uses the `--option=value` form for an alias.
- *
- * @param arg - Raw argv token to test.
- *
- * @param aliases - Accepted exact long-option spellings and abbreviations.
- *
- * @returns `true` when token starts with an accepted alias plus `=`.
- *
- * @example
- * ```ts
- * hasInlineLongOptionValue({
- *   arg: '--exclude=dist',
- *   aliases: EXCLUDE_ALIAS_SET,
- * });
- * // => true
- * ```
+ Checks whether an argv token uses the `--option=value` form for an alias.
+ 
+ @param arg - Raw argv token to test.
+ 
+ @param aliases - Accepted exact long-option spellings and abbreviations.
+ 
+ @returns `true` when token starts with an accepted alias plus `=`.
+ 
+ @example
+ ```ts
+ hasInlineLongOptionValue({
+   arg: '--exclude=dist',
+   aliases: EXCLUDE_ALIAS_SET,
+ });
+ // => true
+ ```
  */
 function hasInlineLongOptionValue({
   arg,
@@ -102,37 +102,37 @@ function hasInlineLongOptionValue({
 //region Long clean mode application
 
 /**
- * Options for applying an ordered long clean flag.
+ Options for applying an ordered long clean flag.
  */
 type ApplyLongCleanOptionOptions = {
   /**
-   * Raw argv token to apply.
+   Raw argv token to apply.
    */
   readonly arg: string;
   /**
-   * State before this token is applied.
+   State before this token is applied.
    */
   readonly state: CleanOptionState;
 };
 
 /**
- * Applies one exact long clean mode option to the accumulated ordered state.
- * Tests each alias set with {@link isLongOptionAlias}.
- *
- * @param arg - Raw argv token to apply.
- *
- * @param state - State before this token is applied.
- *
- * @returns Updated state after applying matching dry-run or interactive option.
- *
- * @example
- * ```ts
- * applyLongCleanOption({
- *   arg: '--no-dry-run',
- *   state: INITIAL_CLEAN_OPTION_STATE,
- * });
- * // => { dryRunActive: false, interactiveActive: false }
- * ```
+ Applies one exact long clean mode option to the accumulated ordered state.
+ Tests each alias set with {@link isLongOptionAlias}.
+ 
+ @param arg - Raw argv token to apply.
+ 
+ @param state - State before this token is applied.
+ 
+ @returns Updated state after applying matching dry-run or interactive option.
+ 
+ @example
+ ```ts
+ applyLongCleanOption({
+   arg: '--no-dry-run',
+   state: INITIAL_CLEAN_OPTION_STATE,
+ });
+ // => { dryRunActive: false, interactiveActive: false }
+ ```
  */
 function applyLongCleanOption({
   arg,
@@ -186,59 +186,59 @@ function applyLongCleanOption({
 //region Short clean option cluster scanning
 
 /**
- * Options for scanning a short-option cluster.
+ Options for scanning a short-option cluster.
  */
 type ScanShortCleanOptionClusterOptions = {
   /**
-   * Short-option characters without the leading `-`.
+   Short-option characters without the leading `-`.
    */
   readonly cluster: string;
   /**
-   * Character index where scanning resumes.
+   Character index where scanning resumes.
    */
   readonly index: number;
   /**
-   * State before this cluster segment is applied.
+   State before this cluster segment is applied.
    */
   readonly state: CleanOptionState;
 };
 
 /**
- * Result of scanning a short-option cluster.
+ Result of scanning a short-option cluster.
  */
 type ScanShortCleanOptionClusterResult = {
   /**
-   * State after applying dry-run and interactive flags in the cluster.
+   State after applying dry-run and interactive flags in the cluster.
    */
   readonly state: CleanOptionState;
   /**
-   * True when `-e` has no inline value and consumes the next argv token.
+   True when `-e` has no inline value and consumes the next argv token.
    */
   readonly consumesNextToken: boolean;
 };
 
 /**
- * Scans short clean option clusters left-to-right, stopping when `-e` begins an
- * exclude pattern value because remaining characters or the next argv token are
- * pattern text, not flags.
- *
- * @param cluster - Short-option characters without the leading `-`.
- *
- * @param index - Character index where scanning resumes.
- *
- * @param state - State before this cluster segment is applied.
- *
- * @returns Updated state plus whether the cluster consumes the next argv token.
- *
- * @example
- * ```ts
- * scanShortCleanOptionCluster({
- *   cluster: 'ni',
- *   index: 0,
- *   state: INITIAL_CLEAN_OPTION_STATE,
- * });
- * // => { state: { dryRunActive: true, interactiveActive: true }, consumesNextToken: false }
- * ```
+ Scans short clean option clusters left-to-right, stopping when `-e` begins an
+ exclude pattern value because remaining characters or the next argv token are
+ pattern text, not flags.
+ 
+ @param cluster - Short-option characters without the leading `-`.
+ 
+ @param index - Character index where scanning resumes.
+ 
+ @param state - State before this cluster segment is applied.
+ 
+ @returns Updated state plus whether the cluster consumes the next argv token.
+ 
+ @example
+ ```ts
+ scanShortCleanOptionCluster({
+   cluster: 'ni',
+   index: 0,
+   state: INITIAL_CLEAN_OPTION_STATE,
+ });
+ // => { state: { dryRunActive: true, interactiveActive: true }, consumesNextToken: false }
+ ```
  */
 function scanShortCleanOptionCluster({
   cluster,
@@ -246,7 +246,7 @@ function scanShortCleanOptionCluster({
   state,
 }: ScanShortCleanOptionClusterOptions,): ScanShortCleanOptionClusterResult {
   /**
-   * Short option character at scan position.
+   Short option character at scan position.
    */
   const option = cluster[index];
 
@@ -299,48 +299,48 @@ function scanShortCleanOptionCluster({
 //region Ordered clean option scan
 
 /**
- * Options for scanning clean options in argv order.
+ Options for scanning clean options in argv order.
  */
 type ScanCleanOptionTokensOptions = {
   /**
-   * Option-region argv tokens, excluding pathspecs after `--`.
+   Option-region argv tokens, excluding pathspecs after `--`.
    */
   readonly region: readonly string[];
   /**
-   * Token index where scanning resumes.
+   Token index where scanning resumes.
    */
   readonly index: number;
   /**
-   * State accumulated before this token.
+   State accumulated before this token.
    */
   readonly state: CleanOptionState;
 };
 
 /**
- * Scans clean option tokens in argv order and applies Git's last-option-wins
- * semantics for dry-run/no-dry-run and interactive/no-interactive flags.
- * Skips `--exclude` values detected by {@link hasInlineLongOptionValue} and
- * {@link isLongOptionAlias}, applies long options through
- * {@link applyLongCleanOption}, and applies short-option clusters through
- * {@link scanShortCleanOptionCluster}.
- *
- * @param region - Option-region argv tokens, excluding pathspecs after `--`.
- *
- * @param index - Token index where scanning resumes.
- *
- * @param state - State accumulated before this token.
- *
- * @returns Final clean mode state after all relevant options are applied.
- *
- * @example
- * ```ts
- * scanCleanOptionTokens({
- *   region: ['--dry-run', '--no-dry-run'],
- *   index: 0,
- *   state: INITIAL_CLEAN_OPTION_STATE,
- * });
- * // => { dryRunActive: false, interactiveActive: false }
- * ```
+ Scans clean option tokens in argv order and applies Git's last-option-wins
+ semantics for dry-run/no-dry-run and interactive/no-interactive flags.
+ Skips `--exclude` values detected by {@link hasInlineLongOptionValue} and
+ {@link isLongOptionAlias}, applies long options through
+ {@link applyLongCleanOption}, and applies short-option clusters through
+ {@link scanShortCleanOptionCluster}.
+ 
+ @param region - Option-region argv tokens, excluding pathspecs after `--`.
+ 
+ @param index - Token index where scanning resumes.
+ 
+ @param state - State accumulated before this token.
+ 
+ @returns Final clean mode state after all relevant options are applied.
+ 
+ @example
+ ```ts
+ scanCleanOptionTokens({
+   region: ['--dry-run', '--no-dry-run'],
+   index: 0,
+   state: INITIAL_CLEAN_OPTION_STATE,
+ });
+ // => { dryRunActive: false, interactiveActive: false }
+ ```
  */
 function scanCleanOptionTokens({
   region,
@@ -348,7 +348,7 @@ function scanCleanOptionTokens({
   state,
 }: ScanCleanOptionTokensOptions,): CleanOptionState {
   /**
-   * Current argv token at scan position.
+   Current argv token at scan position.
    */
   const arg = region[index];
 
@@ -391,7 +391,7 @@ function scanCleanOptionTokens({
   if ((arg.startsWith('-',))
     && (arg !== '-')) {
     /**
-     * Ordered state after scanning this short-option cluster.
+     Ordered state after scanning this short-option cluster.
      */
     const clusterResult = scanShortCleanOptionCluster({
       cluster: arg.slice(1,),
@@ -414,18 +414,18 @@ function scanCleanOptionTokens({
 }
 
 /**
- * Scans clean options in argv order and returns final dry-run/interactive
- * state, via {@link scanCleanOptionTokens}.
- *
- * @param region - Option-region argv tokens, excluding pathspecs after `--`.
- *
- * @returns Final clean mode state after Git-style last-option-wins ordering.
- *
- * @example
- * ```ts
- * scanCleanOptionOrder(['--dry-run', '--no-dry-run']);
- * // => { dryRunActive: false, interactiveActive: false }
- * ```
+ Scans clean options in argv order and returns final dry-run/interactive
+ state, via {@link scanCleanOptionTokens}.
+ 
+ @param region - Option-region argv tokens, excluding pathspecs after `--`.
+ 
+ @returns Final clean mode state after Git-style last-option-wins ordering.
+ 
+ @example
+ ```ts
+ scanCleanOptionOrder(['--dry-run', '--no-dry-run']);
+ // => { dryRunActive: false, interactiveActive: false }
+ ```
  */
 export function scanCleanOptionOrder(region: readonly string[],): CleanOptionState {
   return scanCleanOptionTokens({

@@ -1,13 +1,13 @@
 /**
- * Tests for the OKLCH → sRGB conversion utilities.
- *
- * Covers `oklchToSrgb` (direct conversion, gamut clamping) and
- * `oklchLerpToSrgb` (linear interpolation in OKLCH then conversion).
- * Tolerance is loose because the reference values come from
- * out-of-process tools; the goal is to catch sign/scale regressions,
- * not bit-exactness.
- *
- * @module
+ Tests for the OKLCH → sRGB conversion utilities.
+ 
+ Covers `oklchToSrgb` (direct conversion, gamut clamping) and
+ `oklchLerpToSrgb` (linear interpolation in OKLCH then conversion).
+ Tolerance is loose because the reference values come from
+ out-of-process tools; the goal is to catch sign/scale regressions,
+ not bit-exactness.
+ 
+ @module
  */
 
 import {
@@ -25,10 +25,10 @@ import {
 const RGB_TOLERANCE = 8;
 
 /**
- * Asserts `actual` is within {@link RGB_TOLERANCE} of `expected` per channel.
- *
- * @param actual - Conversion output.
- * @param expected - Reference triple.
+ Asserts `actual` is within {@link RGB_TOLERANCE} of `expected` per channel.
+ 
+ @param actual - Conversion output.
+ @param expected - Reference triple.
  */
 function expectCloseRgb(
   {

@@ -7,30 +7,30 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { simpleBanRule, } from './_simple-ban-rule.ts';
 
 /**
- * Requires `catch` clauses to bind caught values. Built via
- * {@link simpleBanRule}.
- *
- * `catch {}` hides the thrown value at the boundary where the failure is
- * observed. Bind the value, usually as `error`, so code can log it, rethrow it,
- * or make the intentional ignore visible in the block.
- *
- * @example
- * ```ts
- * // Bad
- * try {
- *   await run();
- * } catch {
- *   recover();
- * }
- *
- * // Good
- * try {
- *   await run();
- * } catch (caughtError) {
- *   logger.error(caughtError);
- *   recover();
- * }
- * ```
+ Requires `catch` clauses to bind caught values. Built via
+ {@link simpleBanRule}.
+ 
+ `catch {}` hides the thrown value at the boundary where the failure is
+ observed. Bind the value, usually as `error`, so code can log it, rethrow it,
+ or make the intentional ignore visible in the block.
+ 
+ @example
+ ```ts
+ // Bad
+ try {
+   await run();
+ } catch {
+   recover();
+ }
+ 
+ // Good
+ try {
+   await run();
+ } catch (caughtError) {
+   logger.error(caughtError);
+   recover();
+ }
+ ```
  */
 export const catchBinding: CreateOnceRule = simpleBanRule({
   type: 'problem',

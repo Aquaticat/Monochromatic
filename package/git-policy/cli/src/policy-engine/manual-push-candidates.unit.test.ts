@@ -1,7 +1,7 @@
 /**
- * Manual-push candidate scale regression tests.
- *
- * @module
+ Manual-push candidate scale regression tests.
+ 
+ @module
  */
 import {
   chmod,
@@ -22,50 +22,50 @@ import { ABSENT_GIT_VALUE, } from '../api/context-types.ts';
 import { createManualPushCandidates, } from './manual-push-candidates.ts';
 
 /**
- * Real Git executable used behind instrumented wrapper.
+ Real Git executable used behind instrumented wrapper.
  */
 const REAL_GIT = '/usr/bin/git';
 /**
- * Executable mode for instrumented wrapper.
+ Executable mode for instrumented wrapper.
  */
 const EXECUTABLE_MODE = 0o755;
 /**
- * Number of files repeated across each historical tree.
+ Number of files repeated across each historical tree.
  */
 const FILE_COUNT = 32;
 /**
- * Number of newly reachable commits in fixture.
+ Number of newly reachable commits in fixture.
  */
 const COMMIT_COUNT = 4;
 
 /**
- * Disposable repository and Git invocation log.
+ Disposable repository and Git invocation log.
  */
 type CandidateFixture = Readonly<{
   /**
-   * Instrumented Git executable.
+   Instrumented Git executable.
    */
   gitPath: string;
   /**
-   * JSONL invocation log.
+   JSONL invocation log.
    */
   logPath: string;
   /**
-   * Git repository root.
+   Git repository root.
    */
   repository: string;
   /**
-   * Removes complete fixture.
+   Removes complete fixture.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
 
 /**
- * Runs real Git in fixture repository.
- *
- * @param repository - disposable repository root
- *
- * @param args - exact Git arguments
+ Runs real Git in fixture repository.
+ 
+ @param repository - disposable repository root
+ 
+ @param args - exact Git arguments
  */
 async function runGit({
   repository,
@@ -82,21 +82,21 @@ async function runGit({
 }
 
 /**
- * Creates multi-commit repository and instrumented Git passthrough.
- *
- * @returns initialized scale fixture
+ Creates multi-commit repository and instrumented Git passthrough.
+ 
+ @returns initialized scale fixture
  */
 async function createCandidateFixture(): Promise<CandidateFixture> {
   /**
-   * Disposable root and repository.
+   Disposable root and repository.
    */
   const repository = await mkdtemp(join(tmpdir(), 'cli-git-manual-candidates-',),);
   /**
-   * Wrapper invocation log outside Git history.
+   Wrapper invocation log outside Git history.
    */
   const logPath = join(repository, 'git-invocations.jsonl',);
   /**
-   * Instrumented executable outside Git history.
+   Instrumented executable outside Git history.
    */
   const gitPath = join(repository, 'instrumented-git.mjs',);
   await writeFile(
@@ -182,7 +182,7 @@ await describe({
       fn: async function testBatchedBlobLoading() {
         await using fixture = await createCandidateFixture();
         /**
-         * Final local commit pushed as new remote ref.
+         Final local commit pushed as new remote ref.
          */
         const localOid = (await nanoSpawn(
           REAL_GIT,
@@ -190,7 +190,7 @@ await describe({
           { cwd: fixture.repository, },
         )).stdout;
         /**
-         * Per-commit delta candidates across every newly reachable commit.
+         Per-commit delta candidates across every newly reachable commit.
          */
         const candidates = await createManualPushCandidates({
           gitPath: fixture.gitPath,
@@ -205,7 +205,7 @@ await describe({
         // Root commit introduces every file; each later commit only rewrites file-0.
         expect(candidates,).toHaveLength(FILE_COUNT + (COMMIT_COUNT - 1),);
         /**
-         * Every committed revision of the repeatedly rewritten file.
+         Every committed revision of the repeatedly rewritten file.
          */
         const rewrittenRevisions = candidates.filter(function isRewritten(candidate,) {
           return candidate.path === 'file-0.txt';
@@ -215,7 +215,7 @@ await describe({
           return candidate.bytes();
         },),);
         /**
-         * Exact argument arrays observed by instrumented Git executable.
+         Exact argument arrays observed by instrumented Git executable.
          */
         const invocations = (await readFile(fixture.logPath, 'utf8',))
           .split('\n',)
@@ -226,7 +226,7 @@ await describe({
             return JSON.parse(line,) as readonly string[];
           },);
         /**
-         * Blob-content process calls after batched implementation.
+         Blob-content process calls after batched implementation.
          */
         const batchCalls = invocations.filter(function isBatchCall(args,) {
           return (args[0] === 'cat-file') && (args[1] === '--batch');
@@ -243,7 +243,7 @@ await describe({
       fn: async function testRangeDelta() {
         await using fixture = await createCandidateFixture();
         /**
-         * Final local commit advancing the existing remote ref.
+         Final local commit advancing the existing remote ref.
          */
         const localOid = (await nanoSpawn(
           REAL_GIT,
@@ -251,7 +251,7 @@ await describe({
           { cwd: fixture.repository, },
         )).stdout;
         /**
-         * Authoritative destination one commit behind local head.
+         Authoritative destination one commit behind local head.
          */
         const remoteOid = (await nanoSpawn(
           REAL_GIT,
@@ -259,7 +259,7 @@ await describe({
           { cwd: fixture.repository, },
         )).stdout;
         /**
-         * Delta candidates for the single newly reachable commit.
+         Delta candidates for the single newly reachable commit.
          */
         const candidates = await createManualPushCandidates({
           gitPath: fixture.gitPath,

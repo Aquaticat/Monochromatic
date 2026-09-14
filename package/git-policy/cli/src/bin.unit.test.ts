@@ -23,7 +23,7 @@ import nanoSpawn, {
   SubprocessError,
 } from 'nano-spawn';
 
-import { resolveGit, } from './resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /** Absolute path to real git binary used for fixture setup and assertions. */
 const realGitPath = await resolveGit();
@@ -66,15 +66,15 @@ type TempDirectory = {
 };
 
 /**
- * Creates disposable temporary directory for git repositories.
- *
- * @returns Temporary directory that removes itself when disposed.
- *
- * @example
- * ```ts
- * await using tempDirectory = await createTempDirectory();
- * console.log(tempDirectory.path);
- * ```
+ Creates disposable temporary directory for git repositories.
+ 
+ @returns Temporary directory that removes itself when disposed.
+ 
+ @example
+ ```ts
+ await using tempDirectory = await createTempDirectory();
+ console.log(tempDirectory.path);
+ ```
  */
 async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
@@ -98,16 +98,16 @@ async function createTempDirectory(): Promise<TempDirectory> {
 }
 
 /**
- * Runs real git binary, bypassing wrapper under test.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Captured subprocess result.
- *
- * @example
- * ```ts
- * await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs real git binary, bypassing wrapper under test.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Captured subprocess result.
+ 
+ @example
+ ```ts
+ await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 async function runRealGit(options: RunGitOptions,): Promise<Result> {
   return nanoSpawn(
@@ -118,16 +118,16 @@ async function runRealGit(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
- * Runs cli-git entry point through Node.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Captured subprocess result.
- *
- * @example
- * ```ts
- * await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
- * ```
+ Runs cli-git entry point through Node.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Captured subprocess result.
+ 
+ @example
+ ```ts
+ await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
+ ```
  */
 async function runWrapper(options: RunGitOptions,): Promise<Result> {
   return nanoSpawn(
@@ -144,25 +144,25 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
- * Sentinel returned by {@link catchWrapperError} when the wrapper unexpectedly
- * succeeded instead of failing. A real `Symbol` rather than `undefined` so the
- * "no error captured" case is a distinct value {@link requireSubprocessError}
- * rejects.
+ Sentinel returned by {@link catchWrapperError} when the wrapper unexpectedly
+ succeeded instead of failing. A real `Symbol` rather than `undefined` so the
+ "no error captured" case is a distinct value {@link requireSubprocessError}
+ rejects.
  */
 const WRAPPER_SUCCEEDED = Symbol('git wrapper command unexpectedly succeeded',);
 
 /**
- * Captures cli-git subprocess failure.
- *
- * @param options - Working directory and git argv.
- *
- * @returns Subprocess failure, or {@link WRAPPER_SUCCEEDED} when invocation succeeds.
- *
- * @example
- * ```ts
- * const error = await catchWrapperError({ cwd: '/repo', args: ['status'] });
- * expect(error).toBeInstanceOf(SubprocessError);
- * ```
+ Captures cli-git subprocess failure.
+ 
+ @param options - Working directory and git argv.
+ 
+ @returns Subprocess failure, or {@link WRAPPER_SUCCEEDED} when invocation succeeds.
+ 
+ @example
+ ```ts
+ const error = await catchWrapperError({ cwd: '/repo', args: ['status'] });
+ expect(error).toBeInstanceOf(SubprocessError);
+ ```
  */
 async function catchWrapperError(
   options: RunGitOptions,
@@ -179,19 +179,19 @@ async function catchWrapperError(
 }
 
 /**
- * Narrows captured subprocess error after expectation assertion.
- *
- * @param error - Subprocess error, or {@link WRAPPER_SUCCEEDED} from catch helper.
- *
- * @returns Subprocess error when present.
- *
- * @throws When subprocess unexpectedly succeeded.
- *
- * @example
- * ```ts
- * const error = requireSubprocessError(await catchWrapperError(options));
- * console.log(error.stderr);
- * ```
+ Narrows captured subprocess error after expectation assertion.
+ 
+ @param error - Subprocess error, or {@link WRAPPER_SUCCEEDED} from catch helper.
+ 
+ @returns Subprocess error when present.
+ 
+ @throws When subprocess unexpectedly succeeded.
+ 
+ @example
+ ```ts
+ const error = requireSubprocessError(await catchWrapperError(options));
+ console.log(error.stderr);
+ ```
  */
 function requireSubprocessError(error: SubprocessError | typeof WRAPPER_SUCCEEDED,): SubprocessError {
   expect(error,).toBeInstanceOf(SubprocessError,);
@@ -203,16 +203,16 @@ function requireSubprocessError(error: SubprocessError | typeof WRAPPER_SUCCEEDE
 }
 
 /**
- * Initializes disposable git repository and configures commit identity.
- *
- * @param options - Repository path to create and initialize.
- *
- * @returns Nothing after repository is initialized.
- *
- * @example
- * ```ts
- * await initializeRepository({ repoPath: '/tmp/repo' });
- * ```
+ Initializes disposable git repository and configures commit identity.
+ 
+ @param options - Repository path to create and initialize.
+ 
+ @returns Nothing after repository is initialized.
+ 
+ @example
+ ```ts
+ await initializeRepository({ repoPath: '/tmp/repo' });
+ ```
  */
 async function initializeRepository({
   repoPath,
@@ -250,16 +250,16 @@ async function initializeRepository({
 }
 
 /**
- * Writes file and stages it with real git.
- *
- * @param options - Repository path, relative file name, and file content.
- *
- * @returns Nothing after file is staged.
- *
- * @example
- * ```ts
- * await writeAndStageFile({ repoPath: '/repo', fileName: 'file.txt', content: 'x\n' });
- * ```
+ Writes file and stages it with real git.
+ 
+ @param options - Repository path, relative file name, and file content.
+ 
+ @returns Nothing after file is staged.
+ 
+ @example
+ ```ts
+ await writeAndStageFile({ repoPath: '/repo', fileName: 'file.txt', content: 'x\n' });
+ ```
  */
 async function writeAndStageFile({
   repoPath,
@@ -290,16 +290,16 @@ async function writeAndStageFile({
 }
 
 /**
- * Creates initial commit in repository.
- *
- * @param options - Repository path to seed.
- *
- * @returns Nothing after initial commit exists.
- *
- * @example
- * ```ts
- * await createInitialCommit({ repoPath: '/repo' });
- * ```
+ Creates initial commit in repository.
+ 
+ @param options - Repository path to seed.
+ 
+ @returns Nothing after initial commit exists.
+ 
+ @example
+ ```ts
+ await createInitialCommit({ repoPath: '/repo' });
+ ```
  */
 async function createInitialCommit({
   repoPath,
@@ -324,16 +324,16 @@ async function createInitialCommit({
 }
 
 /**
- * Reads latest commit subject from repository.
- *
- * @param options - Repository path to inspect.
- *
- * @returns Latest commit subject.
- *
- * @example
- * ```ts
- * const subject = await readLatestSubject({ repoPath: '/repo' });
- * ```
+ Reads latest commit subject from repository.
+ 
+ @param options - Repository path to inspect.
+ 
+ @returns Latest commit subject.
+ 
+ @example
+ ```ts
+ const subject = await readLatestSubject({ repoPath: '/repo' });
+ ```
  */
 async function readLatestSubject({
   repoPath,
@@ -471,16 +471,91 @@ if (args.includes('rev-parse')) process.exitCode = 1;
           env,
         },);
         expect(await readFile(capturePath, 'utf8',),).toBe(
-          '["rev-parse","--is-inside-work-tree"]\n'
-          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
+          '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction"]\n'
+          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["push","--atomic","origin","main"]\n'
-          + '["rev-parse","--is-inside-work-tree"]\n'
-          + '["-c","advice.statusHints=false","rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
+          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["-c","advice.statusHints=false","status","--porcelain=v1"]\n'
-          + '["rev-parse","--is-inside-work-tree"]\n'
-          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir"]\n'
+          + '["rev-parse","--path-format=absolute","--is-inside-work-tree","--git-path","cli-git-transaction"]\n'
+          + '["rev-parse","--path-format=absolute","--is-bare-repository","--git-dir","--git-common-dir","--show-cdup"]\n'
           + '["commit","-o","--dry-run","-m","message","file.txt"]\n',
         );
+      },
+    },),
+    it({
+      name: 'preserves global version short-circuit before management namespace',
+      fn: async function testGlobalVersionBeforeManagement(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Real-Git version output through wrapper. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['--version', 'cli-git',],
+        },);
+        expect(result.stdout,).toContain('git version');
+        expect(result.stderr,).toBe('',);
+      },
+    },),
+    it({
+      name: 'does not treat global option values as short-circuit flags',
+      fn: async function testGlobalValueBeforeManagement(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Directory named like short-circuit flag but consumed by `-C`. */
+        const optionValueDirectory = join(tempDirectory.path, '--version',);
+        /** Empty path proving management help does not forward to real Git. */
+        const emptyPath = join(tempDirectory.path, 'empty-path',);
+        await Promise.all([
+          mkdir(optionValueDirectory,),
+          mkdir(emptyPath,),
+        ],);
+        /** Management help after value-taking global option. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['-C', '--version', 'cli-git', '--help',],
+          env: {
+            ...process.env,
+            PATH: emptyPath,
+          },
+        },);
+        expect(result.stdout,).toContain('Usage: git cli-git');
+        expect(result.stderr,).toBe('',);
+      },
+    },),
+    it({
+      name: 'prints namespace and trust help without loading repository config',
+      fn: async function testManagementHelp(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(tempDirectory.path, 'cli-git.config.ts',),
+          'not valid TypeScript config',
+        );
+        /** Successful namespace help result. */
+        const namespaceHelp = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['cli-git', '--help',],
+        },);
+        expect(namespaceHelp.stdout,).toContain('Usage: git cli-git');
+        expect(namespaceHelp.stdout,).toContain('git cli-git trust --help');
+        expect(namespaceHelp.stderr,).toBe('',);
+        /** Successful trust-specific help result. */
+        const trustHelp = await runWrapper({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'trust', '--help',],
+        },);
+        expect(trustHelp.stdout,).toContain('terminal stdin and stderr');
+        expect(trustHelp.stdout,).toContain('--yes');
+        expect(trustHelp.stdout,).toContain('prints every disclosure');
+        expect(trustHelp.stdout,).toContain('recursive descendant authority');
+        expect(trustHelp.stdout,).toContain('full account permissions');
+        expect(trustHelp.stderr,).toBe('',);
+        /** Unknown trust option remains a usage failure. */
+        const unknownOption = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: ['cli-git', 'trust', '--unknown',],
+        },),);
+        expect(unknownOption.exitCode,).toBe(2,);
+        expect(unknownOption.stdout,).toBe('',);
+        expect(unknownOption.stderr,).toContain('Usage: git cli-git trust');
       },
     },),
     it({

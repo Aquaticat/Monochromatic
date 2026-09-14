@@ -1,5 +1,5 @@
 /**
- * Shadow DOM styles for the `<task-detail>` web component.
+ Shadow DOM styles for the `<task-detail>` web component.
  */
 import {
   cssCalc,
@@ -20,50 +20,50 @@ import {
 import { TASK_DETAIL_INTERACTIVE_STYLES, } from './task-detail-styles-interactive.ts';
 
 /**
- * Focus outline offset in rem (-1/8).
+ Focus outline offset in rem (-1/8).
  */
 const FOCUS_OFFSET = -(1 / 2
   / 2
   / 2);
 
 /**
- * SVG stroke width for close icon.
+ SVG stroke width for close icon.
  */
 const STROKE_WIDTH = 4;
 
 /**
- * Heading and title-input font size in rem.
+ Heading and title-input font size in rem.
  */
 const HEADING_FONT_SIZE = 1 + (1 / 2);
 
 /**
- * Normal font weight for headings and inputs.
+ Normal font weight for headings and inputs.
  */
 const FONT_WEIGHT_NORMAL = 400;
 
 /**
- * Full percentage for input inline-size.
+ Full percentage for input inline-size.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Padding for title-input and description blocks in rem (1/4).
+ Padding for title-input and description blocks in rem (1/4).
  */
 const SMALL_PADDING = 1 / 2
   / 2;
 
 /**
- * Padding for description input in rem (1/2).
+ Padding for description input in rem (1/2).
  */
 const DESC_PADDING = 1 / 2;
 
 /**
- * Minimum block-size for description textarea in rem.
+ Minimum block-size for description textarea in rem.
  */
 const TEXTAREA_MIN_HEIGHT = 4.5;
 
 /**
- * Compiled CSS string for `<task-detail>` Shadow DOM.
+ Compiled CSS string for `<task-detail>` Shadow DOM.
  */
 export const TASK_DETAIL_STYLES: string = [
   css({

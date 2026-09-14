@@ -1,7 +1,7 @@
 /**
- * Geometry conversion: selrect/points, transform matrix, and parent index.
- *
- * @module figma-to-penpot-geometry
+ Geometry conversion: selrect/points, transform matrix, and parent index.
+ 
+ @module figma-to-penpot-geometry
  */
 
 import { IDENTITY_TRANSFORM, } from './constants.ts';
@@ -18,7 +18,7 @@ import type {
 } from './types.ts';
 
 /**
- * Parsed Figma parent reference: the parent GUID plus its sibling position.
+ Parsed Figma parent reference: the parent GUID plus its sibling position.
  */
 export type ParentRef = {
   parentGuid: {
@@ -29,22 +29,22 @@ export type ParentRef = {
 };
 
 /**
- * Compute a Penpot selrect and its 4 corner points from a bounding rect.
- *
- * @param x - left edge
- *
- * @param y - top edge
- *
- * @param width - rect width
- *
- * @param height - rect height
- *
- * @returns {@link PenpotSelRect} and clockwise corner {@link PenpotPoints}
- *
- * @example
- * ```ts
- * const { selrect, points, } = computeSelRect({ x: 0, y: 0, width: 10, height: 5, });
- * ```
+ Compute a Penpot selrect and its 4 corner points from a bounding rect.
+ 
+ @param x - left edge
+ 
+ @param y - top edge
+ 
+ @param width - rect width
+ 
+ @param height - rect height
+ 
+ @returns {@link PenpotSelRect} and clockwise corner {@link PenpotPoints}
+ 
+ @example
+ ```ts
+ const { selrect, points, } = computeSelRect({ x: 0, y: 0, width: 10, height: 5, });
+ ```
  */
 export function computeSelRect(
   {
@@ -63,11 +63,11 @@ export function computeSelRect(
   points: PenpotPoints;
 } {
   /**
-   * Right edge of the bounding rect, reused for selrect and corner points.
+   Right edge of the bounding rect, reused for selrect and corner points.
    */
   const x2 = x + width;
   /**
-   * Bottom edge of the bounding rect, reused for selrect and corner points.
+   Bottom edge of the bounding rect, reused for selrect and corner points.
    */
   const y2 = y + height;
   return {
@@ -103,19 +103,19 @@ export function computeSelRect(
 }
 
 /**
- * Convert a Figma matrix struct to a Penpot transform.
- *
- * Figma `{ m00, m01, m02, m10, m11, m12 }` maps to the Penpot/SVG
- * `{ a, c, e / b, d, f }` layout; missing matrices become the identity.
- *
- * @param transform - Figma matrix record, or any non-record (identity)
- *
- * @returns {@link PenpotTransform} matrix
- *
- * @example
- * ```ts
- * const t = figmaTransformToPenpot(nc.transform);
- * ```
+ Convert a Figma matrix struct to a Penpot transform.
+ 
+ Figma `{ m00, m01, m02, m10, m11, m12 }` maps to the Penpot/SVG
+ `{ a, c, e / b, d, f }` layout; missing matrices become the identity.
+ 
+ @param transform - Figma matrix record, or any non-record (identity)
+ 
+ @returns {@link PenpotTransform} matrix
+ 
+ @example
+ ```ts
+ const t = figmaTransformToPenpot(nc.transform);
+ ```
  */
 export function figmaTransformToPenpot(transform: unknown,): PenpotTransform {
   if (!isRecord(transform,))
@@ -149,26 +149,26 @@ export function figmaTransformToPenpot(transform: unknown,): PenpotTransform {
 }
 
 /**
- * Parse a Figma ParentIndex struct into a parent reference.
- *
- * Figma encodes sibling order with position strings (`"!"`, `"#"`, ...); Penpot
- * orders children via a `shapes` array on the parent instead.
- *
- * @param parentIndex - Figma parentIndex record, or any non-record
- *
- * @returns parsed parent reference, or {@link SKIP} when absent or malformed
- *
- * @example
- * ```ts
- * const parent = parseParentIndex(nc.parentIndex);
- * if (parent !== SKIP) { ... }
- * ```
+ Parse a Figma ParentIndex struct into a parent reference.
+ 
+ Figma encodes sibling order with position strings (`"!"`, `"#"`, ...); Penpot
+ orders children via a `shapes` array on the parent instead.
+ 
+ @param parentIndex - Figma parentIndex record, or any non-record
+ 
+ @returns parsed parent reference, or {@link SKIP} when absent or malformed
+ 
+ @example
+ ```ts
+ const parent = parseParentIndex(nc.parentIndex);
+ if (parent !== SKIP) { ... }
+ ```
  */
 export function parseParentIndex(parentIndex: unknown,): ParentRef | typeof SKIP {
   if (!isRecord(parentIndex,))
     return SKIP;
   /**
-   * Parent GUID struct; malformed entries skip the parent link.
+   Parent GUID struct; malformed entries skip the parent link.
    */
   const {guid} = parentIndex;
   if (!isRecord(guid,))

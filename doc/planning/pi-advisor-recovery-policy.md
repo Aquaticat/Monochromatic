@@ -1,7 +1,8 @@
 # Pi Advisor recovery policy
 
 Status:
-options A to D and F accepted for issue tracking;
+options A to D accepted for issue tracking;
+ option F refined and confirmed during the #413 design interview;
  option E rejected.
 
 ## Goal
@@ -16,7 +17,8 @@ Increase review completion across variable providers without silently replacing 
 - Explicit model selection can retry the same model but cannot switch models silently.
 - Default selection can use configured fallback order and session health.
 - Every provider and model attempt shares one `timeoutMs` deadline.
-- Caller cancellation and provider abort remain terminal.
+- Caller cancellation remains operation-terminal.
+  A provider abort ends that attempt without discarding another usable review.
 - Usage and diagnostics include every attempt.
 
 The continued-session Qwen request tokenized to `172314` input tokens.
@@ -151,24 +153,56 @@ Its possible relevance and input savings do not outweigh the risk of omitting a 
  or cross-task dependency.
 A trustworthy evidence packet would require provenance that the current session model does not provide.
 
-## Option F: Hedged default reviews
+## Option F: Delayed default reviews with bounded collection
+
+The #413 interview rejected immediate first-result delivery and cancellation.
+The default reviewer has no quality guarantee and receives no quality-based privilege.
+See `doc/handover/pi-advisor-413-grilling.md` for the confirmed decisions.
 
 Policy:
 
-- For default calls only,
-   start a second model after a configured delay if the first has not completed.
-- Return the first valid review and cancel the other call.
+- Default calls recover serially through untried eligible scoped candidates,
+   even when overlap is disabled.
+- Explicit model requests remain exact and never overlap or switch models.
+- Overlap remains disabled by default.
+  Enabling it requires an explicit launch delay.
+- The delay starts with the first logical reviewer call,
+   including authentication.
+- Keep at most two reviewer calls active.
+  Before any usable review exists,
+   failed calls can be replaced within the original deadline.
+- Prefer another provider,
+   but allow a different model on the same provider if no cross-provider candidate remains.
+- First usable success stops replacements and retries,
+   not already-started calls.
+  Those calls receive a configurable 30-second default collection grace,
+   capped by the original deadline.
+- Return all usable completed reviews together when remaining calls settle,
+   or cancel stragglers at the cutoff and return what completed.
+- Detect exhausted credits from failed requests just in time.
+  Block further dispatches on every model of that provider for this operation only.
+  Preserve usable results from calls already running on that provider.
+- Keep one evidence snapshot,
+   per-model budgets,
+   attempt records,
+   metadata-only progress,
+   and aggregate available usage.
 
 Pros:
 
-- Reduces tail latency when one provider stalls.
-- Tolerates one unavailable provider without serially waiting for its deadline.
+- Another reviewer can supply a result while one call stalls.
+- Completed independent reviews are retained rather than discarded by a first-response race.
+- Credit exhaustion does not cause repeated dispatches on that provider within the same call.
 
 Cons:
 
-- Can bill both requests even when one is cancelled.
-- Doubles concurrent provider load and context transmission.
-- Makes the selected reviewer nondeterministic.
+- Overlap can bill both requests even after cancellation.
+- Serial recovery can attempt additional models after failure without overlap being enabled.
+- The collected reviewer set depends on completion timing.
+- Cancelled or failed usage may remain incomplete.
+
+Configured preference order and session-health cooldowns remain separate option B work.
+The #413 implementation retains existing cost ranking rather than claiming to complete that policy.
 
 ## Ranking
 
@@ -189,7 +223,7 @@ D ranks over F because attempt evidence and progress improve every review withou
 3. Add configured default order and session-health fallback.
 4. Add exact-tokenizer adapters and entry-aware context negotiation.
 5. Wire aggregate usage and `onUpdate` rendering to the attempt ledger.
-6. Keep hedging opt-in unless measured tail latency justifies duplicate requests.
+6. Keep overlap opt-in and use recorded attempt evidence before tuning launch or collection timing.
 
 Accepted work is tracked by the attempt ledger and usage issue (`#408`),
  health-aware selection (`#409`),

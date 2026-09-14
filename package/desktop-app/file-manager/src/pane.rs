@@ -86,7 +86,7 @@ where
     container.add_css_class("fm-pane");
     container.append(&build_pane_header(&snapshot.path.display().to_string(), on_close));
     container.append(&scrolled);
-    container
+    return container
 }
 
 /// What: wire row activation to `on_activate`, tracking whether Ctrl was held via a capture-phase
@@ -112,7 +112,7 @@ where
         if matches!(key, Key::Return | Key::KP_Enter | Key::space) {
             for_keys.set(state.contains(ModifierType::CONTROL_MASK));
         }
-        Propagation::Proceed
+        return Propagation::Proceed
     });
     list.add_controller(keys);
 
@@ -148,7 +148,7 @@ where
     header.add_css_class("fm-header");
     header.append(&title);
     header.append(&close);
-    header
+    return header
 }
 
 /// What: build a preview pane for `path`: a header (path + close) over a thumbnail (images) or a
@@ -163,7 +163,7 @@ where
     container.add_css_class("fm-pane");
     container.append(&build_pane_header(&path.display().to_string(), on_close));
     container.append(&build_preview_body(thumbs, path));
-    container
+    return container
 }
 
 /// What: build a preview pane's body: an off-thread thumbnail `Picture` for an image, or a large
@@ -189,9 +189,9 @@ fn build_preview_body(thumbs: &Thumbnails, path: &Path) -> Widget {
     icon.set_pixel_size(PREVIEW_ICON_SIZE);
     icon.set_vexpand(true);
     body.append(&icon);
-    body.append(&Label::new(path.file_name().and_then(|name| name.to_str())));
+    body.append(&Label::new(path.file_name().and_then(|name| return name.to_str())));
     crate::dnd::install_file_drag(&body, path);
-    debug_tint::wrap(&body, debug_tint::B6P_PREVIEW_BODY, Some("fallback preview"))
+    return debug_tint::wrap(&body, debug_tint::B6P_PREVIEW_BODY, Some("fallback preview"))
 }
 
 /// What: build the factory that creates and binds one row (icon + name label).
@@ -219,7 +219,7 @@ fn build_row_factory() -> SignalListItemFactory {
         icon.set_icon_name(Some(icon_name(entry.kind)));
         label.set_text(&entry.name);
     });
-    factory
+    return factory
 }
 
 /// What: map an `EntryKind` to a freedesktop icon-theme name.
@@ -227,8 +227,8 @@ fn build_row_factory() -> SignalListItemFactory {
 ///      per-file previews.
 fn icon_name(kind: EntryKind) -> &'static str {
     match kind {
-        EntryKind::Directory => "folder",
-        EntryKind::File => "text-x-generic",
-        EntryKind::Symlink => "emblem-symbolic-link",
+        EntryKind::Directory => return "folder",
+        EntryKind::File => return "text-x-generic",
+        EntryKind::Symlink => return "emblem-symbolic-link",
     }
 }

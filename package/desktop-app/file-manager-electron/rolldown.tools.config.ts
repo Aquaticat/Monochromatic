@@ -4,12 +4,12 @@ import {
 } from 'rolldown';
 
 /**
- * Build config for package-local Node tools.
- *
- * @example
- * ```ts
- * console.log(toolConfig.output);
- * ```
+ Build config for package-local Node tools.
+ 
+ @example
+ ```ts
+ console.log(toolConfig.output);
+ ```
  */
 const toolConfig: RolldownOptions = defineConfig({
   input: [

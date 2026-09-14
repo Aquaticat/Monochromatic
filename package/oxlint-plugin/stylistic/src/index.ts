@@ -17,37 +17,50 @@ import { noMixedOperators, } from './rule/no-mixed-operators.ts';
 import { objectPropertyPerLine, } from './rule/object-property-per-line.ts';
 import { oneVarDeclarationPerLine, } from './rule/one-var-declaration-per-line.ts';
 import { paramPerLine, } from './rule/param-per-line.ts';
+import { requireAsteriskPrefix, } from './rule/require-asterisk-prefix.ts';
 import { semi, } from './rule/semi.ts';
 import { tuplePerLine, } from './rule/tuple-per-line.ts';
 import { typePropertyPerLine, } from './rule/type-property-per-line.ts';
 
+export type { ChainNode, } from './utility/chain.ts';
+export { chainBreakOffsets, } from './utility/chain-flatten.ts';
+export {
+  type ChainSegment,
+  renderCanonical,
+  selectBreakOffsets,
+} from './utility/chain-render.ts';
+export {
+  baseIndentAt,
+  leadingWhitespace,
+} from './utility/indent.ts';
+
 /**
- * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
- * formatting across multi-element constructs, readable brace-delimited bodies,
- * semicolon enforcement, trailing comma enforcement, and explicit operator
- * structure in nested expressions.
- *
- * The per-line rules fire when 2 or more items share a source line and
- * auto-fix by placing every item on its own line with consistent
- * indentation. They are this repository's TypeScript layout authority
- * because dprint's TypeScript formatter is disabled; dprint still formats
- * non-TypeScript files.
- *
- * Statement-boundary rules enforce explicit semicolons and one statement
- * or declarator per line. Body-boundary rules enforce readable newlines
- * inside brace-delimited bodies.
- *
- * The expression-structure rules surface ambiguous operator precedence
- * by requiring explicit parentheses at operator boundaries.
- *
- * @example
- * ```typescript
- * // oxlint.config.ts
- * import { defineConfig } from 'oxlint';
- * export default defineConfig({
- *   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-stylistic'],
- * });
- * ```
+ Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
+ formatting across multi-element constructs, readable brace-delimited bodies,
+ semicolon enforcement, trailing comma enforcement, and explicit operator
+ structure in nested expressions.
+ 
+ The per-line rules fire when 2 or more items share a source line and
+ auto-fix by placing every item on its own line with consistent
+ indentation. They are this repository's TypeScript layout authority
+ because dprint's TypeScript formatter is disabled; dprint still formats
+ non-TypeScript files.
+ 
+ Statement-boundary rules enforce explicit semicolons and one statement
+ or declarator per line. Body-boundary rules enforce readable newlines
+ inside brace-delimited bodies.
+ 
+ The expression-structure rules surface ambiguous operator precedence
+ by requiring explicit parentheses at operator boundaries.
+ 
+ @example
+ ```typescript
+ // oxlint.config.ts
+ import { defineConfig } from 'oxlint';
+ export default defineConfig({
+   jsPlugins: ['\@monochromatic-dev/oxlint-plugin-stylistic'],
+ });
+ ```
  */
 const plugin: Plugin = eslintCompatPlugin({
   meta: {
@@ -65,6 +78,10 @@ const plugin: Plugin = eslintCompatPlugin({
     'tuple-per-line': tuplePerLine,
     'destructure-per-line': destructurePerLine,
     //endregion Per-line rules
+
+    //region Comment layout: enforce configured TSDoc body prefixes
+    'require-asterisk-prefix': requireAsteriskPrefix,
+    //endregion Comment layout
 
     //region Body boundaries: enforce readable newlines inside non-empty braces
     'block-body-newline': blockBodyNewline,

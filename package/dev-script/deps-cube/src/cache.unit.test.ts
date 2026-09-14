@@ -1,11 +1,11 @@
 /**
- * Tests for the per-package JSON file cache.
- *
- * Each test creates an isolated cache root under `os.tmpdir()`
- * so concurrent runs don't collide; cleanup runs in a `using`
- * disposable so failures don't leave temp dirs behind.
- *
- * @module
+ Tests for the per-package JSON file cache.
+ 
+ Each test creates an isolated cache root under `os.tmpdir()`
+ so concurrent runs don't collide; cleanup runs in a `using`
+ disposable so failures don't leave temp dirs behind.
+ 
+ @module
  */
 
 import {
@@ -33,10 +33,10 @@ import {
 } from './cache.ts';
 
 /**
- * Allocates a fresh temp directory for one cache invocation and
- * returns it along with an async-disposable that removes it.
- *
- * @returns Tuple of root path and an async-disposable that recursively rms it on scope exit.
+ Allocates a fresh temp directory for one cache invocation and
+ returns it along with an async-disposable that removes it.
+ 
+ @returns Tuple of root path and an async-disposable that recursively rms it on scope exit.
  */
 async function tempCacheRoot(): Promise<{
   rootDir: string;

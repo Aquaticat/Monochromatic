@@ -1,7 +1,7 @@
 /**
- * Unit tests for Advisor request message formatting.
- *
- * @module
+ Unit tests for Advisor request message formatting.
+ 
+ @module
  */
 
 import {

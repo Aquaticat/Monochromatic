@@ -1,9 +1,9 @@
 /**
- * Download progress display for image downloads.
- *
- * Polls the destination file size and prints progress to stderr.
- *
- * @module
+ Download progress display for image downloads.
+ 
+ Polls the destination file size and prints progress to stderr.
+ 
+ @module
  */
 
 import { createWriteStream, } from 'node:fs';
@@ -16,28 +16,28 @@ import { formatBytes, } from '@monochromatic-dev/module-numeric-format/ts';
 //region Display constants
 
 /**
- * Multiplier for converting a ratio to a percentage.
+ Multiplier for converting a ratio to a percentage.
  */
 const PERCENT = 100;
 
 /**
- * Number of trailing spaces to overwrite stale progress line characters.
+ Number of trailing spaces to overwrite stale progress line characters.
  */
 const PROGRESS_LINE_PAD = 20;
 
 //endregion Display constants
 
 /**
- * Polls the destination file size and prints download progress to stderr.
- * Runs until the `signal` is aborted by the caller after the download completes.
- *
- * @param destPath - Destination file path being written to
- *
- * @param contentLength - Expected total bytes (0 when unknown)
- *
- * @param totalStr - Pre-formatted total size string for display
- *
- * @param signal - AbortSignal that stops the polling loop
+ Polls the destination file size and prints download progress to stderr.
+ Runs until the `signal` is aborted by the caller after the download completes.
+ 
+ @param destPath - Destination file path being written to
+ 
+ @param contentLength - Expected total bytes (0 when unknown)
+ 
+ @param totalStr - Pre-formatted total size string for display
+ 
+ @param signal - AbortSignal that stops the polling loop
  */
 async function pollProgress({
   contentLength,
@@ -51,7 +51,7 @@ async function pollProgress({
   readonly totalStr: string;
 },): Promise<void> {
   /**
-   * Milliseconds between file size polls for progress display.
+   Milliseconds between file size polls for progress display.
    */
   const POLL_INTERVAL_MS = 500;
 
@@ -67,17 +67,17 @@ async function pollProgress({
       break;
     try {
       /**
-       * Current on-disk size of the destination file; polled each tick to drive progress output.
+       Current on-disk size of the destination file; polled each tick to drive progress output.
        */
       // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
       const { size, } = await stat(destPath,);
       /**
-       * Human-readable form of `size` (e.g. "12.3 MB"); cached so it appears in both branches.
+       Human-readable form of `size` (e.g. "12.3 MB"); cached so it appears in both branches.
        */
       const downloadedStr = formatBytes(size,);
       if (contentLength > 0) {
         /**
-         * Integer percentage of the download completed; only meaningful when content-length is known.
+         Integer percentage of the download completed; only meaningful when content-length is known.
          */
         const pct = Math.round((size / contentLength) * PERCENT,);
         process.stderr
@@ -100,22 +100,22 @@ async function pollProgress({
 }
 
 /**
- * Streams a fetch response body to disk while printing download progress to stderr
- * via {@link pollProgress}.
- * Uses AbortController to coordinate between the progress poller and the stream pipeline.
- *
- * @param destPath - Destination file path to write to
- *
- * @param response - Fetch response with a body to stream
- *
- * @param rl - Logger for status messages
- *
- * @mutates response through `Readable.from` asynchronous body iteration
- *
- * @example
- * ```ts
- * await writeWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
- * ```
+ Streams a fetch response body to disk while printing download progress to stderr
+ via {@link pollProgress}.
+ Uses AbortController to coordinate between the progress poller and the stream pipeline.
+ 
+ @param destPath - Destination file path to write to
+ 
+ @param response - Fetch response with a body to stream
+ 
+ @param rl - Logger for status messages
+ 
+ @mutates response through `Readable.from` asynchronous body iteration
+ 
+ @example
+ ```ts
+ await writeWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
+ ```
  */
 export async function writeWithProgress({
   destPath,
@@ -127,23 +127,23 @@ export async function writeWithProgress({
   readonly rl: { readonly info: (msg: string,) => void; };
 },): Promise<void> {
   /**
-   * Expected total bytes from the `content-length` header; 0 when the server omits it.
+   Expected total bytes from the `content-length` header; 0 when the server omits it.
    */
   const contentLength = Number(response.headers
     .get('content-length',)
     ?? 0,);
   /**
-   * Pre-formatted display string for the total size; computed once because progress prints it every tick.
+   Pre-formatted display string for the total size; computed once because progress prints it every tick.
    */
   const totalStr = contentLength > 0 ? formatBytes(contentLength,) : 'unknown';
 
   /**
-   * Coordinates between the polling loop and the stream pipeline; abort stops the poller cleanly.
+   Coordinates between the polling loop and the stream pipeline; abort stops the poller cleanly.
    */
   const controller = new AbortController();
 
   /**
-   * Background progress poller; awaited at the end to ensure the final tick flushes before returning.
+   Background progress poller; awaited at the end to ensure the final tick flushes before returning.
    */
   // Start progress polling in the background
   const progressDone = pollProgress({
@@ -154,7 +154,7 @@ export async function writeWithProgress({
   },);
 
   /**
-   * Response body stream destructured for null-check; null bodies trigger an explicit error.
+   Response body stream destructured for null-check; null bodies trigger an explicit error.
    */
   // Stream response body to disk via AsyncIterable protocol (runtime-neutral)
   const { body, } = response;
@@ -173,7 +173,7 @@ export async function writeWithProgress({
   await progressDone;
 
   /**
-   * Final on-disk size after the pipeline completes; printed as the "downloaded: ..." line.
+   Final on-disk size after the pipeline completes; printed as the "downloaded: ..." line.
    */
   const { size, } = await stat(destPath,);
   process.stderr

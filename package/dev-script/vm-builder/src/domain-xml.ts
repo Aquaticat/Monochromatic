@@ -1,33 +1,33 @@
 /**
- * Generates libvirt domain XML shared by `build-and-import.ts` and `import.ts`.
- * Extracted to keep consumer scripts under the max-lines limit.
+ Generates libvirt domain XML shared by `build-and-import.ts` and `import.ts`.
+ Extracted to keep consumer scripts under the max-lines limit.
  */
 import { hXml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Generates libvirt domain XML for the dev VM.
- * Uses {@link hXml} with SPICE graphics, virtio disk and NIC, UEFI boot,
- * and host-passthrough CPU.
- *
- * @param name - Libvirt domain name
- *
- * @param memoryMib - VM memory in MiB as a string
- *
- * @param vcpus - Virtual CPU count as a string
- *
- * @param qcow2Path - Absolute path to the qcow2 disk image
- *
- * @returns Complete libvirt domain XML string
- *
- * @example
- * ```ts
- * const xml = generateDomainXml({
- *   name: 'my-vm',
- *   memoryMib: '16384',
- *   vcpus: '8',
- *   qcow2Path: '/var/lib/libvirt/images/my-vm.qcow2',
- * });
- * ```
+ Generates libvirt domain XML for the dev VM.
+ Uses {@link hXml} with SPICE graphics, virtio disk and NIC, UEFI boot,
+ and host-passthrough CPU.
+ 
+ @param name - Libvirt domain name
+ 
+ @param memoryMib - VM memory in MiB as a string
+ 
+ @param vcpus - Virtual CPU count as a string
+ 
+ @param qcow2Path - Absolute path to the qcow2 disk image
+ 
+ @returns Complete libvirt domain XML string
+ 
+ @example
+ ```ts
+ const xml = generateDomainXml({
+   name: 'my-vm',
+   memoryMib: '16384',
+   vcpus: '8',
+   qcow2Path: '/var/lib/libvirt/images/my-vm.qcow2',
+ });
+ ```
  */
 export function generateDomainXml(
   {

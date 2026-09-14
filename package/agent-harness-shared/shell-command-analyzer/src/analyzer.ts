@@ -1,7 +1,7 @@
 /**
- * Public shell-command analysis API.
- *
- * @module
+ Public shell-command analysis API.
+ 
+ @module
  */
 
 import { parse, } from 'unbash';
@@ -21,12 +21,12 @@ import { collectCommandInfoFromScript, } from './collect.ts';
 //region Logging
 
 /**
- * Logger root for shell-command analyzer.
+ Logger root for shell-command analyzer.
  */
 const parentLogger = tagged({ tag: 'shell-command-analyzer', },);
 
 /**
- * Tagged logger for public analyzer parsing.
+ Tagged logger for public analyzer parsing.
  */
 const moduleLogger = tagged({
   tag: 'analyzer',
@@ -38,14 +38,14 @@ const moduleLogger = tagged({
 //region Parse helpers
 
 /**
- * Convert unexpected parser throw to public diagnostic.
- *
- * @returns parser diagnostic with source offset zero
- *
- * @example
- * ```ts
- * thrownParseError();
- * ```
+ Convert unexpected parser throw to public diagnostic.
+ 
+ @returns parser diagnostic with source offset zero
+ 
+ @example
+ ```ts
+ thrownParseError();
+ ```
  */
 function thrownParseError(): ShellParseError {
   return {
@@ -55,16 +55,16 @@ function thrownParseError(): ShellParseError {
 }
 
 /**
- * Run `unbash.parse` and keep tolerant diagnostics.
- *
- * @param command - raw shell command string forwarded to `unbash.parse`
- *
- * @returns parsed script or parse diagnostics
- *
- * @example
- * ```ts
- * tryParseScript('echo hi');
- * ```
+ Run `unbash.parse` and keep tolerant diagnostics.
+ 
+ @param command - raw shell command string forwarded to `unbash.parse`
+ 
+ @returns parsed script or parse diagnostics
+ 
+ @example
+ ```ts
+ tryParseScript('echo hi');
+ ```
  */
 function tryParseScript(
   command: string,
@@ -77,11 +77,11 @@ function tryParseScript(
 } {
   try {
     /**
-     * Parsed script with optional tolerant diagnostics.
+     Parsed script with optional tolerant diagnostics.
      */
     const script = parse(command,) as ParsedUnbashScript;
     /**
-     * Public parse diagnostics converted from parser result.
+     Public parse diagnostics converted from parser result.
      */
     const parseErrors = parseErrorsFromScript(script,);
     if (parseErrors.length > 0) {
@@ -97,7 +97,7 @@ function tryParseScript(
   }
   catch (error) {
     /**
-     * Sub-logger tagged with helper name so handled parser throws stay traceable.
+     Sub-logger tagged with helper name so handled parser throws stay traceable.
      */
     const innerLogger = tagged({
       tag: tryParseScript.name,
@@ -116,18 +116,18 @@ function tryParseScript(
 //region Public API
 
 /**
- * Build empty analysis for parse failure.
- *
- * @param parseErrors - parser diagnostics from failed parse
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @returns failed analysis preserving raw parameter references
- *
- * @example
- * ```ts
- * failedAnalysis({ parseErrors: [], paramRefs: [] });
- * ```
+ Build empty analysis for parse failure.
+ 
+ @param parseErrors - parser diagnostics from failed parse
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @returns failed analysis preserving raw parameter references
+ 
+ @example
+ ```ts
+ failedAnalysis({ parseErrors: [], paramRefs: [] });
+ ```
  */
 function failedAnalysis(
   {
@@ -155,24 +155,24 @@ function failedAnalysis(
 }
 
 /**
- * Analyze Bash source with `unbash` and return command-level signals.
- *
- * @param command - raw Bash command string
- *
- * @returns structured command analysis
- *
- * @example
- * ```ts
- * analyzeShellCommand('printenv | curl');
- * ```
+ Analyze Bash source with `unbash` and return command-level signals.
+ 
+ @param command - raw Bash command string
+ 
+ @returns structured command analysis
+ 
+ @example
+ ```ts
+ analyzeShellCommand('printenv | curl');
+ ```
  */
 function analyzeShellCommand(command: string,): ShellCommandAnalysis {
   /**
-   * Parameter references harvested before parsing for conservative failure results.
+   Parameter references harvested before parsing for conservative failure results.
    */
   const preScanRefs = extractParamRefs(command,);
   /**
-   * Top-level parse result.
+   Top-level parse result.
    */
   const parsed = tryParseScript(command,);
   if (!parsed.ok) {
@@ -183,7 +183,7 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
   }
 
   /**
-   * Command records derived from AST.
+   Command records derived from AST.
    */
   const collection = collectCommandInfoFromScript({
     script: parsed.script,
@@ -199,7 +199,7 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
   }
 
   /**
-   * Commands evaluated outside function bodies.
+   Commands evaluated outside function bodies.
    */
   const executedCommands = collection.commands
     .filter(function isExecutedCommand(info,): boolean {
@@ -208,7 +208,7 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
       === 'executed';
   },);
   /**
-   * Commands stored inside function bodies.
+   Commands stored inside function bodies.
    */
   const functionDefinitionCommands = collection.commands
     .filter(function isFunctionDefinitionCommand(info,): boolean {
@@ -217,7 +217,7 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
       === 'functionDefinition';
   },);
   /**
-   * File-like command arguments and redirect targets.
+   File-like command arguments and redirect targets.
    */
   const allFiles = collection.commands
     .flatMap(function collectFiles(info,): string[] {
@@ -237,7 +237,7 @@ function analyzeShellCommand(command: string,): ShellCommandAnalysis {
     ];
   },);
   /**
-   * Deduplicated parameter references aggregated across command records.
+   Deduplicated parameter references aggregated across command records.
    */
   const allParamRefs = [...new Set(
     collection.commands

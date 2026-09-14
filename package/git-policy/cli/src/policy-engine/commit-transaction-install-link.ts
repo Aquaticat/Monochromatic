@@ -1,7 +1,7 @@
 /**
- * Owner-preserving hard-link installation for real Git indexes.
- *
- * @module
+ Owner-preserving hard-link installation for real Git indexes.
+ 
+ @module
  */
 import {
   link,
@@ -10,20 +10,20 @@ import {
 } from 'node:fs/promises';
 
 /**
- * Creates private hard link and proves it names exact owned file inode.
- *
- * @param sourcePath - current owned file path
- *
- * @param linkedPath - private same-filesystem stable name
- *
- * @param expectedDevice - original device identity
- *
- * @param expectedInode - original inode identity
- *
- * @example
- * ```ts
- * await createOwnedFileLink({ sourcePath, linkedPath, expectedDevice, expectedInode });
- * ```
+ Creates private hard link and proves it names exact owned file inode.
+ 
+ @param sourcePath - current owned file path
+ 
+ @param linkedPath - private same-filesystem stable name
+ 
+ @param expectedDevice - original device identity
+ 
+ @param expectedInode - original inode identity
+ 
+ @example
+ ```ts
+ await createOwnedFileLink({ sourcePath, linkedPath, expectedDevice, expectedInode });
+ ```
  */
 export async function createOwnedFileLink({
   sourcePath,
@@ -45,7 +45,7 @@ export async function createOwnedFileLink({
     linkedPath,
   );
   /**
-   * Non-followed metadata for exact private stable name.
+   Non-followed metadata for exact private stable name.
    */
   const metadata = await lstat(
     linkedPath,

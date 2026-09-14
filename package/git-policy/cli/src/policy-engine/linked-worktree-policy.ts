@@ -1,5 +1,5 @@
 /**
- * Unified linked-worktree-only built-in policy. @module
+ Unified linked-worktree-only built-in policy. @module
  */
 import type { PolicyFinding, } from '../api/policy-types.ts';
 import {
@@ -9,12 +9,12 @@ import {
 import type { RuntimePolicyDefinition, } from './types.ts';
 
 /**
- * Configurable linked-worktree-only policy.
- *
- * @example
- * ```ts
- * linkedWorktreePolicy.name;
- * ```
+ Configurable linked-worktree-only policy.
+ 
+ @example
+ ```ts
+ linkedWorktreePolicy.name;
+ ```
  */
 export const linkedWorktreePolicy: RuntimePolicyDefinition = {
   name: 'linked-worktree-only',

@@ -97,6 +97,22 @@ export function classifyMutableObject(mutableObject: { value: string; },): void 
   void mutableObject;
 }
 
+/** Workspace-declared branch sharing writable path with default-library type. */
+type WorkspaceNamedValue = {
+  name: string;
+};
+
+/**
+ * Accepts mixed workspace and default-library writable declarations.
+ *
+ * @param mixedNamedValue - Union carrying same writable path from both owners.
+ */
+export function classifyMixedWritableOwner(
+  mixedNamedValue: WorkspaceNamedValue | Error,
+): void {
+  void mixedNamedValue;
+}
+
 /**
  * Accepts broad nonprimitive object capability for classifier fixture.
  *

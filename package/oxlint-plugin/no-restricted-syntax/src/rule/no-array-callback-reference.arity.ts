@@ -19,26 +19,26 @@ import {
 //region Constants and types
 
 /**
- * Exact parameter count that means array iterator extra arguments cannot bind
- * to a named parameter.
+ Exact parameter count that means array iterator extra arguments cannot bind
+ to a named parameter.
  */
 const UNARY_CALLBACK_PARAMETER_COUNT = 1;
 
 /**
- * Function node kinds whose parameters can be counted directly.
+ Function node kinds whose parameters can be counted directly.
  */
 type FunctionWithParams = ESTree.Function | ESTree.ArrowFunctionExpression;
 
 /**
- * Minimal readonly object-property shape needed to read a static key.
+ Minimal readonly object-property shape needed to read a static key.
  */
 type ObjectPropertyNameSource = {
   /**
-   * Whether property key is computed.
+   Whether property key is computed.
    */
   readonly computed: boolean;
   /**
-   * Property key node.
+   Property key node.
    */
   readonly key: ESTree.ObjectProperty['key'];
 };
@@ -48,16 +48,16 @@ type ObjectPropertyNameSource = {
 //region Syntax helpers
 
 /**
- * Returns expression with transparent wrappers removed.
- *
- * @param expression - Expression that may be wrapped by parentheses or TS-only casts.
- *
- * @returns Runtime expression inside transparent wrappers.
- *
- * @example
- * ```ts
- * unwrapExpression({ expression: callback });
- * ```
+ Returns expression with transparent wrappers removed.
+ 
+ @param expression - Expression that may be wrapped by parentheses or TS-only casts.
+ 
+ @returns Runtime expression inside transparent wrappers.
+ 
+ @example
+ ```ts
+ unwrapExpression({ expression: callback });
+ ```
  */
 function unwrapExpression(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
@@ -78,16 +78,16 @@ function unwrapExpression(
 }
 
 /**
- * Returns static object property name when available.
- *
- * @param property - Object property whose key should be inspected.
- *
- * @returns Static property name, or sentinel for computed/private/unsupported keys.
- *
- * @example
- * ```ts
- * const name = getObjectPropertyName({ property });
- * ```
+ Returns static object property name when available.
+ 
+ @param property - Object property whose key should be inspected.
+ 
+ @returns Static property name, or sentinel for computed/private/unsupported keys.
+ 
+ @example
+ ```ts
+ const name = getObjectPropertyName({ property });
+ ```
  */
 function getObjectPropertyName(
   { property, }: ForeignBorrowed<{ readonly property: ObjectPropertyNameSource; }>,
@@ -95,7 +95,7 @@ function getObjectPropertyName(
   if (property.computed)
     return NO_STATIC_MEMBER_NAME;
   /**
-   * Object property key.
+   Object property key.
    */
   const { key, } = property;
   if (key.type === 'Identifier')
@@ -112,16 +112,16 @@ function getObjectPropertyName(
 //region Function arity
 
 /**
- * Reports whether node exposes a function parameter list.
- *
- * @param node - ESTree node being inspected.
- *
- * @returns Whether node is a function-like node with `params`.
- *
- * @example
- * ```ts
- * isFunctionWithParams(definition.node);
- * ```
+ Reports whether node exposes a function parameter list.
+ 
+ @param node - ESTree node being inspected.
+ 
+ @returns Whether node is a function-like node with `params`.
+ 
+ @example
+ ```ts
+ isFunctionWithParams(definition.node);
+ ```
  */
 function isFunctionWithParams(node: ForeignBorrowed<ESTree.Node>,): node is FunctionWithParams {
   return (node.type === 'FunctionDeclaration')
@@ -132,26 +132,26 @@ function isFunctionWithParams(node: ForeignBorrowed<ESTree.Node>,): node is Func
 }
 
 /**
- * Reports whether function has exactly one non-rest declared parameter.
- *
- * @param fn - Function-like node whose declared parameters are inspected.
- *
- * @returns Whether function's declared arity is exactly one.
- *
- * @example
- * ```ts
- * hasUnaryDeclaredArity({ fn: callbackDeclaration });
- * ```
+ Reports whether function has exactly one non-rest declared parameter.
+ 
+ @param fn - Function-like node whose declared parameters are inspected.
+ 
+ @returns Whether function's declared arity is exactly one.
+ 
+ @example
+ ```ts
+ hasUnaryDeclaredArity({ fn: callbackDeclaration });
+ ```
  */
 function hasUnaryDeclaredArity({ fn, }: ForeignBorrowed<{ readonly fn: FunctionWithParams; }>,): boolean {
   /**
-   * Declared function parameters.
+   Declared function parameters.
    */
   const { params, } = fn;
   if (params.length !== UNARY_CALLBACK_PARAMETER_COUNT)
     return false;
   /**
-   * Sole declared parameter.
+   Sole declared parameter.
    */
   const [parameter,] = params;
   if (parameter === undefined)
@@ -160,22 +160,22 @@ function hasUnaryDeclaredArity({ fn, }: ForeignBorrowed<{ readonly fn: FunctionW
 }
 
 /**
- * Reports whether expression itself is a one-parameter function expression.
- *
- * @param expression - Expression being inspected directly.
- *
- * @returns Whether expression is a function-like node with one declared parameter.
- *
- * @example
- * ```ts
- * isDirectUnaryFunctionExpression({ expression: callbackInitializer });
- * ```
+ Reports whether expression itself is a one-parameter function expression.
+ 
+ @param expression - Expression being inspected directly.
+ 
+ @returns Whether expression is a function-like node with one declared parameter.
+ 
+ @example
+ ```ts
+ isDirectUnaryFunctionExpression({ expression: callbackInitializer });
+ ```
  */
 function isDirectUnaryFunctionExpression(
   { expression, }: ForeignBorrowed<{ readonly expression: ESTree.Expression; }>,
 ): boolean {
   /**
-   * Runtime expression inside transparent wrappers.
+   Runtime expression inside transparent wrappers.
    */
   const unwrappedExpression = unwrapExpression({ expression, },);
   if (!isFunctionWithParams(unwrappedExpression,))
@@ -188,16 +188,16 @@ function isDirectUnaryFunctionExpression(
 //region Scope resolution
 
 /**
- * Reports whether a scope definition declares or initializes a unary function.
- *
- * @param definition - Scope-manager definition to inspect.
- *
- * @returns Whether definition resolves to a one-parameter function.
- *
- * @example
- * ```ts
- * isKnownUnaryDefinition({ definition });
- * ```
+ Reports whether a scope definition declares or initializes a unary function.
+ 
+ @param definition - Scope-manager definition to inspect.
+ 
+ @returns Whether definition resolves to a one-parameter function.
+ 
+ @example
+ ```ts
+ isKnownUnaryDefinition({ definition });
+ ```
  */
 function isKnownUnaryDefinition(
   { definition, }: ForeignBorrowed<{ readonly definition: Definition; }>,
@@ -205,7 +205,7 @@ function isKnownUnaryDefinition(
   if (isFunctionWithParams(definition.node,))
     return hasUnaryDeclaredArity({ fn: definition.node, },);
   /**
-   * Parent node for scope-manager shapes where definition.node is only the name.
+   Parent node for scope-manager shapes where definition.node is only the name.
    */
   const { parent, } = definition;
   if ((parent !== null) && isFunctionWithParams(parent,))
@@ -213,13 +213,13 @@ function isKnownUnaryDefinition(
   if (definition.type !== 'Variable')
     return false;
   /**
-   * Variable declarator for the definition, when scope metadata can resolve it.
+   Variable declarator for the definition, when scope metadata can resolve it.
    */
   const declarator = getVariableDeclarator({ definition, },);
   if (declarator === NO_VARIABLE)
     return false;
   /**
-   * Initializer that supplies the variable's runtime value.
+   Initializer that supplies the variable's runtime value.
    */
   const { init, } = declarator;
   if (init === null)
@@ -228,20 +228,20 @@ function isKnownUnaryDefinition(
 }
 
 /**
- * Reports whether identifier resolves to a statically-known unary function.
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier callback expression.
- *
- * @param seen - Variables already visited while resolving aliases.
- *
- * @returns Whether identifier's binding declares one parameter.
- *
- * @example
- * ```ts
- * isKnownUnaryIdentifierReference({ context, identifier, seen: new Set() });
- * ```
+ Reports whether identifier resolves to a statically-known unary function.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier callback expression.
+ 
+ @param seen - Variables already visited while resolving aliases.
+ 
+ @returns Whether identifier's binding declares one parameter.
+ 
+ @example
+ ```ts
+ isKnownUnaryIdentifierReference({ context, identifier, seen: new Set() });
+ ```
  */
 function isKnownUnaryIdentifierReference(
   {
@@ -255,7 +255,7 @@ function isKnownUnaryIdentifierReference(
   }>,
 ): boolean {
   /**
-   * Scope variable behind the identifier.
+   Scope variable behind the identifier.
    */
   const variable = findVariable({
     context,
@@ -267,12 +267,12 @@ function isKnownUnaryIdentifierReference(
   if (seen.has(variable,))
     return false;
   /**
-   * Seen set extended with current variable to avoid alias loops.
+   Seen set extended with current variable to avoid alias loops.
    */
   const seenWithVariable = new Set(seen,);
   seenWithVariable.add(variable,);
   /**
-   * Scope definitions for the resolved variable.
+   Scope definitions for the resolved variable.
    */
   const definitions = variable.defs;
   return definitions.some(
@@ -285,18 +285,18 @@ function isKnownUnaryIdentifierReference(
 }
 
 /**
- * Resolves a local identifier to an object literal initializer.
- *
- * @param context - Oxlint rule context.
- *
- * @param identifier - Identifier whose binding should hold an object literal.
- *
- * @returns Object literal initializer, or sentinel when not statically known.
- *
- * @example
- * ```ts
- * const objectLiteral = getLocalObjectLiteral({ context, identifier });
- * ```
+ Resolves a local identifier to an object literal initializer.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param identifier - Identifier whose binding should hold an object literal.
+ 
+ @returns Object literal initializer, or sentinel when not statically known.
+ 
+ @example
+ ```ts
+ const objectLiteral = getLocalObjectLiteral({ context, identifier });
+ ```
  */
 function getLocalObjectLiteral(
   {
@@ -308,7 +308,7 @@ function getLocalObjectLiteral(
   }>,
 ): ESTree.ObjectExpression | typeof NO_VARIABLE {
   /**
-   * Scope variable behind object identifier.
+   Scope variable behind object identifier.
    */
   const variable = findVariable({
     context,
@@ -318,7 +318,7 @@ function getLocalObjectLiteral(
   if (variable === NO_VARIABLE)
     return NO_VARIABLE;
   /**
-   * First scope definition for the object identifier.
+   First scope definition for the object identifier.
    */
   const [definition,] = variable.defs;
   if (definition === undefined)
@@ -326,19 +326,19 @@ function getLocalObjectLiteral(
   if (definition.type !== 'Variable')
     return NO_VARIABLE;
   /**
-   * Variable declarator holding the object initializer.
+   Variable declarator holding the object initializer.
    */
   const declarator = getVariableDeclarator({ definition, },);
   if (declarator === NO_VARIABLE)
     return NO_VARIABLE;
   /**
-   * Initializer expression for the object binding.
+   Initializer expression for the object binding.
    */
   const { init, } = declarator;
   if (init === null)
     return NO_VARIABLE;
   /**
-   * Runtime initializer inside transparent wrappers.
+   Runtime initializer inside transparent wrappers.
    */
   const unwrappedInit = unwrapExpression({ expression: init, },);
   if (unwrappedInit.type !== 'ObjectExpression')
@@ -351,18 +351,18 @@ function getLocalObjectLiteral(
 //region Public arity resolver
 
 /**
- * Reports whether expression resolves to a statically-known unary function.
- *
- * @param context - Oxlint rule context.
- *
- * @param expression - Callback expression being resolved.
- *
- * @returns Whether expression's target is known to declare one parameter.
- *
- * @example
- * ```ts
- * isKnownUnaryFunctionExpression({ context, expression: callback });
- * ```
+ Reports whether expression resolves to a statically-known unary function.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param expression - Callback expression being resolved.
+ 
+ @returns Whether expression's target is known to declare one parameter.
+ 
+ @example
+ ```ts
+ isKnownUnaryFunctionExpression({ context, expression: callback });
+ ```
  */
 export function isKnownUnaryFunctionExpression(
   {
@@ -374,13 +374,13 @@ export function isKnownUnaryFunctionExpression(
   }>,
 ): boolean {
   /**
-   * Runtime expression inside transparent wrappers.
+   Runtime expression inside transparent wrappers.
    */
   const unwrappedExpression = unwrapExpression({ expression, },);
   if (isDirectUnaryFunctionExpression({ expression: unwrappedExpression, }))
     return true;
   /**
-   * Empty visited-variable set for this arity resolution.
+   Empty visited-variable set for this arity resolution.
    */
   const seen = new Set<Variable>();
   if (unwrappedExpression.type === 'Identifier')
@@ -392,19 +392,19 @@ export function isKnownUnaryFunctionExpression(
   if (unwrappedExpression.type !== 'MemberExpression')
     return false;
   /**
-   * Static property name being referenced.
+   Static property name being referenced.
    */
   const propertyName = getStaticMemberName({ member: unwrappedExpression, },);
   if (propertyName === NO_STATIC_MEMBER_NAME)
     return false;
   /**
-   * Member receiver expression.
+   Member receiver expression.
    */
   const objectExpression = unwrapExpression({ expression: unwrappedExpression.object, },);
   if (objectExpression.type !== 'Identifier')
     return false;
   /**
-   * Object literal that owns the referenced property.
+   Object literal that owns the referenced property.
    */
   const objectLiteral = getLocalObjectLiteral({
     context,
@@ -413,11 +413,11 @@ export function isKnownUnaryFunctionExpression(
   if (objectLiteral === NO_VARIABLE)
     return false;
   /**
-   * Properties from the resolved object literal.
+   Properties from the resolved object literal.
    */
   const { properties, } = objectLiteral;
   /**
-   * Property matching the static member name.
+   Property matching the static member name.
    */
   const property = properties.find(
     function isMatchingProperty(
@@ -430,7 +430,7 @@ export function isKnownUnaryFunctionExpression(
   if ((property === undefined) || (property.type !== 'Property'))
     return false;
   /**
-   * Runtime value stored in the matching property.
+   Runtime value stored in the matching property.
    */
   const propertyValue = unwrapExpression({ expression: property.value, },);
   if (isDirectUnaryFunctionExpression({ expression: propertyValue, }))

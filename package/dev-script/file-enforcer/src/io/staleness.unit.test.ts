@@ -30,42 +30,42 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- * Creates an isolated temp directory for staleness tests.
- *
- * @returns Temp directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates an isolated temp directory for staleness tests.
+ 
+ @returns Temp directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return await mkdtemp(join(tmpdir(), 'file-enforcer-staleness-',),);
 }
 
 /**
- * Removes an isolated temp directory.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes an isolated temp directory.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(tempDir, { recursive: true, force: true, },);
 }
 
 /**
- * Increments a named counter stored in a map.
- *
- * @param calls - Counter map.
- *
- * @example
- * ```ts
- * incrementCalls(calls);
- * ```
+ Increments a named counter stored in a map.
+ 
+ @param calls - Counter map.
+ 
+ @example
+ ```ts
+ incrementCalls(calls);
+ ```
  */
 function incrementCalls(calls: Map<'count', number>,): void {
   calls.set(
@@ -75,16 +75,16 @@ function incrementCalls(calls: Map<'count', number>,): void {
 }
 
 /**
- * Reads a named counter stored in a map.
- *
- * @param calls - Counter map.
- *
- * @returns Current counter value.
- *
- * @example
- * ```ts
- * const count = callCount(calls);
- * ```
+ Reads a named counter stored in a map.
+ 
+ @param calls - Counter map.
+ 
+ @returns Current counter value.
+ 
+ @example
+ ```ts
+ const count = callCount(calls);
+ ```
  */
 function callCount(calls: ReadonlyMap<'count', number>,): number {
   return calls.get('count',) ?? 0;

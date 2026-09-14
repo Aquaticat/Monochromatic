@@ -1,9 +1,9 @@
 /**
- * Tests for `selectLaunchCommand`, the pure new-instance command selection:
- * override table first (case-insensitive), then the desktop file, then the bare
- * resource class, then nothing.
- *
- * @module
+ Tests for `selectLaunchCommand`, the pure new-instance command selection:
+ override table first (case-insensitive), then the desktop file, then the bare
+ resource class, then nothing.
+ 
+ @module
  */
 
 import {

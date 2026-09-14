@@ -1,7 +1,7 @@
 /**
- * Unresolved parameter-reachable effect audit rule.
- *
- * @module
+ Unresolved parameter-reachable effect audit rule.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -14,12 +14,12 @@ import type {
 import { createReadonlyRuleVisitor, } from './prefer-readonly-parameter-types/readonly-rule-visitor.ts';
 
 /**
- * Reports unresolved effects reachable from parameter state.
- *
- * @example
- * ```ts
- * plugin.rules['no-opaque-parameter-effects'];
- * ```
+ Reports unresolved effects reachable from parameter state.
+ 
+ @example
+ ```ts
+ plugin.rules['no-opaque-parameter-effects'];
+ ```
  */
 export const noOpaqueParameterEffects: CreateOnceRule = {
   meta: {
@@ -37,18 +37,18 @@ export const noOpaqueParameterEffects: CreateOnceRule = {
     },
   },
   /**
-   * Creates unresolved-effect reporter over shared semantic evidence.
-   *
-   * @param context - Foreign rule context receiving opacity diagnostics.
-   *
-   * @returns visitor filtering unresolved parameter effects.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * noOpaqueParameterEffects.createOnce(context);
-   * ```
+   Creates unresolved-effect reporter over shared semantic evidence.
+   
+   @param context - Foreign rule context receiving opacity diagnostics.
+   
+   @returns visitor filtering unresolved parameter effects.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   noOpaqueParameterEffects.createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createReadonlyRuleVisitor({

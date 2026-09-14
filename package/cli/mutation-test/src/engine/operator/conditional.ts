@@ -1,14 +1,14 @@
 /**
- * Conditional mutations: forcing boolean contexts to constants.
- *
- * Mirrors Stryker's ConditionalExpression mutator: comparison and logical
- * expressions plus if/ternary tests become `true` and `false`; loop tests
- * become `false` only, since a forced-true loop can only end in timeout.
- *
- * @example
- * ```ts
- * conditionalReplacements({ node, parent: undefined, source });
- * ```
+ Conditional mutations: forcing boolean contexts to constants.
+ 
+ Mirrors Stryker's ConditionalExpression mutator: comparison and logical
+ expressions plus if/ternary tests become `true` and `false`; loop tests
+ become `false` only, since a forced-true loop can only end in timeout.
+ 
+ @example
+ ```ts
+ conditionalReplacements({ node, parent: undefined, source });
+ ```
  */
 
 import {
@@ -21,7 +21,7 @@ import type {
 } from '../types.ts';
 
 /**
- * Comparison operator tokens whose expressions get boolean forcing.
+ Comparison operator tokens whose expressions get boolean forcing.
  */
 const COMPARISON_TOKENS: ReadonlySet<string> = new Set([
   '==',
@@ -35,7 +35,7 @@ const COMPARISON_TOKENS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Logical operator tokens whose expressions get boolean forcing.
+ Logical operator tokens whose expressions get boolean forcing.
  */
 const LOGICAL_TOKENS: ReadonlySet<string> = new Set([
   '&&',
@@ -43,7 +43,7 @@ const LOGICAL_TOKENS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Statement types whose `test` child is forced to `false` only.
+ Statement types whose `test` child is forced to `false` only.
  */
 const LOOP_TYPES: ReadonlySet<string> = new Set([
   'WhileStatement',
@@ -52,16 +52,16 @@ const LOOP_TYPES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Builds boolean-forcing replacements over one span.
- *
- * @param options - Span to force and constants to force it to.
- *
- * @returns One replacement per constant.
- *
- * @example
- * ```ts
- * forceBoolean({ start: 3, end: 8, texts: ['true', 'false'] });
- * ```
+ Builds boolean-forcing replacements over one span.
+ 
+ @param options - Span to force and constants to force it to.
+ 
+ @returns One replacement per constant.
+ 
+ @example
+ ```ts
+ forceBoolean({ start: 3, end: 8, texts: ['true', 'false'] });
+ ```
  */
 function forceBoolean(options: {
   readonly start: number;
@@ -81,16 +81,16 @@ function forceBoolean(options: {
 }
 
 /**
- * Emits boolean-forcing replacements for one node.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * conditionalReplacements({ node: ifStatement, parent: undefined, source });
- * ```
+ Emits boolean-forcing replacements for one node.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ conditionalReplacements({ node: ifStatement, parent: undefined, source });
+ ```
  */
 export function conditionalReplacements(options: {
   readonly node: EstreeNode;
@@ -98,12 +98,12 @@ export function conditionalReplacements(options: {
   readonly source: string;
 },): readonly Replacement[] {
   /**
-   * Operator token for expression nodes, absent on statements.
+   Operator token for expression nodes, absent on statements.
    */
   const token = options.node
     .operator;
   /**
-   * Operator token narrowed to text for set membership checks.
+   Operator token narrowed to text for set membership checks.
    */
   const tokenText = (typeof token) === 'string' ? token : '';
 
@@ -150,7 +150,7 @@ export function conditionalReplacements(options: {
       return [];
 
     /**
-     * Condition expression under the statement or ternary.
+     Condition expression under the statement or ternary.
      */
     const test = childNode({
       node: options.node,
@@ -176,7 +176,7 @@ export function conditionalReplacements(options: {
       return [];
 
     /**
-     * Loop condition expression; `for (;;)` has none.
+     Loop condition expression; `for (;;)` has none.
      */
     const test = childNode({
       node: options.node,

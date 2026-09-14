@@ -1,4 +1,5 @@
-import { clientConfig,
+import {
+  clientConfig,
   type ClientFlavorConfig,
 } from '@monochromatic-dev/config-rolldown/.client.ts';
 import {
@@ -6,13 +7,13 @@ import {
 } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
 
 /**
- * Client-side browser bundle config for the Done productivity app.
- * Bundles five page entry points into `dist/client/*.js`.
- * Uses the import-attributes plugin so client code can import
- * pre-built CSS via `with { type: 'text' }`. The CSS parsing stack
- * (`@csstools/css-tokenizer` via workspace css-edit) is undeclared in
- * dependencies, so it bundles by omission; declared server-only deps
- * never enter the client graph.
+ Client-side browser bundle config for the Done productivity app.
+ Bundles five page entry points into `dist/client/*.js`.
+ Uses the import-attributes plugin so client code can import
+ pre-built CSS via `with { type: 'text' }`. The CSS parsing stack
+ (`@csstools/css-tokenizer` via workspace css-edit) is undeclared in
+ dependencies, so it bundles by omission; declared server-only deps
+ never enter the client graph.
  */
 const config: ClientFlavorConfig = clientConfig({
   input: [

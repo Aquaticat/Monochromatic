@@ -1,7 +1,7 @@
 /**
- * Tests that mergeAsArrived yields in completion order, not submission order.
- *
- * @module
+ Tests that mergeAsArrived yields in completion order, not submission order.
+ 
+ @module
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
@@ -13,13 +13,13 @@ import {
 import { mergeAsArrived, } from './async-queue.ts';
 
 /**
- * Resolves to a label after a delay, modelling a probe that settles later.
- *
- * @param label - identifier yielded on completion
- *
- * @param ms - delay before resolving
- *
- * @returns the label after the delay
+ Resolves to a label after a delay, modelling a probe that settles later.
+ 
+ @param label - identifier yielded on completion
+ 
+ @param ms - delay before resolving
+ 
+ @returns the label after the delay
  */
 async function delayed(label: string, ms: number): Promise<string> {
   await wait(ms);

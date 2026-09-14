@@ -1,7 +1,7 @@
 /**
- * Miscellaneous hook event types: UserPromptSubmit, Notification, PreCompact, WorktreeCreate, WorktreeRemove.
- *
- * @module
+ Miscellaneous hook event types: UserPromptSubmit, Notification, PreCompact, WorktreeCreate, WorktreeRemove.
+ 
+ @module
  */
 
 import type {
@@ -12,30 +12,30 @@ import type {
 //region UserPromptSubmit
 
 /**
- * Input for `UserPromptSubmit` hooks.
- * Fires when the user submits a prompt, before Claude processes it.
+ Input for `UserPromptSubmit` hooks.
+ Fires when the user submits a prompt, before Claude processes it.
  */
 type UserPromptSubmitInput = HookInputBase & {
   hook_event_name: 'UserPromptSubmit';
 
   /**
-   * Text the user submitted.
+   Text the user submitted.
    */
   prompt: string;
 };
 
 /**
- * Output for `UserPromptSubmit` hooks.
- * Can block the prompt or add context.
+ Output for `UserPromptSubmit` hooks.
+ Can block the prompt or add context.
  */
 type UserPromptSubmitOutput = HookOutputBase & {
   /**
-   * `"block"` prevents the prompt from being processed and erases it from context.
+   `"block"` prevents the prompt from being processed and erases it from context.
    */
   decision?: 'block';
 
   /**
-   * Shown to the user when `decision` is `"block"`. Not added to context.
+   Shown to the user when `decision` is `"block"`. Not added to context.
    */
   reason?: string;
 
@@ -43,7 +43,7 @@ type UserPromptSubmitOutput = HookOutputBase & {
     hookEventName: 'UserPromptSubmit';
 
     /**
-     * Context added to Claude's conversation.
+     Context added to Claude's conversation.
      */
     additionalContext?: string;
   };
@@ -54,7 +54,7 @@ type UserPromptSubmitOutput = HookOutputBase & {
 //region Notification
 
 /**
- * Notification type that triggered the hook.
+ Notification type that triggered the hook.
  */
 type NotificationType =
   | 'permission_prompt'
@@ -63,35 +63,35 @@ type NotificationType =
   | 'elicitation_dialog';
 
 /**
- * Input for `Notification` hooks.
- * Fires when Claude Code sends a notification.
+ Input for `Notification` hooks.
+ Fires when Claude Code sends a notification.
  */
 type NotificationInput = HookInputBase & {
   hook_event_name: 'Notification';
 
   /**
-   * Notification text.
+   Notification text.
    */
   message: string;
 
   /**
-   * Notification heading.
+   Notification heading.
    */
   title?: string;
 
   /**
-   * Which notification type fired.
+   Which notification type fired.
    */
   notification_type: NotificationType;
 };
 
 /**
- * Output for `Notification` hooks.
- * Cannot block or modify notifications.
- *
- * **Note**: despite being documented, `additionalContext` for Notification hooks
- * is not implemented in Claude Code v2.1.76: the `hookSpecificOutput` switch
- * statement has no `case "Notification"`, so any provided context is silently dropped.
+ Output for `Notification` hooks.
+ Cannot block or modify notifications.
+ 
+ **Note**: despite being documented, `additionalContext` for Notification hooks
+ is not implemented in Claude Code v2.1.76: the `hookSpecificOutput` switch
+ statement has no `case "Notification"`, so any provided context is silently dropped.
  */
 type NotificationOutput = HookOutputBase;
 
@@ -100,31 +100,31 @@ type NotificationOutput = HookOutputBase;
 //region PreCompact
 
 /**
- * What triggered context compaction.
+ What triggered context compaction.
  */
 type PreCompactTrigger = 'manual' | 'auto';
 
 /**
- * Input for `PreCompact` hooks.
- * Fires before context compaction.
+ Input for `PreCompact` hooks.
+ Fires before context compaction.
  */
 type PreCompactInput = HookInputBase & {
   hook_event_name: 'PreCompact';
 
   /**
-   * Whether compaction was triggered manually or automatically.
+   Whether compaction was triggered manually or automatically.
    */
   trigger: PreCompactTrigger;
 
   /**
-   * User instructions passed to `/compact`. Empty for `auto`.
+   User instructions passed to `/compact`. Empty for `auto`.
    */
   custom_instructions: string;
 };
 
 /**
- * Output for `PreCompact` hooks.
- * No decision control.
+ Output for `PreCompact` hooks.
+ No decision control.
  */
 type PreCompactOutput = HookOutputBase;
 
@@ -133,15 +133,15 @@ type PreCompactOutput = HookOutputBase;
 //region WorktreeCreate
 
 /**
- * Input for `WorktreeCreate` hooks.
- * Fires when a worktree is being created.
- * Replaces default git worktree behavior when configured.
+ Input for `WorktreeCreate` hooks.
+ Fires when a worktree is being created.
+ Replaces default git worktree behavior when configured.
  */
 type WorktreeCreateInput = HookInputBase & {
   hook_event_name: 'WorktreeCreate';
 
   /**
-   * Slug identifier for the new worktree (e.g. `"bold-oak-a3f2"`).
+   Slug identifier for the new worktree (e.g. `"bold-oak-a3f2"`).
    */
   name: string;
 };
@@ -153,21 +153,21 @@ type WorktreeCreateInput = HookInputBase & {
 //region WorktreeRemove
 
 /**
- * Input for `WorktreeRemove` hooks.
- * Fires when a worktree is being removed.
+ Input for `WorktreeRemove` hooks.
+ Fires when a worktree is being removed.
  */
 type WorktreeRemoveInput = HookInputBase & {
   hook_event_name: 'WorktreeRemove';
 
   /**
-   * Absolute path to the worktree being removed.
+   Absolute path to the worktree being removed.
    */
   worktree_path: string;
 };
 
 /**
- * Output for `WorktreeRemove` hooks.
- * No decision control; cannot block removal.
+ Output for `WorktreeRemove` hooks.
+ No decision control; cannot block removal.
  */
 type WorktreeRemoveOutput = HookOutputBase;
 

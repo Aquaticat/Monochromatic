@@ -7,7 +7,7 @@ import {
 //region git-branch option vocabulary
 
 /**
- * Complete long-option vocabulary used to disambiguate git-branch long-option abbreviations.
+ Complete long-option vocabulary used to disambiguate git-branch long-option abbreviations.
  */
 const BRANCH_LONG_OPTIONS: ReadonlySet<string> = new Set([
   '--abbrev',
@@ -47,7 +47,7 @@ const BRANCH_LONG_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * git-branch long options that put command in list or inspection mode.
+ git-branch long options that put command in list or inspection mode.
  */
 const BRANCH_LIST_LONG_OPTIONS: ReadonlySet<string> = new Set([
   '--abbrev',
@@ -73,7 +73,7 @@ const BRANCH_LIST_LONG_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * git-branch long options that mutate existing branch metadata without creating a new branch.
+ git-branch long options that mutate existing branch metadata without creating a new branch.
  */
 const BRANCH_NON_CREATE_LONG_OPTIONS: ReadonlySet<string> = new Set([
   '--delete',
@@ -85,14 +85,14 @@ const BRANCH_NON_CREATE_LONG_OPTIONS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * git-branch long options that copy an existing branch to a new branch name.
+ git-branch long options that copy an existing branch to a new branch name.
  */
 const BRANCH_COPY_LONG_OPTIONS: ReadonlySet<string> = new Set([
   '--copy',
 ]);
 
 /**
- * git-branch long options whose separated form consumes next argv token.
+ git-branch long options whose separated form consumes next argv token.
  */
 const BRANCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
   '--abbrev',
@@ -107,18 +107,18 @@ const BRANCH_VALUE_LONG_OPTIONS: ReadonlySet<string> = new Set([
 //region git-branch option predicates
 
 /**
- * Reports whether git-branch option is a list or inspection mode. Checks each
- * short form with {@link hasShortOption} and the long forms with {@link matchesLongOption}.
- *
- * @param arg - Argv token to inspect.
- *
- * @returns `true` when arg makes positionals branch patterns rather than new branch names.
- *
- * @example
- * ```ts
- * isBranchListModeOption('--list');
- * // => true
- * ```
+ Reports whether git-branch option is a list or inspection mode. Checks each
+ short form with {@link hasShortOption} and the long forms with {@link matchesLongOption}.
+ 
+ @param arg - Argv token to inspect.
+ 
+ @returns `true` when arg makes positionals branch patterns rather than new branch names.
+ 
+ @example
+ ```ts
+ isBranchListModeOption('--list');
+ // => true
+ ```
  */
 export function isBranchListModeOption(arg: string,): boolean {
   return hasShortOption({
@@ -149,19 +149,19 @@ export function isBranchListModeOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-branch option mutates existing refs without branch
- * creation. Checks each short form with {@link hasShortOption} and the long
- * forms with {@link matchesLongOption}.
- *
- * @param arg - Argv token to inspect.
- *
- * @returns `true` when arg selects delete, move, or upstream-edit mode.
- *
- * @example
- * ```ts
- * isBranchNonCreateModeOption('--delete');
- * // => true
- * ```
+ Reports whether git-branch option mutates existing refs without branch
+ creation. Checks each short form with {@link hasShortOption} and the long
+ forms with {@link matchesLongOption}.
+ 
+ @param arg - Argv token to inspect.
+ 
+ @returns `true` when arg selects delete, move, or upstream-edit mode.
+ 
+ @example
+ ```ts
+ isBranchNonCreateModeOption('--delete');
+ // => true
+ ```
  */
 export function isBranchNonCreateModeOption(arg: string,): boolean {
   return hasShortOption({
@@ -192,19 +192,19 @@ export function isBranchNonCreateModeOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-branch option copies existing branch to new branch.
- * Checks each short form with {@link hasShortOption} and the long form with
- * {@link matchesLongOption}.
- *
- * @param arg - Argv token to inspect.
- *
- * @returns `true` when arg selects copy mode.
- *
- * @example
- * ```ts
- * isBranchCopyModeOption('--copy');
- * // => true
- * ```
+ Reports whether git-branch option copies existing branch to new branch.
+ Checks each short form with {@link hasShortOption} and the long form with
+ {@link matchesLongOption}.
+ 
+ @param arg - Argv token to inspect.
+ 
+ @returns `true` when arg selects copy mode.
+ 
+ @example
+ ```ts
+ isBranchCopyModeOption('--copy');
+ // => true
+ ```
  */
 export function isBranchCopyModeOption(arg: string,): boolean {
   return hasShortOption({
@@ -223,19 +223,19 @@ export function isBranchCopyModeOption(arg: string,): boolean {
 }
 
 /**
- * Reports whether git-branch option consumes next argv token. Checks the
- * separated short form with {@link isExactShortOption} and the separated
- * long forms with {@link matchesLongOption}.
- *
- * @param arg - Argv token to inspect.
- *
- * @returns `true` when next token is an option value.
- *
- * @example
- * ```ts
- * branchConsumesNextValue('--format');
- * // => true
- * ```
+ Reports whether git-branch option consumes next argv token. Checks the
+ separated short form with {@link isExactShortOption} and the separated
+ long forms with {@link matchesLongOption}.
+ 
+ @param arg - Argv token to inspect.
+ 
+ @returns `true` when next token is an option value.
+ 
+ @example
+ ```ts
+ branchConsumesNextValue('--format');
+ // => true
+ ```
  */
 export function branchConsumesNextValue(arg: string,): boolean {
   if (arg.includes('=',))

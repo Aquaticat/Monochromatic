@@ -4,7 +4,7 @@ import {
 } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- * Self-contained generation, injected-lookup, and ASN database bundles.
+ Self-contained generation, injected-lookup, and ASN database bundles.
  */
 const config: NodeFlavorConfigs = perEntryNodeConfig({
   entries: [

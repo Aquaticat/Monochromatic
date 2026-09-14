@@ -93,7 +93,7 @@ pub(crate) fn set_queue_model(app: &AppWindow, names: &[String]) {
     // ```ts
     // const items = names.slice();
     // ```
-    let items: Vec<SharedString> = names.iter().map(|s| SharedString::from(s.as_str())).collect();
+    let items: Vec<SharedString> = names.iter().map(|s| return SharedString::from(s.as_str())).collect();
     // What:     `app.set_queue(Rc::new(VecModel::from(items)).into());`. Wrap the vector as a
     //           reference-counted list model and set the `queue` property.
     // Why:      Slint list properties take a `ModelRc`.

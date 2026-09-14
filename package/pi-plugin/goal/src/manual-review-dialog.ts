@@ -1,7 +1,7 @@
 /**
- * Mandatory combined TUI dialog for reviewer-exhaustion fallback.
- *
- * @module
+ Mandatory combined TUI dialog for reviewer-exhaustion fallback.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -15,7 +15,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Explicit manual approval or rejection with optional reason.
+ Explicit manual approval or rejection with optional reason.
  */
 type ManualGoalReviewDecision =
   | { readonly action: 'accept'; }
@@ -25,7 +25,7 @@ type ManualGoalReviewDecision =
   };
 
 /**
- * Injectable manual-review dialog capability.
+ Injectable manual-review dialog capability.
  */
 type ManualGoalReviewPrompt = (
   input: {
@@ -35,38 +35,38 @@ type ManualGoalReviewPrompt = (
 ) => Promise<ManualGoalReviewDecision>;
 
 /**
- * Request manual-review component render after local state change.
- *
- * @param tui - Pi TUI render controller
- *
- * @mutates tui - tui.requestRender schedules component repaint
- *
- * @example
- * ```ts
- * requestManualReviewRender(tui);
- * ```
+ Request manual-review component render after local state change.
+ 
+ @param tui - Pi TUI render controller
+ 
+ @mutates tui - tui.requestRender schedules component repaint
+ 
+ @example
+ ```ts
+ requestManualReviewRender(tui);
+ ```
  */
 function requestManualReviewRender(tui: ForeignBorrowed<TUI>,): void {
   tui.requestRender();
 }
 
 /**
- * Show non-cancellable combined accept or reject-with-reason dialog.
- *
- * Escape returns from reason editing to the decision list and never settles dialog.
- *
- * @param context - TUI extension context
- *
- * @param diagnostic - normalized model-review failure summary
- *
- * @returns explicit user decision
- *
- * @mutates context - context.ui.custom temporarily owns TUI input and rendering
- *
- * @example
- * ```ts
- * await promptManualGoalReview({ context, diagnostic });
- * ```
+ Show non-cancellable combined accept or reject-with-reason dialog.
+ 
+ Escape returns from reason editing to the decision list and never settles dialog.
+ 
+ @param context - TUI extension context
+ 
+ @param diagnostic - normalized model-review failure summary
+ 
+ @returns explicit user decision
+ 
+ @mutates context - context.ui.custom temporarily owns TUI input and rendering
+ 
+ @example
+ ```ts
+ await promptManualGoalReview({ context, diagnostic });
+ ```
  */
 async function promptManualGoalReview(
   {
@@ -86,14 +86,14 @@ async function promptManualGoalReview(
       done,
     ) {
       /**
-       * Dialog-local selection and rejection editor state.
+       Dialog-local selection and rejection editor state.
        */
       const state = {
         optionIndex: 0,
         editingReason: false,
       };
       /**
-       * Theme adapter for optional rejection-reason editor.
+       Theme adapter for optional rejection-reason editor.
        */
       const editorTheme: EditorTheme = {
         borderColor(text,) {
@@ -136,7 +136,7 @@ async function promptManualGoalReview(
         },
       };
       /**
-       * Inline optional rejection-reason editor.
+       Inline optional rejection-reason editor.
        */
       const editor = new Editor(
         tui,
@@ -151,7 +151,7 @@ async function promptManualGoalReview(
       return {
         render(width: number,) {
           /**
-           * Fixed dialog header and normalized model failures.
+           Fixed dialog header and normalized model failures.
            */
           const header = [
             theme.fg(
@@ -179,7 +179,7 @@ async function promptManualGoalReview(
             ];
           }
           /**
-           * Two semantic decisions with current selection styling.
+           Two semantic decisions with current selection styling.
            */
           const options = [
             'Accept',
@@ -189,7 +189,7 @@ async function promptManualGoalReview(
             index,
           ) {
             /**
-             * Selection marker for current option row.
+             Selection marker for current option row.
              */
             const prefix = index === state.optionIndex ? '› ' : '  ';
             return index === state.optionIndex

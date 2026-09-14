@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Entry point for the android-exempt-unused CLI.
- *
- * Drives the flow: pick a device, load third-party apps and their current
- * exemption state, present a live multiselect, diff the selection, confirm, and
- * apply both exempt and revert changes. The multiselect's checked set is the
- * desired state, so one list handles both directions with no mode toggle.
- *
- * @module
+ Entry point for the android-exempt-unused CLI.
+ 
+ Drives the flow: pick a device, load third-party apps and their current
+ exemption state, present a live multiselect, diff the selection, confirm, and
+ apply both exempt and revert changes. The multiselect's checked set is the
+ desired state, so one list handles both directions with no mode toggle.
+ 
+ @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -43,20 +43,20 @@ import {
 } from './prompts.ts';
 
 /**
- * Module-level tagged logger; each function wraps it with its own name.
+ Module-level tagged logger; each function wraps it with its own name.
  */
 const l = tagged({ tag: 'main', },);
 
 /**
- * Render a human-readable summary of pending changes for the confirm note.
- *
- * @param changes - Exempt and revert partitions to describe.
- *
- * @returns Multi-line block listing each app under its direction heading.
+ Render a human-readable summary of pending changes for the confirm note.
+ 
+ @param changes - Exempt and revert partitions to describe.
+ 
+ @returns Multi-line block listing each app under its direction heading.
  */
 function summarize({ changes, }: { readonly changes: Changes; },): string {
   /**
-   * Lines describing apps to exempt, or empty when none.
+   Lines describing apps to exempt, or empty when none.
    */
   const exemptLines = changes.toExempt
     .length
@@ -71,7 +71,7 @@ function summarize({ changes, }: { readonly changes: Changes; },): string {
     ]
     : [];
   /**
-   * Lines describing apps to revert, or empty when none.
+   Lines describing apps to revert, or empty when none.
    */
   const revertLines = changes.toRevert
     .length
@@ -92,16 +92,16 @@ function summarize({ changes, }: { readonly changes: Changes; },): string {
 }
 
 /**
- * Run the interactive flow end to end. Throws on adb failure or cancellation;
- * the top-level handler renders both.
- *
- * @throws {@link NoDevicesError} when no authorized device is connected.
- *
- * @throws {@link PromptCancelledError} when the user cancels any prompt.
+ Run the interactive flow end to end. Throws on adb failure or cancellation;
+ the top-level handler renders both.
+ 
+ @throws {@link NoDevicesError} when no authorized device is connected.
+ 
+ @throws {@link PromptCancelledError} when the user cancels any prompt.
  */
 async function runCli(): Promise<void> {
   /**
-   * Tagged logger for the main flow.
+   Tagged logger for the main flow.
    */
   const fl = tagged({
     tag: runCli.name,
@@ -110,11 +110,11 @@ async function runCli(): Promise<void> {
   intro('android-exempt-unused',);
 
   /**
-   * Every device adb reports, with state.
+   Every device adb reports, with state.
    */
   const devices = await listDevices();
   /**
-   * Serials of devices ready to accept shell commands.
+   Serials of devices ready to accept shell commands.
    */
   const connected = devices
     .filter(function isConnected(device,): boolean {
@@ -131,22 +131,22 @@ async function runCli(): Promise<void> {
   }
 
   /**
-   * Chosen device serial.
+   Chosen device serial.
    */
   const serial = await pickDevice({ serials: connected, },);
 
   /**
-   * Spinner shown while loading device state.
+   Spinner shown while loading device state.
    */
   const load = spinner();
   load.start('Listing third-party apps',);
   /**
-   * Every third-party application id on the device.
+   Every third-party application id on the device.
    */
   const all = await listThirdPartyPackages({ serial, },);
   load.message('Reading current exemption state',);
   /**
-   * Application ids currently exempt from auto-revoke.
+   Application ids currently exempt from auto-revoke.
    */
   const exempted = await listExempted({
     serial,
@@ -160,14 +160,14 @@ async function runCli(): Promise<void> {
   }
 
   /**
-   * Application ids the user left checked.
+   Application ids the user left checked.
    */
   const selected = await pickApps({
     all,
     currentlyExempted: exempted,
   },);
   /**
-   * Diff of selection against current device state.
+   Diff of selection against current device state.
    */
   const changes = computeChanges({
     all,
@@ -190,7 +190,7 @@ async function runCli(): Promise<void> {
   );
 
   /**
-   * Whether the user confirmed applying the changes.
+   Whether the user confirmed applying the changes.
    */
   const confirmed = await confirmApply({ changes, },);
   if (!confirmed) {
@@ -199,19 +199,19 @@ async function runCli(): Promise<void> {
   }
 
   /**
-   * Total number of writes to apply.
+   Total number of writes to apply.
    */
   const total = changes.toExempt
     .length
     + changes.toRevert
     .length;
   /**
-   * Spinner shown while writing changes.
+   Spinner shown while writing changes.
    */
   const apply = spinner();
   apply.start('Applying changes',);
   /**
-   * Apps whose write failed, if any.
+   Apps whose write failed, if any.
    */
   const failures = await applyChanges({
     serial,
@@ -242,14 +242,14 @@ async function runCli(): Promise<void> {
 }
 
 /**
- * Map a thrown value to terminal output. Cancellation is a clean exit; known
- * {@link AdbError}s become a message plus a non-zero exit code; anything else
- * is rethrown for Node to surface with a stack.
- *
- * @param error - Value caught from runCli.
- *
- * @throws Re-throws any error that is not a {@link PromptCancelledError} or
- *   {@link AdbError}.
+ Map a thrown value to terminal output. Cancellation is a clean exit; known
+ {@link AdbError}s become a message plus a non-zero exit code; anything else
+ is rethrown for Node to surface with a stack.
+ 
+ @param error - Value caught from runCli.
+ 
+ @throws Re-throws any error that is not a {@link PromptCancelledError} or
+   {@link AdbError}.
  */
 function handleTopLevelError({ error, }: { readonly error: unknown; },): void {
   if (error instanceof PromptCancelledError) {

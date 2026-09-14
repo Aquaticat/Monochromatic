@@ -40,7 +40,7 @@ const fn build_crc8_table() -> [u8; 256] {
         table[seed] = crc;
         seed += 1;
     }
-    table
+    return table
 }
 
 /// A bones failure: the bytes are not a walkable FLAC stream.
@@ -78,7 +78,7 @@ fn decode_coded_number(buf: &[u8], offset: usize, max_length: usize) -> Option<(
         return Some((u64::from(first), 1));
     }
     // Count the leading ones to get the coded length, then fold the continuation bytes.
-    let length = (0..8).take_while(|shift| first & (0x80 >> shift) != 0).count();
+    let length = (0..8).take_while(|shift| return first & (0x80 >> shift) != 0).count();
     if !(2..=max_length).contains(&length) {
         return None;
     }
@@ -90,7 +90,7 @@ fn decode_coded_number(buf: &[u8], offset: usize, max_length: usize) -> Option<(
         }
         value = (value << 6) | u64::from(byte & 0x3f);
     }
-    Some((value, length))
+    return Some((value, length))
 }
 
 /// A parsed frame header: blocking strategy, block size, coded number, header length.
@@ -157,11 +157,11 @@ fn parse_frame_header(buf: &[u8], offset: usize, info: &StreamInfo) -> Option<Fr
     let crc_byte = *buf.get(cursor)?;
     let crc = buf[offset..cursor]
         .iter()
-        .fold(0u8, |accumulator, &byte| CRC8_TABLE[usize::from(accumulator ^ byte)]);
+        .fold(0u8, |accumulator, &byte| return CRC8_TABLE[usize::from(accumulator ^ byte)]);
     if crc != crc_byte {
         return None;
     }
-    Some(FrameHeader { blocking_strategy, block_size, coded_number })
+    return Some(FrameHeader { blocking_strategy, block_size, coded_number })
 }
 
 /// Parse the metadata blocks: STREAMINFO plus the first audio-frame offset.
@@ -212,11 +212,11 @@ fn parse_metadata(buf: &[u8]) -> Result<(StreamInfo, usize), BonesError> {
             break;
         }
     }
-    let info = info.ok_or_else(|| BonesError { message: "flac: no STREAMINFO block".to_owned() })?;
+    let info = info.ok_or_else(|| return BonesError { message: "flac: no STREAMINFO block".to_owned() })?;
     if info.sample_rate == 0 {
         return Err(BonesError { message: "flac: zero sample rate".to_owned() });
     }
-    Ok((info, offset))
+    return Ok((info, offset))
 }
 
 /// Walk audio frames from the first frame to EOF, confirming each start.
@@ -225,12 +225,12 @@ fn parse_metadata(buf: &[u8]) -> Result<(StreamInfo, usize), BonesError> {
 /// distance between consecutive confirmed starts. Why: the byte spans are the profile.
 fn walk_frames(buf: &[u8], first_frame_offset: usize, info: &StreamInfo) -> Result<(Vec<WalkedFrame>, f64), BonesError> {
     let first = parse_frame_header(buf, first_frame_offset, info)
-        .ok_or_else(|| BonesError { message: "flac: no frame at first-frame offset".to_owned() })?;
+        .ok_or_else(|| return BonesError { message: "flac: no frame at first-frame offset".to_owned() })?;
     let blocking_strategy = first.blocking_strategy;
     // Fixed blocking: start sample = frame number times the constant first block size.
     let nominal_block_size = u64::from(first.block_size);
     let start_sample_of = |header: &FrameHeader| {
-        if header.blocking_strategy == 1 { header.coded_number } else { header.coded_number * nominal_block_size }
+        if header.blocking_strategy == 1 { return header.coded_number } else { return header.coded_number * nominal_block_size }
     };
     let mut frames: Vec<WalkedFrame> = Vec::new();
     let mut previous_offset = first_frame_offset;
@@ -238,7 +238,7 @@ fn walk_frames(buf: &[u8], first_frame_offset: usize, info: &StreamInfo) -> Resu
     let mut search_from = first_frame_offset + MIN_FRAME_BYTES;
     while search_from < buf.len() {
         // Jump to the next 0xff sync candidate.
-        let Some(found) = buf[search_from..].iter().position(|&byte| byte == 0xff) else {
+        let Some(found) = buf[search_from..].iter().position(|&byte| return byte == 0xff) else {
             break;
         };
         let candidate = search_from + found;
@@ -275,7 +275,7 @@ fn walk_frames(buf: &[u8], first_frame_offset: usize, info: &StreamInfo) -> Resu
         byte_count: buf.len() - previous_offset,
     });
     let duration_secs = (last_start + u64::from(previous.block_size)) as f64 / f64::from(info.sample_rate);
-    Ok((frames, duration_secs))
+    return Ok((frames, duration_secs))
 }
 
 /// Build the per-slot byte profile from a FLAC file's raw bytes, without decoding.
@@ -309,7 +309,7 @@ pub fn flac_bones_profile(buf: &[u8]) -> Result<Vec<f64>, BonesError> {
             *weight += frame.byte_count as f64 * (hi - lo) / (end_secs - start_secs);
         }
     }
-    Ok(slots)
+    return Ok(slots)
 }
 
 /// The indices of the `top` hottest byte slots, the probe's bones seeds.
@@ -319,9 +319,9 @@ pub fn flac_bones_profile(buf: &[u8]) -> Result<Vec<f64>, BonesError> {
 pub fn bones_hot_bins(profile: &[f64], top: usize) -> Vec<usize> {
     // Sort indices by descending byte weight, then truncate.
     let mut order: Vec<usize> = (0..profile.len()).collect();
-    order.sort_by(|&a, &b| f64::total_cmp(&profile[b], &profile[a]));
+    order.sort_by(|&a, &b| return f64::total_cmp(&profile[b], &profile[a]));
     order.truncate(top);
-    order
+    return order
 }
 
 /// What:     `#[cfg(test)] #[path = "bones_tests.rs"] mod tests;`. Test-only submodule in

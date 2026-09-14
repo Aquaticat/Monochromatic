@@ -28,11 +28,11 @@ import {
 import { writePidMapping, } from './state.ts';
 
 /**
- * Writes mapping fixture directly to PID mapping directory.
- *
- * @param pid - process id filename to write.
- *
- * @param sessionId - session id stored in mapping.
+ Writes mapping fixture directly to PID mapping directory.
+ 
+ @param pid - process id filename to write.
+ 
+ @param sessionId - session id stored in mapping.
  */
 function writeMappingFixture(
   {
@@ -183,11 +183,11 @@ await describe({
             },);
 
             /**
-             * Timestamp for older fixture.
+             Timestamp for older fixture.
              */
             const olderDate = new Date(1_000,);
             /**
-             * Timestamp for newer fixture.
+             Timestamp for newer fixture.
              */
             const newerDate = new Date(2_000,);
             utimesSync(

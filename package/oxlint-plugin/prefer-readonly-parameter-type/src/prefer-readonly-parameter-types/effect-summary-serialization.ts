@@ -1,7 +1,7 @@
 /**
- * JSON representation for persistent direct effect summaries.
- *
- * @module
+ JSON representation for persistent direct effect summaries.
+ 
+ @module
  */
 
 import { slotsByParameterFrom, } from './effect-parameter-slots.ts';
@@ -22,17 +22,17 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Serialized unavailable callback identity.
+ Serialized unavailable callback identity.
  */
 const UNAVAILABLE_CALLBACK = 'unavailable';
 
 /**
- * Serialized owned callback identity.
+ Serialized owned callback identity.
  */
 const OWNED_CALLBACK = 'owned';
 
 /**
- * JSON-safe callback identity.
+ JSON-safe callback identity.
  */
 export type SerializedCallbackKey =
   | {
@@ -44,7 +44,7 @@ export type SerializedCallbackKey =
   };
 
 /**
- * JSON-safe call edge.
+ JSON-safe call edge.
  */
 export type SerializedCallEdge =
   & Omit<
@@ -64,7 +64,7 @@ export type SerializedCallEdge =
   };
 
 /**
- * JSON-safe direct summary.
+ JSON-safe direct summary.
  */
 export type SerializedEffectSummary = {
   readonly parameterCount: number;
@@ -89,7 +89,7 @@ export type SerializedEffectSummary = {
 };
 
 /**
- * JSON-safe summaries keyed by stable callable identity.
+ JSON-safe summaries keyed by stable callable identity.
  */
 export type SerializedEffectSummaries = readonly (
   readonly [
@@ -99,20 +99,20 @@ export type SerializedEffectSummaries = readonly (
 )[];
 
 /**
- * Rebuilds slot ownership from a restored payload.
- *
- * @param summary - Restored summary carrying its persisted ownership.
- *
- * @returns ownership usable for projection back to parameters.
- *
- * @example
- * ```ts
- * restoredOwnership(summary);
- * ```
+ Rebuilds slot ownership from a restored payload.
+ 
+ @param summary - Restored summary carrying its persisted ownership.
+ 
+ @returns ownership usable for projection back to parameters.
+ 
+ @example
+ ```ts
+ restoredOwnership(summary);
+ ```
  */
 function restoredOwnership(summary: SerializedEffectSummary,): SlotOwnership {
   /**
-   * Owning parameter of every slot, as branded positions.
+   Owning parameter of every slot, as branded positions.
    */
   const parameterOfSlot = summary.parameterOfSlot
     .map(function brandOwner(owner,): ParameterIndex {
@@ -127,16 +127,16 @@ function restoredOwnership(summary: SerializedEffectSummary,): SlotOwnership {
 }
 
 /**
- * Rebrands a restored list of slot numbers.
- *
- * @param slots - Plain slot numbers read from the payload.
- *
- * @returns same slots, branded.
- *
- * @example
- * ```ts
- * restoredSlotList([0, 1]);
- * ```
+ Rebrands a restored list of slot numbers.
+ 
+ @param slots - Plain slot numbers read from the payload.
+ 
+ @returns same slots, branded.
+ 
+ @example
+ ```ts
+ restoredSlotList([0, 1]);
+ ```
  */
 function restoredSlotList(slots: readonly number[],): readonly EffectSlot[] {
   return slots.map(function brandSlot(slot,): EffectSlot {
@@ -145,32 +145,32 @@ function restoredSlotList(slots: readonly number[],): readonly EffectSlot[] {
 }
 
 /**
- * Rebrands a restored set of slot numbers.
- *
- * @param slots - Plain slot numbers read from the payload.
- *
- * @returns mutable branded slot set.
- *
- * @example
- * ```ts
- * restoredSlots([0, 1]);
- * ```
+ Rebrands a restored set of slot numbers.
+ 
+ @param slots - Plain slot numbers read from the payload.
+ 
+ @returns mutable branded slot set.
+ 
+ @example
+ ```ts
+ restoredSlots([0, 1]);
+ ```
  */
 function restoredSlots(slots: readonly number[],): Set<EffectSlot> {
   return new Set(restoredSlotList(slots,),);
 }
 
 /**
- * Serializes callback identity without process-local symbols.
- *
- * @param key - Owned callable key or unavailable sentinel.
- *
- * @returns JSON-safe callback identity.
- *
- * @example
- * ```ts
- * serializeCallbackKey(OWNED_CALLABLE_UNAVAILABLE);
- * ```
+ Serializes callback identity without process-local symbols.
+ 
+ @param key - Owned callable key or unavailable sentinel.
+ 
+ @returns JSON-safe callback identity.
+ 
+ @example
+ ```ts
+ serializeCallbackKey(OWNED_CALLABLE_UNAVAILABLE);
+ ```
  */
 function serializeCallbackKey(
   key: string | typeof OWNED_CALLABLE_UNAVAILABLE,
@@ -184,16 +184,16 @@ function serializeCallbackKey(
 }
 
 /**
- * Restores callback identity from JSON-safe representation.
- *
- * @param key - Serialized callback identity.
- *
- * @returns owned callable key or unavailable sentinel.
- *
- * @example
- * ```ts
- * deserializeCallbackKey({ kind: 'unavailable' });
- * ```
+ Restores callback identity from JSON-safe representation.
+ 
+ @param key - Serialized callback identity.
+ 
+ @returns owned callable key or unavailable sentinel.
+ 
+ @example
+ ```ts
+ deserializeCallbackKey({ kind: 'unavailable' });
+ ```
  */
 function deserializeCallbackKey(
   key: SerializedCallbackKey,
@@ -204,16 +204,16 @@ function deserializeCallbackKey(
 }
 
 /**
- * Serializes direct summaries for persistent cache storage.
- *
- * @param summaries - Direct summaries tied to one exact source.
- *
- * @returns deterministic JSON-safe entries.
- *
- * @example
- * ```ts
- * serializeEffectSummaries(summaries);
- * ```
+ Serializes direct summaries for persistent cache storage.
+ 
+ @param summaries - Direct summaries tied to one exact source.
+ 
+ @returns deterministic JSON-safe entries.
+ 
+ @example
+ ```ts
+ serializeEffectSummaries(summaries);
+ ```
  */
 export function serializeEffectSummaries(
   summaries: ReadonlyMap<string, MutableEffectSummary>,
@@ -304,18 +304,18 @@ export function serializeEffectSummaries(
 }
 
 /**
- * Deserializes direct summaries after cache envelope validation.
- *
- * @param summaries - JSON-safe summary entries written by this analyzer.
- *
- * @returns mutable direct summaries safe for fixed-point propagation.
- *
- * @throws TypeError when structurally corrupt payload cannot be rehydrated.
- *
- * @example
- * ```ts
- * deserializeEffectSummaries(serialized);
- * ```
+ Deserializes direct summaries after cache envelope validation.
+ 
+ @param summaries - JSON-safe summary entries written by this analyzer.
+ 
+ @returns mutable direct summaries safe for fixed-point propagation.
+ 
+ @throws TypeError when structurally corrupt payload cannot be rehydrated.
+ 
+ @example
+ ```ts
+ deserializeEffectSummaries(serialized);
+ ```
  */
 export function deserializeEffectSummaries(
   summaries: SerializedEffectSummaries,

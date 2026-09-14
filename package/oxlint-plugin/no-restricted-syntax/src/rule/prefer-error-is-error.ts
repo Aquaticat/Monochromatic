@@ -20,31 +20,31 @@ import { buildErrorIsErrorCall, } from './prefer-error-is-error.syntax.ts';
 //region Reporting
 
 /**
- * Reports a replaceable alternative Error detector, building the
- * replacement text via {@link buildErrorIsErrorCall}.
- *
- * @param context - Oxlint rule context.
- *
- * @param node - Node to report and replace.
- *
- * @param argumentText - Source text for value being tested.
- *
- * @param negated - Whether replacement should be negated.
- *
- * @param fixKind - Fix channel to use for this replacement.
- *
- * @example
- * ```ts
- * reportReplacement({
- *   context,
- *   node,
- *   argumentText: 'error',
- *   negated: false,
- *   fixKind: 'fix',
- * });
- * ```
- *
- * @mutates context - Emits Oxlint diagnostics through foreign rule context.
+ Reports a replaceable alternative Error detector, building the
+ replacement text via {@link buildErrorIsErrorCall}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param node - Node to report and replace.
+ 
+ @param argumentText - Source text for value being tested.
+ 
+ @param negated - Whether replacement should be negated.
+ 
+ @param fixKind - Fix channel to use for this replacement.
+ 
+ @example
+ ```ts
+ reportReplacement({
+   context,
+   node,
+   argumentText: 'error',
+   negated: false,
+   fixKind: 'fix',
+ });
+ ```
+ 
+ @mutates context - Emits Oxlint diagnostics through foreign rule context.
  */
 function reportReplacement(
   {
@@ -62,11 +62,11 @@ function reportReplacement(
   }>,
 ): void {
   /**
-   * Canonical Error.isError call replacement.
+   Canonical Error.isError call replacement.
    */
   const callText = buildErrorIsErrorCall({ argumentText, },);
   /**
-   * Final replacement, optionally preserving a negated detector.
+   Final replacement, optionally preserving a negated detector.
    */
   const replacement = negated ? `!${callText}` : callText;
   if (fixKind === 'suggestion') {
@@ -102,27 +102,27 @@ function reportReplacement(
 //endregion Reporting
 
 /**
- * Prefers `Error.isError()` over older Error detection idioms.
- *
- * `instanceof Error` fails across realms, `Object.prototype.toString` checks are
- * verbose and stringly typed, constructor comparisons reject Error subclasses,
- * and Node's `util.types.isNativeError()` is deprecated in favor of
- * `Error.isError()`. Detects each idiom via {@link getInstanceofErrorArgumentText},
- * {@link getEqualityDetectorReplacement} (negation read via
- * {@link isNegatedEqualityOperator}), {@link getIsNativeErrorArgumentText},
- * and {@link getObjectTagEndsWithArgumentText}, then reports and fixes every
- * match via {@link reportReplacement}.
- *
- * @example
- * ```ts
- * // Bad
- * value instanceof Error;
- * Object.prototype.toString.call(value) === '[object Error]';
- * util.types.isNativeError(value);
- *
- * // Good
- * Error.isError(value,);
- * ```
+ Prefers `Error.isError()` over older Error detection idioms.
+ 
+ `instanceof Error` fails across realms, `Object.prototype.toString` checks are
+ verbose and stringly typed, constructor comparisons reject Error subclasses,
+ and Node's `util.types.isNativeError()` is deprecated in favor of
+ `Error.isError()`. Detects each idiom via {@link getInstanceofErrorArgumentText},
+ {@link getEqualityDetectorReplacement} (negation read via
+ {@link isNegatedEqualityOperator}), {@link getIsNativeErrorArgumentText},
+ and {@link getObjectTagEndsWithArgumentText}, then reports and fixes every
+ match via {@link reportReplacement}.
+ 
+ @example
+ ```ts
+ // Bad
+ value instanceof Error;
+ Object.prototype.toString.call(value) === '[object Error]';
+ util.types.isNativeError(value);
+ 
+ // Good
+ Error.isError(value,);
+ ```
  */
 export const preferErrorIsError: CreateOnceRule = {
   meta: {
@@ -140,22 +140,22 @@ export const preferErrorIsError: CreateOnceRule = {
     },
   },
   /**
-   * Creates legacy Error detector visitor.
-   *
-   * @param context - Foreign rule context receiving diagnostics.
-   *
-   * @mutates context - Emits replacement diagnostics through foreign context.
-   *
-   * @example
-   * ```ts
-   * preferErrorIsError.createOnce(context);
-   * ```
+   Creates legacy Error detector visitor.
+   
+   @param context - Foreign rule context receiving diagnostics.
+   
+   @mutates context - Emits replacement diagnostics through foreign context.
+   
+   @example
+   ```ts
+   preferErrorIsError.createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return {
       BinaryExpression(node: ForeignBorrowed<ESTree.BinaryExpression>,): void {
         /**
-         * `value instanceof Error` argument text, if matched.
+         `value instanceof Error` argument text, if matched.
          */
         const instanceofArgumentText = getInstanceofErrorArgumentText({
           context,
@@ -172,7 +172,7 @@ export const preferErrorIsError: CreateOnceRule = {
           return;
         }
         /**
-         * Equality-based detector replacement metadata, if matched.
+         Equality-based detector replacement metadata, if matched.
          */
         const equalityReplacement = getEqualityDetectorReplacement({
           context,
@@ -190,7 +190,7 @@ export const preferErrorIsError: CreateOnceRule = {
       },
       CallExpression(node: ForeignBorrowed<ESTree.CallExpression>,): void {
         /**
-         * Node isNativeError detector argument text, if matched.
+         Node isNativeError detector argument text, if matched.
          */
         const isNativeErrorArgumentText = getIsNativeErrorArgumentText({
           context,
@@ -207,7 +207,7 @@ export const preferErrorIsError: CreateOnceRule = {
           return;
         }
         /**
-         * Object.prototype.toString suffix detector argument text, if matched.
+         Object.prototype.toString suffix detector argument text, if matched.
          */
         const objectTagEndsWithArgumentText = getObjectTagEndsWithArgumentText({
           context,

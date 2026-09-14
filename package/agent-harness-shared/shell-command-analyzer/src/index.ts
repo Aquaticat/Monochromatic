@@ -1,7 +1,7 @@
 /**
- * Shared shell-command analyzer exports.
- *
- * @module
+ Shared shell-command analyzer exports.
+ 
+ @module
  */
 
 export { analyzeShellCommand, } from './analyzer.ts';

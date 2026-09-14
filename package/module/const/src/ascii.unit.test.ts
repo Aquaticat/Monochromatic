@@ -1,7 +1,7 @@
 /**
- * Tests for ASCII character-set constants.
- *
- * @module
+ Tests for ASCII character-set constants.
+ 
+ @module
  */
 
 import {

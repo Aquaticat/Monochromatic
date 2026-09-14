@@ -1,7 +1,7 @@
 /**
- * Shared regex-free text-scanning primitives for agent harness integrations.
- *
- * @module
+ Shared regex-free text-scanning primitives for agent harness integrations.
+ 
+ @module
  */
 
 export {

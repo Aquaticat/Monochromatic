@@ -1,7 +1,7 @@
 /**
- * Tests for model-id thinking policy helpers.
- *
- * @module
+ Tests for model-id thinking policy helpers.
+ 
+ @module
  */
 
 import {

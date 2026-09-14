@@ -1,9 +1,9 @@
 /**
- * Unit tests for trivia handling: skipping leading whitespace and comments,
- * capturing trailing same-line comments and the separating comma, and merging
- * leading and trailing comments onto a node.
- *
- * @module
+ Unit tests for trivia handling: skipping leading whitespace and comments,
+ capturing trailing same-line comments and the separating comma, and merging
+ leading and trailing comments onto a node.
+ 
+ @module
  */
 
 import {
@@ -13,12 +13,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type JsoncValue,
   appendComments,
   captureTrailing,
   prependComments,
   skipTrivia,
-} from './parse-trivia.ts';
-import type { JsoncValue, } from './value.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const nul = (): JsoncValue => ({ kind: 'null', });
 

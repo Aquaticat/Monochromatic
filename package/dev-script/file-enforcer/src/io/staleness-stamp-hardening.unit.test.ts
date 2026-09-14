@@ -20,14 +20,14 @@ import { freshStalenessManifest, } from '../../dist/final/node/index.mjs';
 //region Temporary fixture helpers
 
 /**
- * Creates isolated temporary directory for staleness stamp hardening tests.
- *
- * @returns Absolute temporary directory path.
- *
- * @example
- * ```ts
- * const tempDir = await setup();
- * ```
+ Creates isolated temporary directory for staleness stamp hardening tests.
+ 
+ @returns Absolute temporary directory path.
+ 
+ @example
+ ```ts
+ const tempDir = await setup();
+ ```
  */
 async function setup(): Promise<string> {
   return mkdtemp(join(
@@ -37,14 +37,14 @@ async function setup(): Promise<string> {
 }
 
 /**
- * Removes isolated temporary directory after staleness stamp hardening tests.
- *
- * @param tempDir - Directory returned by {@link setup}.
- *
- * @example
- * ```ts
- * await teardown(tempDir);
- * ```
+ Removes isolated temporary directory after staleness stamp hardening tests.
+ 
+ @param tempDir - Directory returned by {@link setup}.
+ 
+ @example
+ ```ts
+ await teardown(tempDir);
+ ```
  */
 async function teardown(tempDir: string,): Promise<void> {
   await rm(
@@ -61,16 +61,16 @@ async function teardown(tempDir: string,): Promise<void> {
 //region Manifest fixture helpers
 
 /**
- * Writes manifest whose active-config entry records an invalid nested source path.
- *
- * @param manifestPath - Manifest path to create.
- *
- * @param invalidSourcePath - Source path that should fail with `ENOTDIR` when statted.
- *
- * @example
- * ```ts
- * await writeManifestWithInvalidSource({ manifestPath, invalidSourcePath });
- * ```
+ Writes manifest whose active-config entry records an invalid nested source path.
+ 
+ @param manifestPath - Manifest path to create.
+ 
+ @param invalidSourcePath - Source path that should fail with `ENOTDIR` when statted.
+ 
+ @example
+ ```ts
+ await writeManifestWithInvalidSource({ manifestPath, invalidSourcePath });
+ ```
  */
 async function writeManifestWithInvalidSource(
   {
@@ -86,11 +86,11 @@ async function writeManifestWithInvalidSource(
     throw new Error('Missing test entry point for staleness stamp fixture',);
 
   /**
-   * Test file path used as active config dependency by direct unit execution.
+   Test file path used as active config dependency by direct unit execution.
    */
   const activeConfigPath = resolve(testEntryPoint,);
   /**
-   * Active config metadata needed for manifest freshness filtering.
+   Active config metadata needed for manifest freshness filtering.
    */
   const activeConfigStat = await stat(activeConfigPath,);
   await writeFile(

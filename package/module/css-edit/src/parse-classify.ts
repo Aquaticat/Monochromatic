@@ -18,22 +18,22 @@ import {
 //region Classification result
 
 /**
- * Outcome of classifying a non-trivia, non-at-keyword run inside stylesheet or
- * block contents, per the CSS Syntax section 5 unified consumer: a
- * declaration-shaped run with its exclusive end index, or a qualified rule
- * with the index of its opening `{`.
+ Outcome of classifying a non-trivia, non-at-keyword run inside stylesheet or
+ block contents, per the CSS Syntax section 5 unified consumer: a
+ declaration-shaped run with its exclusive end index, or a qualified rule
+ with the index of its opening `{`.
  */
 export type ClassifiedRun = {
   readonly outcome: 'declaration';
   /**
-   * Index one past the run's final token (past the `;` when present; at the
-   * closing `}` or EOF token when not).
+   Index one past the run's final token (past the `;` when present; at the
+   closing `}` or EOF token when not).
    */
   readonly endExclusive: number;
 } | {
   readonly outcome: 'rule';
   /**
-   * Index of the `{` token that starts the rule's block.
+   Index of the `{` token that starts the rule's block.
    */
   readonly blockOpenIndex: number;
 };
@@ -43,38 +43,38 @@ export type ClassifiedRun = {
 //region Declaration shape probe
 
 /**
- * Result of probing whether a run starts declaration-shaped: `ident`,
- * optional trivia, `:`. A non-shaped run forces the rule path.
+ Result of probing whether a run starts declaration-shaped: `ident`,
+ optional trivia, `:`. A non-shaped run forces the rule path.
  */
 type DeclarationShapeProbe = {
   readonly shaped: false;
 } | {
   readonly shaped: true;
   /**
-   * Index of the colon completing the shape.
+   Index of the colon completing the shape.
    */
   readonly colonIndex: number;
   /**
-   * Whether the ident names a custom property (`--` prefix), which may keep
-   * `{}` blocks in its value.
+   Whether the ident names a custom property (`--` prefix), which may keep
+   `{}` blocks in its value.
    */
   readonly isCustomProperty: boolean;
 };
 
 /**
- * Probe miss shared by every non-declaration-shaped return path.
+ Probe miss shared by every non-declaration-shaped return path.
  */
 const NOT_DECLARATION_SHAPED: DeclarationShapeProbe = { shaped: false, };
 
 /**
- * Finds the colon completing a declaration-shaped start (`ident`, optional
- * trivia, `:`), reporting the classification seed for {@link classifyRun}.
- *
- * @param tokens - Full token array of the document.
- *
- * @param start - Index of the run's first token.
- *
- * @returns Probe outcome with colon index and custom-property flag when shaped.
+ Finds the colon completing a declaration-shaped start (`ident`, optional
+ trivia, `:`), reporting the classification seed for {@link classifyRun}.
+ 
+ @param tokens - Full token array of the document.
+ 
+ @param start - Index of the run's first token.
+ 
+ @returns Probe outcome with colon index and custom-property flag when shaped.
  */
 function probeDeclarationShape({
   tokens,
@@ -84,7 +84,7 @@ function probeDeclarationShape({
   readonly start: number;
 },): DeclarationShapeProbe {
   /**
-   * Candidate property-name token.
+   Candidate property-name token.
    */
   const first = tokens[start];
   if ((first === undefined) || (!isTokenIdent(first,)))
@@ -92,11 +92,11 @@ function probeDeclarationShape({
 
   return (function scanForColon(): DeclarationShapeProbe {
     /**
-     * Cursor scanning past trivia between the ident and a possible colon.
+     Cursor scanning past trivia between the ident and a possible colon.
      */
     let probe = start + 1;
     /**
-     * Token at the probe cursor, refreshed as trivia is skipped.
+     Token at the probe cursor, refreshed as trivia is skipped.
      */
     let candidate = tokens[probe];
     while ((candidate !== undefined) && isTriviaToken(candidate,)) {
@@ -106,7 +106,7 @@ function probeDeclarationShape({
     if ((candidate === undefined) || (!isTokenColon(candidate,)))
       return NOT_DECLARATION_SHAPED;
     /**
-     * Parsed data of the ident token, holding the unescaped name.
+     Parsed data of the ident token, holding the unescaped name.
      */
     const identData = tokenData(first,);
     return {
@@ -123,28 +123,28 @@ function probeDeclarationShape({
 //region Classifier
 
 /**
- * Classifies a content run as a declaration or a qualified rule, mirroring the
- * CSS Syntax section 5 approach: attempt a declaration, and restart as a rule
- * when the value of a non-custom property would contain a top-level `{` block
- * (the `span:hover { ... }` case).
- *
- * Custom properties keep `{}` blocks in their value, so
- * `--raw: { nested: token };` classifies as a declaration.
- *
- * @param tokens - Full token array of the document.
- *
- * @param start - Index of the run's first token (non-trivia, not an
- * at-keyword, not a closing token).
- *
- * @returns Discriminated classification with the indices the consumer needs.
- *
- * @throws CssParseError on unbalanced closing tokens or a rule prelude that
- * never reaches a block.
- *
- * @example
- * ```ts
- * classifyRun({ tokens, start: 0 }); // => { outcome: 'rule', blockOpenIndex: 3 }
- * ```
+ Classifies a content run as a declaration or a qualified rule, mirroring the
+ CSS Syntax section 5 approach: attempt a declaration, and restart as a rule
+ when the value of a non-custom property would contain a top-level `{` block
+ (the `span:hover { ... }` case).
+ 
+ Custom properties keep `{}` blocks in their value, so
+ `--raw: { nested: token };` classifies as a declaration.
+ 
+ @param tokens - Full token array of the document.
+ 
+ @param start - Index of the run's first token (non-trivia, not an
+ at-keyword, not a closing token).
+ 
+ @returns Discriminated classification with the indices the consumer needs.
+ 
+ @throws CssParseError on unbalanced closing tokens or a rule prelude that
+ never reaches a block.
+ 
+ @example
+ ```ts
+ classifyRun({ tokens, start: 0 }); // => { outcome: 'rule', blockOpenIndex: 3 }
+ ```
  */
 export function classifyRun({
   tokens,
@@ -154,7 +154,7 @@ export function classifyRun({
   readonly start: number;
 },): ClassifiedRun {
   /**
-   * Declaration seed when the run opens ident-colon; a miss forces the rule path.
+   Declaration seed when the run opens ident-colon; a miss forces the rule path.
    */
   const declarationShape = probeDeclarationShape({
     tokens,
@@ -163,11 +163,11 @@ export function classifyRun({
 
   return (function scanRun(): ClassifiedRun {
     /**
-     * Nesting depth relative to the run's own level.
+     Nesting depth relative to the run's own level.
      */
     let depth = 0;
     /**
-     * Scan cursor; declaration scanning starts after the colon, rule scanning at the run start.
+     Scan cursor; declaration scanning starts after the colon, rule scanning at the run start.
      */
     let index = declarationShape.shaped
       ? declarationShape.colonIndex + 1
@@ -175,7 +175,7 @@ export function classifyRun({
 
     while (index < tokens.length) {
       /**
-       * Token at the scan cursor.
+       Token at the scan cursor.
        */
       const token = tokens[index];
       if ((token === undefined) || isTokenEOF(token,))
@@ -238,7 +238,7 @@ export function classifyRun({
         endExclusive: index,
       };
     /**
-     * EOF token at the terminal cursor, when tokenizer supplied one.
+     EOF token at the terminal cursor, when tokenizer supplied one.
      */
     const terminalToken = tokens[index];
     throw new CssParseError({

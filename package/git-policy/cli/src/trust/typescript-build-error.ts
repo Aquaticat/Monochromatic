@@ -1,21 +1,21 @@
 /**
- * TypeScript trust build error boundary.
- *
- * @module
+ TypeScript trust build error boundary.
+ 
+ @module
  */
 
 /**
- * TypeScript trust build failure.
+ TypeScript trust build failure.
  */
 export class TypeScriptBuildError extends Error {
   /**
-   * Creates stable TypeScript build failure.
-   *
-   * @param message - safe failure explanation
-   *
-   * @param options - optional cause
-   *
-   * @mutates options through super options.cause getter or proxy effects
+   Creates stable TypeScript build failure.
+   
+   @param message - safe failure explanation
+   
+   @param options - optional cause
+   
+   @mutates options through super options.cause getter or proxy effects
    */
   public constructor(
     message: string,

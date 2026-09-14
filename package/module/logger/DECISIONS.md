@@ -244,3 +244,404 @@ Known limits,
 
 The OPFS factory stays exported for callers who want an origin-private JSONL file
 and accept its close-to-persist semantics.
+
+## Console output neutralizes control characters (2026-09-06)
+
+The console sink renders every C0 control except newline and tab,
+ DEL,
+ and every C1 control as a `\uXXXX` escape before text reaches `console.*` or `process.stderr`
+(`src/sink/console-control-chars.ts`).
+Measured before the change:
+ the built artifact passed an OSC title-set and a CSI clear-screen straight to stdout,
+ so any log message carrying user-influenced text could drive the terminal.
+The repository's syntax-boundary rule makes this mandatory for a published sink.
+
+Alternatives considered:
+ preserving well-formed SGR color sequences (rejected:
+ no in-repo call site passes color through the logger,
+ and an allowlist needs a classifier tested against malformed sequences);
+ dropping controls silently (rejected:
+ hides an injection attempt);
+ replacing with U+FFFD (rejected:
+ loses which control was attempted).
+Newlines stay literal because multi-line messages are core,
+ and the persistent JSONL sinks already escape everything through `JSON.stringify`.
+A single-argument `console.info` call does not interpret `%s`,
+ so no format-specifier guard is needed;
+ that was verified on the built artifact.
+
+## flush() has a deadline (2026-09-06)
+
+`flush()` used to await every in-flight write with no bound,
+ so a file append on a stuck mount or an IndexedDB transaction blocked by another tab kept
+`await logger.flush()` from ever settling and the process from exiting.
+One deadline now wraps startup verification,
+ the write drain,
+ and every sink flush hook together;
+ when it elapses the logger reports one breadcrumb,
+ drops the tracked writes from its view,
+ and resolves.
+Sinks expose no cancellation,
+ so abandoned work continues in the background.
+
+The deadline is one `createLogger` option,
+ `flushDeadlineMs`,
+ with the exported default `DEFAULT_FLUSH_DEADLINE_MS` (5000).
+Measured on 2026-09-06:
+ a default logger flushing 100 records through the console and file sinks settles in about 2 ms locally
+(five runs between 2.02 and 2.69 ms),
+ so the default leaves three orders of magnitude for a slow but working backend.
+It is an option rather than a constant because a consumer on a network filesystem needs recourse other than a fork.
+The other tuning knobs proposed in `bulletproofing.plan.md` (verify timeout,
+ retire threshold,
+ startup buffer cap) stay out;
+ none has a measured trigger.
+
+## Zero-config at import, no configure step (recorded 2026-09-06)
+
+The default `logger` is usable at import time with no setup call,
+ and `createLogger` exists only for callers who want an explicit sink list.
+One reason for migrating off logtape,
+ recorded by the maintainer so it is not lost:
+logtape forces every test file to declare the same `createLogger` or `configure` block before logging works,
+ and that boilerplate repeated across the whole test tree was part of why it was dropped.
+A future change that adds a mandatory configure or setup call reopens that problem.
+
+## Open problem: import-time sink discovery pushes consumers toward dynamic imports (2026-09-06)
+
+Resolved on 2026-09-06 by the section "Platform-specific sinks live behind `./node` and `./browser`";
+ kept as the record of how the problem was understood and measured.
+
+Users of this logger have complained that using it effectively introduces dynamic imports into an otherwise clean application.
+The mechanism is the flip side of zero-config:
+ importing the module runs sink auto-discovery (five verifies,
+ a filesystem probe,
+ storage probes) as a side effect,
+ so any module that must not pay for that in some execution context defers the import instead of importing statically.
+The repository has one such consumer of its own:
+ `package/ssg/aquati.cat/src/build/compress.ts` imports the logger with `await import(...)` on the main thread only,
+ "so worker threads never pay its import-time sink auto-discovery".
+
+Corrected on 2026-09-06 after the maintainer pointed out that users object to the mere existence of `import()` in their bundles,
+ not to when discovery runs.
+Measured on the 0.2.0 artifacts:
+ both `dist/final/node/index.mjs` and `dist/final/neutral/index.mjs` contain two dynamic imports,
+ `import('node:fs/promises')` and `import('node:path')`,
+ both from the file sink's verify (`src/sink/file.ts`).
+A browser consumer that imports the logger statically and never touches the file sink,
+ bundled with rolldown for `platform: 'browser'` against the neutral artifact,
+ still carries both `import('node:...')` expressions in its output.
+So the artifact itself puts dynamic imports into every downstream bundle,
+ and starting discovery lazily would change nothing about that.
+The earlier lazy-discovery candidate is withdrawn as a fix for this complaint;
+ it remains a separate idea for callers that never log.
+
+Candidate fixes,
+ ranked:
+
+- Platform-split file sink through package `imports` conditions.
+   `src/sink/file.node.ts` imports `node:fs/promises` and `node:path` statically;
+   `src/sink/file.neutral.ts` is the same `createFileSink` signature whose verify answers false;
+   `package.json` maps `#file-sink` to the node file under the `node` condition and the neutral file under `default`,
+   and rolldown selects one per build from its `platform`.
+   Pros:
+   no `import()` in either artifact,
+   public API and types identical on both conditions,
+   zero-config kept,
+   no new plugin.
+   Cons:
+   two source files for one sink,
+   and TypeScript must resolve `#file-sink` (the `imports` field is honoured under `moduleResolution: bundler`).
+- Separate `./node` subpath export carrying the file sink,
+   with the root entry free of Node modules.
+   Pros:
+   the same artifact hygiene.
+   Cons:
+   the default logger under Node loses file logging unless the `node` condition of `.` re-adds it,
+   which lands back on the first option with an extra export to document.
+- Static `node:` imports in one file sink plus a browser shim for the two modules.
+   Pros:
+   one source file.
+   Cons:
+   the neutral artifact then imports a shim that exists only to fail verification,
+   which is the first option's stub with more indirection.
+- Keep the dynamic imports and instruct consumers to mark `node:` modules external.
+   Pros:
+   no code change.
+   Cons:
+   the complaint is precisely that consumers have to do this.
+
+Ranking:
+ platform split > subpath export > static imports with shim > documentation only,
+ because the platform split removes the expressions with no API change,
+ the subpath export reaches the same artifact only by re-adding the split,
+ the shim is the split with more indirection,
+ and documentation leaves the artifact as it is.
+Acceptance:
+ a unit test reads both built artifacts and fails on any `import(`,
+ and the consumer bundle probe shows none.
+
+### Prior art (manifests fetched from the registry on 2026-09-06)
+
+- `@logtape/logtape` 2.3.3,
+   the logger this package replaced,
+   selects platform code through the `imports` field:
+   `#util` maps to `util.node.js` under `node` and `bun`,
+   `util.deno.js` under `deno`,
+   and `util.js` under `browser` and `default`;
+   the node file imports `node:util` statically and the default file uses `JSON.stringify`.
+   Its file sink is a separate package,
+   `@logtape/file`,
+   whose `#filesink` maps `bun` and `import` to `filesink.node.js` and `deno` to `filesink.deno.js`,
+   with no browser branch at all.
+- `chalk` 6.0.0:
+   `#supports-color` maps `node` to a file with static `node:process`,
+   `node:os`,
+   and `node:tty` imports,
+   and `default` to a browser file that reads `navigator`.
+- `consola` 3.4.2:
+   root export `node` to `dist/index.mjs` and `default` to `dist/browser.mjs`,
+   plus the legacy `browser` field.
+- `tslog` 5.1.0:
+   root export per runtime condition (`browser`,
+   `worker`,
+   `deno`,
+   `bun`,
+   `node`,
+   `react-native`,
+   `default`) to `index.node.js`,
+   `index.browser.js`,
+   or `index.universal.js`.
+- `uuid` 14.0.2,
+   `supports-color` 11.0.0,
+   `yaml` 2.9.0,
+   `isomorphic-git` 1.41.9:
+   `node` and `default` conditions to separate builds.
+- `nanoid` 6.0.1:
+   `browser` condition;
+   `ws` 8.21.3:
+   `browser` condition to a throwing stub;
+   `electron-log` 5.4.4:
+   `browser` condition to the renderer entry.
+- `log4js` 6.9.1:
+   the legacy `browser` field maps every file appender to `ignoreBrowser.js`,
+   a stub,
+   and maps `os` and `streamroller` to `false`;
+   `dotenv` 17.4.2 maps `fs` to `false`.
+- `pino` 10.3.1,
+   `debug` 4.4.3,
+   `winston` 3.19.0,
+   `roarr` 7.21.7,
+   `cross-fetch` 4.1.0:
+   legacy `browser` field to a separate browser entry.
+- `jose` 6.2.12:
+   one Web-API-only entry with no Node module anywhere.
+- `puppeteer-core` 25.10.0:
+   legacy `browser` field to `puppeteer-core-browser.js`.
+   Its maintainer opened vitejs/vite discussion 17661 asking to suppress the
+   "externalized for browser compatibility" warning for libraries that import Node modules conditionally at runtime;
+   the discussion is unanswered,
+   and Vite's troubleshooting page tells users to report such warnings to the library.
+
+Nothing in this sample keeps a runtime-guarded dynamic import of a Node module in an artifact that browsers also receive.
+Every package selects the platform at resolution time (export conditions,
+ `imports` conditions,
+ or the `browser` field) and,
+ where a feature cannot exist in the browser,
+ ships a stub (`log4js`,
+ `ws`,
+ `dotenv`) or omits the feature from the browser entry (`consola`,
+ LogTape).
+Node documents the `imports` field as "conditional exports for internal modules" with resolution rules
+"otherwise analogous to the exports field".
+The ranked first option therefore has the closest precedent in the logger this package replaced,
+ and the current design has precedent only in the unanswered request for warning suppression.
+
+### The split adds no configure step (verified 2026-09-06)
+
+The maintainer ruled out any return of LogTape's awkwardness,
+ where every test or executed file had to run the same `configure` block before logging worked.
+The platform split does not touch that:
+ the default `logger` is still built at import from the default sink list,
+ `initPromise`,
+ `createLogger`,
+ and the `sinks` namespace keep their shapes,
+ and the only thing that changes is which `createFileSink` implementation each build inlines.
+Selection happens in the resolver,
+ not in user code,
+ and needs no consumer configuration.
+Measured with a scratch package whose `imports` maps `#platform` to a node file (static `node:fs/promises`) under `node`
+and a neutral file under `default`,
+ consumed by one static import and no setup call:
+
+- Node 26 and Bun 1.3.14 run the node branch.
+- rolldown 1.2.7 inlines the node branch with a static `node:fs/promises` import under `platform: 'node'`
+   and the neutral branch with no Node module under `platform: 'neutral'`.
+- `tsc` under `moduleResolution: bundler` type-checks the import with no extra option.
+- oxlint's import plugin reports no unresolved import.
+- Vite resolves `#` subpath imports since 4.2 (vitejs/vite pull request 7770,
+   through the `resolve.exports` library)
+   and documents `node` in its default server conditions and `browser` in its default client conditions,
+   so an Astro or Vite consumer of the `/ts` subpath gets the node branch on the server and the neutral branch on the client.
+
+## Sinks verify concurrently under a time limit (2026-09-06)
+
+`initialize()` used to await each sink's `verify` in list order.
+One verify that never answered (a filesystem probe on a hung mount,
+ an IndexedDB open blocked by another tab's version change) starved every sink after it,
+ kept the startup buffer growing for the life of the process,
+ and never let the logger mark itself initialized.
+
+Every sink now verifies concurrently,
+ each under `withTimeout`;
+ a verify that runs past the limit counts as unavailable with one breadcrumb,
+ and an answer that arrives later is never observed.
+The limit is one `createLogger` option,
+ `verifyTimeoutMs`,
+ with the exported default `DEFAULT_VERIFY_TIMEOUT_MS` (5000),
+ the same shape as `flushDeadlineMs` and for the same reason:
+ a consumer whose probe is legitimately slow needs recourse other than losing the sink.
+Measured on 2026-09-06:
+ the five shipped verifies complete together in about 2.4 ms locally.
+
+Concurrency is safe for the exactly-once guarantee because a record's immediate-write set
+(sinks available when it was logged) and its replay set (sinks that become available later)
+are disjoint regardless of which verify settles first;
+ a unit test pins that with two sinks verifying at different speeds.
+
+## Startup buffer is bounded and overflow is reported (2026-09-06)
+
+Records logged before every sink has answered its verify wait in a startup buffer and replay once a sink becomes available.
+That buffer had no cap,
+ so a burst during the verify window claimed memory without limit;
+ verify liveness bounded the window (`verifyTimeoutMs`) but not the volume.
+The buffer now holds at most `STARTUP_BUFFER_CAP` records (10000,
+ exported as a constant).
+On overflow the oldest buffered record is dropped,
+ because the newest records carry the context closest to whatever is being diagnosed,
+ and once initialization completes one synthetic `warn` record naming the dropped count is written to every available sink,
+ so the loss appears in the log stream itself instead of being silent.
+
+The cap is a constant rather than a `createLogger` option.
+The section "`flush()` has a deadline" recorded that a startup buffer cap knob had no measured trigger;
+ that still holds for tuning it,
+ while the bound itself is a safety property whose cost was measured on 2026-09-06 on the built artifact:
+ a full buffer holds about 1.6 MiB of heap,
+ a burst of the cap settles in about 3 ms,
+ and bursts of ten and one hundred times the cap settle in about 20 ms and 150 ms (five runs each,
+ lowest reported),
+ so `Array.prototype.shift` on the full buffer stays linear under V8 and no ring buffer is needed.
+When no sink survives verification the count is never written;
+ the logger throws on the next call in that state,
+ and a marker with nowhere to go has no consumer.
+
+## Platform-specific sinks live behind `./node` and `./browser` (2026-09-06)
+
+Both built artifacts used to carry `import('node:fs/promises')` and `import('node:path')` from the file sink's verify,
+ and every downstream bundle inherited them;
+ the node artifact also carried the browser-only IndexedDB and OPFS sinks as dead code.
+The root entry is now platform-neutral:
+ `logger`,
+ `initPromise`,
+ `createLogger`,
+ `tagged`,
+ the types,
+ and a `sinks` namespace holding only the cross-platform factories (console,
+ noop,
+ sessionStorage,
+ localStorage).
+`createFileSink` ships from the `./node` subpath with static `node:` imports;
+ `createIndexedDbSink` and `createOpfsSink` ship from `./browser`.
+The default sink list is selected at resolution time through the `#default-sinks` entry of `package.json` `imports`
+(`node` condition:
+ console,
+ sessionStorage,
+ localStorage,
+ file;
+ `default`:
+ console,
+ IndexedDB,
+ sessionStorage,
+ localStorage),
+ so zero-config keeps file logging under Node and IndexedDB in browsers with no runtime probe and no configure step.
+The mechanism is LogTape's and chalk's;
+ the packaging is msw's (`msw/node`,
+ `msw/browser`).
+
+Rejected shapes:
+
+- A stub `createFileSink` in the neutral build whose verify answers false:
+   ships code whose only job is to say no.
+- Omitting the file sink from the neutral `sinks` namespace with per-condition `types`:
+   TypeScript under `bundler` resolution matches only `types` and `import`/`require`,
+   and this repository sets no `customConditions`,
+   so every bundler-resolution consumer would have received the neutral types.
+
+Measured on 2026-09-06 on the built artifacts:
+ zero `import(` across every chunk of both builds;
+ the node root fell from 25401 to 18863 bytes plus a 2089-byte file-sink chunk,
+ the neutral root from 26590 to 18787 plus a 4437-byte IndexedDB chunk;
+ the root `index.d.mts` files of both builds are byte-identical;
+ browser consumer bundles from rolldown and esbuild carry no `import(`,
+ no `node:` module,
+ and no `createFileSink`;
+ `sinks.createFileSink()` is a `TS2339` error under `bundler` resolution with no custom conditions;
+ a Node end-user run wrote its log file through the default logger and through the `./node` factory.
+A six-case unit test reads every `.mjs` chunk of both builds,
+ with positive controls,
+ and rejects dynamic imports and cross-platform leaks in either direction.
+
+Accepted consequences:
+
+- A Node consumer whose bundler resolves the `default` condition gets no file logging and no message,
+   the same as every package in the prior-art sample.
+- Workspace libraries that ship only a neutral build and inline the logger (`css-edit`,
+   `fs-path`,
+   `jsonc-edit`,
+   `test`,
+   `toml-edit`) follow the neutral default list in their inlined copy under Node;
+   the owner decided they get a node build with a `node` condition,
+   as `kv-store` and `pipe` already have.
+- A types gate for subpaths (`attw --pack .`) in the release workflow is deferred to a separate change.
+
+## Default logger is built on first use, and no readiness promise is exported (2026-09-06)
+
+Issue #493:
+ a Cloudflare Worker that imported `tagged` printed four `logger internal error` warnings per isolate start
+and then threw `No logging backends available` on the first default-logger call.
+`logger.ts` called `createLogger` at module evaluation,
+ every verify ran under `withTimeout`,
+ and Workers forbid `setTimeout` in global scope,
+ so every sink failed verification before any handler ran.
+
+The singleton is now a memo filled by the first log or flush call;
+ the default sink list is a factory called at that moment;
+ `package.json` declares `sideEffects: false`.
+Importing the root entry or `tagged` therefore runs no discovery,
+ no timers,
+ no I/O,
+ and no storage probes,
+ and the first call inside a handler verifies the sinks where the runtime allows it.
+A unit test imports the built root entry while `setTimeout` throws,
+ asserts no breadcrumb,
+ then logs inside a "handler" and sees the record land.
+
+The `initPromise` root export is removed rather than made lazy.
+Eight workspace files awaited it at module top level;
+ the owner ruled those call sites wrong:
+ `flush()` awaits readiness internally,
+ and a readiness promise consumers await before logging is the configure step this logger exists to avoid.
+`createLogger` keeps returning its instance's `initPromise` for callers that own the instance,
+ such as the Worker that awaits it through `ctx.waitUntil`.
+
+Consequences:
+
+- The dynamic-import complaint recorded under "Open problem:
+   import-time sink discovery" loses its last leg:
+   a consumer that never logs now pays nothing at import,
+   so deferring the import with `await import(...)` has no reason left.
+- Rejected:
+   a lazily triggered thenable `initPromise` that builds the logger on `then`.
+   It would have kept the eight wrong call sites working,
+   which is the opposite of the point,
+   and would have changed the export's type from `Promise` to a thenable.

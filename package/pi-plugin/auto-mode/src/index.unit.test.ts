@@ -1,8 +1,8 @@
 /**
- * Tests for the extension entry point.
- *
- * Covers event handler registration, /guard command behavior,
- * and propose_trust tool execution.
+ Tests for the extension entry point.
+ 
+ Covers event handler registration, /guard command behavior,
+ and propose_trust tool execution.
  */
 
 import {
@@ -65,9 +65,9 @@ type AppendedEntry = {
 };
 
 /**
- * Creates a mock ExtensionAPI that records all registrations.
- *
- * @returns mock API and tracking structures for assertions
+ Creates a mock ExtensionAPI that records all registrations.
+ 
+ @returns mock API and tracking structures for assertions
  */
 function createMockApi() {
   const registrations: RegistrationMap = new Map();
@@ -131,15 +131,15 @@ function createMockApi() {
 }
 
 /**
- * Retrieves the registered handler for a given event.
- * Throws if no handler is registered.
- *
- * @returns the handler function
- *
- * @example
- * ```typescript
- * const handler = getHandler({ registrations, event: 'tool_call' });
- * ```
+ Retrieves the registered handler for a given event.
+ Throws if no handler is registered.
+ 
+ @returns the handler function
+ 
+ @example
+ ```typescript
+ const handler = getHandler({ registrations, event: 'tool_call' });
+ ```
  */
 function getHandler(
   {
@@ -160,18 +160,18 @@ function getHandler(
 }
 
 /**
- * Describe read or Bash probe exactly as auto-mode does before approval lookup.
- *
- * @param event - read or Bash tool event used by integration probe
- *
- * @returns action text used by approval fingerprint lookup
- *
- * @throws when event is outside probe's read and Bash surface
- *
- * @example
- * ```typescript
- * probeAction({ type: 'tool_call', toolName: 'read', toolCallId: 'r', input: { path: '/tmp/a' } });
- * ```
+ Describe read or Bash probe exactly as auto-mode does before approval lookup.
+ 
+ @param event - read or Bash tool event used by integration probe
+ 
+ @returns action text used by approval fingerprint lookup
+ 
+ @throws when event is outside probe's read and Bash surface
+ 
+ @example
+ ```typescript
+ probeAction({ type: 'tool_call', toolName: 'read', toolCallId: 'r', input: { path: '/tmp/a' } });
+ ```
  */
 function probeAction(
   event: ToolCallEvent,
@@ -186,24 +186,24 @@ function probeAction(
 }
 
 /**
- * Invoke tool-call handler with prior approval that records only when call was flagged.
- *
- * @param handler - registered auto-mode tool-call handler
- *
- * @param event - tool event whose flagging decision is observed
- *
- * @param cwd - Pi working directory used by path policy and fingerprint
- *
- * @param entries - append-only mock entries inspected before and after handler
- *
- * @returns whether auto-mode reached flagged approval-reuse path
- *
- * @mutates entries - flagged calls append reused approval verdict
- *
- * @example
- * ```typescript
- * await probeFlaggedToolCall({ handler, event, cwd: '/project', entries: [] });
- * ```
+ Invoke tool-call handler with prior approval that records only when call was flagged.
+ 
+ @param handler - registered auto-mode tool-call handler
+ 
+ @param event - tool event whose flagging decision is observed
+ 
+ @param cwd - Pi working directory used by path policy and fingerprint
+ 
+ @param entries - append-only mock entries inspected before and after handler
+ 
+ @returns whether auto-mode reached flagged approval-reuse path
+ 
+ @mutates entries - flagged calls append reused approval verdict
+ 
+ @example
+ ```typescript
+ await probeFlaggedToolCall({ handler, event, cwd: '/project', entries: [] });
+ ```
  */
 async function probeFlaggedToolCall(
   {
@@ -256,7 +256,7 @@ await describe({
     //region Registration
 
     it({
-      name: 'registers all seven event handlers',
+      name: 'registers all eight event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         await autoMode(api,);
@@ -268,6 +268,7 @@ await describe({
           'agent_start',
           'turn_start',
           'agent_end',
+          'agent_settled',
           'tool_call',
         ];
 
@@ -276,6 +277,90 @@ await describe({
           expect(handlers,).toBeDefined();
           expect(handlers,).toHaveLength(1,);
         }
+      },
+    },),
+
+    //endregion
+
+    //region Project context lifecycle
+
+    it({
+      name: 'keeps loaded project context through compact retry and clears after settlement',
+      fn: async () => {
+        /** Project-context snapshots received by provider-free evaluation seam. */
+        const evaluatedProjectContexts: string[] = [];
+        /** Mock extension runtime under lifecycle test. */
+        const { api, registrations, } = createMockApi();
+        initializeAutoMode({
+          pi: api,
+          evaluateAction: async function captureEvaluation(
+            { projectContext, },
+          ) {
+            evaluatedProjectContexts.push(projectContext ?? '',);
+            return { decision: { block: false, }, };
+          },
+        },);
+        /** Prompt hook that captures Pi-loaded context files. */
+        const beforeAgentStartHandler = getHandler({
+          registrations,
+          event: 'before_agent_start',
+        },);
+        /** Inner-run end hook fired before automatic compaction. */
+        const agentEndHandler = getHandler({ registrations, event: 'agent_end', },);
+        /** Retried inner-run start hook fired without another prompt hook. */
+        const agentStartHandler = getHandler({ registrations, event: 'agent_start', },);
+        /** Final run-settlement hook after retries and continuations finish. */
+        const agentSettledHandler = getHandler({ registrations, event: 'agent_settled', },);
+        /** Guarded tool-call hook consuming current context snapshot. */
+        const toolCallHandler = getHandler({ registrations, event: 'tool_call', },);
+        /** Pi-loaded project policy fixture. */
+        const contextFiles = [{
+          path: '/repo/AGENTS.md',
+          content: 'PX3: Act on authorized repository work.\n',
+        },];
+        /** Canonical snapshot expected at evaluation boundary. */
+        const expectedProjectContext =
+          String.raw`[{"content":"PX3: Act on authorized repository work.\n","path":"/repo/AGENTS.md"}]`;
+        /** Minimal UI context used by agent lifecycle handlers. */
+        const lifecycleContext = {
+          ui: {
+            setWidget() {},
+          },
+        };
+
+        beforeAgentStartHandler({ systemPromptOptions: { contextFiles, }, },);
+        agentEndHandler({}, lifecycleContext,);
+        agentStartHandler({}, lifecycleContext,);
+        await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-context-after-compact',
+            input: { path: '/repo/.env', },
+          },
+          {
+            cwd: '/repo',
+            ui: lifecycleContext.ui,
+          },
+        );
+        agentSettledHandler();
+        await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-context-after-settlement',
+            input: { path: '/repo/.env', },
+          },
+          {
+            cwd: '/repo',
+            ui: lifecycleContext.ui,
+          },
+        );
+
+        expect(evaluatedProjectContexts,).toEqual([
+          expectedProjectContext,
+          '',
+        ],);
       },
     },),
 
@@ -605,7 +690,7 @@ await describe({
         },);
 
         /**
-         * Concurrent decisions paired with source commands for actionable failure diffs.
+         Concurrent decisions paired with source commands for actionable failure diffs.
          */
         const decisions = await Promise.all(commands.map(
           async function classifyReadOnlyCommand(command, commandIndex,): Promise<{
@@ -745,7 +830,7 @@ await describe({
         },);
 
         /**
-         * Concurrent decisions paired with unsafe commands for actionable failure diffs.
+         Concurrent decisions paired with unsafe commands for actionable failure diffs.
          */
         const decisions = await Promise.all(commands.map(
           async function classifyMutatingCommand(command, commandIndex,): Promise<{

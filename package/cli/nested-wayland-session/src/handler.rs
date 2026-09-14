@@ -107,7 +107,7 @@ impl SeatHandler for Compositor {
     fn seat_state(&mut self) -> &mut SeatState<Compositor> {
         // What:     `&mut self.seat_state`. A mutable borrow of the field (tail expr).
         // Why:      Return the seat state Smithay asked for.
-        &mut self.seat_state
+        return &mut self.seat_state
     }
 
     /// What:     `fn cursor_image(&mut self, _seat: &Seat<Self>, _image:
@@ -142,7 +142,7 @@ impl SeatHandler for Compositor {
         // ```ts
         // const client = focused ? tryGetClient(dh, focused.id()) : undefined;
         // ```
-        let client = focused.and_then(|s| dh.get_client(s.id()).ok());
+        let client = focused.and_then(|s| return dh.get_client(s.id()).ok());
 
         // What:     `set_data_device_focus(dh, seat, client);`. Free function that
         //           points the seat's data device at that client.
@@ -182,7 +182,7 @@ impl DataDeviceHandler for Compositor {
     fn data_device_state(&self) -> &DataDeviceState {
         // What:     `&self.data_device_state`. Borrow the field (tail expression).
         // Why:      Hand Smithay the state.
-        &self.data_device_state
+        return &self.data_device_state
     }
 }
 

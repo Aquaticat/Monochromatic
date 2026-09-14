@@ -1,7 +1,7 @@
 /**
- * Model id, slug, and explicit-selection helpers.
- *
- * @module
+ Model id, slug, and explicit-selection helpers.
+ 
+ @module
  */
 
 import type {
@@ -12,57 +12,57 @@ import type {
 } from './types.ts';
 
 /**
- * Sentinel returned by {@link parseProviderModelSlug} when a slug is not a
- * `provider/model` pair (no slash, or empty provider or model id). A
- * `unique symbol`; callers narrow with `=== MALFORMED_SLUG`. Exported because
- * `budget-override` consumes it across the module seam.
+ Sentinel returned by {@link parseProviderModelSlug} when a slug is not a
+ `provider/model` pair (no slash, or empty provider or model id). A
+ `unique symbol`; callers narrow with `=== MALFORMED_SLUG`. Exported because
+ `budget-override` consumes it across the module seam.
  */
 export const MALFORMED_SLUG: unique symbol = Symbol('model selection canonical slug malformed',);
 
 //region Types
 
 /**
- * Parsed `provider/model` slug.
+ Parsed `provider/model` slug.
  */
 export type ProviderModelSlug = {
   /**
-   * Provider segment before the first slash.
+   Provider segment before the first slash.
    */
   readonly provider: string;
   /**
-   * Model id segment after the first slash.
+   Model id segment after the first slash.
    */
   readonly modelId: string;
 };
 
 /**
- * Global model registry shape needed by explicit selection.
+ Global model registry shape needed by explicit selection.
  */
 export type ModelRegistryLookup<TModel extends ModelIdentity = ModelIdentity,> = {
   /**
-   * Return every registry model.
+   Return every registry model.
    */
   getAll: () => readonly TModel[];
 };
 
 /**
- * Options for resolving an explicit model slug.
+ Options for resolving an explicit model slug.
  */
 export type ResolveRequestedModelOptions<TModel extends ModelIdentity = ModelIdentity,> = {
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   readonly scope: EffectiveModelScope<TModel>;
   /**
-   * User supplied slug.
+   User supplied slug.
    */
   readonly requestedSlug: string;
   /**
-   * Global model registry used to distinguish out-of-scope slugs.
+   Global model registry used to distinguish out-of-scope slugs.
    */
   readonly modelRegistry: ModelRegistryLookup<TModel>;
   /**
-   * Error prefix used by the consuming extension.
+   Error prefix used by the consuming extension.
    */
   readonly errorPrefix?: string;
 };
@@ -72,16 +72,16 @@ export type ResolveRequestedModelOptions<TModel extends ModelIdentity = ModelIde
 //region Public API
 
 /**
- * Return canonical slug for a model.
- *
- * @param model - model identity
- *
- * @returns canonical `provider/modelId` slug
- *
- * @example
- * ```typescript
- * canonicalSlug({ provider: 'openai', id: 'gpt-5.5', name: 'GPT' });
- * ```
+ Return canonical slug for a model.
+ 
+ @param model - model identity
+ 
+ @returns canonical `provider/modelId` slug
+ 
+ @example
+ ```typescript
+ canonicalSlug({ provider: 'openai', id: 'gpt-5.5', name: 'GPT' });
+ ```
  */
 export function canonicalSlug(
   model: Pick<ModelIdentity, 'provider' | 'id'>,
@@ -90,29 +90,29 @@ export function canonicalSlug(
 }
 
 /**
- * Parse a canonical `provider/model` slug.
- *
- * @param slug - candidate provider/model slug
- *
- * @returns parsed slug, or {@link MALFORMED_SLUG} when the slug is malformed
- *
- * @example
- * ```typescript
- * parseProviderModelSlug('openai/gpt-5.5');
- * ```
+ Parse a canonical `provider/model` slug.
+ 
+ @param slug - candidate provider/model slug
+ 
+ @returns parsed slug, or {@link MALFORMED_SLUG} when the slug is malformed
+ 
+ @example
+ ```typescript
+ parseProviderModelSlug('openai/gpt-5.5');
+ ```
  */
 export function parseProviderModelSlug(
   slug: string,
 ): ProviderModelSlug | typeof MALFORMED_SLUG {
   /**
-   * Slash index between provider and model id.
+   Slash index between provider and model id.
    */
   const slashIndex = slug.indexOf('/',);
   if (slashIndex === (-1))
     return MALFORMED_SLUG;
 
   /**
-   * Provider segment before slash.
+   Provider segment before slash.
    */
   const provider = slug.slice(
     0,
@@ -120,7 +120,7 @@ export function parseProviderModelSlug(
   )
     .trim();
   /**
-   * Model id segment after slash.
+   Model id segment after slash.
    */
   const modelId = slug.slice(slashIndex + 1,)
     .trim();
@@ -134,16 +134,16 @@ export function parseProviderModelSlug(
 }
 
 /**
- * Return the final slash-delimited segment from a model id.
- *
- * @param modelId - model id to inspect
- *
- * @returns final slash-delimited model id segment
- *
- * @example
- * ```typescript
- * getModelIdLeaf({ modelId: 'openai/gpt-5.5' });
- * ```
+ Return the final slash-delimited segment from a model id.
+ 
+ @param modelId - model id to inspect
+ 
+ @returns final slash-delimited model id segment
+ 
+ @example
+ ```typescript
+ getModelIdLeaf({ modelId: 'openai/gpt-5.5' });
+ ```
  */
 export function getModelIdLeaf(
   {
@@ -153,7 +153,7 @@ export function getModelIdLeaf(
   },
 ): string {
   /**
-   * Index after final slash, or zero when no slash exists.
+   Index after final slash, or zero when no slash exists.
    */
   const leafStartIndex = modelId.lastIndexOf('/',)
     + 1;
@@ -161,16 +161,16 @@ export function getModelIdLeaf(
 }
 
 /**
- * Format allowed canonical slugs for errors and status output.
- *
- * @param scope - effective model scope
- *
- * @returns comma-separated canonical slugs or `none`
- *
- * @example
- * ```typescript
- * allowedSlugs(scope);
- * ```
+ Format allowed canonical slugs for errors and status output.
+ 
+ @param scope - effective model scope
+ 
+ @returns comma-separated canonical slugs or `none`
+ 
+ @example
+ ```typescript
+ allowedSlugs(scope);
+ ```
  */
 export function allowedSlugs<TModel extends ModelIdentity,>(
   scope: EffectiveModelScope<TModel>,
@@ -188,24 +188,24 @@ export function allowedSlugs<TModel extends ModelIdentity,>(
 }
 
 /**
- * Resolve an explicit model slug inside an effective scoped model set.
- *
- * @param scope - effective scoped model set
- *
- * @param requestedSlug - user supplied slug
- *
- * @param modelRegistry - global model registry used for out-of-scope detection
- *
- * @param errorPrefix - optional error prefix used by the consuming extension
- *
- * @returns selected scoped model
- *
- * @throws when slug is absent, ambiguous, unknown, or outside scope
- *
- * @example
- * ```typescript
- * resolveRequestedModel({ scope, requestedSlug: 'openai/gpt-5.5', modelRegistry });
- * ```
+ Resolve an explicit model slug inside an effective scoped model set.
+ 
+ @param scope - effective scoped model set
+ 
+ @param requestedSlug - user supplied slug
+ 
+ @param modelRegistry - global model registry used for out-of-scope detection
+ 
+ @param errorPrefix - optional error prefix used by the consuming extension
+ 
+ @returns selected scoped model
+ 
+ @throws when slug is absent, ambiguous, unknown, or outside scope
+ 
+ @example
+ ```typescript
+ resolveRequestedModel({ scope, requestedSlug: 'openai/gpt-5.5', modelRegistry });
+ ```
  */
 export function resolveRequestedModel<TModel extends ModelIdentity,>(
   {
@@ -216,12 +216,12 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
   }: ResolveRequestedModelOptions<TModel>,
 ): ModelSelection<TModel> {
   /**
-   * Error message prefix for the consuming extension.
+   Error message prefix for the consuming extension.
    */
   const errorPrefix = rawErrorPrefix
     ?? 'model selection';
   /**
-   * Trimmed requested model slug.
+   Trimmed requested model slug.
    */
   const requestedSlug = rawRequestedSlug
     .trim();
@@ -229,7 +229,7 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
     throw new Error(`${errorPrefix}: model slug must not be empty`,);
 
   /**
-   * Matching scoped model candidates.
+   Matching scoped model candidates.
    */
   const scopedMatches = findScopedSlugMatches({
     scope,
@@ -238,7 +238,7 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
   if (scopedMatches.length
     === 1) {
     /**
-     * Only scoped match after length guard.
+     Only scoped match after length guard.
      */
     const [selected,] = scopedMatches;
     if (selected === undefined)
@@ -289,13 +289,13 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
 //region Matching
 
 /**
- * Find scoped matches for canonical, bare id, or unique model name slug forms.
- *
- * @param scope - effective model scope
- *
- * @param requestedSlug - requested model slug
- *
- * @returns matching scoped models
+ Find scoped matches for canonical, bare id, or unique model name slug forms.
+ 
+ @param scope - effective model scope
+ 
+ @param requestedSlug - requested model slug
+ 
+ @returns matching scoped models
  */
 function findScopedSlugMatches<TModel extends ModelIdentity,>(
   {
@@ -315,7 +315,7 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
   }
 
   /**
-   * Bare id matches inside scope.
+   Bare id matches inside scope.
    */
   const idMatches = scope.entries
     .filter(function matchId(entry,) {
@@ -324,7 +324,7 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
         === requestedSlug;
     },);
   /**
-   * Model display-name matches inside scope.
+   Model display-name matches inside scope.
    */
   const nameMatches = scope.entries
     .filter(function matchName(entry,) {
@@ -333,7 +333,7 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
         === requestedSlug;
     },);
   /**
-   * Unique matches across both bare forms.
+   Unique matches across both bare forms.
    */
   const uniqueMatches = uniqueScopedModels([
     ...idMatches,
@@ -343,13 +343,13 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
 }
 
 /**
- * Check whether a slug exists anywhere in the global registry.
- *
- * @param requestedSlug - requested model slug
- *
- * @param models - global model registry entries
- *
- * @returns whether slug exists globally
+ Check whether a slug exists anywhere in the global registry.
+ 
+ @param requestedSlug - requested model slug
+ 
+ @param models - global model registry entries
+ 
+ @returns whether slug exists globally
  */
 function slugExistsGlobally(
   {
@@ -375,17 +375,17 @@ function slugExistsGlobally(
 }
 
 /**
- * Deduplicate scoped model matches by canonical slug.
- *
- * @param models - scoped models to deduplicate
- *
- * @returns unique scoped models
+ Deduplicate scoped model matches by canonical slug.
+ 
+ @param models - scoped models to deduplicate
+ 
+ @returns unique scoped models
  */
 function uniqueScopedModels<TModel extends ModelIdentity,>(
   models: readonly ScopedModel<TModel>[],
 ): ScopedModel<TModel>[] {
   /**
-   * Locally-owned accumulator built without mutating input.
+   Locally-owned accumulator built without mutating input.
    */
   const result: ScopedModel<TModel>[] = [];
   for (const model of models) {

@@ -1,8 +1,8 @@
 /**
- * Unit tests for the error classes: each carries the right `name`, is an
- * instance of its class, and exposes its structured fields (offset, path).
- *
- * @module
+ Unit tests for the error classes: each carries the right `name`, is an
+ instance of its class, and exposes its structured fields (offset, path).
+ 
+ @module
  */
 
 import {
@@ -11,8 +11,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   jsoncDelete,
   jsoncGetValue,
   JsoncParseError,
@@ -20,7 +20,7 @@ import {
   JsoncTypeError,
   parseJsonc,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

@@ -1,0 +1,295 @@
+[vars]
+build_question = '''
+const { readFileSync, writeFileSync } = await import("node:fs")
+const { join } = await import("node:path")
+const root = process.cwd()
+const templatePath = join(root, "questions", "current.template.html")
+const outputPath = join(root, "questions", "current.html")
+const environments = [
+  { key: "wallpaper", title: "Current wallpaper seed", meta: "Measured seed 45588C · Tonal Spot · Default contrast", accent: "blue" },
+  { key: "coral", title: "Warm coral", meta: "Seed D45D42 · Tonal Spot · Default contrast", accent: "coral" },
+  { key: "green", title: "Forest green", meta: "Seed 2E7D32 · Tonal Spot · Default contrast", accent: "green" },
+  { key: "gold", title: "Gold Vibrant", meta: "Seed C49000 · Vibrant style · Default contrast", accent: "gold" },
+  { key: "magenta-medium", title: "Magenta Expressive", meta: "Seed A43D96 · Expressive style · Medium contrast", accent: "magenta and teal" },
+  { key: "monochrome-high", title: "Monochrome at High contrast", meta: "Seed 808080 · Monochromatic style · High contrast", accent: "high-contrast gray" },
+]
+const reaches = [
+  { key: "stable", code: "R1", label: "stable structure", alt: "fixed black folder canvas, rail, deck, and track canvas" },
+  { key: "zoned", code: "R2", label: "zoned structure", alt: "generated rail and deck on black content canvases" },
+  { key: "tonal", code: "R3", label: "tonal structure", alt: "generated folder canvas, rail, and deck beside a black track canvas" },
+]
+const currentRows = [
+  { key: "fixed", code: "C1", label: "fixed current row", alt: "fixed soft-neutral current row" },
+  { key: "dynamic", code: "C2", label: "dynamic current row", alt: "Android-generated soft-neutral current row" },
+]
+const matrixRows = environments.map((environment) => {
+  const bands = currentRows.map((currentRow) => {
+    const candidates = reaches.map((reach) => {
+      const basename = `dark-dynamic-${environment.key}-${reach.key}-${currentRow.key}`
+      const relativePath = join("questions", "render", `${basename}.png`)
+      const encoded = readFileSync(join(root, relativePath)).toString("base64")
+      const source = `data:image/png;base64,${encoded}`
+      const title = `${environment.title} · ${reach.code} ${reach.label} · ${currentRow.code} ${currentRow.label}`
+      const alt = `${environment.accent} dynamic accents with ${reach.alt} and ${currentRow.alt}`
+      return `<article class="evidence-card"><span class="code">${reach.code}${currentRow.code}</span><button class="evidence-button" type="button" data-preview-title="${title}" data-preview-src="${source}"><img src="${source}" width="852" height="883" alt="${alt}"><span class="evidence-label">Open ${reach.code}${currentRow.code} at panel scale</span></button></article>`
+    }).join("\n")
+    return `<div class="matrix-band"><div class="matrix-row-label">${currentRow.code} · ${currentRow.label}</div><div class="matrix-scroll"><div class="matrix-candidates">${candidates}</div></div></div>`
+  }).join("\n")
+  return `<section class="matrix-row" aria-labelledby="environment-${environment.key}"><h3 id="environment-${environment.key}">${environment.title}</h3><p class="environment-meta">${environment.meta}</p>${bands}</section>`
+}).join("\n")
+let html = readFileSync(templatePath, "utf8")
+html = html.replace("@@MATRIX_ROWS@@", matrixRows)
+if (html.includes("@@MATRIX_ROWS@@")) {
+  throw new Error("Dark dynamic-color matrix still contains its row placeholder.")
+}
+writeFileSync(outputPath, html)
+console.log("Built self-contained two-by-three dark dynamic-color matrix.")
+'''
+
+validate_question = '''
+const { execFileSync } = await import("node:child_process")
+const { readFileSync } = await import("node:fs")
+const { join } = await import("node:path")
+const root = process.cwd()
+const htmlPath = join(root, "questions", "current.html")
+const html = readFileSync(htmlPath, "utf8")
+if (html.includes("@@MATRIX_ROWS@@")) {
+  throw new Error("Dark dynamic-color matrix contains an unresolved row placeholder.")
+}
+if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html)) {
+  throw new Error("Dark dynamic-color matrix depends on an external script or stylesheet.")
+}
+const dataUrls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)]
+if (dataUrls.length !== 72) {
+  throw new Error(`Dark dynamic-color matrix embeds ${dataUrls.length} image references; expected 72.`)
+}
+const uniqueImages = new Map(dataUrls.map((match) => [match[1], Buffer.from(match[1], "base64")]))
+if (uniqueImages.size !== 36) {
+  throw new Error(`Dark dynamic-color matrix embeds ${uniqueImages.size} distinct captures; expected 36.`)
+}
+const pngSignature = "89504e470d0a1a0a"
+for (const [encoded, image] of uniqueImages) {
+  if (image.subarray(0, 8).toString("hex") !== pngSignature) {
+    throw new Error(`Embedded evidence ${encoded.slice(0, 16)} is not a PNG.`)
+  }
+  const width = image.readUInt32BE(16)
+  const height = image.readUInt32BE(20)
+  if (width !== 2076 || height !== 2152) {
+    throw new Error(`Embedded dynamic-color evidence is ${width} × ${height}; expected 2076 × 2152.`)
+  }
+}
+const required = [
+  "Choose dark dynamic-color behavior",
+  "It does not authorize production implementation.",
+  "Palette rows are stress inputs, not choices.",
+  "True black remains visible",
+  "Decision one: structural surface reach",
+  "R1 · recommended",
+  "R2",
+  "R3",
+  "Ranking: R1 &gt; R2 &gt; R3.",
+  "Decision two: current-row neutral source",
+  "C1 · recommended",
+  "C2",
+  "Ranking: C1 &gt; C2.",
+  "Each environment contains a 2 × 3 matrix.",
+  "Current wallpaper seed",
+  "Warm coral",
+  "Forest green",
+  "Gold Vibrant",
+  "Magenta Expressive",
+  "Monochrome at High contrast",
+  "name=\"surfaceReach\"",
+  "name=\"currentRowSource\"",
+  "spaces alone do not complete this field",
+  "Native pixels",
+  "Reset 100%",
+  "Source 2076 × 2152 physical px · design 852 × 883dp",
+  "These captures establish palette-dependent appearance.",
+  "Response path:",
+  "reply in chat with both codes",
+  "@media (prefers-color-scheme: dark)",
+  "color-scheme: light dark",
+]
+for (const fragment of required) {
+  if (!html.includes(fragment)) {
+    throw new Error(`Dark dynamic-color matrix is missing required content: ${fragment}`)
+  }
+}
+const radioCount = (html.match(/type="radio"/g) ?? []).length
+if (radioCount !== 5) {
+  throw new Error(`Dark dynamic-color matrix has ${radioCount} radio choices; expected 5.`)
+}
+if (html.includes('id="copy-answer"') || html.includes("navigator.clipboard") || html.includes("execCommand('copy')")) {
+  throw new Error("Dark dynamic-color matrix includes an unnecessary clipboard control or API.")
+}
+const environments = [
+  { key: "wallpaper", seed: "45588C", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "coral", seed: "D45D42", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "green", seed: "2E7D32", style: "TONAL_SPOT", contrast: "0.0" },
+  { key: "gold", seed: "C49000", style: "VIBRANT", contrast: "0.0" },
+  { key: "magenta-medium", seed: "A43D96", style: "EXPRESSIVE", contrast: "0.5" },
+  { key: "monochrome-high", seed: "808080", style: "MONOCHROMATIC", contrast: "1.0" },
+]
+const reaches = ["stable", "zoned", "tonal"]
+const currentRows = ["fixed", "dynamic"]
+const hexToRgb = (hex) => [1, 3, 5].map((start) => Number.parseInt(hex.slice(start, start + 2), 16))
+const toPixel = (hex) => `srgba(${hexToRgb(hex).join(",")},1)`
+const luminance = (hex) => hexToRgb(hex)
+  .map((value) => value / 255)
+  .map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+  .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0)
+const contrastRatio = (first, second) => {
+  const [lighter, darker] = [luminance(first), luminance(second)].sort((left, right) => right - left)
+  return (lighter + 0.05) / (darker + 0.05)
+}
+const textPairNames = [
+  "primary", "secondaryContainer", "blackText", "blackSupporting",
+  "stableContainerText", "stableContainerSupporting", "lowContainerText",
+  "lowContainerSupporting", "containerText", "containerSupporting",
+  "highContainerText", "highContainerSupporting",
+]
+const outlinePairNames = ["blackOutline", "lowContainerOutline", "containerOutline"]
+const computedRatios = []
+let embeddedIndex = 0
+for (const environment of environments) {
+  const rolePath = join(root, "questions", "evidence", `dark-dynamic-${environment.key}-roles.json`)
+  const roleEvidence = JSON.parse(readFileSync(rolePath, "utf8"))
+  if (
+    roleEvidence.request.seed !== environment.seed
+    || roleEvidence.request.style !== environment.style
+    || roleEvidence.request.contrast !== environment.contrast
+  ) {
+    throw new Error(`${environment.key} role evidence does not match its requested Android environment.`)
+  }
+  const roles = roleEvidence.resolvedDarkRoles
+  const pairs = {
+    primary: [roles.primary, roles.on_primary],
+    secondaryContainer: [roles.secondary_container, roles.on_secondary_container],
+    blackText: ["#000000", roles.on_surface],
+    blackSupporting: ["#000000", roles.on_surface_variant],
+    blackOutline: ["#000000", roles.outline],
+    stableContainerText: ["#0A0A0D", roles.on_surface],
+    stableContainerSupporting: ["#0A0A0D", roles.on_surface_variant],
+    lowContainerText: [roles.surface_container_low, roles.on_surface],
+    lowContainerSupporting: [roles.surface_container_low, roles.on_surface_variant],
+    containerText: [roles.surface_container, roles.on_surface],
+    containerSupporting: [roles.surface_container, roles.on_surface_variant],
+    highContainerText: [roles.surface_container_high, roles.on_surface],
+    highContainerSupporting: [roles.surface_container_high, roles.on_surface_variant],
+    lowContainerOutline: [roles.surface_container_low, roles.outline],
+    containerOutline: [roles.surface_container, roles.outline],
+  }
+  const ratios = Object.fromEntries(Object.entries(pairs).map(([name, pair]) => [name, contrastRatio(pair[0], pair[1])]))
+  if (Object.values(ratios).some((ratio) => !Number.isFinite(ratio))) {
+    throw new Error(`${environment.key} produced a non-finite contrast ratio.`)
+  }
+  for (const name of textPairNames) {
+    if (ratios[name] < 4.5) {
+      throw new Error(`${environment.key}/${name} contrast is ${ratios[name].toFixed(2)}; expected at least 4.5.`)
+    }
+  }
+  for (const name of outlinePairNames) {
+    if (ratios[name] < 3) {
+      throw new Error(`${environment.key}/${name} contrast is ${ratios[name].toFixed(2)}; expected at least 3.`)
+    }
+  }
+  computedRatios.push(ratios)
+  const dynamicCurrentSamples = []
+  for (const currentRow of currentRows) {
+    for (const reach of reaches) {
+      const basename = `dark-dynamic-${environment.key}-${reach}-${currentRow}`
+      const hierarchyPath = join(root, "questions", "evidence", `${basename}.xml`)
+      const hierarchy = readFileSync(hierarchyPath, "utf8")
+      const markers = [
+        'text="Camellia"', 'text="Another Xronixle"',
+        'bounds="[1107,331][1420,390]"', 'content-desc="Previous track"',
+        'content-desc="Pause"', 'content-desc="Next track"',
+        'content-desc="Repeat track"', 'content-desc="Play in order"',
+        'content-desc="Shuffle Camellia"', 'content-desc="Shuffle all folders"',
+        'checked="true" clickable="true"',
+      ]
+      const missing = markers.filter((marker) => !hierarchy.includes(marker))
+      if (missing.length > 0) {
+        throw new Error(`${environment.key}/${reach}/${currentRow} hierarchy is missing accepted markers: ${missing.join(", ")}.`)
+      }
+      if (hierarchy.includes('content-desc="Playing"')) {
+        throw new Error(`${environment.key}/${reach}/${currentRow} restored the rejected current-row play icon.`)
+      }
+      const imagePath = join(root, "questions", "render", `${basename}.png`)
+      const pixels = execFileSync("magick", [
+        imagePath, "-format",
+        "%[fx:minima.a]|%[fx:maxima.a]|%[pixel:p{1038,1000}]|%[pixel:p{1800,1000}]|%[pixel:p{500,1000}]|%[pixel:p{1800,350}]|%[pixel:p{30,1000}]|%[pixel:p{900,1450}]",
+        "info:",
+      ], { encoding: "utf8" }).trim().split("|")
+      if (pixels[0] !== "1" || pixels[1] !== "1") {
+        throw new Error(`${basename}.png is not fully opaque.`)
+      }
+      if (pixels[2] !== "srgba(0,0,0,1)" || pixels[3] !== "srgba(0,0,0,1)") {
+        throw new Error(`${basename}.png lost its visible true-black spacer or track canvas.`)
+      }
+      const expectedFolder = reach === "tonal" ? toPixel(roles.surface_container_low) : "srgba(0,0,0,1)"
+      const expectedRail = reach === "stable"
+        ? "srgba(0,0,0,1)"
+        : reach === "zoned" ? toPixel(roles.surface_container_low) : toPixel(roles.surface_container)
+      const expectedDeck = reach === "stable"
+        ? "srgba(10,10,13,1)"
+        : reach === "zoned" ? toPixel(roles.surface_container_low) : toPixel(roles.surface_container_high)
+      if (pixels[4] !== expectedFolder || pixels[6] !== expectedRail || pixels[7] !== expectedDeck) {
+        throw new Error(`${basename}.png does not match its disclosed folder, rail, and deck mapping.`)
+      }
+      const expectedCurrent = currentRow === "fixed"
+        ? "srgba(10,10,13,1)"
+        : toPixel(roles.surface_container_low)
+      if (pixels[5] !== expectedCurrent) {
+        throw new Error(`${basename}.png does not match its disclosed current-row neutral source.`)
+      }
+      if (currentRow === "dynamic") {
+        dynamicCurrentSamples.push(pixels[5])
+      }
+      const expectedEncoded = readFileSync(imagePath).toString("base64")
+      const firstEmbedded = dataUrls[embeddedIndex * 2]?.[1]
+      const secondEmbedded = dataUrls[embeddedIndex * 2 + 1]?.[1]
+      if (firstEmbedded !== expectedEncoded || secondEmbedded !== expectedEncoded) {
+        throw new Error(`${basename}.png does not match its two displayed embedded references.`)
+      }
+      embeddedIndex += 1
+    }
+  }
+  if (new Set(dynamicCurrentSamples).size !== 1) {
+    throw new Error(`${environment.key} couples current-row color to structural surface reach.`)
+  }
+}
+if (embeddedIndex !== 36) {
+  throw new Error(`Validated ${embeddedIndex} embedded candidates; expected 36.`)
+}
+const recordedContrast = JSON.parse(readFileSync(join(root, "questions", "evidence", "dark-dynamic-contrast.json"), "utf8"))
+for (const name of [...textPairNames, ...outlinePairNames]) {
+  const computedMinimum = Math.min(...computedRatios.map((ratios) => ratios[name]))
+  if (!Number.isFinite(recordedContrast.minima[name]) || Math.abs(recordedContrast.minima[name] - Number(computedMinimum.toFixed(2))) > 0.001) {
+    throw new Error(`${name} recorded minimum does not match recomputed role evidence.`)
+  }
+}
+if (!html.includes("dialog.showModal()") || !html.includes("returnTarget.focus()") || !html.includes("nativeScaleY")) {
+  throw new Error("Dynamic-color preview does not retain modal, focus restoration, and exact native scaling behavior.")
+}
+console.log("Separated dark dynamic-color matrix is valid.")
+'''
+
+[tasks.build]
+description = "Embed native Android evidence into the self-contained separated dark dynamic-color matrix"
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.build_question}}"
+
+[tasks.lint]
+description = "Validate the active separated dark dynamic-color design matrix"
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.validate_question}}"
+
+[tasks."test:unit"]
+description = "Exercise the separated dark dynamic-color matrix completion contract"
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.validate_question}}"

@@ -514,18 +514,22 @@ and semantic failures at 0.
   trap or a `toJSON`.
 - 51 `push`,
    24 `set`:
-   an argument stored into a caller-owned container, which really does leave.
+   an argument stored into a caller-owned container,
+   which really does leave.
 - 47 `report`,
    33 `getScope`,
    15 `getLastToken`:
-   the linter's own plugin API, outside analyzable
+   the linter's own plugin API,
+   outside analyzable
   source.
 - 35 `map`,
    34 `reduce`,
    30 `filter`,
    15 `find`:
    observer-bearing members whose *result* is unaccounted.
-  Not, as this list first said, members whose observer cannot be resolved.
+  Not,
+   as this list first said,
+   members whose observer cannot be resolved.
    Checked by reading three
   of them:
    `groupRuns` in `package/module/logger/src/sink/console.ts`,
@@ -626,7 +630,8 @@ the relation working.
 
 ### The largest remaining group is not about escaping, measured
 
-Recorded 2026-08-07 after instrumenting `viewResultUnaccounted`, because the obvious reading is wrong
+Recorded 2026-08-07 after instrumenting `viewResultUnaccounted`,
+ because the obvious reading is wrong
 and cost part of a session.
 
 The reading was that `map`,
@@ -751,11 +756,13 @@ each element's `toString`,
 and `findLast` are observer-bearing and answered elsewhere by design;
  `splice` restructures.
 
-**The receiver side has no incorrect refusal left in this sample.** That matches the classification
+**The receiver side has no incorrect refusal left in this sample.**
+ That matches the classification
 above from the other direction:
  1172 of the findings are argument-side,
  and the receiver-side groups
-that remain are host calls, bodyless callables and arguments genuinely stored into caller-owned
+that remain are host calls,
+ bodyless callables and arguments genuinely stored into caller-owned
 containers.
  The work that remains in this rule is not on the path this document is about.
 
@@ -791,11 +798,16 @@ The 32 need reading carefully rather than acting on.
 design*,
  since its observer obligation belongs to `recordReadonlyViewApplications`;
  reaching that branch
-at all means the observer analysis already declined. So the number counts consequences, and the cause
+at all means the observer analysis already declined.
+ So the number counts consequences,
+ and the cause
 sits upstream in `readonlyViewElementApplications`,
  which has several exits:
- the result gate, no
-observers, an observer that is not owned source, and undescribed observer positions.
+ the result gate,
+ no
+observers,
+ an observer that is not owned source,
+ and undescribed observer positions.
  Which of those
 fires has not been measured,
  and it is the next thing to measure rather than to reason about.
@@ -883,7 +895,8 @@ one of the 21 at a location that also appears among the removed,
  so no parameter became opaque that was
 not opaque before.
 
-The recommendation, since one was asked for:
+The recommendation,
+ since one was asked for:
  land this.
  It does not extend the trust baseline,
  it
@@ -893,12 +906,16 @@ would show it wrong is the one that did not move.
 
 ### Both halves together produced a false offer, measured and reverted
 
-Attempted 2026-08-07 and reverted, and the pair is the point: each half alone changes nothing, and
+Attempted 2026-08-07 and reverted,
+ and the pair is the point:
+ each half alone changes nothing,
+ and
 together they cross the line this work has held all session.
 
 The halves are the ones the trace named.
  `unobservedArgument` asks whether an argument's *type* can
-carry state, so a fold's `[]` seed is refused although it holds nothing at the moment of the call;
+carry state,
+ so a fold's `[]` seed is refused although it holds nothing at the moment of the call;
 asking instead whether the argument has parameter origins is the provenance question rather than the
 shape question.
  And `reduce` seeded carries the observer-return relation.
@@ -977,7 +994,8 @@ No provably inert group remains,
  `indexOf`,
  `lastIndexOf` and
 `at` are already listed,
- and they were the last candidates for the treatment `join` received, since they
+ and they were the last candidates for the treatment `join` received,
+ since they
 compare with `===` and coerce nothing.
  What `join` had and these groups do not is a specification-defined
 operation that provably runs no user code on a stated condition about the receiver.

@@ -1,7 +1,7 @@
 /**
- * Verified readonly standard-collection suggestions.
- *
- * @module
+ Verified readonly standard-collection suggestions.
+ 
+ @module
  */
 
 import type {
@@ -19,7 +19,7 @@ import { classifyReadonlyType, } from './readonly-classifier.ts';
 import type { ReadonlySuggestion, } from './readonly-suggestion.ts';
 
 /**
- * Supported mutable standard collection projections.
+ Supported mutable standard collection projections.
  */
 const COLLECTION_PROJECTIONS: Readonly<Record<string, {
   readonly readonlyName: string;
@@ -32,20 +32,20 @@ const COLLECTION_PROJECTIONS: Readonly<Record<string, {
 };
 
 /**
- * Builds verified mutable standard-collection projection suggestion.
- *
- * @param context - Rule context providing fix range mapping.
- *
- * @param parameter - TypeScript parameter with collection annotation.
- *
- * @param project - TypeScript project proving owner and reachable types.
- *
- * @returns suggestion list, empty unless exact projection is proven.
- *
- * @example
- * ```ts
- * readonlyCollectionSuggestions({ context, parameter, project });
- * ```
+ Builds verified mutable standard-collection projection suggestion.
+ 
+ @param context - Rule context providing fix range mapping.
+ 
+ @param parameter - TypeScript parameter with collection annotation.
+ 
+ @param project - TypeScript project proving owner and reachable types.
+ 
+ @returns suggestion list, empty unless exact projection is proven.
+ 
+ @example
+ ```ts
+ readonlyCollectionSuggestions({ context, parameter, project });
+ ```
  */
 export function readonlyCollectionSuggestions({
   context,
@@ -62,7 +62,7 @@ export function readonlyCollectionSuggestions({
       .typeName,)))
     return [];
   /**
-   * Projection specification selected by authored collection name.
+   Projection specification selected by authored collection name.
    */
   const projection = COLLECTION_PROJECTIONS[parameter.type
     .typeName
@@ -74,12 +74,12 @@ export function readonlyCollectionSuggestions({
       !== projection.typeArgumentCount))
     return [];
   /**
-   * Semantic collection type proving standard-library owner identity.
+   Semantic collection type proving standard-library owner identity.
    */
   const collectionType = project.checker
     .getTypeFromTypeNode(parameter.type,);
   /**
-   * Collection owner symbol and declarations.
+   Collection owner symbol and declarations.
    */
   const owner = collectionType?.getSymbol();
   if ((collectionType === undefined)
@@ -95,7 +95,7 @@ export function readonlyCollectionSuggestions({
     || (!owner.declarations
       .every(function defaultLibraryDeclaration(handle,): boolean {
       /**
-       * Resolved owner declaration used for exact provenance check.
+       Resolved owner declaration used for exact provenance check.
        */
       const declaration = handle.resolve(project,);
       return (declaration !== undefined)
@@ -104,7 +104,7 @@ export function readonlyCollectionSuggestions({
     },)))
     return [];
   /**
-   * Semantic type arguments whose complete reachability must be readonly.
+   Semantic type arguments whose complete reachability must be readonly.
    */
   const typeArguments = project.checker
     .getTypeArguments(collectionType,);
@@ -120,23 +120,23 @@ export function readonlyCollectionSuggestions({
     },)))
     return [];
   /**
-   * Source file owning authored collection type.
+   Source file owning authored collection type.
    */
   const sourceFile = parameter.getSourceFile();
   /**
-   * Authored type retained except exact mutable owner name.
+   Authored type retained except exact mutable owner name.
    */
   const authoredType = parameter.type
     .getText(sourceFile,);
   /**
-   * Readonly owner replacement preserving authored type arguments.
+   Readonly owner replacement preserving authored type arguments.
    */
   const replacement = `${projection.readonlyName}${authoredType.slice(parameter.type
     .typeName
     .text
     .length,)}`;
   /**
-   * BOM-aware Oxlint replacement range.
+   BOM-aware Oxlint replacement range.
    */
   const range: [
     number,
@@ -158,13 +158,13 @@ export function readonlyCollectionSuggestions({
     ),
   ];
   /**
-   * Authored mutable collection owner named without source trivia.
+   Authored mutable collection owner named without source trivia.
    */
   const mutableName = parameter.type
     .typeName
     .text;
   /**
-   * Exact one-line transformation shared by diagnostic and suggestion UI.
+   Exact one-line transformation shared by diagnostic and suggestion UI.
    */
   const diagnosticGuidance = `Replace the mutable collection owner \`${mutableName}\` with \`${projection.readonlyName}\`.`;
   return [

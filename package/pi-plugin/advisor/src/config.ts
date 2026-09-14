@@ -1,7 +1,7 @@
 /**
- * Advisor extension config loading and merging.
- *
- * @module
+ Advisor extension config loading and merging.
+ 
+ @module
  */
 
 import { readFile, } from 'node:fs/promises';
@@ -18,25 +18,28 @@ import {
 } from './config-schemas.ts';
 import {
   CONFIG_FILE_NAME,
+  DEFAULT_COLLECTION_GRACE_MS,
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 /**
- * Sentinel returned by {@link loadConfigFile} when a config scope's file is absent.
- * A `unique symbol`; callers narrow with `=== NO_CONFIG_FILE`.
+ Sentinel returned by {@link loadConfigFile} when a config scope's file is absent.
+ A `unique symbol`; callers narrow with `=== NO_CONFIG_FILE`.
  */
 const NO_CONFIG_FILE: unique symbol = Symbol('advisor/no-config-file',);
 
 //region Defaults
 
 /**
- * Default runtime config before user files are merged.
+ Default runtime config before user files are merged.
  */
 export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
   enabled: true,
   timeoutMs: DEFAULT_TIMEOUT_MS,
+  hedgingEnabled: false,
+  collectionGraceMs: DEFAULT_COLLECTION_GRACE_MS,
   maxAdvisorOutputTokens: DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   includePriorAdvisorResults: true,
 };
@@ -46,42 +49,42 @@ export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
 //region Public API
 
 /**
- * Options for loading Advisor config.
+ Options for loading Advisor config.
  */
 export type LoadConfigOptions = {
   /**
-   * Current working directory used for project config lookup.
+   Current working directory used for project config lookup.
    */
   readonly cwd: string;
   /**
-   * Home directory override for tests.
+   Home directory override for tests.
    */
   readonly home?: string;
 };
 
 /**
- * Load and merge global and project Advisor config files.
- *
- * @param options - lookup directories for global and project config
- *
- * @returns merged runtime configuration
- *
- * @throws when a present config file is invalid JSON or fails schema validation
- *
- * @example
- * ```typescript
- * const config = await loadMergedConfig({ cwd: process.cwd() });
- * ```
+ Load and merge global and project Advisor config files.
+ 
+ @param options - lookup directories for global and project config
+ 
+ @returns merged runtime configuration
+ 
+ @throws when a present config file is invalid JSON or fails schema validation
+ 
+ @example
+ ```typescript
+ const config = await loadMergedConfig({ cwd: process.cwd() });
+ ```
  */
 export async function loadMergedConfig(
   options: LoadConfigOptions,
 ): Promise<AdvisorConfig> {
   /**
-   * Path metadata for both config scopes.
+   Path metadata for both config scopes.
    */
   const paths = getConfigPaths(options,);
   /**
-   * Global and project config file contents, when present.
+   Global and project config file contents, when present.
    */
   const [global, project,] = await Promise.all([
     loadConfigFile({
@@ -94,7 +97,7 @@ export async function loadMergedConfig(
     },),
   ],);
   /**
-   * Config values merged with project scalar overrides.
+   Config values merged with project scalar overrides.
    */
   const merged = mergeConfigFiles({
     defaults: DEFAULT_CONFIG,
@@ -103,6 +106,9 @@ export async function loadMergedConfig(
       project,
     ],
   },);
+
+  if (merged.hedgingEnabled && (merged.hedgeDelayMs === undefined))
+    throw new Error('advisor: hedgingEnabled requires an explicit positive hedgeDelayMs; overlapping requests can both be billed',);
 
   return {
     ...merged,
@@ -116,16 +122,16 @@ export async function loadMergedConfig(
 }
 
 /**
- * Build absolute global and project config paths.
- *
- * @param options - lookup directories
- *
- * @returns config paths
- *
- * @example
- * ```typescript
- * getConfigPaths({ cwd: '/repo', home: '/home/me' });
- * ```
+ Build absolute global and project config paths.
+ 
+ @param options - lookup directories
+ 
+ @returns config paths
+ 
+ @example
+ ```typescript
+ getConfigPaths({ cwd: '/repo', home: '/home/me' });
+ ```
  */
 export function getConfigPaths(
   options: LoadConfigOptions,
@@ -134,7 +140,7 @@ export function getConfigPaths(
   readonly projectPath: string;
 } {
   /**
-   * Home directory used by pi for global agent config.
+   Home directory used by pi for global agent config.
    */
   const home = options.home
     ?? process
@@ -163,13 +169,13 @@ export function getConfigPaths(
 //region Internal loading
 
 /**
- * Merge config file overrides without letting explicit undefined erase defaults.
- *
- * @param defaults - default runtime config
- *
- * @param configs - config files in merge order, with {@link NO_CONFIG_FILE} entries skipped
- *
- * @returns merged runtime config without source metadata
+ Merge config file overrides without letting explicit undefined erase defaults.
+ 
+ @param defaults - default runtime config
+ 
+ @param configs - config files in merge order, with {@link NO_CONFIG_FILE} entries skipped
+ 
+ @returns merged runtime config without source metadata
  */
 function mergeConfigFiles(
   {
@@ -181,19 +187,30 @@ function mergeConfigFiles(
   }>>,
 ): Omit<AdvisorConfig, 'source'> {
   /**
-   * Current merged config, replaced for each present override file.
+   Current merged config, replaced for each present override file.
    */
   let merged = defaults;
   for (const config of configs) {
     if (config === NO_CONFIG_FILE)
       continue;
     /**
-     * Merged context cap, omitted when neither scope configures one.
+     Merged context cap, omitted when neither scope configures one.
      */
     const maxContextChars = config.maxContextChars
       ?? merged
       .maxContextChars;
+    /**
+     Delay inherits across config scopes; explicit disablement remains independent.
+     */
+    const hedgeDelayMs = config.hedgeDelayMs ?? merged.hedgeDelayMs;
+    /**
+     Unrelated project overrides must not discard global reviewer instructions.
+     */
+    const systemPrompt = config.systemPrompt ?? merged.systemPrompt;
     merged = {
+      hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
+      collectionGraceMs: config.collectionGraceMs ?? merged.collectionGraceMs,
+      ...(hedgeDelayMs === undefined ? {} : { hedgeDelayMs, }),
       enabled: config.enabled
         ?? merged
         .enabled,
@@ -207,23 +224,20 @@ function mergeConfigFiles(
         ?? merged
         .includePriorAdvisorResults,
       ...(maxContextChars === undefined ? {} : { maxContextChars, }),
-      ...(config.systemPrompt
-        === undefined
-        ? {}
-        : { systemPrompt: config.systemPrompt, }),
+      ...(systemPrompt === undefined ? {} : { systemPrompt, }),
     };
   }
   return merged;
 }
 
 /**
- * Load one optional config file.
- *
- * @param path - config file path
- *
- * @param label - config scope label
- *
- * @returns parsed config file, or {@link NO_CONFIG_FILE} when absent
+ Load one optional config file.
+ 
+ @param path - config file path
+ 
+ @param label - config scope label
+ 
+ @returns parsed config file, or {@link NO_CONFIG_FILE} when absent
  */
 async function loadConfigFile(
   {
@@ -235,7 +249,7 @@ async function loadConfigFile(
   },
 ): Promise<AdvisorConfigFile | typeof NO_CONFIG_FILE> {
   /**
-   * Raw JSON data, or `undefined` when file is absent.
+   Raw JSON data, or `undefined` when file is absent.
    */
   const raw = await readJsonFile({
     path,
@@ -244,7 +258,7 @@ async function loadConfigFile(
   if (raw === undefined)
     return NO_CONFIG_FILE;
   /**
-   * Validation result from valibot for locally parsed JSON value.
+   Validation result from valibot for locally parsed JSON value.
    */
   const result = v.safeParse(
     AdvisorConfigFileSchema,
@@ -258,13 +272,13 @@ async function loadConfigFile(
 }
 
 /**
- * Read and parse an optional JSON file.
- *
- * @param path - JSON file path
- *
- * @param label - config scope label
- *
- * @returns parsed JSON data, or `undefined` when absent
+ Read and parse an optional JSON file.
+ 
+ @param path - JSON file path
+ 
+ @param label - config scope label
+ 
+ @returns parsed JSON data, or `undefined` when absent
  */
 async function readJsonFile(
   {
@@ -277,7 +291,7 @@ async function readJsonFile(
 ): Promise<unknown> {
   try {
     /**
-     * UTF-8 JSON file contents.
+     UTF-8 JSON file contents.
      */
     const text = await readFile(
       path,
@@ -300,13 +314,13 @@ async function readJsonFile(
 }
 
 /**
- * Detect Node ENOENT missing-file errors without unsafe assertion.
- *
- * @param error - caught error value
- *
- * @returns whether error reports a missing config file
- *
- * @mutates error - `Error.isError` can inspect runtime-owned error capability
+ Detect Node ENOENT missing-file errors without unsafe assertion.
+ 
+ @param error - caught error value
+ 
+ @returns whether error reports a missing config file
+ 
+ @mutates error - `Error.isError` can inspect runtime-owned error capability
  */
 function isFileMissingError(
   error: ForeignHostCapability<object>,

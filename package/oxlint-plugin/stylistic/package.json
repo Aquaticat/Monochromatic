@@ -46,7 +46,7 @@
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
-  "description": "Oxlint JS plugin enforcing TypeScript layout rules for per-line constructs, semicolons, and expression structure.",
+  "description": "Oxlint JS plugin enforcing TSDoc prefixes, per-line constructs, semicolons, and expression structure.",
   "publishConfig": {
     "access": "public",
     "provenance": true

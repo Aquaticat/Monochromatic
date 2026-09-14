@@ -26,7 +26,7 @@ import {
 //region Step results
 
 /**
- * One consumed node plus the index where consumption stopped.
+ One consumed node plus the index where consumption stopped.
  */
 type ConsumedNode<NodeKind extends CssNode,> = {
   readonly node: NodeKind;
@@ -34,8 +34,8 @@ type ConsumedNode<NodeKind extends CssNode,> = {
 };
 
 /**
- * Contents of a stylesheet or block plus where consumption stopped; the
- * closing token is present exactly when consuming inside a block.
+ Contents of a stylesheet or block plus where consumption stopped; the
+ closing token is present exactly when consuming inside a block.
  */
 export type ConsumedContents = {
   readonly children: readonly CssNode[];
@@ -48,16 +48,16 @@ export type ConsumedContents = {
 //region Block consumer
 
 /**
- * Consumes a braced block starting at its `{` token by delegating the interior
- * to {@link consumeContents} in block mode.
- *
- * @param tokens - Full token array of the document.
- *
- * @param openIndex - Index of the block's `{` token.
- *
- * @returns Block node and the index after its `}`.
- *
- * @throws CssParseError when the block never closes.
+ Consumes a braced block starting at its `{` token by delegating the interior
+ to {@link consumeContents} in block mode.
+ 
+ @param tokens - Full token array of the document.
+ 
+ @param openIndex - Index of the block's `{` token.
+ 
+ @returns Block node and the index after its `}`.
+ 
+ @throws CssParseError when the block never closes.
  */
 function consumeBlock({
   tokens,
@@ -70,7 +70,7 @@ function consumeBlock({
   readonly nextIndex: number;
 } {
   /**
-   * Opening `{` token of the block.
+   Opening `{` token of the block.
    */
   const openToken = tokens[openIndex];
   if ((openToken === undefined) || (!isTokenOpenCurly(openToken,)))
@@ -80,7 +80,7 @@ function consumeBlock({
     },);
 
   /**
-   * Structured interior of the block.
+   Structured interior of the block.
    */
   const contents = consumeContents({
     tokens,
@@ -104,18 +104,18 @@ function consumeBlock({
 //region At-rule consumer
 
 /**
- * Consumes an at-rule starting at its at-keyword token: prelude tokens up to a
- * depth-zero `;` (statement form), `{` (block form via {@link consumeBlock}),
- * or an enclosing block's `}` / end of input (statement form without a
- * terminator).
- *
- * @param tokens - Full token array of the document.
- *
- * @param start - Index of the at-keyword token.
- *
- * @returns At-rule node and the index where consumption stopped.
- *
- * @throws CssParseError on unbalanced closing tokens inside the prelude.
+ Consumes an at-rule starting at its at-keyword token: prelude tokens up to a
+ depth-zero `;` (statement form), `{` (block form via {@link consumeBlock}),
+ or an enclosing block's `}` / end of input (statement form without a
+ terminator).
+ 
+ @param tokens - Full token array of the document.
+ 
+ @param start - Index of the at-keyword token.
+ 
+ @returns At-rule node and the index where consumption stopped.
+ 
+ @throws CssParseError on unbalanced closing tokens inside the prelude.
  */
 function consumeAtRule({
   tokens,
@@ -125,7 +125,7 @@ function consumeAtRule({
   readonly start: number;
 },): ConsumedNode<CssAtRule> {
   /**
-   * At-keyword token opening the rule.
+   At-keyword token opening the rule.
    */
   const atToken = tokens[start];
   if ((atToken === undefined) || (!isTokenAtKeyword(atToken,)))
@@ -135,23 +135,23 @@ function consumeAtRule({
     },);
 
   /**
-   * Parsed data of the at-keyword token, holding the unescaped name.
+   Parsed data of the at-keyword token, holding the unescaped name.
    */
   const atData = tokenData(atToken,);
 
   return (function scanAtRule(): ConsumedNode<CssAtRule> {
     /**
-     * Nesting depth relative to the prelude's own level.
+     Nesting depth relative to the prelude's own level.
      */
     let depth = 0;
     /**
-     * Scan cursor over prelude tokens.
+     Scan cursor over prelude tokens.
      */
     let index = start + 1;
 
     while (index < tokens.length) {
     /**
-     * Token at the scan cursor.
+     Token at the scan cursor.
      */
     const token = tokens[index];
     if ((token === undefined) || isTokenEOF(token,)
@@ -176,7 +176,7 @@ function consumeAtRule({
       }
       if (isTokenOpenCurly(token,)) {
         /**
-         * Braced body of the at-rule.
+         Braced body of the at-rule.
          */
         const consumed = consumeBlock({
           tokens,
@@ -232,26 +232,26 @@ function consumeAtRule({
 //region Contents consumer
 
 /**
- * Consumes stylesheet or block contents per the CSS Syntax section 5 unified
- * model: trivia runs, at-rules, declarations, and qualified rules may all
- * appear; {@link classifyRun} decides between the latter two.
- *
- * @param tokens - Full token array of the document.
- *
- * @param start - Index of the first content token.
- *
- * @param insideBlock - Whether a `}` legitimately ends these contents.
- *
- * @returns Children in source order, the stop index, and the closing token
- * when inside a block.
- *
- * @throws CssParseError on a stray `}` at top level or an unclosed block.
- *
- * @example
- * ```ts
- * consumeContents({ tokens, start: 0, insideBlock: false });
- * // => { children: [...], nextIndex: 12 }
- * ```
+ Consumes stylesheet or block contents per the CSS Syntax section 5 unified
+ model: trivia runs, at-rules, declarations, and qualified rules may all
+ appear; {@link classifyRun} decides between the latter two.
+ 
+ @param tokens - Full token array of the document.
+ 
+ @param start - Index of the first content token.
+ 
+ @param insideBlock - Whether a `}` legitimately ends these contents.
+ 
+ @returns Children in source order, the stop index, and the closing token
+ when inside a block.
+ 
+ @throws CssParseError on a stray `}` at top level or an unclosed block.
+ 
+ @example
+ ```ts
+ consumeContents({ tokens, start: 0, insideBlock: false });
+ // => { children: [...], nextIndex: 12 }
+ ```
  */
 export function consumeContents({
   tokens,
@@ -264,17 +264,17 @@ export function consumeContents({
 },): ConsumedContents {
   return (function scanContents(): ConsumedContents {
   /**
-   * Accumulated child nodes in source order.
+   Accumulated child nodes in source order.
    */
   const children: CssNode[] = [];
   /**
-   * Scan cursor over the token array.
+   Scan cursor over the token array.
    */
   let index = start;
 
   while (index < tokens.length) {
     /**
-     * Token at the scan cursor.
+     Token at the scan cursor.
      */
     const token = tokens[index];
 
@@ -296,11 +296,11 @@ export function consumeContents({
 
     if (isTriviaToken(token,)) {
       /**
-       * Exclusive end of the trivia run.
+       Exclusive end of the trivia run.
        */
       let runEnd = index + 1;
       /**
-       * Token at the trivia scan cursor, refreshed as the run advances.
+       Token at the trivia scan cursor, refreshed as the run advances.
        */
       let runToken = tokens[runEnd];
       while ((runToken !== undefined) && isTriviaToken(runToken,)) {
@@ -320,7 +320,7 @@ export function consumeContents({
 
     if (isTokenAtKeyword(token,)) {
       /**
-       * Consumed at-rule step.
+       Consumed at-rule step.
        */
       const consumed = consumeAtRule({
         tokens,
@@ -332,7 +332,7 @@ export function consumeContents({
     }
 
     /**
-     * Declaration-versus-rule decision for this run.
+     Declaration-versus-rule decision for this run.
      */
     const classified = classifyRun({
       tokens,
@@ -352,14 +352,14 @@ export function consumeContents({
     }
 
     /**
-     * Consumed block of the qualified rule.
+     Consumed block of the qualified rule.
      */
     const consumed = consumeBlock({
       tokens,
       openIndex: classified.blockOpenIndex,
     },);
     /**
-     * Qualified rule assembled from prelude slice and block.
+     Qualified rule assembled from prelude slice and block.
      */
     const rule: CssRule = {
       kind: 'rule',
@@ -373,7 +373,7 @@ export function consumeContents({
     index = consumed.nextIndex;
   }
   /**
-   * EOF token at the terminal cursor, when tokenizer supplied one.
+   EOF token at the terminal cursor, when tokenizer supplied one.
    */
   const terminalToken = tokens[index];
   if (insideBlock)

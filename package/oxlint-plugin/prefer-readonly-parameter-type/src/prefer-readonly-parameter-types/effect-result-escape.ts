@@ -1,19 +1,19 @@
 /**
- * Whether a tracked call result can leave the callable that produced it.
- *
- * This is the condition that licenses discharging a verified member call's receiver
- * opacity. The opacity report exists because nothing tracked the result as an alias;
- * once provenance tracks it, the report is redundant exactly while every use of the
- * result is one the analysis attributes. A use that leaves the callable is not, so the
- * report has to stay for those.
- *
- * Returning parameter-reachable state is benign by accepted policy, since the caller
- * already holds the parameter. That policy is about the callee not being blamed, not
- * about the value becoming untracked: until a caller substitutes through
- * `directReturned`, a returned result is still a use this analysis cannot follow, so it
- * counts as an escape here.
- *
- * @module
+ Whether a tracked call result can leave the callable that produced it.
+ 
+ This is the condition that licenses discharging a verified member call's receiver
+ opacity. The opacity report exists because nothing tracked the result as an alias;
+ once provenance tracks it, the report is redundant exactly while every use of the
+ result is one the analysis attributes. A use that leaves the callable is not, so the
+ report has to stay for those.
+ 
+ Returning parameter-reachable state is benign by accepted policy, since the caller
+ already holds the parameter. That policy is about the callee not being blamed, not
+ about the value becoming untracked: until a caller substitutes through
+ `directReturned`, a returned result is still a use this analysis cannot follow, so it
+ counts as an escape here.
+ 
+ @module
  */
 
 import {
@@ -52,7 +52,7 @@ import { resultReachableSymbolIds, } from './effect-result-holders.ts';
 import { writtenDirectlyInBody, } from './effect-enclosing-callable.ts';
 
 /**
- * Binary operators that only test a value and keep no reference to it.
+ Binary operators that only test a value and keep no reference to it.
  */
 const TESTING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.EqualsEqualsEqualsToken,
@@ -68,33 +68,33 @@ const TESTING_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Prefix operators that only test a value and keep no reference to it.
+ Prefix operators that only test a value and keep no reference to it.
  */
 const TESTING_PREFIX_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.ExclamationToken,
 ],);
 
 /**
- * Tests whether a literal is handed directly to a call as an argument.
- *
- * Nesting is allowed, because `parameterIndexes` walks nested object and array
- * literals and spreads alike, so a value inside `{ options: { target } }` reaches the
- * same argument analysis as one inside `{ target }`.
- *
- * @param literal - Object or array literal holding a tracked value.
- *
- * @returns whether the literal, or a literal enclosing it, is a call argument.
- *
- * @example
- * ```ts
- * literalIsCallArgument({ literal });
- * ```
+ Tests whether a literal is handed directly to a call as an argument.
+ 
+ Nesting is allowed, because `parameterIndexes` walks nested object and array
+ literals and spreads alike, so a value inside `{ options: { target } }` reaches the
+ same argument analysis as one inside `{ target }`.
+ 
+ @param literal - Object or array literal holding a tracked value.
+ 
+ @returns whether the literal, or a literal enclosing it, is a call argument.
+ 
+ @example
+ ```ts
+ literalIsCallArgument({ literal });
+ ```
  */
 function literalIsCallArgument(
   { literal, }: { readonly literal: Node; },
 ): boolean {
   /**
-   * Cursor ascending through enclosing literals to their consumer.
+   Cursor ascending through enclosing literals to their consumer.
    */
   const cursor: { current: Node; } = { current: literal, };
   while (isEnclosingLiteral({ node: cursor.current, },)) {
@@ -102,11 +102,11 @@ function literalIsCallArgument(
       .parent;
   }
   /**
-   * Expression consuming the outermost enclosing literal.
+   Expression consuming the outermost enclosing literal.
    */
   const consumer = valueConsumer({ node: cursor.current, },);
   /**
-   * Call receiving that literal, when one does.
+   Call receiving that literal, when one does.
    */
   const { parent, } = consumer;
   if (!isCallExpression(parent,))
@@ -118,54 +118,54 @@ function literalIsCallArgument(
 }
 
 /**
- * Tests whether a node's parent is itself an object or array literal.
- *
- * @param node - Literal whose enclosing literal is sought.
- *
- * @returns whether another literal encloses this one.
- *
- * @example
- * ```ts
- * isEnclosingLiteral({ node: literal });
- * ```
+ Tests whether a node's parent is itself an object or array literal.
+ 
+ @param node - Literal whose enclosing literal is sought.
+ 
+ @returns whether another literal encloses this one.
+ 
+ @example
+ ```ts
+ isEnclosingLiteral({ node: literal });
+ ```
  */
 function isEnclosingLiteral({ node, }: { readonly node: Node; },): boolean {
   /**
-   * Context possibly nesting this literal inside another.
+   Context possibly nesting this literal inside another.
    */
   const { parent, } = node;
   return isObjectLiteralExpression(parent,) || isArrayLiteralExpression(parent,);
 }
 
 /**
- * Ascends spread-into-array-literal steps to the literal that carries the value.
- *
- * `[...pairs.entries(),].flatMap(compare)` puts one collection's elements into a literal
- * whose own position decides everything: as a call's receiver or argument the obligation
- * transfers to that call, and stored or returned it leaves. Classifying the spread instead
- * asks about a node whose parent is always a literal, which answers "is that literal an
- * argument", and for a literal used as a receiver that is no.
- *
- * Starts from the node itself rather than its parent, because `valueConsumer` already
- * returns the spread element. Ascending from the parent instead looks one node too high,
- * finds no spread, and changes nothing, which is exactly what a first attempt at this
- * measured.
- *
- * Iterative because the step composes: `[...[...pairs,],]` is two hops asking the identical
- * question one node further out.
- *
- * @param node - Expression possibly sitting inside one or more spreads.
- *
- * @returns outermost literal carrying this value, or node itself when it is not spread.
- *
- * @example
- * ```ts
- * spreadCarrier({ node: spreadElement });
- * ```
+ Ascends spread-into-array-literal steps to the literal that carries the value.
+ 
+ `[...pairs.entries(),].flatMap(compare)` puts one collection's elements into a literal
+ whose own position decides everything: as a call's receiver or argument the obligation
+ transfers to that call, and stored or returned it leaves. Classifying the spread instead
+ asks about a node whose parent is always a literal, which answers "is that literal an
+ argument", and for a literal used as a receiver that is no.
+ 
+ Starts from the node itself rather than its parent, because `valueConsumer` already
+ returns the spread element. Ascending from the parent instead looks one node too high,
+ finds no spread, and changes nothing, which is exactly what a first attempt at this
+ measured.
+ 
+ Iterative because the step composes: `[...[...pairs,],]` is two hops asking the identical
+ question one node further out.
+ 
+ @param node - Expression possibly sitting inside one or more spreads.
+ 
+ @returns outermost literal carrying this value, or node itself when it is not spread.
+ 
+ @example
+ ```ts
+ spreadCarrier({ node: spreadElement });
+ ```
  */
 function spreadCarrier({ node, }: { readonly node: Node; },): Node {
   /**
-   * Value reached so far while ascending spread steps.
+   Value reached so far while ascending spread steps.
    */
   let carried = node;
   while (isSpreadElement(carried,) && isArrayLiteralExpression(carried.parent,))
@@ -174,25 +174,25 @@ function spreadCarrier({ node, }: { readonly node: Node; },): Node {
 }
 
 /**
- * Tests whether a node sits in a position this analysis cannot follow.
- *
- * Attributed positions are deliberately enumerated rather than inferred from what is
- * left over, so an unfamiliar construct counts as an escape by default.
- *
- * @param node - Expression whose enclosing use is classified.
- *
- * @param elementStepsAttributed - Whether a caller walks this result's elements.
- *
- * @param returnsAttributed - Whether returning counts as followed rather than as leaving.
- *
- * @param body - Body whose own returns may be attributed, absent when none may be.
- *
- * @returns whether the value at this position leaves attributed tracking.
- *
- * @example
- * ```ts
- * useEscapes({ node: identifier, elementStepsAttributed, returnsAttributed });
- * ```
+ Tests whether a node sits in a position this analysis cannot follow.
+ 
+ Attributed positions are deliberately enumerated rather than inferred from what is
+ left over, so an unfamiliar construct counts as an escape by default.
+ 
+ @param node - Expression whose enclosing use is classified.
+ 
+ @param elementStepsAttributed - Whether a caller walks this result's elements.
+ 
+ @param returnsAttributed - Whether returning counts as followed rather than as leaving.
+ 
+ @param body - Body whose own returns may be attributed, absent when none may be.
+ 
+ @returns whether the value at this position leaves attributed tracking.
+ 
+ @example
+ ```ts
+ useEscapes({ node: identifier, elementStepsAttributed, returnsAttributed });
+ ```
  */
 function useEscapes({
   node,
@@ -210,13 +210,13 @@ function useEscapes({
    * the iterated position below: only a caller that walks elements may treat reaching one
    * as attributed. */
   /**
-   * Value whose position decides this, with spread-into-literal steps ascended.
+   Value whose position decides this, with spread-into-literal steps ascended.
    */
   const carried = elementStepsAttributed
     ? spreadCarrier({ node, },)
     : node;
   /**
-   * Syntactic context consuming this value.
+   Syntactic context consuming this value.
    */
   const { parent, } = carried;
   if (isYieldExpression(parent,))
@@ -299,7 +299,7 @@ function useEscapes({
    * where "not escaping" means "reported elsewhere" instead of "fully attributed". */
   if (isCallExpression(parent,)) {
     /**
-     * Whether this value is one of the call's arguments.
+     Whether this value is one of the call's arguments.
      */
     const isArgument = parent.arguments
       .some(function isThisArgument(argument,): boolean {
@@ -312,28 +312,28 @@ function useEscapes({
 }
 
 /**
- * Tests whether an identifier occurrence establishes a binding rather than using it.
- *
- * Once the holder set follows aliases, the bindings it collects have declaration and
- * assignment-target occurrences of their own, and those are not uses of the result. A
- * destructured leaf's identifier has a `BindingElement` parent, which no attributed
- * position matches, so it would fall through to escaping and make every destructuring
- * declaration report. An assignment target's identifier has a binary-expression parent
- * whose operator is not a testing operator, so it would report every assignment alias.
- * Neither occurrence reads the value, so both are skipped before classification.
- *
- * @param node - Identifier occurrence resolving to a holder.
- *
- * @returns whether this occurrence declares or overwrites rather than reads.
- *
- * @example
- * ```ts
- * occurrenceEstablishesBinding({ node: identifier });
- * ```
+ Tests whether an identifier occurrence establishes a binding rather than using it.
+ 
+ Once the holder set follows aliases, the bindings it collects have declaration and
+ assignment-target occurrences of their own, and those are not uses of the result. A
+ destructured leaf's identifier has a `BindingElement` parent, which no attributed
+ position matches, so it would fall through to escaping and make every destructuring
+ declaration report. An assignment target's identifier has a binary-expression parent
+ whose operator is not a testing operator, so it would report every assignment alias.
+ Neither occurrence reads the value, so both are skipped before classification.
+ 
+ @param node - Identifier occurrence resolving to a holder.
+ 
+ @returns whether this occurrence declares or overwrites rather than reads.
+ 
+ @example
+ ```ts
+ occurrenceEstablishesBinding({ node: identifier });
+ ```
  */
 function occurrenceEstablishesBinding({ node, }: { readonly node: Node; },): boolean {
   /**
-   * Syntactic context this occurrence sits in.
+   Syntactic context this occurrence sits in.
    */
   const { parent, } = node;
   if (isVariableDeclaration(parent,) || isBindingElement(parent,))
@@ -346,20 +346,20 @@ function occurrenceEstablishesBinding({ node, }: { readonly node: Node; },): boo
 }
 
 /**
- * Tests whether a verified call's result can leave the callable body.
- *
- * @param project - TypeScript project resolving symbols.
- *
- * @param body - Body of the callable containing the call.
- *
- * @param call - Verified member call whose result is tracked.
- *
- * @returns whether any use of the result is one this analysis cannot follow.
- *
- * @example
- * ```ts
- * resultEscapesCallable({ project, body, call });
- * ```
+ Tests whether a verified call's result can leave the callable body.
+ 
+ @param project - TypeScript project resolving symbols.
+ 
+ @param body - Body of the callable containing the call.
+ 
+ @param call - Verified member call whose result is tracked.
+ 
+ @returns whether any use of the result is one this analysis cannot follow.
+ 
+ @example
+ ```ts
+ resultEscapesCallable({ project, body, call });
+ ```
  */
 export function resultEscapesCallable({
   project,
@@ -393,7 +393,7 @@ export function resultEscapesCallable({
   },))
     return true;
   /**
-   * Bindings that hold state reachable from this call's result.
+   Bindings that hold state reachable from this call's result.
    */
   const holders = resultReachableSymbolIds({
     project,
@@ -409,7 +409,7 @@ export function resultEscapesCallable({
       if ((!isIdentifier(node,)) || occurrenceEstablishesBinding({ node, },))
         return false;
       /**
-       * Symbol this identifier resolves to.
+       Symbol this identifier resolves to.
        */
       const symbol = project.checker
         .getSymbolAtLocation(node,);
@@ -436,26 +436,26 @@ export function resultEscapesCallable({
 }
 
 /**
- * Tests whether a node sits inside a callable nested under the given body.
- *
- * The ascent itself moved to `effect-enclosing-callable.ts`, where the returned-result
- * discharge asks the same containment question for a different reason. Two walks answering
- * one question is what `AGENTS.md` calls a shared definition, and keeping them apart had
- * already let them disagree about the case neither reaches: this one answered "not nested"
- * when it ran off the root, which is the permissive direction, while the discharge needs the
- * conservative one. Unified on the conservative answer, since the note this replaces states
- * that every caller passes a node inside `body` and so neither can observe the difference.
- *
- * @param node - Reference being classified.
- *
- * @param body - Outer callable body boundary.
- *
- * @returns whether a nested callable encloses the reference.
- *
- * @example
- * ```ts
- * enclosedByNestedCallable({ node, body });
- * ```
+ Tests whether a node sits inside a callable nested under the given body.
+ 
+ The ascent itself moved to `effect-enclosing-callable.ts`, where the returned-result
+ discharge asks the same containment question for a different reason. Two walks answering
+ one question is what `AGENTS.md` calls a shared definition, and keeping them apart had
+ already let them disagree about the case neither reaches: this one answered "not nested"
+ when it ran off the root, which is the permissive direction, while the discharge needs the
+ conservative one. Unified on the conservative answer, since the note this replaces states
+ that every caller passes a node inside `body` and so neither can observe the difference.
+ 
+ @param node - Reference being classified.
+ 
+ @param body - Outer callable body boundary.
+ 
+ @returns whether a nested callable encloses the reference.
+ 
+ @example
+ ```ts
+ enclosedByNestedCallable({ node, body });
+ ```
  */
 function enclosedByNestedCallable({
   node,

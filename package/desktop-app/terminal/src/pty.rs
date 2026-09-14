@@ -156,7 +156,7 @@ impl PtySession {
         command.env("COLORTERM", "truecolor");
         // What:     `Self::spawn_command(...)` delegates to the testable command path.
         // Why:      Unit tests can spawn a deterministic command instead of a real shell.
-        Self::spawn_command(geometry, command, event_sender)
+        return Self::spawn_command(geometry, command, event_sender)
     }
 
     /// What:     `pub fn spawn_command(...) -> Result<Self>` creates a PTY around an
@@ -187,7 +187,7 @@ impl PtySession {
         spawn_reader_thread(reader, event_sender);
         // What:     `Ok(Self { ... })` wraps the live PTY handles in a session object.
         // Why:      The caller can resize, write, and kill the session by dropping it.
-        Ok(Self {
+        return Ok(Self {
             master: pair.master,
             writer,
             child,
@@ -203,7 +203,7 @@ impl PtySession {
         self.master.resize(pty_size_from_geometry(geometry))?;
         // What:     `Ok(())` returns success with no payload.
         // Why:      Resize completed.
-        Ok(())
+        return Ok(())
     }
 
     /// What:     `pub fn write_bytes(&mut self, bytes: &[u8]) -> std::io::Result<()>`
@@ -215,7 +215,7 @@ impl PtySession {
         self.writer.write_all(bytes)?;
         // What:     `self.writer.flush()` asks the stream to push buffered bytes now.
         // Why:      Interactive input should reach the shell immediately.
-        self.writer.flush()
+        return self.writer.flush()
     }
 }
 
@@ -238,10 +238,10 @@ fn default_shell_path() -> String {
     // What:     `env::var("SHELL").ok()` reads `$SHELL` and converts `Result` to
     //           `Option`. `filter` rejects empty strings.
     // Why:      Desktop launches may have a configured shell; empty values are unusable.
-    let shell = env::var("SHELL").ok().filter(|value| !value.is_empty());
+    let shell = env::var("SHELL").ok().filter(|value| return !value.is_empty());
     // What:     `unwrap_or_else(...)` returns `$SHELL` or allocates `"/bin/sh"`.
     // Why:      POSIX systems should always have `/bin/sh` as a fallback shell.
-    shell.unwrap_or_else(|| "/bin/sh".to_string())
+    return shell.unwrap_or_else(|| return "/bin/sh".to_string())
 }
 
 /// What:     `fn pty_size_from_geometry(...) -> PtySize` converts engine geometry to
@@ -250,7 +250,7 @@ fn default_shell_path() -> String {
 fn pty_size_from_geometry(geometry: ViewportGeometry) -> PtySize {
     // What:     `PtySize { ... }` constructs a size record with rows, cols, and pixels.
     // Why:      PTY resize APIs need text dimensions and can also carry pixel hints.
-    PtySize {
+    return PtySize {
         rows: geometry.rows,
         cols: geometry.cols,
         pixel_width: geometry.cell_width_px as u16 * geometry.cols,

@@ -37,10 +37,10 @@ type TypeScriptTrustFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable TypeScript trust fixture.
- *
- * @param source - config entry source
- * @returns initialized fixture
+ Creates disposable TypeScript trust fixture.
+ 
+ @param source - config entry source
+ @returns initialized fixture
  */
 async function createFixture(source: string,): Promise<TypeScriptTrustFixture> {
   /** Canonical disposable repository. */
@@ -62,24 +62,24 @@ async function createFixture(source: string,): Promise<TypeScriptTrustFixture> {
 }
 
 /**
- * Creates deterministic consent adapters.
- *
- * @param disclosures - captured disclosure text
- * @returns noninteractive fixed-clock adapters
+ Creates deterministic consent adapters.
+ 
+ @param disclosures - captured disclosure text
+ @returns noninteractive fixed-clock adapters
  */
 function adapters(disclosures: string[],): TrustConsentAdapters {
   return {
     disclose: function disclose(text,) { disclosures.push(text,); },
-    prompt: function approve() { return Promise.resolve(true,); },
+    prompt: function approve() { return Promise.resolve('approved',); },
     now: function fixedTime() { return new Date('2026-07-10T00:00:00.000Z',); },
   };
 }
 
 /**
- * Captures expected strict loading failure.
- *
- * @param fixture - trust fixture
- * @returns thrown value
+ Captures expected strict loading failure.
+ 
+ @param fixture - trust fixture
+ @returns thrown value
  */
 async function captureLoadFailure(fixture: TypeScriptTrustFixture,): Promise<unknown> {
   try {
@@ -263,6 +263,137 @@ export default {
         },),).toBe(true,);
         expect((await loadTrustedConfig({ discovered: fixture.discovered, registryRoot: fixture.registryRoot, })).record.format,)
           .toBe('typescript',);
+      },
+    },),
+    it({
+      name: 'reports unavailable root consent without installing record',
+      fn: async function testUnavailableRootConsent() {
+        await using fixture = await createFixture('export default {};\n',);
+        /** Adapter exposing unavailable terminal consent. */
+        const unavailableAdapters: TrustConsentAdapters = {
+          ...adapters([],),
+          prompt: function unavailableConsent() {
+            return Promise.resolve('unavailable',);
+          },
+        };
+        /** Failure from unavailable root consent. */
+        const failure = await (async function captureUnavailableConsent(): Promise<unknown> {
+          try {
+            return await trustTypeScript({
+              discovered: fixture.discovered,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: unavailableAdapters,
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await inspectTrust({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+        },)).reason,).toBe('untrusted',);
+      },
+    },),
+    it({
+      name: 'reports unavailable recursive consent without installing record',
+      fn: async function testUnavailableRecursiveConsent() {
+        await using fixture = await createFixture(
+          'export default { trust: { children: true } };\n',
+        );
+        /** Ordered root approval then unavailable recursive consent. */
+        const promptState = {
+          index: 0,
+          outcomes: ['approved', 'unavailable',] as const,
+        };
+        /** Adapter exposing unavailable second-stage consent. */
+        const unavailableAdapters: TrustConsentAdapters = {
+          ...adapters([],),
+          prompt: function nextConsent() {
+            /** Current staged outcome. */
+            const outcome = promptState.outcomes[promptState.index]
+              ?? 'unavailable';
+            promptState.index += 1;
+            return Promise.resolve(outcome,);
+          },
+        };
+        /** Failure from unavailable recursive consent. */
+        const failure = await (async function captureUnavailableConsent(): Promise<unknown> {
+          try {
+            return await trustTypeScript({
+              discovered: fixture.discovered,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: unavailableAdapters,
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await inspectTrust({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+        },)).reason,).toBe('untrusted',);
+      },
+    },),
+    it({
+      name: 'unavailable recursive re-trust preserves previous TypeScript record',
+      fn: async function testUnavailableRecursiveRetrust() {
+        await using fixture = await createFixture(
+          'export default { trust: { children: true } };\n',
+        );
+        /** Previously installed recursive record. */
+        const initial = await trustTypeScript({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+          yes: true,
+          adapters: adapters([],),
+        },);
+        /** Ordered root approval then unavailable recursive consent. */
+        const promptState = {
+          index: 0,
+          outcomes: ['approved', 'unavailable',] as const,
+        };
+        /** Adapter exposing unavailable second-stage consent. */
+        const unavailableAdapters: TrustConsentAdapters = {
+          ...adapters([],),
+          prompt: function nextConsent() {
+            /** Current staged outcome. */
+            const outcome = promptState.outcomes[promptState.index]
+              ?? 'unavailable';
+            promptState.index += 1;
+            return Promise.resolve(outcome,);
+          },
+        };
+        /** Failure from unavailable second-stage re-trust consent. */
+        const failure = await (async function captureUnavailableRetrust(): Promise<unknown> {
+          try {
+            return await trustTypeScript({
+              discovered: fixture.discovered,
+              registryRoot: fixture.registryRoot,
+              yes: false,
+              adapters: unavailableAdapters,
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+        })();
+        expect(failure,).toBeInstanceOf(TrustedConfigError,);
+        if (failure instanceof TrustedConfigError)
+          expect(failure.code,).toBe('trust-consent-unavailable',);
+        expect((await loadTrustedConfig({
+          discovered: fixture.discovered,
+          registryRoot: fixture.registryRoot,
+        },)).record,).toEqual(initial.record,);
       },
     },),
     it({

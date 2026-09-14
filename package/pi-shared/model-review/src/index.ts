@@ -1,7 +1,7 @@
 /**
- * Shared structured model-review transport and fallback orchestration.
- *
- * @module
+ Shared structured model-review transport and fallback orchestration.
+ 
+ @module
  */
 
 export * from './attempt.ts';

@@ -10,7 +10,7 @@ import {
 import { defaultAsnCacheDirectory, } from '../dist/final/node/asn-networks.mjs';
 
 /**
- * Cache environment overrides for one test.
+ Cache environment overrides for one test.
  */
 type CacheEnvironment = {
   readonly cacheDirectory?: string;
@@ -18,18 +18,18 @@ type CacheEnvironment = {
 };
 
 /**
- * Installs temporary cache environment and restores original values on disposal.
- *
- * @param cacheDirectory - Explicit application cache override.
- *
- * @param xdgCacheHome - XDG user cache root.
- *
- * @returns Synchronous environment restoration guard.
- *
- * @example
- * ```ts
- * using environment = overrideCacheEnvironment({ cacheDirectory: '/tmp/cache' });
- * ```
+ Installs temporary cache environment and restores original values on disposal.
+ 
+ @param cacheDirectory - Explicit application cache override.
+ 
+ @param xdgCacheHome - XDG user cache root.
+ 
+ @returns Synchronous environment restoration guard.
+ 
+ @example
+ ```ts
+ using environment = overrideCacheEnvironment({ cacheDirectory: '/tmp/cache' });
+ ```
  */
 function overrideCacheEnvironment(
   {
@@ -38,11 +38,11 @@ function overrideCacheEnvironment(
   }: CacheEnvironment,
 ): Disposable {
   /**
-   * Original application cache override.
+   Original application cache override.
    */
   const originalCacheDirectory = process.env.WG_ALLOWEDIPS_CACHE_DIRECTORY;
   /**
-   * Original XDG cache root.
+   Original XDG cache root.
    */
   const originalXdgCacheHome = process.env.XDG_CACHE_HOME;
   if (cacheDirectory === undefined)

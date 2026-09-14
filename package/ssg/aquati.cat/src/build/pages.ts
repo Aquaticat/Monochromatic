@@ -1,8 +1,8 @@
 /**
- * HTML page generation for the SSG build.
- *
- * Generates all HTML pages from posts and rendered content,
- * writing each to the dist directory.
+ HTML page generation for the SSG build.
+ 
+ Generates all HTML pages from posts and rendered content,
+ writing each to the dist directory.
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -22,25 +22,25 @@ import { tagPage, } from '../page/tag.ts';
 import { writePage, } from './write-page.ts';
 
 /**
- * Generates all HTML pages from posts and rendered content.
- *
- * @param posts - all loaded posts
- *
- * @param renderedContent - map of `lang/name` to rendered HTML
- *
- * @param siteUrl - base URL for canonical link construction
- *
- * @param byLang - posts grouped by locale (pre-computed by build orchestrator)
- *
- * @param validLangs - locale codes present in the content
- *
- * @param l - parent logger for tagged output
- *
- *
- * @example
- * ```ts
- * await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', byLang, validLangs, l: rootLogger });
- * ```
+ Generates all HTML pages from posts and rendered content.
+ 
+ @param posts - all loaded posts
+ 
+ @param renderedContent - map of `lang/name` to rendered HTML
+ 
+ @param siteUrl - base URL for canonical link construction
+ 
+ @param byLang - posts grouped by locale (pre-computed by build orchestrator)
+ 
+ @param validLangs - locale codes present in the content
+ 
+ @param l - parent logger for tagged output
+ 
+ 
+ @example
+ ```ts
+ await generatePages({ posts, renderedContent, siteUrl: 'https://example.com', byLang, validLangs, l: rootLogger });
+ ```
  */
 export async function generatePages(
   {
@@ -60,27 +60,27 @@ export async function generatePages(
   },
 ): Promise<void> {
   /**
-   * Parent logger retained by tagged wrapper.
+   Parent logger retained by tagged wrapper.
    */
   const parentLogger = l;
   /**
-   * Function-scoped logger tagged with the caller name for traceable log lines.
+   Function-scoped logger tagged with the caller name for traceable log lines.
    */
   const childLogger = tagged({
     tag: generatePages.name,
     l: parentLogger,
   },);
   /**
-   * Posts grouped by slug name so the name page can iterate translation siblings.
+   Posts grouped by slug name so the name page can iterate translation siblings.
    */
   const byName = groupByName(posts,);
   /**
-   * Distinct post slugs serving as the index for cross-locale write fan-out.
+   Distinct post slugs serving as the index for cross-locale write fan-out.
    */
   const names = Object.keys(byName,);
 
   /**
-   * Locale each post slug has a translation in.
+   Locale each post slug has a translation in.
    */
   const availableLangsByName: Record<string, readonly Locale[]> = Object
     .fromEntries(
@@ -96,7 +96,7 @@ export async function generatePages(
     );
 
   /**
-   * Flat list of write promises gathered before the single Promise.all flush at the end.
+   Flat list of write promises gathered before the single Promise.all flush at the end.
    */
   const writes = [
     writePage({
@@ -108,12 +108,12 @@ export async function generatePages(
     },),
     ...validLangs.flatMap(function langWrites(lang,) {
       /**
-       * Posts narrowed to this locale; absent locales yield an empty list instead of an error.
+       Posts narrowed to this locale; absent locales yield an empty list instead of an error.
        */
       const langPosts = byLang.get(lang,)
         ?? [];
       /**
-       * Per-locale tag bucketing computed once per language pass.
+       Per-locale tag bucketing computed once per language pass.
        */
       const langTags = groupByTag(langPosts,);
       return [
@@ -127,14 +127,14 @@ export async function generatePages(
         },),
         ...names.map(function postWrite(name,) {
           /**
-           * Locale-specific post for this slug or undefined when no translation exists.
+           Locale-specific post for this slug or undefined when no translation exists.
            */
           const post = langPosts.find(function matchName(lp,) {
             return lp.name
               === name;
           },);
           /**
-           * Pre-rendered MDX body keyed by `lang/name`; absent for missing translations.
+           Pre-rendered MDX body keyed by `lang/name`; absent for missing translations.
            */
           const html = renderedContent.get(`${lang}/${name}`,);
           return writePage({
@@ -166,7 +166,7 @@ export async function generatePages(
     },),
     ...names.map(function nameWrite(name,) {
       /**
-       * Cross-language translations for this slug feeding the language picker on the name page.
+       Cross-language translations for this slug feeding the language picker on the name page.
        */
       const namePosts = byName[name]
         ?? [];

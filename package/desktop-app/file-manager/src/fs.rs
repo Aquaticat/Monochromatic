@@ -30,7 +30,7 @@ pub fn read_directory(path: &Path, generation: u64) -> io::Result<DirectorySnaps
         }
     }
     sort_entries(&mut entries);
-    Ok(DirectorySnapshot {
+    return Ok(DirectorySnapshot {
         path: path.to_path_buf(),
         generation,
         entries,
@@ -42,12 +42,12 @@ pub fn read_directory(path: &Path, generation: u64) -> io::Result<DirectorySnaps
 ///      best-effort (`metadata`), lossily decoding the name so non-UTF-8 entries still show.
 fn to_file_entry(entry: &fs::DirEntry) -> FileEntry {
     let metadata = entry.metadata().ok();
-    FileEntry {
+    return FileEntry {
         name: entry.file_name().to_string_lossy().into_owned(),
         path: entry.path(),
         kind: entry.file_type().map(kind_of).unwrap_or(EntryKind::File),
         size: metadata.as_ref().map(fs::Metadata::len),
-        modified: metadata.as_ref().and_then(|meta| meta.modified().ok()),
+        modified: metadata.as_ref().and_then(|meta| return meta.modified().ok()),
     }
 }
 
@@ -56,11 +56,11 @@ fn to_file_entry(entry: &fs::DirEntry) -> FileEntry {
 ///      inconsistently across platforms; an unresolved link stays its own kind.
 fn kind_of(file_type: fs::FileType) -> EntryKind {
     if file_type.is_symlink() {
-        EntryKind::Symlink
+        return EntryKind::Symlink
     } else if file_type.is_dir() {
-        EntryKind::Directory
+        return EntryKind::Directory
     } else {
-        EntryKind::File
+        return EntryKind::File
     }
 }
 
@@ -69,14 +69,14 @@ fn kind_of(file_type: fs::FileType) -> EntryKind {
 ///      sort with files since their target is unresolved.
 pub fn sort_entries(entries: &mut [FileEntry]) {
     entries.sort_by(|left, right| match (is_dir(left), is_dir(right)) {
-        (true, false) => Ordering::Less,
-        (false, true) => Ordering::Greater,
-        _ => left.name.to_lowercase().cmp(&right.name.to_lowercase()),
+        (true, false) => return Ordering::Less,
+        (false, true) => return Ordering::Greater,
+        _ => return left.name.to_lowercase().cmp(&right.name.to_lowercase()),
     });
 }
 
 /// What: whether an entry sorts into the directories-first group.
 /// Why: true only for real directories; symlinks and files share the second group.
 fn is_dir(entry: &FileEntry) -> bool {
-    matches!(entry.kind, EntryKind::Directory)
+    return matches!(entry.kind, EntryKind::Directory)
 }

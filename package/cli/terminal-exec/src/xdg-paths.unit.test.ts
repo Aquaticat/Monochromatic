@@ -1,12 +1,12 @@
 /**
- * Equivalence tests for `stripTrailingSlashes`.
- *
- * Capture the pre-refactor behavior of the trailing-slash trimmer so the
- * single-slice rewrite stays behavior-identical: no trailing slash, one,
- * many, all-slash collapse to empty, leading slashes preserved, only `/`
- * (not `\`) stripped, and a long repeated run.
- *
- * @module
+ Equivalence tests for `stripTrailingSlashes`.
+ 
+ Capture the pre-refactor behavior of the trailing-slash trimmer so the
+ single-slice rewrite stays behavior-identical: no trailing slash, one,
+ many, all-slash collapse to empty, leading slashes preserved, only `/`
+ (not `\`) stripped, and a long repeated run.
+ 
+ @module
  */
 
 import {

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden;background:#000}</style></helmet>
+<div style="background:#000;color:#E6E0E9;font-family:Roboto,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden">
+  <div style="flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;padding:24px 24px 12px">
+    <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:14px;font-weight:500">A · Material 3 as shipped (Android)</div>
+      <div style="font-size:12px;line-height:16px;color:#CAC4D0;text-wrap:pretty">Compose <span style="font-family:ui-monospace,monospace">Modifier.nonInteractiveScrollbar</span>: 4dp thumb, outline @ 70%, min 24dp, 2dp end insets, no track. Visual only — appears on scroll, fades after 400ms idle over 250ms. Scroll the list.</div>
+      <div onScroll="{{ scrollA }}" style="flex:1 1 auto;min-height:0;position:relative;border:1px solid #26262E;border-radius:12px;overflow:hidden">
+        <div ref="{{ innerA }}" style="position:absolute;inset:0;overflow:auto;scrollbar-width:none">
+          <sc-for list="{{ names }}" as="n" hint-placeholder-count="12">
+            <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n }}</div>
+          </sc-for>
+        </div>
+        <div style="position:absolute;top:2px;bottom:2px;right:0;width:4px;pointer-events:none"><div style="position:absolute;left:0;width:4px;border-radius:2px;background:rgba(147,143,153,0.7);top:{{ thumbTopA }};height:{{ thumbHA }};opacity:{{ alphaA }};transition:opacity 250ms linear"></div></div>
+      </div>
+    </div>
+    <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:14px;font-weight:500">B · Same look, interactive, always on (desktop)</div>
+      <div style="font-size:12px;line-height:16px;color:#CAC4D0;text-wrap:pretty">Identical geometry and colour; no fade; a 12dp-wide invisible grab zone (mouse) — thumb widens to 8dp on hover/drag (state layer 8%/10% behind it). Drag the thumb or click the track.</div>
+      <div ref="{{ refB }}" style="flex:1 1 auto;min-height:0;position:relative;border:1px solid #26262E;border-radius:12px;overflow:hidden">
+        <div ref="{{ innerB }}" onScroll="{{ scrollB }}" style="position:absolute;inset:0;overflow:auto;scrollbar-width:none;padding-right:12px">
+          <sc-for list="{{ names }}" as="n" hint-placeholder-count="12">
+            <div style="min-height:48px;display:flex;align-items:center;padding:0 16px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n }}</div>
+          </sc-for>
+        </div>
+        <div onPointerDown="{{ downB }}" onPointerMove="{{ moveB }}" onPointerUp="{{ upB }}" onPointerEnter="{{ enterB }}" onPointerLeave="{{ leaveB }}" style="position:absolute;top:2px;bottom:2px;right:0;width:12px;cursor:default;touch-action:none;background:{{ railBgB }}"><div style="position:absolute;right:2px;border-radius:4px;background:rgba(147,143,153,0.7);top:{{ thumbTopB }};height:{{ thumbHB }};width:{{ thumbWB }};transition:width 100ms linear"></div></div>
+      </div>
+    </div>
+    <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:14px;font-weight:500">C · Where each surface gets which</div>
+      <div style="font-size:12px;line-height:16px;color:#CAC4D0;text-wrap:pretty">One rule, not per-platform looks: <b style="color:#E6E0E9;font-weight:500">touch → A, pointer → B</b>, decided by the input that last touched the view, not by OS. Same 4dp/outline-70% thumb everywhere. Never the OS-native bar (Windows 17px, GTK overlay, macOS overlay) — those break the one-identity rule.</div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto;border:1px solid #26262E;border-radius:12px;padding:4px 0">
+        <sc-for list="{{ surfaces }}" as="s" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:16px;min-height:56px;padding:8px 16px;box-sizing:border-box"><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px">{{ s.name }}</div><div style="font-size:12px;color:#CAC4D0;margin-top:2px">{{ s.note }}</div></div><span style="font-size:12px;font-weight:500;color:#D0BCFF;white-space:nowrap">{{ s.rule }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="flex:0 0 auto;padding:8px 16px;border-top:1px solid #26262E;color:#8E8894;font-size:11px;line-height:14px;font-family:ui-monospace,monospace;background:#000;position:relative">SCROLL-A — values read from androidx compose/material3 Scrollbar.kt (NonInteractiveScrollbarDefaults). B is this project's desktop extension; MD3 has no interactive scrollbar spec.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:640}}">
+class Component extends DCLogic {
+  state = { names: [], a: { top: 0, h: 24, alpha: 0 }, b: { top: 0, h: 24, hover: false, drag: false } };
+  innerA = React.createRef(); innerB = React.createRef(); refB = React.createRef();
+  componentDidMount() {
+    import("./artists.js").then((m) => this.setState({ names: m.ARTISTS.slice(0, 220) }, () => { this.measure("a"); this.measure("b"); }));
+  }
+  geom(el) {
+    const track = el.clientHeight - 4;
+    const frac = el.clientHeight / el.scrollHeight;
+    const h = Math.max(24, Math.min(track * 0.9, track * frac));
+    const max = el.scrollHeight - el.clientHeight;
+    const top = max > 0 ? (el.scrollTop / max) * (track - h) : 0;
+    return { top, h, max, track };
+  }
+  measure(which) {
+    const el = which === "a" ? this.innerA.current : this.innerB.current;
+    if (!el || el.scrollHeight <= el.clientHeight) return;
+    const g = this.geom(el);
+    if (which === "a") {
+      clearTimeout(this.fadeT);
+      this.setState({ a: { top: g.top, h: g.h, alpha: 1 } });
+      this.fadeT = setTimeout(() => this.setState((s) => ({ a: { ...s.a, alpha: 0 } })), 400);
+    } else {
+      this.setState((s) => ({ b: { ...s.b, top: g.top, h: g.h } }));
+    }
+  }
+  renderVals() {
+    const s = this.state;
+    const px = (v) => Math.round(v) + "px";
+    return {
+      names: s.names,
+      innerA: this.innerA, innerB: this.innerB, refB: this.refB,
+      scrollA: () => this.measure("a"), scrollB: () => this.measure("b"),
+      thumbTopA: px(s.a.top), thumbHA: px(s.a.h), alphaA: s.a.alpha,
+      thumbTopB: px(s.b.top), thumbHB: px(s.b.h), thumbWB: (s.b.hover || s.b.drag) ? "8px" : "4px",
+      railBgB: s.b.drag ? "rgba(230,224,233,0.10)" : s.b.hover ? "rgba(230,224,233,0.08)" : "transparent",
+      enterB: () => this.setState((st) => ({ b: { ...st.b, hover: true } })),
+      leaveB: () => this.setState((st) => ({ b: { ...st.b, hover: false } })),
+      downB: (e) => {
+        const el = this.innerB.current; if (!el) return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        const g = this.geom(el), r = e.currentTarget.getBoundingClientRect(), y = e.clientY - r.top;
+        if (y < g.top || y > g.top + g.h) el.scrollTop = ((y - g.h / 2) / (g.track - g.h)) * g.max;
+        this.dragY = e.clientY; this.dragStart = el.scrollTop;
+        this.setState((st) => ({ b: { ...st.b, drag: true } }));
+      },
+      moveB: (e) => {
+        if (!s.b.drag) return;
+        const el = this.innerB.current, g = this.geom(el);
+        el.scrollTop = this.dragStart + ((e.clientY - this.dragY) / (g.track - g.h)) * g.max;
+      },
+      upB: () => this.setState((st) => ({ b: { ...st.b, drag: false } })),
+      surfaces: [
+        { name: "Folder picker — names", note: "Wrapped chips; ~2 screens for a big letter", rule: "A / B by input" },
+        { name: "Folder picker — letter rail", note: "27 × 48dp, 1,296dp tall; scrolls on its own", rule: "none — rail is its own index" },
+        { name: "Track list", note: "72dp rows; 16–200 per folder", rule: "A / B by input" },
+        { name: "Cover screen track list", note: "Touch only", rule: "A" },
+        { name: "Settings, menus, dialogs", note: "Never taller than the screen", rule: "none" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

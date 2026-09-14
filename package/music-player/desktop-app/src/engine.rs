@@ -274,7 +274,7 @@ impl Engine {
         // ```ts
         // return Engine.spawnWithCache(onUpdate, CacheHandle.open());
         // ```
-        Engine::spawn_with_cache(on_update, CacheHandle::open())
+        return Engine::spawn_with_cache(on_update, CacheHandle::open())
     }
 
     /// What:     `pub(crate) fn spawn_with_cache<F>(on_update: F, cache: CacheHandle) -> Engine where F: Fn(Update) + Send + 'static`.
@@ -359,7 +359,7 @@ impl Engine {
         // ```ts
         // return new Engine(tx, worker, handle);
         // ```
-        Engine {
+        return Engine {
             tx,
             worker,
             handle: Some(handle),
@@ -390,7 +390,7 @@ impl Engine {
         // ```ts
         // return new CommandSender(this.tx.clone(), this.worker);
         // ```
-        CommandSender {
+        return CommandSender {
             tx: self.tx.clone(),
             worker: self.worker.clone(),
         }

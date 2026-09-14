@@ -67,7 +67,7 @@ description = "Run clippy with warnings denied (host if dev libs present, else c
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-runCargo(['clippy', '--release', '--', '-D', 'warnings'])
+runCargo(['clippy', '--release', '--all-targets', '--', '-D', 'warnings'])
 """
 
 [tasks."format:clippy"]
@@ -77,7 +77,7 @@ description = "Apply clippy's machine-applicable suggestions in place (host if d
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
+runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs', '--all-targets'])
 """
 
 [tasks."lint:rust"]
@@ -136,15 +136,15 @@ run = [
 ]
 
 [tasks.run]
-description = "Build, then run the compositor on the host Wayland session. Pass: -- [--socket PATH] [--size WxH] [--] COMMAND [ARG...]"
+description = "Build and run compositor; supports socket, size, color-scheme, and child arguments"
 usage = '''
 arg "[args]" var=#true help="Compositor arguments, then the client command to host"
 '''
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
-const { execFileSync } = await import('node:child_process')
+{{vars.parse_usage_args}}
 runCargo(['build', '--release'])
-const args = process.argv.slice(1)
+const args = parseUsageArgs(process.env.usage_args ?? '')
 execFileSync('./target/release/monochromatic-nested-wayland-session', args, { stdio: 'inherit' })
 """

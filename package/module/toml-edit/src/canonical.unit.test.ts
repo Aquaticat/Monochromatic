@@ -1,7 +1,7 @@
 /**
- * Tests for canonical-mode emission via `emptyTomlEdit` plus setters.
- *
- * @module
+ Tests for canonical-mode emission via `emptyTomlEdit` plus setters.
+ 
+ @module
  */
 
 import {

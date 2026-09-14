@@ -1,7 +1,7 @@
 /**
- * Unit tests for Pi Search Fetch tool definitions.
- *
- * @module
+ Unit tests for Pi Search Fetch tool definitions.
+ 
+ @module
  */
 
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
@@ -23,17 +23,17 @@ import {
 //region Fixtures
 
 /**
- * Blocked host fixture.
+ Blocked host fixture.
  */
 const BLOCKED_HOST = 'badwikipedia.invalid';
 
 /**
- * Good search result URL fixture.
+ Good search result URL fixture.
  */
 const GOOD_RESULT_URL = 'https://example.com/good';
 
 /**
- * Fixed config fixture.
+ Fixed config fixture.
  */
 const CONFIG: LinkupConfig = {
   exaApiKey: 'exa-key',
@@ -46,12 +46,12 @@ const CONFIG: LinkupConfig = {
 };
 
 /**
- * Empty Linkup response fixture.
+ Empty Linkup response fixture.
  */
 const EMPTY_RESPONSE = { results: [], };
 
 /**
- * Exact metadata search response fixture expected to render its object results as JSONL.
+ Exact metadata search response fixture expected to render its object results as JSONL.
  */
 const METADATA_SEARCH_RESPONSE = {
   costDollars: {},
@@ -73,7 +73,7 @@ await describe({
       name: 'creates only web_search and web_fetch tools',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
@@ -81,7 +81,7 @@ await describe({
         },);
 
         /**
-         * Local value for tools.
+         Local value for tools.
          */
         const tools = createLinkupTools({
           config: CONFIG,
@@ -100,19 +100,19 @@ await describe({
       name: 'search ignored params produce model-visible warnings and do not reach client',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse: { markdown: 'ok', },
         },);
         /**
-         * Local value for searchTool.
+         Local value for searchTool.
          */
         const searchTool = searchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await searchTool.execute(
           'tool-call-search-warning',
@@ -129,14 +129,14 @@ await describe({
 
         expect(result.content,).toHaveLength(2,);
         /**
-         * Local value for warning.
+         Local value for warning.
          */
         const warning = textContentAt({ result, index: 0, },);
         expect(warning,).toContain('depth, limit, maxResults',);
         expect(warning,).toContain('Exa fast search first',);
         expect(mock.searchCalls,).toHaveLength(1,);
         /**
-         * Local value for searchInput.
+         Local value for searchInput.
          */
         const searchInput = firstSearchInput(mock,);
         expect('depth' in searchInput,).toBe(false,);
@@ -147,7 +147,7 @@ await describe({
       name: 'search removes blocked result URLs from model-visible output and preserves raw response in details',
       fn: async () => {
         /**
-         * Local value for rawResponse.
+         Local value for rawResponse.
          */
         const rawResponse = {
           results: [
@@ -166,19 +166,19 @@ await describe({
           ],
         };
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: rawResponse,
           fetchResponse: { markdown: 'ok', },
         },);
         /**
-         * Local value for searchTool.
+         Local value for searchTool.
          */
         const searchTool = searchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await searchTool.execute(
           'tool-call-search-filter',
@@ -189,7 +189,7 @@ await describe({
         );
 
         /**
-         * Local value for visible.
+         Local value for visible.
          */
         const visible = parseVisibleJsonl({ result, index: 0, },);
         expect(visible,).toHaveLength(1,);
@@ -206,19 +206,19 @@ await describe({
       name: 'search renders exact metadata response results as JSONL',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: METADATA_SEARCH_RESPONSE,
           fetchResponse: { markdown: 'ok', },
         },);
         /**
-         * Local value for searchTool.
+         Local value for searchTool.
          */
         const searchTool = searchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await searchTool.execute(
           'tool-call-search-metadata',
@@ -237,19 +237,19 @@ await describe({
       name: 'fetch ignored params produce model-visible warnings',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse: { markdown: 'ok', },
         },);
         /**
-         * Local value for fetchTool.
+         Local value for fetchTool.
          */
         const fetchTool = fetchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await fetchTool.execute(
           'tool-call-fetch-warning',
@@ -267,7 +267,7 @@ await describe({
         expect(textContentAt({ result, index: 0, },),).toContain('renderJs, includeRawHtml',);
         expect(mock.fetchCalls,).toHaveLength(1,);
         /**
-         * Local value for fetchInput.
+         Local value for fetchInput.
          */
         const fetchInput = firstFetchInput(mock,);
         expect('renderJs' in fetchInput,).toBe(false,);
@@ -277,14 +277,14 @@ await describe({
       name: 'blocked fetch throws before mocked client fetch is called',
       fn: async () => {
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse: { markdown: 'ok', },
         },);
         /**
-         * Local value for fetchTool.
+         Local value for fetchTool.
          */
         const fetchTool = fetchToolFrom(mock.client,);
 
@@ -311,23 +311,23 @@ await describe({
       name: 'fetch stores markdown-only response in details and visible output is markdown',
       fn: async () => {
         /**
-         * Local value for fetchResponse.
+         Local value for fetchResponse.
          */
         const fetchResponse = { markdown: 'Fetched page', };
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse,
         },);
         /**
-         * Local value for fetchTool.
+         Local value for fetchTool.
          */
         const fetchTool = fetchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await fetchTool.execute(
           'tool-call-fetch-markdown',
@@ -345,7 +345,7 @@ await describe({
       name: 'fetch filters base64 Markdown images while preserving raw response details',
       fn: async () => {
         /**
-         * Fetch response containing line-wrapped linked image data.
+         Fetch response containing line-wrapped linked image data.
          */
         const fetchResponse = {
           markdown: [
@@ -357,19 +357,19 @@ await describe({
           ].join('\n',),
         };
         /**
-         * Mock client returning unfiltered provider response.
+         Mock client returning unfiltered provider response.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse,
         },);
         /**
-         * Fetch tool under test.
+         Fetch tool under test.
          */
         const fetchTool = fetchToolFrom(mock.client,);
 
         /**
-         * Final filtered tool result.
+         Final filtered tool result.
          */
         const result = await fetchTool.execute(
           'tool-call-fetch-data-image-filter',
@@ -388,26 +388,26 @@ await describe({
       name: 'fetch stores non-exact markdown response in details and visible output is JSON',
       fn: async () => {
         /**
-         * Local value for fetchResponse.
+         Local value for fetchResponse.
          */
         const fetchResponse = {
           markdown: 'Fetched page',
           title: 'Fetched title',
         };
         /**
-         * Local value for mock.
+         Local value for mock.
          */
         const mock = mockClient({
           searchResponse: EMPTY_RESPONSE,
           fetchResponse,
         },);
         /**
-         * Local value for fetchTool.
+         Local value for fetchTool.
          */
         const fetchTool = fetchToolFrom(mock.client,);
 
         /**
-         * Local value for result.
+         Local value for result.
          */
         const result = await fetchTool.execute(
           'tool-call-fetch-json',
@@ -427,51 +427,51 @@ await describe({
 //region Helpers
 
 /**
- * Search call record.
+ Search call record.
  */
 type SearchCall = {
   /**
-   * Search input passed to client.
+   Search input passed to client.
    */
   readonly input: LinkupWebSearchInput;
 };
 
 /**
- * Fetch call record.
+ Fetch call record.
  */
 type FetchCall = {
   /**
-   * Fetch input passed to client.
+   Fetch input passed to client.
    */
   readonly input: LinkupWebFetchInput;
 };
 
 /**
- * Mock client harness.
+ Mock client harness.
  */
 type MockClient = {
   /**
-   * Client implementation.
+   Client implementation.
    */
   readonly client: LinkupToolClient;
   /**
-   * Recorded search calls.
+   Recorded search calls.
    */
   readonly searchCalls: SearchCall[];
   /**
-   * Recorded fetch calls.
+   Recorded fetch calls.
    */
   readonly fetchCalls: FetchCall[];
 };
 
 /**
- * Build mock Linkup client.
- *
- * @param searchResponse - response returned by search
- *
- * @param fetchResponse - response returned by fetch
- *
- * @returns mock client harness
+ Build mock Linkup client.
+ 
+ @param searchResponse - response returned by search
+ 
+ @param fetchResponse - response returned by fetch
+ 
+ @returns mock client harness
  */
 function mockClient(
   {
@@ -483,11 +483,11 @@ function mockClient(
   },
 ): MockClient {
   /**
-   * Local value for searchCalls.
+   Local value for searchCalls.
    */
   const searchCalls: SearchCall[] = [];
   /**
-   * Local value for fetchCalls.
+   Local value for fetchCalls.
    */
   const fetchCalls: FetchCall[] = [];
   return {
@@ -513,15 +513,15 @@ function mockClient(
 }
 
 /**
- * Return first recorded search input.
- *
- * @param mock - mock client harness
- *
- * @returns first search input
+ Return first recorded search input.
+ 
+ @param mock - mock client harness
+ 
+ @returns first search input
  */
 function firstSearchInput(mock: MockClient,): LinkupWebSearchInput {
   /**
-   * First recorded search call.
+   First recorded search call.
    */
   const [call,] = mock.searchCalls;
   if (call === undefined)
@@ -530,15 +530,15 @@ function firstSearchInput(mock: MockClient,): LinkupWebSearchInput {
 }
 
 /**
- * Return first recorded fetch input.
- *
- * @param mock - mock client harness
- *
- * @returns first fetch input
+ Return first recorded fetch input.
+ 
+ @param mock - mock client harness
+ 
+ @returns first fetch input
  */
 function firstFetchInput(mock: MockClient,): LinkupWebFetchInput {
   /**
-   * First recorded fetch call.
+   First recorded fetch call.
    */
   const [call,] = mock.fetchCalls;
   if (call === undefined)
@@ -547,15 +547,15 @@ function firstFetchInput(mock: MockClient,): LinkupWebFetchInput {
 }
 
 /**
- * Return search tool from a fresh tool set.
- *
- * @param client - mock client
- *
- * @returns search tool
+ Return search tool from a fresh tool set.
+ 
+ @param client - mock client
+ 
+ @returns search tool
  */
 function searchToolFrom(client: LinkupToolClient,) {
   /**
-   * Local value for tool.
+   Local value for tool.
    */
   const tool = createLinkupTools({
     config: CONFIG,
@@ -569,15 +569,15 @@ function searchToolFrom(client: LinkupToolClient,) {
 }
 
 /**
- * Return fetch tool from a fresh tool set.
- *
- * @param client - mock client
- *
- * @returns fetch tool
+ Return fetch tool from a fresh tool set.
+ 
+ @param client - mock client
+ 
+ @returns fetch tool
  */
 function fetchToolFrom(client: LinkupToolClient,) {
   /**
-   * Local value for tool.
+   Local value for tool.
    */
   const tool = createLinkupTools({
     config: CONFIG,
@@ -591,22 +591,22 @@ function fetchToolFrom(client: LinkupToolClient,) {
 }
 
 /**
- * Build unused extension context stand-in.
- *
- * @returns fake extension context
+ Build unused extension context stand-in.
+ 
+ @returns fake extension context
  */
 function fakeContext(): ExtensionContext {
   return {} as unknown as ExtensionContext;
 }
 
 /**
- * Return text content at index from a tool result.
- *
- * @param result - tool result
- *
- * @param index - content item index
- *
- * @returns text content
+ Return text content at index from a tool result.
+ 
+ @param result - tool result
+ 
+ @param index - content item index
+ 
+ @returns text content
  */
 function textContentAt(
   {
@@ -618,7 +618,7 @@ function textContentAt(
   },
 ): string {
   /**
-   * Local value for item.
+   Local value for item.
    */
   const item = result.content[index];
   if ((!isRecord(item,)) || (item.type !== 'text') || ((typeof item.text) !== 'string'))
@@ -627,13 +627,13 @@ function textContentAt(
 }
 
 /**
- * Parse visible JSON content at index.
- *
- * @param result - tool result
- *
- * @param index - content item index
- *
- * @returns parsed JSON
+ Parse visible JSON content at index.
+ 
+ @param result - tool result
+ 
+ @param index - content item index
+ 
+ @returns parsed JSON
  */
 function parseVisibleJson(
   {
@@ -648,13 +648,13 @@ function parseVisibleJson(
 }
 
 /**
- * Parse visible JSONL content at index.
- *
- * @param result - tool result
- *
- * @param index - content item index
- *
- * @returns parsed JSONL items
+ Parse visible JSONL content at index.
+ 
+ @param result - tool result
+ 
+ @param index - content item index
+ 
+ @returns parsed JSONL items
  */
 function parseVisibleJsonl(
   {
@@ -666,7 +666,7 @@ function parseVisibleJsonl(
   },
 ): readonly unknown[] {
   /**
-   * Local value for text.
+   Local value for text.
    */
   const text = textContentAt({ result, index, },);
   if (text === '')
@@ -679,11 +679,11 @@ function parseVisibleJsonl(
 }
 
 /**
- * Extract Linkup results array from a response.
- *
- * @param value - Linkup response value
- *
- * @returns results array
+ Extract Linkup results array from a response.
+ 
+ @param value - Linkup response value
+ 
+ @returns results array
  */
 function resultsArray(value: unknown,): readonly unknown[] {
   if ((!isRecord(value,)) || (!Array.isArray(value.results,)))
@@ -692,11 +692,11 @@ function resultsArray(value: unknown,): readonly unknown[] {
 }
 
 /**
- * Extract result URL from a result object.
- *
- * @param value - result value
- *
- * @returns URL string
+ Extract result URL from a result object.
+ 
+ @param value - result value
+ 
+ @returns URL string
  */
 function resultUrl(value: unknown,): string {
   if ((!isRecord(value,)) || ((typeof value.url) !== 'string'))
@@ -705,11 +705,11 @@ function resultUrl(value: unknown,): string {
 }
 
 /**
- * Return whether value is a non-null object record.
- *
- * @param value - unknown value
- *
- * @returns whether value can be read by string keys
+ Return whether value is a non-null object record.
+ 
+ @param value - unknown value
+ 
+ @returns whether value can be read by string keys
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
   return (value !== null)

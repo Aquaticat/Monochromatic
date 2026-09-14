@@ -22,23 +22,23 @@ import {
 } from './transaction-journal.ts';
 
 /**
- * Reconstructs staged snapshot from validated durable journal.
- *
- * @param journal - pending durable worktree-copy transaction
- *
- * @returns staged payload and deterministic manifest
- *
- * @example
- * ```ts
- * await snapshotFromJournal(pending);
- * ```
+ Reconstructs staged snapshot from validated durable journal.
+ 
+ @param journal - pending durable worktree-copy transaction
+ 
+ @returns staged payload and deterministic manifest
+ 
+ @example
+ ```ts
+ await snapshotFromJournal(pending);
+ ```
  */
 async function snapshotFromJournal(
   journal: PendingWorktreeCopyJournal,
 ): Promise<StagedWorktreeSnapshot> {
   try {
     /**
-     * Deterministic entries currently retained in staged payload.
+     Deterministic entries currently retained in staged payload.
      */
     const entries = await collectEntryManifest({
       root: journal.record
@@ -48,7 +48,7 @@ async function snapshotFromJournal(
       excludedRoots: [],
     },);
     /**
-     * Reconstructed selected paths represented by private stage.
+     Reconstructed selected paths represented by private stage.
      */
     const entryPaths = new Set(entries.map(function entryPath(entry,): string {
       return entry.relativePath;
@@ -87,18 +87,18 @@ async function snapshotFromJournal(
 }
 
 /**
- * Completes one staged or interrupted destination installation.
- *
- * @param pending - durable transaction
- *
- * @param snapshot - validated staged payload
- *
- * @returns newly installed selected entry count
- *
- * @example
- * ```ts
- * await completeJournal({ pending, snapshot });
- * ```
+ Completes one staged or interrupted destination installation.
+ 
+ @param pending - durable transaction
+ 
+ @param snapshot - validated staged payload
+ 
+ @returns newly installed selected entry count
+ 
+ @example
+ ```ts
+ await completeJournal({ pending, snapshot });
+ ```
  */
 async function completeJournal({
   pending,
@@ -108,12 +108,12 @@ async function completeJournal({
   snapshot: StagedWorktreeSnapshot;
 }>,): Promise<number> {
   /**
-   * Mutable current journal record for callbacks.
+   Mutable current journal record for callbacks.
    */
   const state: JournalState = { pending, };
   await beginInstalling(state,);
   /**
-   * Newly installed selected entry count.
+   Newly installed selected entry count.
    */
   const copiedEntries = await installSnapshot({
     snapshot,
@@ -126,24 +126,24 @@ async function completeJournal({
 }
 
 /**
- * Recovers every durable interrupted worktree-copy transaction.
- *
- * @param commonDir - canonical common Git directory
- *
- * @returns recovered destination count
- *
- * @throws {@link WorktreeCopyError} while retaining conflicting evidence
- *
- * @example
- * ```ts
- * await recoverWorktreeCopyTransactions('/repo/.git');
- * ```
+ Recovers every durable interrupted worktree-copy transaction.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @returns recovered destination count
+ 
+ @throws {@link WorktreeCopyError} while retaining conflicting evidence
+ 
+ @example
+ ```ts
+ await recoverWorktreeCopyTransactions('/repo/.git');
+ ```
  */
 export async function recoverWorktreeCopyTransactions(
   commonDir: string,
 ): Promise<number> {
   /**
-   * Pending journals read while caller holds repository settlement lease.
+   Pending journals read while caller holds repository settlement lease.
    */
   const pending = await readPendingWorktreeCopyJournals(commonDir,);
   for (const journal of pending) {
@@ -161,7 +161,7 @@ export async function recoverWorktreeCopyTransactions(
     }
     /* oxlint-disable no-await-in-loop -- recovery order is deterministic and stops at first retained conflict */
     /**
-     * Deterministic staged snapshot reconstructed for current journal.
+     Deterministic staged snapshot reconstructed for current journal.
      */
     const snapshot = await snapshotFromJournal(journal,);
     /* oxlint-enable no-await-in-loop */
@@ -175,20 +175,20 @@ export async function recoverWorktreeCopyTransactions(
 }
 
 /**
- * Creates transaction journal or removes unowned stage after journal failure.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param destinationRoot - newly created worktree root
- *
- * @param snapshot - validated staged snapshot
- *
- * @returns durable transaction journal
- *
- * @example
- * ```ts
- * await createJournalOrCleanup({ commonDir, destinationRoot, snapshot });
- * ```
+ Creates transaction journal or removes unowned stage after journal failure.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param destinationRoot - newly created worktree root
+ 
+ @param snapshot - validated staged snapshot
+ 
+ @returns durable transaction journal
+ 
+ @example
+ ```ts
+ await createJournalOrCleanup({ commonDir, destinationRoot, snapshot });
+ ```
  */
 async function createJournalOrCleanup({
   commonDir,
@@ -219,24 +219,24 @@ async function createJournalOrCleanup({
 }
 
 /**
- * Synchronizes ignored source state into one newly registered worktree.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param sourceRoot - canonical source worktree
- *
- * @param destinationRoot - canonical created worktree
- *
- * @param registeredRoots - every registered root excluded from recursive copy
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns newly installed selected entry count
- *
- * @example
- * ```ts
- * await synchronizeCreatedWorktree({ commonDir, sourceRoot, destinationRoot, registeredRoots, gitPath });
- * ```
+ Synchronizes ignored source state into one newly registered worktree.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param sourceRoot - canonical source worktree
+ 
+ @param destinationRoot - canonical created worktree
+ 
+ @param registeredRoots - every registered root excluded from recursive copy
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns newly installed selected entry count
+ 
+ @example
+ ```ts
+ await synchronizeCreatedWorktree({ commonDir, sourceRoot, destinationRoot, registeredRoots, gitPath });
+ ```
  */
 async function synchronizeCreatedWorktree({
   commonDir,
@@ -252,7 +252,7 @@ async function synchronizeCreatedWorktree({
   gitPath: string;
 }>,): Promise<number> {
   /**
-   * Validated private ignored-state snapshot.
+   Validated private ignored-state snapshot.
    */
   const snapshot = await stageIgnoredSnapshot({
     sourceRoot,
@@ -261,7 +261,7 @@ async function synchronizeCreatedWorktree({
     gitPath,
   },);
   /**
-   * Durable staged transaction journal.
+   Durable staged transaction journal.
    */
   const pending = await createJournalOrCleanup({
     commonDir,
@@ -275,24 +275,24 @@ async function synchronizeCreatedWorktree({
 }
 
 /**
- * Synchronizes ignored source state into every created worktree.
- *
- * @param commonDir - canonical common Git directory
- *
- * @param sourceRoot - canonical source worktree, absent for bare repository
- *
- * @param created - newly registered linked worktrees
- *
- * @param registeredRoots - all registered roots excluded from source recursion
- *
- * @param gitPath - absolute real-Git executable
- *
- * @returns aggregate success summary
- *
- * @example
- * ```ts
- * await synchronizeCreatedWorktrees({ commonDir, sourceRoot: '/repo', created, registeredRoots, gitPath });
- * ```
+ Synchronizes ignored source state into every created worktree.
+ 
+ @param commonDir - canonical common Git directory
+ 
+ @param sourceRoot - canonical source worktree, absent for bare repository
+ 
+ @param created - newly registered linked worktrees
+ 
+ @param registeredRoots - all registered roots excluded from source recursion
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @returns aggregate success summary
+ 
+ @example
+ ```ts
+ await synchronizeCreatedWorktrees({ commonDir, sourceRoot: '/repo', created, registeredRoots, gitPath });
+ ```
  */
 export async function synchronizeCreatedWorktrees({
   commonDir,
@@ -314,7 +314,7 @@ export async function synchronizeCreatedWorktrees({
     };
   }
   /**
-   * Newly installed selected entry counts per destination.
+   Newly installed selected entry counts per destination.
    */
   const copiedCounts: number[] = [];
   for (const destination of created) {
@@ -328,7 +328,7 @@ export async function synchronizeCreatedWorktrees({
     },),);
   }
   /**
-   * Aggregate newly installed selected entry count.
+   Aggregate newly installed selected entry count.
    */
   const copiedEntries = copiedCounts.reduce(
     function addCount(

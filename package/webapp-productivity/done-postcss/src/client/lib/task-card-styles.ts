@@ -1,10 +1,10 @@
 /**
- * Shadow DOM styles for the `\<task-card\>` component.
+ Shadow DOM styles for the `\<task-card\>` component.
  */
 import { css, } from '../css.ts';
 
 /**
- * Shadow DOM styles for `\<task-card\>` -- card layout, checkbox, title, and metadata chips.
+ Shadow DOM styles for `\<task-card\>` -- card layout, checkbox, title, and metadata chips.
  */
 export const TASK_CARD_STYLES: string = css(`
   :host {

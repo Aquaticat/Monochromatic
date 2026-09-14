@@ -1,7 +1,7 @@
 /**
- * Root index page: language picker.
- *
- * Renders a list of available languages linking to their landing pages.
+ Root index page: language picker.
+ 
+ Renders a list of available languages linking to their landing pages.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -12,18 +12,18 @@ import {
 import { pageLayout, } from '../template/layout.ts';
 
 /**
- * Generates the language picker page HTML.
- *
- * @param langs - available language codes
- *
- * @param canonicalUrl - full canonical URL for this page
- *
- * @returns complete HTML document for the root index
- *
- * @example
- * ```ts
- * const html = indexPage({ langs: ['en', 'fr'], canonicalUrl: 'https://aquati.cat/' });
- * ```
+ Generates the language picker page HTML.
+ 
+ @param langs - available language codes
+ 
+ @param canonicalUrl - full canonical URL for this page
+ 
+ @returns complete HTML document for the root index
+ 
+ @example
+ ```ts
+ const html = indexPage({ langs: ['en', 'fr'], canonicalUrl: 'https://aquati.cat/' });
+ ```
  */
 export function indexPage(
   {
@@ -35,12 +35,12 @@ export function indexPage(
   },
 ): string {
   /**
-   * Page title composed from all language translations of "choose a language".
+   Page title composed from all language translations of "choose a language".
    */
   const title = locales
     .map(function capitalize(locale,) {
       /**
-       * Translated phrase before title-case fixup.
+       Translated phrase before title-case fixup.
        */
       const str = i18n.label(
         locale,
@@ -54,7 +54,7 @@ export function indexPage(
     .join(' ',);
 
   /**
-   * Main element tree composed before the page layout wraps it with `<head>` and friends.
+   Main element tree composed before the page layout wraps it with `<head>` and friends.
    */
   const content = h({
     tag: 'main',

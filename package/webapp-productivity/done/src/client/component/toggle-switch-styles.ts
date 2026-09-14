@@ -1,5 +1,5 @@
 /**
- * Shadow DOM styles for the `<toggle-switch>` web component.
+ Shadow DOM styles for the `<toggle-switch>` web component.
  */
 import {
   cssCalc,
@@ -17,32 +17,32 @@ import {
 } from '../mixins.ts';
 
 /**
- * Track inline-size in rem.
+ Track inline-size in rem.
  */
 const TRACK_WIDTH = 3;
 
 /**
- * Full percentage for track sizing.
+ Full percentage for track sizing.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Half percentage for centering the thumb.
+ Half percentage for centering the thumb.
  */
 const HALF_PERCENT = 50;
 
 /**
- * Negative half percentage for translateY centering.
+ Negative half percentage for translateY centering.
  */
 const NEG_HALF_PERCENT = -50;
 
 /**
- * Transition duration for thumb slide in seconds.
+ Transition duration for thumb slide in seconds.
  */
 const THUMB_TRANSITION_S = 0.15;
 
 /**
- * Compiled CSS string for `<toggle-switch>` Shadow DOM.
+ Compiled CSS string for `<toggle-switch>` Shadow DOM.
  */
 export const TOGGLE_SWITCH_STYLES: string = [
   css({

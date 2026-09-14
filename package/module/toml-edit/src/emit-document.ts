@@ -1,12 +1,12 @@
 /**
- * Emit a {@link TomlEditState} to TOML text by walking its block tree.
- *
- * A clean node emits its original bytes verbatim (`source.slice(range)`); a
- * value-only-edited key-value reuses the exact key prefix and trailing bytes
- * and re-renders just the value; a synthetic node renders canonically. Fillers
- * always emit verbatim, so a fully-clean document round-trips byte-for-byte.
- *
- * @module
+ Emit a {@link TomlEditState} to TOML text by walking its block tree.
+ 
+ A clean node emits its original bytes verbatim (`source.slice(range)`); a
+ value-only-edited key-value reuses the exact key prefix and trailing bytes
+ and re-renders just the value; a synthetic node renders canonically. Fillers
+ always emit verbatim, so a fully-clean document round-trips byte-for-byte.
+ 
+ @module
  */
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -21,32 +21,32 @@ import { encodeKey, } from './keys.ts';
 import type { TomlEditState, } from './types.ts';
 
 /**
- * Emit the full document text for `edit`.
- *
- * @returns Output TOML text.
- *
- * @example
- * ```ts
- * emitDocument({ edit, },);
- * ```
+ Emit the full document text for `edit`.
+ 
+ @returns Output TOML text.
+ 
+ @example
+ ```ts
+ emitDocument({ edit, },);
+ ```
  */
 export function emitDocument({ edit, }: { readonly edit: TomlEditState; },): string {
   /**
-   * Optional header comment block for {@link emptyTomlEdit}-derived documents.
+   Optional header comment block for {@link emptyTomlEdit}-derived documents.
    */
   const header = (edit.headerComment === undefined) || (edit.headerComment
     === '')
     ? ''
     : renderHeaderComment({ headerComment: edit.headerComment, },);
   /**
-   * Concatenated block text; the ordered blocks partition the source.
+   Concatenated block text; the ordered blocks partition the source.
    */
   const body = emitBlocks({
     blocks: edit.blocks,
     edit,
   },);
   /**
-   * Combined output before the synthetic-document trailing-newline fixup.
+   Combined output before the synthetic-document trailing-newline fixup.
    */
   const result = `${header}${body}`;
   if (
@@ -62,9 +62,9 @@ export function emitDocument({ edit, }: { readonly edit: TomlEditState; },): str
 }
 
 /**
- * Render a header comment as `# line` rows plus a trailing blank line.
- *
- * @returns Computed string.
+ Render a header comment as `# line` rows plus a trailing blank line.
+ 
+ @returns Computed string.
  */
 function renderHeaderComment(
   { headerComment, }: { readonly headerComment: string; },
@@ -80,9 +80,9 @@ function renderHeaderComment(
 }
 
 /**
- * Concatenate the emitted text of an ordered block list.
- *
- * @returns Computed string.
+ Concatenate the emitted text of an ordered block list.
+ 
+ @returns Computed string.
  */
 function emitBlocks(
   {
@@ -113,9 +113,9 @@ function emitBlocks(
 }
 
 /**
- * Emit one key-value block.
- *
- * @returns Computed string.
+ Emit one key-value block.
+ 
+ @returns Computed string.
  */
 function emitKeyValue(
   {
@@ -138,9 +138,9 @@ function emitKeyValue(
 }
 
 /**
- * Emit the key-value line without any inserted trailing comment.
- *
- * @returns Computed string.
+ Emit the key-value line without any inserted trailing comment.
+ 
+ @returns Computed string.
  */
 function emitKeyValueBase(
   {
@@ -171,11 +171,11 @@ function emitKeyValueBase(
     );
   }
   /**
-   * Original value span so the key prefix and trailing bytes stay byte-exact.
+   Original value span so the key prefix and trailing bytes stay byte-exact.
    */
   const valueRange = nonNullishOrThrow(kv.valueRange,);
   /**
-   * Exact `key = ` prefix (indent handled by the preceding filler).
+   Exact `key = ` prefix (indent handled by the preceding filler).
    */
   const prefix = edit.source
     .slice(
@@ -184,7 +184,7 @@ function emitKeyValueBase(
     valueRange[0],
   );
   /**
-   * Trailing bytes: any spaces, a same-line comment, and the newline.
+   Trailing bytes: any spaces, a same-line comment, and the newline.
    */
   const suffix = edit.source
     .slice(
@@ -202,9 +202,9 @@ function emitKeyValueBase(
 }
 
 /**
- * Splice an inserted trailing comment before the line's final newline.
- *
- * @returns Computed string.
+ Splice an inserted trailing comment before the line's final newline.
+ 
+ @returns Computed string.
  */
 function appendTrailing(
   {
@@ -226,9 +226,9 @@ function appendTrailing(
 }
 
 /**
- * Emit a created (synthetic) key-value as a canonical line with its comments.
- *
- * @returns Computed string.
+ Emit a created (synthetic) key-value as a canonical line with its comments.
+ 
+ @returns Computed string.
  */
 function emitSyntheticKeyValue(
   {
@@ -240,7 +240,7 @@ function emitSyntheticKeyValue(
   },
 ): string {
   /**
-   * Leading attached comment lines rendered above the entry.
+   Leading attached comment lines rendered above the entry.
    */
   const before = kv.commentsBefore
     .map(function each(c,) {
@@ -248,7 +248,7 @@ function emitSyntheticKeyValue(
     },)
     .join('',);
   /**
-   * Encoded dotted key spelling.
+   Encoded dotted key spelling.
    */
   const keyText = kv.keySegments
     .map(function eachSeg(seg,) {
@@ -256,7 +256,7 @@ function emitSyntheticKeyValue(
     },)
     .join('.',);
   /**
-   * Trailing inline comment, when the entry carries one.
+   Trailing inline comment, when the entry carries one.
    */
   const after = kv.commentAfter === undefined ? '' : `  #${kv.commentAfter}`;
   return `${before}${keyText} = ${
@@ -269,9 +269,9 @@ function emitSyntheticKeyValue(
 }
 
 /**
- * Emit a table section: header then its body blocks.
- *
- * @returns Computed string.
+ Emit a table section: header then its body blocks.
+ 
+ @returns Computed string.
  */
 function emitTable(
   {
@@ -283,7 +283,7 @@ function emitTable(
   },
 ): string {
   /**
-   * Body text follows the header regardless of the header's provenance.
+   Body text follows the header regardless of the header's provenance.
    */
   const body = emitBlocks({
     blocks: table.body,
@@ -303,7 +303,7 @@ function emitTable(
     }${body}`;
   }
   /**
-   * Leading attached comment lines above a created table header.
+   Leading attached comment lines above a created table header.
    */
   const before = table.commentsBefore
     .map(function each(c,) {
@@ -311,7 +311,7 @@ function emitTable(
     },)
     .join('',);
   /**
-   * Encoded dotted header path.
+   Encoded dotted header path.
    */
   const seg = table.headerSegments
     .map(function eachSeg(s,) {
@@ -319,12 +319,12 @@ function emitTable(
     },)
     .join('.',);
   /**
-   * Bracket form: `[[foo]]` for an array-of-tables instance, else `[foo]`.
+   Bracket form: `[[foo]]` for an array-of-tables instance, else `[foo]`.
    */
   const bracket = table.tableKind
     === 'array' ? `[[${seg}]]` : `[${seg}]`;
   /**
-   * Trailing inline comment after the header, when present.
+   Trailing inline comment after the header, when present.
    */
   const after = table.commentAfter === undefined ? '' : `  #${table.commentAfter}`;
   return `${before}${bracket}${after}\n${body}`;

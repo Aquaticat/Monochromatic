@@ -1,36 +1,36 @@
 /**
- * Exact model reference matching for scope reconstruction.
- *
- * @module
+ Exact model reference matching for scope reconstruction.
+ 
+ @module
  */
 
 import { canonicalSlug, } from './model-id.ts';
 import type { ModelIdentity, } from './types.ts';
 
 /**
- * Sentinel returned by {@link findExactModelReferenceMatch} (and internal
- * {@link matchProviderModelReference}) when no unambiguous exact model match exists:
- * empty reference, ambiguous matches, or no match. A `unique symbol`; callers
- * narrow with `=== NO_EXACT_MATCH`. Exported because `pattern-match`'s
- * `tryMatchModel` consumes it across the module seam.
+ Sentinel returned by {@link findExactModelReferenceMatch} (and internal
+ {@link matchProviderModelReference}) when no unambiguous exact model match exists:
+ empty reference, ambiguous matches, or no match. A `unique symbol`; callers
+ narrow with `=== NO_EXACT_MATCH`. Exported because `pattern-match`'s
+ `tryMatchModel` consumes it across the module seam.
  */
 export const NO_EXACT_MATCH: unique symbol = Symbol('model-selection/no-exact-match',);
 
 //region Public API
 
 /**
- * Find an exact canonical or bare model reference match.
- *
- * @param modelReference - user or config model reference
- *
- * @param availableModels - models with configured auth
- *
- * @returns matched model, if unambiguous
- *
- * @example
- * ```typescript
- * findExactModelReferenceMatch({ modelReference: 'anthropic/claude', availableModels });
- * ```
+ Find an exact canonical or bare model reference match.
+ 
+ @param modelReference - user or config model reference
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matched model, if unambiguous
+ 
+ @example
+ ```typescript
+ findExactModelReferenceMatch({ modelReference: 'anthropic/claude', availableModels });
+ ```
  */
 export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
   {
@@ -42,18 +42,18 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
   },
 ): TModel | typeof NO_EXACT_MATCH {
   /**
-   * Trimmed user reference.
+   Trimmed user reference.
    */
   const trimmedReference = modelReference.trim();
   if (trimmedReference === '')
     return NO_EXACT_MATCH;
 
   /**
-   * Lowercase reference for pi-compatible exact matching.
+   Lowercase reference for pi-compatible exact matching.
    */
   const normalizedReference = trimmedReference.toLowerCase();
   /**
-   * Canonical slug matches.
+   Canonical slug matches.
    */
   const canonicalMatches = availableModels.filter(function matchesCanonical(model,) {
     return canonicalSlug(model,)
@@ -68,7 +68,7 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
     return NO_EXACT_MATCH;
 
   /**
-   * Match provider/model form before bare id.
+   Match provider/model form before bare id.
    */
   const providerMatch = matchProviderModelReference({
     trimmedReference,
@@ -78,7 +78,7 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
     return providerMatch;
 
   /**
-   * Bare id matches.
+   Bare id matches.
    */
   const idMatches = availableModels.filter(function matchesId(model,) {
     return model.id
@@ -94,13 +94,13 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
 //region Internal helpers
 
 /**
- * Match provider/model exact references.
- *
- * @param trimmedReference - trimmed model reference
- *
- * @param availableModels - models with configured auth
- *
- * @returns matched model, if unambiguous
+ Match provider/model exact references.
+ 
+ @param trimmedReference - trimmed model reference
+ 
+ @param availableModels - models with configured auth
+ 
+ @returns matched model, if unambiguous
  */
 function matchProviderModelReference<TModel extends ModelIdentity,>(
   {
@@ -112,14 +112,14 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
   },
 ): TModel | typeof NO_EXACT_MATCH {
   /**
-   * Slash index used to parse provider/model references.
+   Slash index used to parse provider/model references.
    */
   const slashIndex = trimmedReference.indexOf('/',);
   if (slashIndex === (-1))
     return NO_EXACT_MATCH;
 
   /**
-   * Provider segment from a canonical reference.
+   Provider segment from a canonical reference.
    */
   const provider = trimmedReference
     .slice(
@@ -128,7 +128,7 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     )
     .trim();
   /**
-   * Model id segment from a canonical reference.
+   Model id segment from a canonical reference.
    */
   const modelId = trimmedReference
     .slice(slashIndex + 1,)
@@ -137,7 +137,7 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     return NO_EXACT_MATCH;
 
   /**
-   * Exact provider and model id matches.
+   Exact provider and model id matches.
    */
   const providerMatches = availableModels.filter(function matchesProvider(model,) {
     return (model.provider

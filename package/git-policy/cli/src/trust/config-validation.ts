@@ -1,7 +1,7 @@
 /**
- * Runtime-authoritative loaded configuration validation.
- *
- * @module
+ Runtime-authoritative loaded configuration validation.
+ 
+ @module
  */
 import * as v from 'valibot';
 import type {
@@ -12,13 +12,13 @@ import { BUILT_IN_POLICIES, } from '../policy-engine/built-ins.ts';
 import type { RuntimePolicyDefinition, } from '../policy-engine/types.ts';
 
 /**
- * Loaded configuration failed runtime validation.
+ Loaded configuration failed runtime validation.
  */
 export class ConfigValidationError extends Error {
   /**
-   * Creates configuration validation failure.
-   *
-   * @param message - safe failure explanation
+   Creates configuration validation failure.
+   
+   @param message - safe failure explanation
    */
   public constructor(message: string,) {
     super(message,);
@@ -27,29 +27,29 @@ export class ConfigValidationError extends Error {
 }
 
 /**
- * Prepared runtime policy configuration.
+ Prepared runtime policy configuration.
  */
 export type ValidatedConfig = Readonly<{
   /**
-   * Whether config requests recursive authority.
+   Whether config requests recursive authority.
    */
   recursiveChildren: boolean;
   /**
-   * Built-ins followed by namespaced plugins.
+   Built-ins followed by namespaced plugins.
    */
   registeredPolicies: readonly RuntimePolicyDefinition[];
   /**
-   * Effective severity values for every registered policy.
+   Effective severity values for every registered policy.
    */
   policySeverities: Readonly<Record<string, PolicySeverity>>;
   /**
-   * Runtime-parsed policy option outputs.
+   Runtime-parsed policy option outputs.
    */
   policyOptions: ReadonlyMap<string, unknown>;
 }>;
 
 /**
- * Allowed lifecycle trigger values.
+ Allowed lifecycle trigger values.
  */
 const POLICY_TRIGGERS: ReadonlySet<string> = new Set([
   'pre-forward',
@@ -59,7 +59,7 @@ const POLICY_TRIGGERS: ReadonlySet<string> = new Set([
   'direct-fix',
 ]);
 /**
- * Allowed severity values.
+ Allowed severity values.
  */
 const POLICY_SEVERITIES: ReadonlySet<string> = new Set([
   'off',
@@ -67,7 +67,7 @@ const POLICY_SEVERITIES: ReadonlySet<string> = new Set([
   'error',
 ]);
 /**
- * Allowed top-level keys.
+ Allowed top-level keys.
  */
 const CONFIG_KEYS: ReadonlySet<string> = new Set([
   'plugins',
@@ -76,13 +76,13 @@ const CONFIG_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Asserts ordinary non-array object.
- *
- * @param value - unknown candidate
- *
- * @returns Nothing after narrowing candidate
- *
- * @throws ConfigValidationError when candidate is not an object record
+ Asserts ordinary non-array object.
+ 
+ @param value - unknown candidate
+ 
+ @returns Nothing after narrowing candidate
+ 
+ @throws ConfigValidationError when candidate is not an object record
  */
 function assertRecord(value: unknown,): asserts value is Record<string, unknown> {
   if (((typeof value) !== 'object') || (value === null)
@@ -91,11 +91,11 @@ function assertRecord(value: unknown,): asserts value is Record<string, unknown>
 }
 
 /**
- * Checks one ASCII kebab identifier character.
- *
- * @param character - one UTF-16 code unit
- *
- * @returns whether character is lowercase ASCII, decimal, or hyphen
+ Checks one ASCII kebab identifier character.
+ 
+ @param character - one UTF-16 code unit
+ 
+ @returns whether character is lowercase ASCII, decimal, or hyphen
  */
 function isKebabCharacter(character: string,): boolean {
   return ((character >= 'a') && (character <= 'z'))
@@ -104,11 +104,11 @@ function isKebabCharacter(character: string,): boolean {
 }
 
 /**
- * Validates kebab-case identifier without syntax-boundary regular expressions.
- *
- * @param value - unknown identifier
- *
- * @returns whether value is non-empty lower kebab case
+ Validates kebab-case identifier without syntax-boundary regular expressions.
+ 
+ @param value - unknown identifier
+ 
+ @returns whether value is non-empty lower kebab case
  */
 function isKebabIdentifier(value: unknown,): value is string {
   if (((typeof value) !== 'string') || (value.length === 0)
@@ -125,55 +125,55 @@ function isKebabIdentifier(value: unknown,): value is string {
 }
 
 /**
- * Validates known string as kebab identifier.
- *
- * @param value - string candidate
- *
- * @returns whether value is valid lower kebab case
+ Validates known string as kebab identifier.
+ 
+ @param value - string candidate
+ 
+ @returns whether value is valid lower kebab case
  */
 function isKebabString(value: string,): boolean {
   return isKebabIdentifier(value,);
 }
 
 /**
- * Checks policy severity.
- *
- * @param value - unknown candidate
- *
- * @returns whether value is supported severity
+ Checks policy severity.
+ 
+ @param value - unknown candidate
+ 
+ @returns whether value is supported severity
  */
 function isPolicySeverity(value: unknown,): value is PolicySeverity {
   return ((typeof value) === 'string') && POLICY_SEVERITIES.has(value,);
 }
 
 /**
- * Checks lifecycle trigger.
- *
- * @param value - unknown candidate
- *
- * @returns whether value is supported trigger
+ Checks lifecycle trigger.
+ 
+ @param value - unknown candidate
+ 
+ @returns whether value is supported trigger
  */
 function isPolicyTrigger(value: unknown,): value is PolicyTrigger {
   return ((typeof value) === 'string') && POLICY_TRIGGERS.has(value,);
 }
 
 /**
- * Checks unknown array without leaking `any` from Array.isArray.
- *
- * @param value - unknown candidate
- *
- * @returns whether candidate is an array of unknown values
+ Checks unknown array without leaking `any` from Array.isArray.
+ 
+ @param value - unknown candidate
+ 
+ @returns whether candidate is an array of unknown values
  */
 function isUnknownArray(value: unknown,): value is readonly unknown[] {
   return Array.isArray(value,);
 }
 
 /**
- * Asserts unknown array without leaking `any` from Array.isArray.
- *
- * @param value - unknown candidate
- *
- * @returns Nothing after narrowing candidate
+ Asserts unknown array without leaking `any` from Array.isArray.
+ 
+ @param value - unknown candidate
+ 
+ @returns Nothing after narrowing candidate
  */
 function assertUnknownArray(value: unknown,): asserts value is readonly unknown[] {
   if (!isUnknownArray(value,))
@@ -181,11 +181,11 @@ function assertUnknownArray(value: unknown,): asserts value is readonly unknown[
 }
 
 /**
- * Asserts policy check callback.
- *
- * @param value - unknown callback
- *
- * @returns Nothing after narrowing callback
+ Asserts policy check callback.
+ 
+ @param value - unknown callback
+ 
+ @returns Nothing after narrowing callback
  */
 function assertPolicyCheck(
   value: unknown,
@@ -195,13 +195,13 @@ function assertPolicyCheck(
 }
 
 /**
- * Asserts Valibot-compatible schema runtime protocol.
- *
- * @param value - unknown options schema
- *
- * @returns Nothing after narrowing schema
- *
- * @throws ConfigValidationError when protocol is unavailable
+ Asserts Valibot-compatible schema runtime protocol.
+ 
+ @param value - unknown options schema
+ 
+ @returns Nothing after narrowing schema
+ 
+ @throws ConfigValidationError when protocol is unavailable
  */
 function assertSchema(value: unknown,): asserts value is v.GenericSchema<unknown, unknown> {
   assertRecord(value,);
@@ -210,13 +210,13 @@ function assertSchema(value: unknown,): asserts value is v.GenericSchema<unknown
 }
 
 /**
- * Validates policy declaration and assigns effective ID.
- *
- * @param value - unknown policy declaration
- *
- * @param effectiveId - complete engine policy ID
- *
- * @returns copied runtime policy definition
+ Validates policy declaration and assigns effective ID.
+ 
+ @param value - unknown policy declaration
+ 
+ @param effectiveId - complete engine policy ID
+ 
+ @returns copied runtime policy definition
  */
 function validatePolicy({
   value,
@@ -252,29 +252,29 @@ function validatePolicy({
 }
 
 /**
- * Mutable view at Valibot callback boundary.
+ Mutable view at Valibot callback boundary.
  */
 type MutablePolicySchema = {
   -readonly [Key in keyof v.GenericSchema]: v.GenericSchema[Key]
 };
 
 /**
- * Invokes plugin-defined schema at mutable validation boundary.
- *
- * @param optionsSchema - plugin-defined Valibot schema
- *
- * @param rawOptions - unvalidated plugin option value
- *
- * @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
- *
- * @mutates rawOptions - v.safeParse plugin callback may mutate supplied option value
- *
- * @returns Valibot safe parse result
- *
- * @example
- * ```ts
- * parsePolicyOptions({ optionsSchema: v.unknown(), rawOptions: 'value' });
- * ```
+ Invokes plugin-defined schema at mutable validation boundary.
+ 
+ @param optionsSchema - plugin-defined Valibot schema
+ 
+ @param rawOptions - unvalidated plugin option value
+ 
+ @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
+ 
+ @mutates rawOptions - v.safeParse plugin callback may mutate supplied option value
+ 
+ @returns Valibot safe parse result
+ 
+ @example
+ ```ts
+ parsePolicyOptions({ optionsSchema: v.unknown(), rawOptions: 'value' });
+ ```
  */
 function parsePolicyOptions({
   optionsSchema,
@@ -290,21 +290,21 @@ function parsePolicyOptions({
 }
 
 /**
- * Parses one policy setting and options through declared schema.
- *
- * @param policyName - effective registered policy ID
- *
- * @param defaultSeverity - severity used when setting is absent
- *
- * @param optionsSchema - optional plugin-defined Valibot schema
- *
- * @param setting - explicit setting or declaration default
- *
- * @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
- *
- * @mutates setting - v.safeParse plugin callback may mutate supplied option value
- *
- * @returns active severity and parsed options
+ Parses one policy setting and options through declared schema.
+ 
+ @param policyName - effective registered policy ID
+ 
+ @param defaultSeverity - severity used when setting is absent
+ 
+ @param optionsSchema - optional plugin-defined Valibot schema
+ 
+ @param setting - explicit setting or declaration default
+ 
+ @mutates optionsSchema - v.safeParse plugin callback may mutate retained schema state
+ 
+ @mutates setting - v.safeParse plugin callback may mutate supplied option value
+ 
+ @returns active severity and parsed options
  */
 function parsePolicySetting({
   policyName,
@@ -321,23 +321,23 @@ function parsePolicySetting({
   options: unknown
 }> {
   /**
-   * Effective explicit setting or declaration default.
+   Effective explicit setting or declaration default.
    */
   const effectiveSetting = setting ?? defaultSeverity;
   /**
-   * Whether setting uses severity-plus-options tuple.
+   Whether setting uses severity-plus-options tuple.
    */
   const tupleSetting = isUnknownArray(effectiveSetting,);
   /**
-   * Safely narrowed tuple values.
+   Safely narrowed tuple values.
    */
   const settingValues: readonly unknown[] = tupleSetting ? effectiveSetting : [];
   /**
-   * Candidate severity value.
+   Candidate severity value.
    */
   const severity: unknown = tupleSetting ? settingValues[0] : effectiveSetting;
   /**
-   * Candidate policy options.
+   Candidate policy options.
    */
   const rawOptions: unknown = tupleSetting ? settingValues[1] : undefined;
   if (!isPolicySeverity(severity,))
@@ -353,7 +353,7 @@ function parsePolicySetting({
     };
   }
   /**
-   * Valibot runtime options result.
+   Valibot runtime options result.
    */
   const parsed = parsePolicyOptions({
     optionsSchema,
@@ -368,23 +368,23 @@ function parsePolicySetting({
 }
 
 /**
- * Validates imported default export and prepares policy runtime values.
- *
- * @param value - imported default export
- *
- * @mutates value - plugin-defined Valibot schemas may mutate their schema or option state
- *
- * @returns validated config plus ordered policy registry and parsed settings
- *
- * @example
- * ```ts
- * validateConfig({ plugins: {}, policies: {} });
- * ```
+ Validates imported default export and prepares policy runtime values.
+ 
+ @param value - imported default export
+ 
+ @mutates value - plugin-defined Valibot schemas may mutate their schema or option state
+ 
+ @returns validated config plus ordered policy registry and parsed settings
+ 
+ @example
+ ```ts
+ validateConfig({ plugins: {}, policies: {} });
+ ```
  */
 export function validateConfig(value: unknown,): ValidatedConfig {
   assertRecord(value,);
   /**
-   * First unsupported top-level key.
+   First unsupported top-level key.
    */
   const unknownKey = Object.keys(value,)
     .find(function isUnknownConfigKey(key,) {
@@ -394,12 +394,12 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     throw new ConfigValidationError(`Unknown configuration key: ${unknownKey}`,);
 
   /**
-   * Declared plugin namespace map.
+   Declared plugin namespace map.
    */
   const pluginsValue = value.plugins ?? {};
   assertRecord(pluginsValue,);
   /**
-   * Namespaced plugin policies in config insertion and declaration order.
+   Namespaced plugin policies in config insertion and declaration order.
    */
   const pluginPolicies = Object.entries(pluginsValue,)
     .flatMap(function validatePlugin([
@@ -414,7 +414,7 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     if (!isUnknownArray(pluginValue.policies,))
       throw new ConfigValidationError(`Plugin ${namespace} policies must be an array.`,);
     /**
-     * Local policy names used for duplicate rejection.
+     Local policy names used for duplicate rejection.
      */
     const localNames = new Set<string>();
     return pluginValue.policies
@@ -430,7 +430,7 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     },);
   },);
   /**
-   * Fixed built-ins followed by namespaced plugin policies.
+   Fixed built-ins followed by namespaced plugin policies.
    */
   const registeredPolicies: readonly RuntimePolicyDefinition[] = [
     ...BUILT_IN_POLICIES,
@@ -438,18 +438,18 @@ export function validateConfig(value: unknown,): ValidatedConfig {
   ];
 
   /**
-   * Explicit settings map or empty defaults.
+   Explicit settings map or empty defaults.
    */
   const settingsValue = value.policies ?? {};
   assertRecord(settingsValue,);
   /**
-   * Every effective policy ID.
+   Every effective policy ID.
    */
   const knownIds = new Set(registeredPolicies.map(function policyId(policy,) {
     return policy.name;
   },),);
   /**
-   * First setting without registered policy.
+   First setting without registered policy.
    */
   const unknownPolicyId = Object.keys(settingsValue,)
     .find(function isUnknownPolicy(policyId,) {
@@ -459,16 +459,16 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     throw new ConfigValidationError(`Unknown policy ID: ${unknownPolicyId}`,);
 
   /**
-   * Parsed option outputs by effective ID.
+   Parsed option outputs by effective ID.
    */
   const policyOptions = new Map<string, unknown>();
   /**
-   * Effective severity map prepared alongside options.
+   Effective severity map prepared alongside options.
    */
   const policySeverities: Record<string, PolicySeverity> = {};
   for (const policy of registeredPolicies) {
     /**
-     * Parsed setting for current policy.
+     Parsed setting for current policy.
      */
     const parsed = parsePolicySetting({
       policyName: policy.name,
@@ -488,7 +488,7 @@ export function validateConfig(value: unknown,): ValidatedConfig {
   if (value.trust !== undefined) {
     assertRecord(value.trust,);
     /**
-     * Keys present in trust declaration.
+     Keys present in trust declaration.
      */
     const trustKeys = Object.keys(value.trust,);
     if (trustKeys.some(function isUnknownTrustKey(key,) {

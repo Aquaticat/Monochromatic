@@ -135,7 +135,7 @@ where
     // ```
     let mut source = open()
         .inspect_err(|error| tracing::warn!(cause = %error, "open failed on cache miss"))
-        .map_err(|error| CacheError { message: error.to_string() })?;
+        .map_err(|error| return CacheError { message: error.to_string() })?;
     // What:     `let decision = resolve_decision_for(policy, source.as_mut(), provenance,
     //           bones_hot_bins).inspect_err(|error| warn!(...)).map_err(...)?;`. Drive the
     //           source through the policy under the track's bucket; `.as_mut()` lends the
@@ -149,7 +149,7 @@ where
     // ```
     let decision = resolve_decision_for(policy, source.as_mut(), provenance, bones_hot_bins)
         .inspect_err(|error| tracing::warn!(cause = %error, "resolve failed on cache miss"))
-        .map_err(|error| CacheError { message: error.to_string() })?;
+        .map_err(|error| return CacheError { message: error.to_string() })?;
     // What:     `cache.put(fingerprint, identity, &decision).await?;`. Persist it; precedence
     //           in the cache keeps an exact row from being downgraded.
     // Why:      Later plays hit the cache.
@@ -168,7 +168,7 @@ where
     // ```ts
     // return decision;
     // ```
-    Ok(decision)
+    return Ok(decision)
 }
 
 /// What:     `#[cfg(test)] #[path = "service_tests.rs"] mod tests;`. Test-only submodule in

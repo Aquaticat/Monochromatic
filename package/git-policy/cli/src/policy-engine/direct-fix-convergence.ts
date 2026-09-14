@@ -1,7 +1,7 @@
 /**
- * Direct-fix private-index policy convergence.
- *
- * @module
+ Direct-fix private-index policy convergence.
+ 
+ @module
  */
 import { Buffer, } from 'node:buffer';
 import { join, } from 'node:path';
@@ -24,12 +24,12 @@ import type {
 } from './types.ts';
 
 /**
- * Maximum private candidate changes before direct-fix failure.
+ Maximum private candidate changes before direct-fix failure.
  */
 const MAXIMUM_CHANGED_PASSES = 8;
 
 /**
- * Direct-fix engine options stable across every candidate pass.
+ Direct-fix engine options stable across every candidate pass.
  */
 export type DirectFixPolicyOptions = Omit<
   RunPolicyEngineOptions,
@@ -37,29 +37,29 @@ export type DirectFixPolicyOptions = Omit<
 >;
 
 /**
- * Stable converged direct-fix result.
+ Stable converged direct-fix result.
  */
 export type DirectFixConvergenceResult = Readonly<{
   /**
-   * Final policy decision.
+   Final policy decision.
    */
   policyResult: PolicyEngineResult;
   /**
-   * Paths whose private blob identity changed.
+   Paths whose private blob identity changed.
    */
   changedPaths: readonly string[];
   /**
-   * Number of private candidate changes before stability.
+   Number of private candidate changes before stability.
    */
   passes: number;
 }>;
 
 /**
- * Maps candidate path to immutable blob identity.
- *
- * @param candidates - exact private-index candidates
- *
- * @returns path-to-revision map
+ Maps candidate path to immutable blob identity.
+ 
+ @param candidates - exact private-index candidates
+ 
+ @returns path-to-revision map
  */
 function candidateRevisions(candidates: readonly CandidateFile[],): ReadonlyMap<string, CandidateFile['revision']> {
   return new Map(candidates.map(function revisionEntry(candidate,) {
@@ -71,22 +71,22 @@ function candidateRevisions(candidates: readonly CandidateFile[],): ReadonlyMap<
 }
 
 /**
- * Applies policy patches to private direct-fix index until stable.
- *
- * @param args - management command arguments
- *
- * @param gitPath - resolved real Git executable
- *
- * @param scope - private direct candidate state
- *
- * @param policyOptions - trusted policy registry and settings
- *
- * @returns final decision and changed paths
- *
- * @example
- * ```ts
- * await convergeDirectFix({ args: [], gitPath: '/usr/bin/git', scope, policyOptions: {} });
- * ```
+ Applies policy patches to private direct-fix index until stable.
+ 
+ @param args - management command arguments
+ 
+ @param gitPath - resolved real Git executable
+ 
+ @param scope - private direct candidate state
+ 
+ @param policyOptions - trusted policy registry and settings
+ 
+ @returns final decision and changed paths
+ 
+ @example
+ ```ts
+ await convergeDirectFix({ args: [], gitPath: '/usr/bin/git', scope, policyOptions: {} });
+ ```
  */
 export async function convergeDirectFix({
   args,
@@ -100,16 +100,16 @@ export async function convergeDirectFix({
   policyOptions: DirectFixPolicyOptions;
 }>,): Promise<DirectFixConvergenceResult> {
   /**
-   * Initial candidates before policy corrections.
+   Initial candidates before policy corrections.
    */
   const initialCandidates = await scope.gitFacts
     .candidates();
   /**
-   * Initial revision identity by path.
+   Initial revision identity by path.
    */
   const initialRevisions = candidateRevisions(initialCandidates,);
   /**
-   * Initial exact path, mode, and content snapshot.
+   Initial exact path, mode, and content snapshot.
    */
   const initialSnapshotPath = join(
     scope.directory,
@@ -120,11 +120,11 @@ export async function convergeDirectFix({
     snapshotPath: initialSnapshotPath,
   },);
   /**
-   * Ordered private snapshots retained for bounded exact cycle comparison.
+   Ordered private snapshots retained for bounded exact cycle comparison.
    */
   const visited = [initialSnapshotPath,];
   /**
-   * Latest policy pass.
+   Latest policy pass.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Bounded convergence replaces current result after each private-index change.
   let pass = await runPolicyEngine({
@@ -137,7 +137,7 @@ export async function convergeDirectFix({
     repositoryRoot: scope.repositoryRoot,
   },);
   /**
-   * Number of changed private states.
+   Number of changed private states.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Bounded convergence tracks changed passes for hard limit.
   let changedPasses = 0;
@@ -161,7 +161,7 @@ export async function convergeDirectFix({
       };
     }
     /**
-     * Pass-start candidates binding patch target identities.
+     Pass-start candidates binding patch target identities.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each changed pass binds proposals to its current private state.
     const candidates = await createPrivateIndexFacts({
@@ -172,7 +172,7 @@ export async function convergeDirectFix({
     },)
       .candidates();
     /**
-     * Ordered private patch application for current provisional pass.
+     Ordered private patch application for current provisional pass.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each changed pass applies its exact ordered proposals before restart.
     const applied = await applyPolicyPatches({
@@ -195,7 +195,7 @@ export async function convergeDirectFix({
     }
     changedPasses += 1;
     /**
-     * Current private facts after ordered patches.
+     Current private facts after ordered patches.
      */
     const currentFacts = createPrivateIndexFacts({
       gitPath,
@@ -204,7 +204,7 @@ export async function convergeDirectFix({
       paths: scope.paths,
     },);
     /**
-     * Private exact snapshot for current changed pass.
+     Private exact snapshot for current changed pass.
      */
     const snapshotPath = join(
       scope.directory,
@@ -243,12 +243,12 @@ export async function convergeDirectFix({
     },);
   }
   /**
-   * Final candidates after stable pass.
+   Final candidates after stable pass.
    */
   const finalCandidates = await scope.gitFacts
     .candidates();
   /**
-   * Paths whose immutable blob identity changed.
+   Paths whose immutable blob identity changed.
    */
   const changedPaths = finalCandidates
     .filter(function changedCandidate(candidate,) {

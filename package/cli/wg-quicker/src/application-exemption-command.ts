@@ -16,46 +16,46 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { BypassRouteError, } from './errors.ts';
 
 /**
- * Module logger for Rust companion discovery.
+ Module logger for Rust companion discovery.
  */
 const l = tagged({ tag: 'application-exemption-command', },);
 
 /**
- * Default Rust companion executable name.
+ Default Rust companion executable name.
  */
 const DEFAULT_COMMAND = 'wg-quicker-exempt';
 
 /**
- * Package-directory name containing TypeScript CLI.
+ Package-directory name containing TypeScript CLI.
  */
 const WG_QUICKER_DIRECTORY = 'wg-quicker';
 
 /**
- * Parent directory name shared by CLI packages.
+ Parent directory name shared by CLI packages.
  */
 const CLI_DIRECTORY = 'cli';
 
 /**
- * Sentinel for absent executable or package root.
+ Sentinel for absent executable or package root.
  */
 const COMMAND_NOT_FOUND: unique symbol = Symbol('wg-quicker exemption command not found',);
 
 /**
- * Reports whether candidate is executable regular file.
- *
- * @param path - Absolute executable candidate.
- *
- * @returns Whether path is regular and executable.
- *
- * @example
- * ```ts
- * await isExecutableFile({ path: '/usr/bin/true' });
- * ```
+ Reports whether candidate is executable regular file.
+ 
+ @param path - Absolute executable candidate.
+ 
+ @returns Whether path is regular and executable.
+ 
+ @example
+ ```ts
+ await isExecutableFile({ path: '/usr/bin/true' });
+ ```
  */
 async function isExecutableFile({ path, }: { readonly path: string; },): Promise<boolean> {
   try {
     /**
-     * Metadata plus execute access checked concurrently.
+     Metadata plus execute access checked concurrently.
      */
     const [metadata,] = await Promise.all([
       stat(path,),
@@ -73,20 +73,20 @@ async function isExecutableFile({ path, }: { readonly path: string; },): Promise
 }
 
 /**
- * Resolves bare executable through selected path text.
- *
- * Empty path segments are skipped so privileged discovery never treats cwd as executable source.
- *
- * @param command - Bare executable name.
- *
- * @param pathText - Delimited search path.
- *
- * @returns Exact executable path or absence sentinel.
- *
- * @example
- * ```ts
- * await findInPath({ command: 'wg-quicker-exempt', pathText: '/usr/bin:/bin' });
- * ```
+ Resolves bare executable through selected path text.
+ 
+ Empty path segments are skipped so privileged discovery never treats cwd as executable source.
+ 
+ @param command - Bare executable name.
+ 
+ @param pathText - Delimited search path.
+ 
+ @returns Exact executable path or absence sentinel.
+ 
+ @example
+ ```ts
+ await findInPath({ command: 'wg-quicker-exempt', pathText: '/usr/bin:/bin' });
+ ```
  */
 function findInPath(
   {
@@ -98,7 +98,7 @@ function findInPath(
   },
 ): Promise<string | typeof COMMAND_NOT_FOUND> {
   /**
-   * Absolute candidates preserving declared search order.
+   Absolute candidates preserving declared search order.
    */
   const candidates = pathText
     .split(delimiter,)
@@ -115,28 +115,28 @@ function findInPath(
 }
 
 /**
- * Resolves first executable candidate while checking independent paths concurrently.
- *
- * @param candidates - Ordered absolute executable candidates.
- *
- * @returns First executable in source order or absence sentinel.
- *
- * @example
- * ```ts
- * await firstExecutable({ candidates: ['/usr/bin/true'] });
- * ```
+ Resolves first executable candidate while checking independent paths concurrently.
+ 
+ @param candidates - Ordered absolute executable candidates.
+ 
+ @returns First executable in source order or absence sentinel.
+ 
+ @example
+ ```ts
+ await firstExecutable({ candidates: ['/usr/bin/true'] });
+ ```
  */
 async function firstExecutable(
   { candidates, }: { readonly candidates: readonly string[]; },
 ): Promise<string | typeof COMMAND_NOT_FOUND> {
   /**
-   * Isolated array sharing only immutable primitive strings.
+   Isolated array sharing only immutable primitive strings.
    */
   const isolatedCandidates = [
     ...candidates,
   ];
   /**
-   * Candidate or absence for every independent filesystem probe.
+   Candidate or absence for every independent filesystem probe.
    */
   const results = await Promise.all(isolatedCandidates.map(async function checkCandidate(candidate,) {
     return await isExecutableFile({ path: candidate, },)
@@ -144,7 +144,7 @@ async function firstExecutable(
       : COMMAND_NOT_FOUND;
   },),);
   /**
-   * First successful candidate retaining declared order.
+   First successful candidate retaining declared order.
    */
   const result = results.find(function found(value,): boolean {
     return (typeof value) === 'string';
@@ -153,16 +153,16 @@ async function firstExecutable(
 }
 
 /**
- * Reports validated package root candidate.
- *
- * @param candidate - Directory expected to be `package/cli/wg-quicker`.
- *
- * @returns Candidate or absence sentinel.
- *
- * @example
- * ```ts
- * packageRootCandidate('/repo/package/cli/wg-quicker');
- * ```
+ Reports validated package root candidate.
+ 
+ @param candidate - Directory expected to be `package/cli/wg-quicker`.
+ 
+ @returns Candidate or absence sentinel.
+ 
+ @example
+ ```ts
+ packageRootCandidate('/repo/package/cli/wg-quicker');
+ ```
  */
 function packageRootCandidate(
   candidate: string,
@@ -175,22 +175,22 @@ function packageRootCandidate(
 }
 
 /**
- * Resolves package root from source or bundled script layout.
- *
- * @returns `package/cli/wg-quicker` path or absence sentinel.
- *
- * @example
- * ```ts
- * currentPackageRoot();
- * ```
+ Resolves package root from source or bundled script layout.
+ 
+ @returns `package/cli/wg-quicker` path or absence sentinel.
+ 
+ @example
+ ```ts
+ currentPackageRoot();
+ ```
  */
 function currentPackageRoot(): string | typeof COMMAND_NOT_FOUND {
   /**
-   * Module directory for source or current Rolldown entry bundle.
+   Module directory for source or current Rolldown entry bundle.
    */
   const scriptDirectory = import.meta.dirname;
   /**
-   * Source layout candidate from `src/index.ts`.
+   Source layout candidate from `src/index.ts`.
    */
   const sourceCandidate = packageRootCandidate(resolve(
     scriptDirectory,
@@ -199,7 +199,7 @@ function currentPackageRoot(): string | typeof COMMAND_NOT_FOUND {
   if ((typeof sourceCandidate) === 'string')
     return sourceCandidate;
   /**
-   * Bundle layout candidate from `dist/final/node/index.mjs`.
+   Bundle layout candidate from `dist/final/node/index.mjs`.
    */
   return packageRootCandidate(resolve(
     scriptDirectory,
@@ -210,25 +210,25 @@ function currentPackageRoot(): string | typeof COMMAND_NOT_FOUND {
 }
 
 /**
- * Resolves repository sibling release or debug executable.
- *
- * @returns Exact executable path or absence sentinel.
- *
- * @example
- * ```ts
- * await findWorkspaceCompanion();
- * ```
+ Resolves repository sibling release or debug executable.
+ 
+ @returns Exact executable path or absence sentinel.
+ 
+ @example
+ ```ts
+ await findWorkspaceCompanion();
+ ```
  */
 async function findWorkspaceCompanion(): Promise<string | typeof COMMAND_NOT_FOUND> {
   /**
-   * Current TypeScript package root when running from repository layout.
+   Current TypeScript package root when running from repository layout.
    */
   const packageRoot = currentPackageRoot();
   if ((typeof packageRoot) === 'symbol')
     return COMMAND_NOT_FOUND;
   /**
-   * Release first,
-   * then debug for development before first optimized build.
+   Release first,
+   then debug for development before first optimized build.
    */
   const candidates = [
     join(
@@ -250,22 +250,22 @@ async function findWorkspaceCompanion(): Promise<string | typeof COMMAND_NOT_FOU
 }
 
 /**
- * Resolves configured,
- * workspace,
- * or installed Rust companion to exact executable path.
- *
- * @returns Executable path immune to sudo secure-path reset.
- *
- * @throws {@link BypassRouteError} when no executable candidate exists.
- *
- * @example
- * ```ts
- * await resolveApplicationExemptionCommand();
- * ```
+ Resolves configured,
+ workspace,
+ or installed Rust companion to exact executable path.
+ 
+ @returns Executable path immune to sudo secure-path reset.
+ 
+ @throws {@link BypassRouteError} when no executable candidate exists.
+ 
+ @example
+ ```ts
+ await resolveApplicationExemptionCommand();
+ ```
  */
 export async function resolveApplicationExemptionCommand(): Promise<string> {
   /**
-   * Explicit command from restored caller context.
+   Explicit command from restored caller context.
    */
   const {
     PATH: securePathValue,
@@ -273,18 +273,18 @@ export async function resolveApplicationExemptionCommand(): Promise<string> {
     WG_QUICKER_EXEMPT_COMMAND: configured,
   } = process.env;
   /**
-   * Current root secure path searched for root-owned installation.
+   Current root secure path searched for root-owned installation.
    */
   const securePath = securePathValue ?? '';
   /**
-   * Caller path restored under internal name,
-   * never assigned to privileged PATH.
+   Caller path restored under internal name,
+   never assigned to privileged PATH.
    */
   const callerPath = callerPathValue ?? '';
   if (configured !== undefined) {
     if (configured.includes('/',)) {
       /**
-       * Configured path made absolute before validation.
+       Configured path made absolute before validation.
        */
       const explicitPath = resolve(configured,);
       if (await isExecutableFile({ path: explicitPath, },))
@@ -292,7 +292,7 @@ export async function resolveApplicationExemptionCommand(): Promise<string> {
     }
     else {
       /**
-       * Configured bare name searched only in captured caller path.
+       Configured bare name searched only in captured caller path.
        */
       const explicitCommand = await findInPath({
         command: configured,
@@ -304,13 +304,13 @@ export async function resolveApplicationExemptionCommand(): Promise<string> {
     throw new BypassRouteError(`Configured wg-quicker-exempt executable is unavailable: ${configured}`,);
   }
   /**
-   * Repository sibling paired with current TypeScript package.
+   Repository sibling paired with current TypeScript package.
    */
   const workspace = await findWorkspaceCompanion();
   if ((typeof workspace) === 'string')
     return workspace;
   /**
-   * Root-owned installation from sudo secure path.
+   Root-owned installation from sudo secure path.
    */
   const installed = await findInPath({
     command: DEFAULT_COMMAND,
@@ -319,7 +319,7 @@ export async function resolveApplicationExemptionCommand(): Promise<string> {
   if ((typeof installed) === 'string')
     return installed;
   /**
-   * Caller installation captured before secure path replacement.
+   Caller installation captured before secure path replacement.
    */
   const callerInstalled = await findInPath({
     command: DEFAULT_COMMAND,

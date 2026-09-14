@@ -385,14 +385,34 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The full page grid remains
   visible,
    so late-alphabet artists stay discoverable.
-   Page selectors default to wrapping radio controls.
+   Page selectors default to wrapping Chromium-like tabs.
+   Their labels use `10px` inline padding on each side,
+   half the earlier `20px` inset.
+   Persisted style integers retain their stable mapping,
+   and unknown values still fall back to radio controls.
+   Each style has one centralized `included` toggle in `src/ui_page_style.rs` `BUILD_STYLES`.
+   Settings lists only included styles,
+   and disabled persisted selections resolve safely without renumbering values.
+   `../../../doc/runbook/music-player-page-control-styles.md` documents matching desktop and Android changes.
    Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
    joined content-width segmented buttons,
    raised content-width Chromium-like tabs,
-   reflective hardware caps with a latched purple LED state,
+   reflective hardware caps with a runtime-accent LED state over one full-width machined plate,
    and the previous rounded buttons.
    Segmented sections and visible outlines stay fitted to label content;
    unused row width remains transparent and unframed.
+   LED caps remain content-width,
+   while their shared backplate always fills the available page-control width.
+   In the light scene,
+   the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
+   LED legends use at least the normal body-label size,
+   matching labels such as Volume.
+   Active legends remain white,
+   so selected fills stay dark enough for clear contrast across runtime accents and ambient scenes.
+   Independent OKLCH lightness and chroma mixing retains most available accent chroma,
+   keeping selected backgrounds vibrant.
+   Every application color operation uses OKLCH,
+   including alpha changes and operations outside LED controls.
    The choice applies immediately and persists across launches.
    Each wide page-selector FlexboxLayout pins `align-content` and
   `cross-axis-alignment` to start (both default to stretch),
@@ -445,6 +465,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    This prevents
   sub-second or zero-duration tracks from flickering the on-screen progress bar or flashing an empty taskbar
   progress indicator.
+
+## Isolated visual verification
+
+Never change the host desktop environment's global theme to test this app.
+Run theme-dependent and other isolated GUI checks inside the repo-owned compositor at
+`package/cli/nested-wayland-session`.
+If that compositor cannot provide a required test feature,
+add the feature to `nested-wayland-session` rather than mutating host-wide desktop settings.
+Restore any app-local fixture state after capture.
 
 ## Page navigation UX choices
 

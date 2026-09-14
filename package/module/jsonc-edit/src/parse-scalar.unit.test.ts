@@ -1,9 +1,9 @@
 /**
- * Unit tests for scalar parsing: keyword, string, and number productions, and
- * the error raised when no scalar value starts at the offset (including the
- * end-of-input marker).
- *
- * @module
+ Unit tests for scalar parsing: keyword, string, and number productions, and
+ the error raised when no scalar value starts at the offset (including the
+ end-of-input marker).
+ 
+ @module
  */
 
 import {
@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseScalar, } from './parse-scalar.ts';
+import { parseScalar, } from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: parseScalar.name,

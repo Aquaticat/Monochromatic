@@ -4,7 +4,7 @@ import { BypassRouteError, } from './errors.ts';
 import { PROCESS_ABSENT, } from './linux-process-identity.ts';
 
 /**
- * Persisted watcher process identity resistant to PID reuse.
+ Persisted watcher process identity resistant to PID reuse.
  */
 export type WatcherProcessIdentity = {
   readonly ownerId: string;
@@ -13,16 +13,16 @@ export type WatcherProcessIdentity = {
 };
 
 /**
- * Narrows caught value to Node filesystem error.
- *
- * @param error - Caught value.
- *
- * @returns Whether value carries error code.
- *
- * @example
- * ```ts
- * isErrnoException({ code: 'ENOENT' }); // true
- * ```
+ Narrows caught value to Node filesystem error.
+ 
+ @param error - Caught value.
+ 
+ @returns Whether value carries error code.
+ 
+ @example
+ ```ts
+ isErrnoException({ code: 'ENOENT' }); // true
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return ((typeof error) === 'object')
@@ -31,16 +31,16 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Resolves watcher identity sidecar for state path.
- *
- * @param statePath - Persisted bypass state path.
- *
- * @returns Watcher identity path.
- *
- * @example
- * ```ts
- * watcherIdentityPath({ statePath: '/run/wg-quicker/interface.json' });
- * ```
+ Resolves watcher identity sidecar for state path.
+ 
+ @param statePath - Persisted bypass state path.
+ 
+ @returns Watcher identity path.
+ 
+ @example
+ ```ts
+ watcherIdentityPath({ statePath: '/run/wg-quicker/interface.json' });
+ ```
  */
 export function watcherIdentityPath(
   { statePath, }: { readonly statePath: string; },
@@ -49,20 +49,20 @@ export function watcherIdentityPath(
 }
 
 /**
- * Parses watcher sidecar JSON with lifecycle diagnostics.
- *
- * @param text - Sidecar JSON text.
- *
- * @param statePath - State path named in diagnostics.
- *
- * @returns Parsed unknown value.
- *
- * @throws {@link BypassRouteError} when JSON is malformed.
- *
- * @example
- * ```ts
- * parseWatcherJson({ text: '{}', statePath: '/tmp/state' });
- * ```
+ Parses watcher sidecar JSON with lifecycle diagnostics.
+ 
+ @param text - Sidecar JSON text.
+ 
+ @param statePath - State path named in diagnostics.
+ 
+ @returns Parsed unknown value.
+ 
+ @throws {@link BypassRouteError} when JSON is malformed.
+ 
+ @example
+ ```ts
+ parseWatcherJson({ text: '{}', statePath: '/tmp/state' });
+ ```
  */
 function parseWatcherJson(
   {
@@ -82,20 +82,20 @@ function parseWatcherJson(
 }
 
 /**
- * Parses watcher sidecar JSON and shape.
- *
- * @param text - Sidecar JSON text.
- *
- * @param statePath - State path named in diagnostics.
- *
- * @returns Validated watcher identity.
- *
- * @throws {@link BypassRouteError} when JSON or fields are invalid.
- *
- * @example
- * ```ts
- * parseWatcherIdentity({ text: '{"pid":1}', statePath: '/tmp/state' });
- * ```
+ Parses watcher sidecar JSON and shape.
+ 
+ @param text - Sidecar JSON text.
+ 
+ @param statePath - State path named in diagnostics.
+ 
+ @returns Validated watcher identity.
+ 
+ @throws {@link BypassRouteError} when JSON or fields are invalid.
+ 
+ @example
+ ```ts
+ parseWatcherIdentity({ text: '{"pid":1}', statePath: '/tmp/state' });
+ ```
  */
 function parseWatcherIdentity(
   {
@@ -107,7 +107,7 @@ function parseWatcherIdentity(
   },
 ): WatcherProcessIdentity {
   /**
-   * Parsed sidecar before shape checks.
+   Parsed sidecar before shape checks.
    */
   const value: unknown = parseWatcherJson({
     text,
@@ -135,16 +135,16 @@ function parseWatcherIdentity(
 }
 
 /**
- * Reads watcher identity sidecar when present.
- *
- * @param statePath - Persisted bypass state path.
- *
- * @returns Validated identity or absence.
- *
- * @example
- * ```ts
- * await readWatcherIdentity({ statePath: '/run/wg-quicker/interface.json' });
- * ```
+ Reads watcher identity sidecar when present.
+ 
+ @param statePath - Persisted bypass state path.
+ 
+ @returns Validated identity or absence.
+ 
+ @example
+ ```ts
+ await readWatcherIdentity({ statePath: '/run/wg-quicker/interface.json' });
+ ```
  */
 export async function readWatcherIdentity(
   { statePath, }: { readonly statePath: string; },

@@ -1,7 +1,7 @@
 /**
- * Public policy authoring contracts.
- *
- * @module
+ Public policy authoring contracts.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -15,17 +15,17 @@ import type {
 } from './context-types.ts';
 
 /**
- * Policy configuration severity. @example `const severity: PolicySeverity = 'error';`
+ Policy configuration severity. @example `const severity: PolicySeverity = 'error';`
  */
 export type PolicySeverity = 'off' | 'warn' | 'error';
 
 /**
- * Enabled policy severity. @example `const severity: ActivePolicySeverity = 'warn';`
+ Enabled policy severity. @example `const severity: ActivePolicySeverity = 'warn';`
  */
 export type ActivePolicySeverity = Exclude<PolicySeverity, 'off'>;
 
 /**
- * Policy lifecycle trigger. @example `const trigger: PolicyTrigger = 'direct-check';`
+ Policy lifecycle trigger. @example `const trigger: PolicyTrigger = 'direct-check';`
  */
 export type PolicyTrigger =
   | 'pre-forward'
@@ -35,235 +35,235 @@ export type PolicyTrigger =
   | 'direct-fix';
 
 /**
- * Git object ID. @example `const oid: GitObjectId = 'abc123';`
+ Git object ID. @example `const oid: GitObjectId = 'abc123';`
  */
 export type GitObjectId = string;
 
 /**
- * Repository-relative or absolute path named by its surrounding contract. @example `const path: RepositoryPath = 'src/index.ts';`
+ Repository-relative or absolute path named by its surrounding contract. @example `const path: RepositoryPath = 'src/index.ts';`
  */
 export type RepositoryPath = string;
 
 /**
- * Candidate Git file mode. @example `const mode: CandidateFileMode = 'regular';`
+ Candidate Git file mode. @example `const mode: CandidateFileMode = 'regular';`
  */
 export type CandidateFileMode = 'regular' | 'executable' | 'symlink' | 'submodule';
 
 /**
- * Candidate change kind. @example `const change: CandidateChange = 'modified';`
+ Candidate change kind. @example `const change: CandidateChange = 'modified';`
  */
 export type CandidateChange = 'added' | 'modified' | 'deleted';
 
 /**
- * Committed or mutable candidate. @example `const file = await context.git.candidates().then(files => files[0]);`
+ Committed or mutable candidate. @example `const file = await context.git.candidates().then(files => files[0]);`
  */
 export type CandidateFile = {
   /**
-   * Invocation-local opaque target ID.
+   Invocation-local opaque target ID.
    */
   readonly targetId: string;
   /**
-   * Repository-relative path.
+   Repository-relative path.
    */
   readonly path: RepositoryPath;
   /**
-   * Revision ID, or shared absence sentinel for mutable content.
+   Revision ID, or shared absence sentinel for mutable content.
    */
   readonly revision: GitObjectId | AbsentGitValue;
   /**
-   * Git file mode.
+   Git file mode.
    */
   readonly mode: CandidateFileMode;
   /**
-   * Change relative to comparison baseline.
+   Change relative to comparison baseline.
    */
   readonly change: CandidateChange;
   /**
-   * Loads fresh exact candidate bytes.
+   Loads fresh exact candidate bytes.
    */
   readonly bytes: () => Promise<Uint8Array>;
 };
 
 /**
- * Facts about the triggering command. @example `const args = context.command.transformedArgs;`
+ Facts about the triggering command. @example `const args = context.command.transformedArgs;`
  */
 export type PolicyCommandFacts = Readonly<{
   /**
-   * Raw arguments after executable name.
+   Raw arguments after executable name.
    */
   rawArgs: readonly string[];
   /**
-   * Arguments after wrapper transforms.
+   Arguments after wrapper transforms.
    */
   transformedArgs: readonly string[];
   /**
-   * Parsed subcommand, or absence sentinel for direct operation.
+   Parsed subcommand, or absence sentinel for direct operation.
    */
   subcommand: string | AbsentGitValue;
   /**
-   * Effective working directory after global `-C` options.
+   Effective working directory after global `-C` options.
    */
   effectiveCwd: string;
   /**
-   * Repository root.
+   Repository root.
    */
   repositoryRoot: string;
   /**
-   * Policy IDs bypassed for this invocation.
+   Policy IDs bypassed for this invocation.
    */
   escapedPolicyIds: ReadonlySet<string>;
 }>;
 
 /**
- * Complete context supplied to a policy. @example `const version = context.candidateVersion;`
+ Complete context supplied to a policy. @example `const version = context.candidateVersion;`
  */
 export type PolicyContext = {
   /**
-   * Monotonic candidate-state version.
+   Monotonic candidate-state version.
    */
   readonly candidateVersion: number;
   /**
-   * Whether engine can safely apply proposed policy patches in current lifecycle.
+   Whether engine can safely apply proposed policy patches in current lifecycle.
    */
   readonly canApplyPatches: boolean;
   /**
-   * Current lifecycle trigger.
+   Current lifecycle trigger.
    */
   readonly trigger: PolicyTrigger;
   /**
-   * Command facts.
+   Command facts.
    */
   readonly command: PolicyCommandFacts;
   /**
-   * Lazy Git facts memoized for current version only.
+   Lazy Git facts memoized for current version only.
    */
   readonly git: LazyPolicyGitFacts;
   /**
-   * Engine cancellation signal.
+   Engine cancellation signal.
    */
   readonly signal: AbortSignal;
 };
 
 /**
- * Byte range within candidate content. @example `const location: FindingLocation = { byteStart: 0, byteEnd: 1 };`
+ Byte range within candidate content. @example `const location: FindingLocation = { byteStart: 0, byteEnd: 1 };`
  */
 export type FindingLocation = Readonly<{
   /**
-   * Inclusive byte start.
+   Inclusive byte start.
    */
   byteStart: number;
   /**
-   * Exclusive byte end.
+   Exclusive byte end.
    */
   byteEnd: number;
 }>;
 
 /**
- * Single-target Git unified patch. @example `const patch: PolicyPatch = { kind: 'git-unified', targetId: 't1', path: 'a', bytes };`
+ Single-target Git unified patch. @example `const patch: PolicyPatch = { kind: 'git-unified', targetId: 't1', path: 'a', bytes };`
  */
 export type PolicyPatch = Readonly<{
   /**
-   * Engine-supported patch format.
+   Engine-supported patch format.
    */
   kind: 'git-unified';
   /**
-   * Exact candidate target ID.
+   Exact candidate target ID.
    */
   targetId: string;
   /**
-   * Exact candidate path.
+   Exact candidate path.
    */
   path: RepositoryPath;
   /**
-   * Unified patch bytes.
+   Unified patch bytes.
    */
   bytes: Uint8Array;
 }>;
 
 /**
- * Expected policy violation. @example `const finding: PolicyFinding = { code: 'missing', message: 'Missing value' };`
+ Expected policy violation. @example `const finding: PolicyFinding = { code: 'missing', message: 'Missing value' };`
  */
 export type PolicyFinding = Readonly<{
   /**
-   * Stable policy-specific code.
+   Stable policy-specific code.
    */
   code: string;
   /**
-   * Human-readable explanation.
+   Human-readable explanation.
    */
   message: string;
   /**
-   * Affected path.
+   Affected path.
    */
   path?: RepositoryPath;
   /**
-   * Optional exact byte range.
+   Optional exact byte range.
    */
   location?: FindingLocation;
   /**
-   * Optional correction owned by cli-git.
+   Optional correction owned by cli-git.
    */
   patch?: PolicyPatch;
 }>;
 
 /**
- * Policy implementation input. @example `const check = async ({ context }: PolicyCheckInput) => [];`
+ Policy implementation input. @example `const check = async ({ context }: PolicyCheckInput) => [];`
  */
 export type PolicyCheckInput<TOptions> = Readonly<{
   /**
-   * Invocation context.
+   Invocation context.
    */
   context: PolicyContext;
   /**
-   * Runtime-validated options.
+   Runtime-validated options.
    */
   options: Readonly<TOptions>;
 }>;
 
 /**
- * Minimum policy shape preserved by plugin tuples.
- *
- * @example
- * ```ts
- * const policy: NamedPolicyDefinition = { name: 'check' };
- * ```
+ Minimum policy shape preserved by plugin tuples.
+ 
+ @example
+ ```ts
+ const policy: NamedPolicyDefinition = { name: 'check' };
+ ```
  */
 export type NamedPolicyDefinition = Readonly<{
   /**
-   * Namespace-local policy name.
+   Namespace-local policy name.
    */
   name: string;
 }>;
 
 /**
- * Runtime policy definition. @example `const policy = definePolicy({ name: 'check', defaultSeverity: 'error', warnSafe: true, triggers: ['direct-check'], check: async () => [] });`
+ Runtime policy definition. @example `const policy = definePolicy({ name: 'check', defaultSeverity: 'error', warnSafe: true, triggers: ['direct-check'], check: async () => [] });`
  */
 export type PolicyDefinition<
   TOptions = undefined,
   TName extends string = string,
 > = {
   /**
-   * Namespace-local policy name.
+   Namespace-local policy name.
    */
   readonly name: TName;
   /**
-   * Default severity activated by plugin registration.
+   Default severity activated by plugin registration.
    */
   readonly defaultSeverity: PolicySeverity;
   /**
-   * Whether warnings preserve enforcement semantics.
+   Whether warnings preserve enforcement semantics.
    */
   readonly warnSafe: boolean;
   /**
-   * Lifecycle triggers checked by policy.
+   Lifecycle triggers checked by policy.
    */
   readonly triggers: readonly PolicyTrigger[];
   /**
-   * Optional Valibot options schema.
+   Optional Valibot options schema.
    */
   readonly options?: GenericSchema<unknown, TOptions>;
   /**
-   * Finds every violation for one candidate state.
+   Finds every violation for one candidate state.
    */
   readonly check: (input: ForeignBorrowed<PolicyCheckInput<TOptions>>) => Promise<readonly PolicyFinding[]>;
 };

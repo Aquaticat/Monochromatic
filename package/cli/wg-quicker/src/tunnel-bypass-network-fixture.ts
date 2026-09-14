@@ -1,7 +1,7 @@
 /**
- * Network construction for disposable bypass integration test.
- *
- * @module
+ Network construction for disposable bypass integration test.
+ 
+ @module
  */
 
 import {
@@ -12,16 +12,16 @@ import {
 } from './tunnel-bypass-command-fixture.ts';
 
 /**
- * Removes namespace,
- * host links,
- * and root-owned runtime state idempotently.
- *
- * @param fixture - Fixture resources to remove.
- *
- * @example
- * ```ts
- * await cleanupBypassFixture({ fixture });
- * ```
+ Removes namespace,
+ host links,
+ and root-owned runtime state idempotently.
+ 
+ @param fixture - Fixture resources to remove.
+ 
+ @example
+ ```ts
+ await cleanupBypassFixture({ fixture });
+ ```
  */
 export async function cleanupBypassFixture(
   { fixture, }: { readonly fixture: BypassFixture; },
@@ -62,14 +62,14 @@ export async function cleanupBypassFixture(
 }
 
 /**
- * Creates host ends of two physical veth links.
- *
- * @param fixture - Names and runtime paths.
- *
- * @example
- * ```ts
- * await setupHostLinks({ fixture });
- * ```
+ Creates host ends of two physical veth links.
+ 
+ @param fixture - Names and runtime paths.
+ 
+ @example
+ ```ts
+ await setupHostLinks({ fixture });
+ ```
  */
 export async function setupHostLinks(
   { fixture, }: { readonly fixture: BypassFixture; },
@@ -174,16 +174,16 @@ export async function setupHostLinks(
 }
 
 /**
- * Configures namespace link addresses,
- * physical defaults,
- * and dummy tunnel.
- *
- * @param fixture - Namespace fixture after host setup.
- *
- * @example
- * ```ts
- * await setupNamespaceLinks({ fixture });
- * ```
+ Configures namespace link addresses,
+ physical defaults,
+ and dummy tunnel.
+ 
+ @param fixture - Namespace fixture after host setup.
+ 
+ @example
+ ```ts
+ await setupNamespaceLinks({ fixture });
+ ```
  */
 export async function setupNamespaceLinks(
   { fixture, }: { readonly fixture: BypassFixture; },

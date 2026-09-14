@@ -1,7 +1,7 @@
 /**
- * Fast judge-model candidate reporting and failure error type.
- *
- * @module
+ Fast judge-model candidate reporting and failure error type.
+ 
+ @module
  */
 
 import { scoreModelSpeed, } from './speed-signals.ts';
@@ -14,36 +14,36 @@ import type {
 //region Error class
 
 /**
- * Error thrown when no suitable judge model can be found.
- *
- * Includes the best candidates from the active provider and across all
- * providers for custom fallback logic.
- *
- * @example
- * ```typescript
- * throw new NoBudgetModelError('no active model set');
- * ```
+ Error thrown when no suitable judge model can be found.
+ 
+ Includes the best candidates from the active provider and across all
+ providers for custom fallback logic.
+ 
+ @example
+ ```typescript
+ throw new NoBudgetModelError('no active model set');
+ ```
  */
 export class NoBudgetModelError extends Error {
   /**
-   * Why no budget model was found.
+   Why no budget model was found.
    */
   readonly reason: string;
   /**
-   * Best candidate from same provider, when one was found.
+   Best candidate from same provider, when one was found.
    */
   readonly sameProvider?: BudgetModelCandidate;
   /**
-   * Fastest candidate across all providers, when one was found.
+   Fastest candidate across all providers, when one was found.
    */
   readonly fastestOverall?: BudgetModelCandidate;
 
   /**
-   * Construct a NoBudgetModelError.
-   *
-   * @param reason - why no budget model was found
-   *
-   * @param candidates - optional context about candidates found
+   Construct a NoBudgetModelError.
+   
+   @param reason - why no budget model was found
+   
+   @param candidates - optional context about candidates found
    */
   constructor(
     reason: string,
@@ -53,7 +53,7 @@ export class NoBudgetModelError extends Error {
     } = {},
   ) {
     /**
-     * Per-line accumulator for multi-line error message.
+     Per-line accumulator for multi-line error message.
      */
     const lines = [
       "Tried to auto-detect a fast judge model for a background task, but couldn't find one.",
@@ -62,11 +62,11 @@ export class NoBudgetModelError extends Error {
     if (candidates.sameProvider
       !== undefined) {
       /**
-       * Local alias so template strings stay readable.
+       Local alias so template strings stay readable.
        */
       const candidate = candidates.sameProvider;
       /**
-       * Candidate line describing the best same-provider option.
+       Candidate line describing the best same-provider option.
        */
       const sameProviderLine = [
         `Best same-provider option: ${candidate.provider}/${candidate.modelId}`,
@@ -77,13 +77,13 @@ export class NoBudgetModelError extends Error {
       lines.push(sameProviderLine,);
     }
     /**
-     * Fastest-overall candidate, surfaced only when present with an API key.
+     Fastest-overall candidate, surfaced only when present with an API key.
      */
     const fastest = candidates.fastestOverall;
     if (fastest?.hasApiKey
       === true) {
       /**
-       * Candidate line describing the fastest authenticated option.
+       Candidate line describing the fastest authenticated option.
        */
       const fastestLine = [
         `Fastest with API key: ${fastest.provider}/${fastest.modelId}`,
@@ -117,18 +117,18 @@ export class NoBudgetModelError extends Error {
 //region Candidate helpers
 
 /**
- * Build budget-model candidate metadata from a model.
- *
- * @param model - model to report
- *
- * @param hasConfiguredAuth - whether host registry reports usable auth
- *
- * @returns model candidate metadata
- *
- * @example
- * ```typescript
- * toBudgetModelCandidate({ model, hasConfiguredAuth: true });
- * ```
+ Build budget-model candidate metadata from a model.
+ 
+ @param model - model to report
+ 
+ @param hasConfiguredAuth - whether host registry reports usable auth
+ 
+ @returns model candidate metadata
+ 
+ @example
+ ```typescript
+ toBudgetModelCandidate({ model, hasConfiguredAuth: true });
+ ```
  */
 export function toBudgetModelCandidate(
   {
@@ -152,16 +152,16 @@ export function toBudgetModelCandidate(
 }
 
 /**
- * Return canonical provider/model slug for a model identity.
- *
- * @param model - model identity
- *
- * @returns provider/model slug
- *
- * @example
- * ```typescript
- * budgetModelSlug(model);
- * ```
+ Return canonical provider/model slug for a model identity.
+ 
+ @param model - model identity
+ 
+ @returns provider/model slug
+ 
+ @example
+ ```typescript
+ budgetModelSlug(model);
+ ```
  */
 export function budgetModelSlug(
   model: ModelIdentity,

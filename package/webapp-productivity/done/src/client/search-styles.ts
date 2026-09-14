@@ -1,5 +1,5 @@
 /**
- * Page-scoped styles for the Search page.
+ Page-scoped styles for the Search page.
  */
 import {
   cssCalc,
@@ -14,23 +14,23 @@ import {
 } from './mixins.ts';
 
 /**
- * Tag chip padding in rem (1/2).
+ Tag chip padding in rem (1/2).
  */
 const CHIP_PADDING = 1 / 2;
 
 /**
- * Tag chip gap in rem (1/4).
+ Tag chip gap in rem (1/4).
  */
 const CHIP_GAP = 1 / 2
   / 2;
 
 /**
- * Desktop search hint font size in rem (3/2).
+ Desktop search hint font size in rem (3/2).
  */
 const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;
 
 /**
- * Compiled CSS string for search page styling.
+ Compiled CSS string for search page styling.
  */
 export const searchStyles: string = [
   css({

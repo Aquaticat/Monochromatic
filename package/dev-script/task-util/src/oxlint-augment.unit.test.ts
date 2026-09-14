@@ -10,9 +10,9 @@ import {
   formatGuidanceLine,
   isHelpLine,
   NO_RULE,
+  RULE_GUIDANCE,
   stripAnsi,
-} from './oxlint-augment.ts';
-import { RULE_GUIDANCE, } from './oxlint-guidance.ts';
+} from '../dist/final/node/testing.mjs';
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
 const LONG_RUN = 100_000;
@@ -22,7 +22,7 @@ const MANY_SEQUENCES = 5_000;
 /** Returns configured guidance text for a rule in assertions. */
 function getRuleGuidance(ruleName: string,): string {
   /**
-   * Guidance entry configured for the requested rule.
+   Guidance entry configured for the requested rule.
    */
   const ruleGuidance = RULE_GUIDANCE[ruleName];
   if (ruleGuidance === undefined)
@@ -404,6 +404,50 @@ await describe({
 
             expect(result,).toContain(`  help: Expected void return type. ${getRuleGuidance('no-misused-promises',)}`,);
             expect(result,).not.toContain('note:',);
+          },
+        },),
+        it({
+          name: 'appends repository-safe guidance to non-null assertion help',
+          fn: async () => {
+            const helpText = 'Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.';
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-non-null-assertion',
+                plugin: 'typescript',
+                message: 'Forbidden non-null assertion.',
+                file: 'src/corpus-run/artifact-v2-read.unit.test.ts',
+                helpText,
+              },),
+              '',
+            ]
+              .join('\n',);
+            const guidance = getRuleGuidance('no-non-null-assertion',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(guidance,).toContain('nonNullishOrThrow',);
+            expect(guidance,).toContain('Do not use optional chaining',);
+            expect(result,).toContain(`  help: ${helpText} ${guidance}`,);
+          },
+        },),
+        it({
+          name: 'injects repository-safe guidance for standalone non-null assertions',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-non-null-assertion',
+                plugin: 'typescript',
+                message: 'Forbidden non-null assertion.',
+                file: 'src/index.ts',
+              },),
+              '',
+            ]
+              .join('\n',);
+            const guidance = getRuleGuidance('no-non-null-assertion',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).toContain(`  help: ${guidance}\n`,);
           },
         },),
         it({

@@ -8,12 +8,12 @@ import type { CSSToken, } from './token.ts';
 //region Accumulation
 
 /**
- * Appends the source representation of each token in a slice to the
- * accumulator.
- *
- * @param tokens - Token slice to render.
- *
- * @param out - Shared raw-string accumulator.
+ Appends the source representation of each token in a slice to the
+ accumulator.
+ 
+ @param tokens - Token slice to render.
+ 
+ @param out - Shared raw-string accumulator.
  */
 function pushTokenRaws({
   tokens,
@@ -24,7 +24,7 @@ function pushTokenRaws({
 },): void {
   for (const token of tokens) {
     /**
-     * Source representation slot of the token tuple.
+     Source representation slot of the token tuple.
      */
     const [, raw,] = token;
     out.push(raw,);
@@ -32,11 +32,11 @@ function pushTokenRaws({
 }
 
 /**
- * Appends one block's source text: opening brace, children, closing brace.
- *
- * @param block - Block to render.
- *
- * @param out - Shared raw-string accumulator.
+ Appends one block's source text: opening brace, children, closing brace.
+ 
+ @param block - Block to render.
+ 
+ @param out - Shared raw-string accumulator.
  */
 function pushBlock({
   block,
@@ -46,7 +46,7 @@ function pushBlock({
   readonly out: string[];
 },): void {
   /**
-   * Opening brace representation.
+   Opening brace representation.
    */
   const [, openRaw,] = block.openToken;
   out.push(openRaw,);
@@ -55,18 +55,18 @@ function pushBlock({
     out,
   },);
   /**
-   * Closing brace representation.
+   Closing brace representation.
    */
   const [, closeRaw,] = block.closeToken;
   out.push(closeRaw,);
 }
 
 /**
- * Appends one node's source text.
- *
- * @param node - Node to render.
- *
- * @param out - Shared raw-string accumulator.
+ Appends one node's source text.
+ 
+ @param node - Node to render.
+ 
+ @param out - Shared raw-string accumulator.
  */
 function pushNode({
   node,
@@ -96,7 +96,7 @@ function pushNode({
   }
 
   /**
-   * At-keyword representation, byte-exact including the `@`.
+   At-keyword representation, byte-exact including the `@`.
    */
   const [, atRaw,] = node.atToken;
   out.push(atRaw,);
@@ -113,7 +113,7 @@ function pushNode({
   }
   if (node.semicolonToken !== undefined) {
     /**
-     * Statement terminator representation.
+     Statement terminator representation.
      */
     const [, semicolonRaw,] = node.semicolonToken;
     out.push(semicolonRaw,);
@@ -121,11 +121,11 @@ function pushNode({
 }
 
 /**
- * Appends a node list's source text in order.
- *
- * @param nodes - Nodes to render.
- *
- * @param out - Shared raw-string accumulator.
+ Appends a node list's source text in order.
+ 
+ @param nodes - Nodes to render.
+ 
+ @param out - Shared raw-string accumulator.
  */
 function pushNodes({
   nodes,
@@ -147,17 +147,17 @@ function pushNodes({
 //region Entry points
 
 /**
- * Renders a node list back to source text in order. One flat accumulator and
- * a single join keep large documents allocation-light.
- *
- * @param nodes - Nodes to render.
- *
- * @returns Concatenated source text.
- *
- * @example
- * ```ts
- * stringifyNodes({ nodes: state.root.children });
- * ```
+ Renders a node list back to source text in order. One flat accumulator and
+ a single join keep large documents allocation-light.
+ 
+ @param nodes - Nodes to render.
+ 
+ @returns Concatenated source text.
+ 
+ @example
+ ```ts
+ stringifyNodes({ nodes: state.root.children });
+ ```
  */
 export function stringifyNodes({
   nodes,
@@ -165,7 +165,7 @@ export function stringifyNodes({
   readonly nodes: readonly CssNode[];
 },): string {
   /**
-   * Raw-string accumulator shared by the whole render.
+   Raw-string accumulator shared by the whole render.
    */
   const out: string[] = [];
   pushNodes({
@@ -176,19 +176,19 @@ export function stringifyNodes({
 }
 
 /**
- * Renders a full edit state back to CSS source. For a state that has not been
- * edited since {@link parseCss}, output is byte-identical to the input; edited
- * regions render from their new nodes while untouched regions keep their
- * original bytes.
- *
- * @param state - Edit state to render.
- *
- * @returns CSS source text.
- *
- * @example
- * ```ts
- * stringifyCss({ state: parseCss({ source, }) }) === source; // => true
- * ```
+ Renders a full edit state back to CSS source. For a state that has not been
+ edited since {@link parseCss}, output is byte-identical to the input; edited
+ regions render from their new nodes while untouched regions keep their
+ original bytes.
+ 
+ @param state - Edit state to render.
+ 
+ @returns CSS source text.
+ 
+ @example
+ ```ts
+ stringifyCss({ state: parseCss({ source, }) }) === source; // => true
+ ```
  */
 export function stringifyCss({
   state,

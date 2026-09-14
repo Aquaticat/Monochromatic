@@ -1,27 +1,27 @@
 /**
- * CSS properties banned by the project's style guide.
- *
- * Extracted from `properties.ts` to stay within the line budget.
+ CSS properties banned by the project's style guide.
+ 
+ Extracted from `properties.ts` to stay within the line budget.
  */
 
 /**
- * CSS properties banned by the project's style guide.
- *
- * Categories:
- * - **Pointless**: `clear`, `float`
- * - **Deprecated**: `clip`, `font-smooth`
- * - **Shorthands**: Always use longhand form
- * - **Non-logical**: Use logical property equivalents
- *
- * @example
- * ```ts
- * // These properties cause type errors in StrictCssDeclarations:
- * const bad: StrictCssDeclarations = {
- *   width: cssRem(10),   // ✗ use 'inline-size'
- *   margin: cssRem(1),   // ✗ use 'margin-block' / 'margin-inline'
- *   float: 'left',       // ✗ pointless property
- * };
- * ```
+ CSS properties banned by the project's style guide.
+ 
+ Categories:
+ - **Pointless**: `clear`, `float`
+ - **Deprecated**: `clip`, `font-smooth`
+ - **Shorthands**: Always use longhand form
+ - **Non-logical**: Use logical property equivalents
+ 
+ @example
+ ```ts
+ // These properties cause type errors in StrictCssDeclarations:
+ const bad: StrictCssDeclarations = {
+   width: cssRem(10),   // ✗ use 'inline-size'
+   margin: cssRem(1),   // ✗ use 'margin-block' / 'margin-inline'
+   float: 'left',       // ✗ pointless property
+ };
+ ```
  */
 export type DisallowedProperties =
   // Pointless properties

@@ -1,46 +1,46 @@
 /**
- * Type-safe, no-codegen i18n composition library.
- *
- * Renders localized UI text from explicit semantic grammar nodes for
- * `ca`, `en`, and `zh`. The package owns language mechanics; consuming
- * packages own product semantics.
- *
- * Entry points:
- *
- * - {@link createI18n} builds the explicit-locale render surface from a
- *   set of locale specs.
- * - {@link defineEnglishLocale}, {@link defineChineseLocale}, and
- *   {@link defineCatalanLocale} produce specs from consumer-owned
- *   vocabulary.
- * - {@link defineCustomLocale} is an escape hatch when the supplied
- *   locale builders are insufficient.
- *
- * @example
- * ```ts
- * import {
- *   createI18n,
- *   defineCatalanLocale,
- *   defineChineseLocale,
- *   defineEnglishLocale,
- * } from '\@monochromatic-dev/module-i18n-compose';
- *
- * const en = defineEnglishLocale({ labels, subjects, nouns, verbs });
- * const zh = defineChineseLocale({ labels, subjects, nouns, verbs });
- * const ca = defineCatalanLocale({ labels, subjects, nouns, verbs });
- *
- * export const locales = ['ca', 'en', 'zh'] as const;
- *
- * export const i18n = createI18n({
- *   locales,
- *   defaultLocale: 'en',
- *   specs: { ca, en, zh },
- * });
- *
- * i18n.label('en', 'siteName');
- * i18n.np('zh', { kind: 'noun.counted', count: 1, noun: 'cat' });
- * ```
- *
- * @packageDocumentation
+ Type-safe, no-codegen i18n composition library.
+ 
+ Renders localized UI text from explicit semantic grammar nodes for
+ `ca`, `en`, and `zh`. The package owns language mechanics; consuming
+ packages own product semantics.
+ 
+ Entry points:
+ 
+ - {@link createI18n} builds the explicit-locale render surface from a
+   set of locale specs.
+ - {@link defineEnglishLocale}, {@link defineChineseLocale}, and
+   {@link defineCatalanLocale} produce specs from consumer-owned
+   vocabulary.
+ - {@link defineCustomLocale} is an escape hatch when the supplied
+   locale builders are insufficient.
+ 
+ @example
+ ```ts
+ import {
+   createI18n,
+   defineCatalanLocale,
+   defineChineseLocale,
+   defineEnglishLocale,
+ } from '\@monochromatic-dev/module-i18n-compose';
+ 
+ const en = defineEnglishLocale({ labels, subjects, nouns, verbs });
+ const zh = defineChineseLocale({ labels, subjects, nouns, verbs });
+ const ca = defineCatalanLocale({ labels, subjects, nouns, verbs });
+ 
+ export const locales = ['ca', 'en', 'zh'] as const;
+ 
+ export const i18n = createI18n({
+   locales,
+   defaultLocale: 'en',
+   specs: { ca, en, zh },
+ });
+ 
+ i18n.label('en', 'siteName');
+ i18n.np('zh', { kind: 'noun.counted', count: 1, noun: 'cat' });
+ ```
+ 
+ @packageDocumentation
  */
 
 //region Grammar primitives

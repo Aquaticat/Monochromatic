@@ -1,10 +1,10 @@
 /**
- * Optional chaining removal and method expression mutations.
- *
- * @example
- * ```ts
- * chainMethodReplacements({ node, parent: undefined, source });
- * ```
+ Optional chaining removal and method expression mutations.
+ 
+ @example
+ ```ts
+ chainMethodReplacements({ node, parent: undefined, source });
+ ```
  */
 
 import { findOperatorToken, } from '../operator-token.ts';
@@ -15,7 +15,7 @@ import type {
 } from '../types.ts';
 
 /**
- * Method name swap pairs, mirroring Stryker's MethodExpression table.
+ Method name swap pairs, mirroring Stryker's MethodExpression table.
  */
 const METHOD_SWAPS: Readonly<Record<string, string>> = {
   startsWith: 'endsWith',
@@ -33,8 +33,8 @@ const METHOD_SWAPS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Method names whose whole call collapses to its receiver, mirroring
- * Stryker's MethodExpression removal list.
+ Method names whose whole call collapses to its receiver, mirroring
+ Stryker's MethodExpression removal list.
  */
 const METHOD_REMOVALS: ReadonlySet<string> = new Set([
   'filter',
@@ -47,26 +47,26 @@ const METHOD_REMOVALS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Emits optional-chaining removal for one optional member or call.
- *
- * `a?.b` becomes `a.b`, `a?.[b]` becomes `a[b]`, and `f?.()` becomes
- * `f()`; only the `?.` token span changes.
- *
- * @param options - Optional node and source.
- *
- * @returns Token replacement for the `?.` occurrence.
- *
- * @example
- * ```ts
- * optionalRemoval({ node: optionalMember, source });
- * ```
+ Emits optional-chaining removal for one optional member or call.
+ 
+ `a?.b` becomes `a.b`, `a?.[b]` becomes `a[b]`, and `f?.()` becomes
+ `f()`; only the `?.` token span changes.
+ 
+ @param options - Optional node and source.
+ 
+ @returns Token replacement for the `?.` occurrence.
+ 
+ @example
+ ```ts
+ optionalRemoval({ node: optionalMember, source });
+ ```
  */
 function optionalRemoval(options: {
   readonly node: EstreeNode;
   readonly source: string;
 },): Replacement {
   /**
-   * Left neighbour whose end bounds the `?.` token scan.
+   Left neighbour whose end bounds the `?.` token scan.
    */
   const scanFrom = childNode({
     node: options.node,
@@ -76,7 +76,7 @@ function optionalRemoval(options: {
   },)
     .end;
   /**
-   * Start offset of the `?.` token.
+   Start offset of the `?.` token.
    */
   const tokenStart = findOperatorToken({
     source: options.source,
@@ -86,8 +86,8 @@ function optionalRemoval(options: {
     token: '?.',
   },);
   /**
-   * Whether plain `.` must replace the token; computed members and calls
-   * drop it entirely.
+   Whether plain `.` must replace the token; computed members and calls
+   drop it entirely.
    */
   const needsDot = (options.node
     .type
@@ -106,16 +106,16 @@ function optionalRemoval(options: {
 }
 
 /**
- * Emits chaining and method replacements for one node.
- *
- * @param options - Node under inspection with parent and source.
- *
- * @returns Replacements, possibly empty.
- *
- * @example
- * ```ts
- * chainMethodReplacements({ node: callExpression, parent: undefined, source });
- * ```
+ Emits chaining and method replacements for one node.
+ 
+ @param options - Node under inspection with parent and source.
+ 
+ @returns Replacements, possibly empty.
+ 
+ @example
+ ```ts
+ chainMethodReplacements({ node: callExpression, parent: undefined, source });
+ ```
  */
 export function chainMethodReplacements(options: {
   readonly node: EstreeNode;
@@ -123,7 +123,7 @@ export function chainMethodReplacements(options: {
   readonly source: string;
 },): readonly Replacement[] {
   /**
-   * Collected replacements for this node.
+   Collected replacements for this node.
    */
   const replacements: Replacement[] = [];
 
@@ -145,7 +145,7 @@ export function chainMethodReplacements(options: {
     .type
     === 'CallExpression') {
     /**
-     * Callee expression, a member expression for method calls.
+     Callee expression, a member expression for method calls.
      */
     const callee = childNode({
       node: options.node,
@@ -155,20 +155,20 @@ export function chainMethodReplacements(options: {
     if ((callee.type === 'MemberExpression')
       && (callee.computed !== true)) {
       /**
-       * Method name identifier under the member expression.
+       Method name identifier under the member expression.
        */
       const property = childNode({
         node: callee,
         key: 'property',
       },);
       /**
-       * Called method name.
+       Called method name.
        */
       const {name} = property;
 
       if ((typeof name) === 'string') {
         /**
-         * Swapped method name for this call, when in the family.
+         Swapped method name for this call, when in the family.
          */
         const swapped = METHOD_SWAPS[name];
 
@@ -183,7 +183,7 @@ export function chainMethodReplacements(options: {
 
         if (METHOD_REMOVALS.has(name,)) {
           /**
-           * Receiver expression the collapsed call reduces to.
+           Receiver expression the collapsed call reduces to.
            */
           const object = childNode({
             node: callee,

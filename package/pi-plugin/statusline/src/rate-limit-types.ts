@@ -1,7 +1,7 @@
 /**
- * Pi rate-limit parser types and shared projection re-exports.
- *
- * @module
+ Pi rate-limit parser types and shared projection re-exports.
+ 
+ @module
  */
 
 import {
@@ -9,39 +9,39 @@ import {
 } from '@monochromatic-dev/agent-harness-shared-usage-projection/ts';
 
 /**
- * Anthropic token rate-limit header window in seconds.
- *
- * Anthropic's Messages API token limits are per-minute ITPM and OTPM limits;
- * the header reset timestamp marks when that token bucket fully replenishes.
+ Anthropic token rate-limit header window in seconds.
+ 
+ Anthropic's Messages API token limits are per-minute ITPM and OTPM limits;
+ the header reset timestamp marks when that token bucket fully replenishes.
  */
 const RATE_LIMIT_WINDOW_SECONDS: number = SECONDS_PER_MINUTE;
 
 /**
- * Header group describing one Anthropic token rate limiter.
+ Header group describing one Anthropic token rate limiter.
  */
 type RateLimitHeaderFamily = {
   /**
-   * Stable key for the limiter family.
+   Stable key for the limiter family.
    */
   readonly key: string;
   /**
-   * Short footer label shown before rate-limit warning text.
+   Short footer label shown before rate-limit warning text.
    */
   readonly label: string;
   /**
-   * Header carrying limiter capacity.
+   Header carrying limiter capacity.
    */
   readonly limitHeader: string;
   /**
-   * Header carrying remaining capacity.
+   Header carrying remaining capacity.
    */
   readonly remainingHeader: string;
   /**
-   * Header carrying RFC 3339 reset timestamp.
+   Header carrying RFC 3339 reset timestamp.
    */
   readonly resetHeader: string;
   /**
-   * Fixed limiter window duration in seconds.
+   Fixed limiter window duration in seconds.
    */
   readonly windowSeconds: number;
 };

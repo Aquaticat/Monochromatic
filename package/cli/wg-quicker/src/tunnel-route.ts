@@ -17,43 +17,43 @@ import {
 } from './tunnel-util.ts';
 
 /**
- * Address-family flag accepted by the `ip` tool.
+ Address-family flag accepted by the `ip` tool.
  */
 type Proto = '-4' | '-6';
 
 /**
- * A `not fwmark`/`suppress_prefixlength` rule pair tracked for teardown.
+ A `not fwmark`/`suppress_prefixlength` rule pair tracked for teardown.
  */
 type PolicyRule = {
   /**
-   * Address family the rule applies to.
+   Address family the rule applies to.
    */
   readonly proto: Proto;
 
   /**
-   * Policy table number the `not fwmark` rule targets, absent for the suppress rule.
+   Policy table number the `not fwmark` rule targets, absent for the suppress rule.
    */
   readonly table?: number;
 };
 
 
 /**
- * Reads the live allowed-ips prefixes for the interface, longest-prefix first.
- *
- * @param interfaceName - Interface to query.
- *
- * @returns Deduplicated prefixes across all peers, sorted longest-prefix first.
- *
- * @example
- * ```ts
- * await readAllowedPrefixes({ interfaceName: 'wg0' });
- * ```
+ Reads the live allowed-ips prefixes for the interface, longest-prefix first.
+ 
+ @param interfaceName - Interface to query.
+ 
+ @returns Deduplicated prefixes across all peers, sorted longest-prefix first.
+ 
+ @example
+ ```ts
+ await readAllowedPrefixes({ interfaceName: 'wg0' });
+ ```
  */
 async function readAllowedPrefixes(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<readonly string[]> {
   /**
-   * Captured `wg show allowed-ips` output.
+   Captured `wg show allowed-ips` output.
    */
   const { stdout, } = await run({
     command: 'wg',
@@ -64,16 +64,16 @@ async function readAllowedPrefixes(
     ],
   },);
   /**
-   * Unique prefixes gathered from every peer line, skipping the leading key field.
+   Unique prefixes gathered from every peer line, skipping the leading key field.
    */
   const seen = new Set<string>();
   for (const line of stdout.split('\n',)) {
     /**
-     * Tab-separated fields: peer key, then the space-separated prefix list.
+     Tab-separated fields: peer key, then the space-separated prefix list.
      */
     const fields = line.split('\t',);
     /**
-     * Space-separated prefix list for this peer, absent when the line has no peer.
+     Space-separated prefix list for this peer, absent when the line has no peer.
      */
     const [, list,] = fields;
     if (list === undefined)
@@ -93,21 +93,21 @@ async function readAllowedPrefixes(
 
 
 /**
- * Adds one `not fwmark` and one `suppress_prefixlength` rule for a routed family.
- *
- * The main-table lookup preserves physical connected routes before the policy table,
- * while WireGuard's own marked transport packets skip that table and reach the
- * physical default. This also prevents a peer endpoint covered by a non-default
- * `AllowedIPs` prefix from routing recursively into its own interface.
- *
- * @param proto - Address family receiving the rules.
- *
- * @param table - Shared policy table carried in the interface fwmark.
- *
- * @example
- * ```ts
- * await addPolicyRules({ proto: '-4', table: 51820 });
- * ```
+ Adds one `not fwmark` and one `suppress_prefixlength` rule for a routed family.
+ 
+ The main-table lookup preserves physical connected routes before the policy table,
+ while WireGuard's own marked transport packets skip that table and reach the
+ physical default. This also prevents a peer endpoint covered by a non-default
+ `AllowedIPs` prefix from routing recursively into its own interface.
+ 
+ @param proto - Address family receiving the rules.
+ 
+ @param table - Shared policy table carried in the interface fwmark.
+ 
+ @example
+ ```ts
+ await addPolicyRules({ proto: '-4', table: 51820 });
+ ```
  */
 async function addPolicyRules(
   {
@@ -147,20 +147,20 @@ async function addPolicyRules(
 
 
 /**
- * Installs routes and policy rules for the allowed prefixes.
- *
- * Automatic routing places every allowed prefix in one policy table carried by
- * the interface fwmark. A `not fwmark` rule per represented family routes inner
- * traffic through that table, while WireGuard's marked outer packets skip it.
- * Keeping every allowed prefix out of the main table prevents endpoint recursion
- * even when a non-default prefix contains the peer's public endpoint.
- *
- * @param config - Parsed config.
- *
- * @example
- * ```ts
- * await setupRoutes({ config });
- * ```
+ Installs routes and policy rules for the allowed prefixes.
+ 
+ Automatic routing places every allowed prefix in one policy table carried by
+ the interface fwmark. A `not fwmark` rule per represented family routes inner
+ traffic through that table, while WireGuard's marked outer packets skip it.
+ Keeping every allowed prefix out of the main table prevents endpoint recursion
+ even when a non-default prefix contains the peer's public endpoint.
+ 
+ @param config - Parsed config.
+ 
+ @example
+ ```ts
+ await setupRoutes({ config });
+ ```
  */
 export async function setupRoutes(
   { config, }: { readonly config: WireguardConfig; },
@@ -168,11 +168,11 @@ export async function setupRoutes(
   if (config.table === 'off')
     return;
   /**
-   * Interface being configured.
+   Interface being configured.
    */
   const iface = config.interfaceName;
   /**
-   * Live allowed-ips prefixes, longest first.
+   Live allowed-ips prefixes, longest first.
    */
   const prefixes = await readAllowedPrefixes({ interfaceName: iface, },);
   if ((config.table !== undefined) && (config.table !== 'auto')) {
@@ -199,11 +199,11 @@ export async function setupRoutes(
     return;
   }
   /**
-   * Shared policy table carried in the interface fwmark for both families.
+   Shared policy table carried in the interface fwmark for both families.
    */
   const table = await ensureFwmark({ interfaceName: iface, },);
   /**
-   * Families represented by at least one allowed prefix, deduplicated.
+   Families represented by at least one allowed prefix, deduplicated.
    */
   const protos = new Set(prefixes.map(function toProto(prefix,): Proto {
     return protoFlag({ prefix, },);
@@ -230,8 +230,8 @@ export async function setupRoutes(
     table,
   },);
   /**
-   * Exempt rule added last so its fixed priority (below every auto-allocated
-   * tunnel rule) is evaluated before the tunnel's `not fwmark` rule.
+   Exempt rule added last so its fixed priority (below every auto-allocated
+   tunnel rule) is evaluated before the tunnel's `not fwmark` rule.
    */
   if (config.exemptMark !== undefined)
     await addExemptRule({
@@ -247,27 +247,27 @@ export async function setupRoutes(
 
 
 /**
- * Removes the policy rules for an interface using its live fwmark.
- *
- * Rediscovering the fwmark ensures the exact allocated table is removed even
- * when it differs from the 51820 base, matching wg-quick's down path.
- *
- * @param interfaceName - Interface whose policy rules are removed.
- *
- * @example
- * ```ts
- * await removePolicyRules({ interfaceName: 'wg0' });
- * ```
+ Removes the policy rules for an interface using its live fwmark.
+ 
+ Rediscovering the fwmark ensures the exact allocated table is removed even
+ when it differs from the 51820 base, matching wg-quick's down path.
+ 
+ @param interfaceName - Interface whose policy rules are removed.
+ 
+ @example
+ ```ts
+ await removePolicyRules({ interfaceName: 'wg0' });
+ ```
  */
 export async function removePolicyRules(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<void> {
   /**
-   * Live policy table for the interface, absent when no default was routed.
+   Live policy table for the interface, absent when no default was routed.
    */
   const fwmark = await readFwmark({ interfaceName, },);
   /**
-   * Rule descriptors to remove: per-family `not fwmark` then `suppress_prefixlength`.
+   Rule descriptors to remove: per-family `not fwmark` then `suppress_prefixlength`.
    */
   const rules: PolicyRule[] = [];
   if (fwmark.found) {
@@ -288,7 +288,7 @@ export async function removePolicyRules(
   );
   await Promise.all(rules.map(function remove(rule,): Promise<unknown> {
     /**
-     * Base of the delete command, optionally naming a specific table.
+     Base of the delete command, optionally naming a specific table.
      */
     const base: string[] = rule.table === undefined ? [
       rule.proto,

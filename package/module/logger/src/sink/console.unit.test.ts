@@ -3,14 +3,23 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { createConsoleSink, } from './console.ts';
-import type { LogRecord, } from '../types.ts';
+import {
+  sinks,
+  type LogRecord,
+} from '@monochromatic-dev/module-logger';
 
 /**
- * Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
- * has definitely fired and the buffer is drained before the next assertion.
- * One hop would often be enough, but two is cheap insurance against timing
- * skew from the harness itself.
+ Sink factories under test, read from the built artifact's `sinks` namespace.
+ */
+const {
+  createConsoleSink,
+} = sinks;
+
+/**
+ Awaits two microtask hops so any pending `queueMicrotask(flushBuffer)`
+ has definitely fired and the buffer is drained before the next assertion.
+ One hop would often be enough, but two is cheap insurance against timing
+ skew from the harness itself.
  */
 async function waitForFlush(): Promise<void> {
   await Promise.resolve();
@@ -18,14 +27,14 @@ async function waitForFlush(): Promise<void> {
 }
 
 /**
- * Builds a `LogRecord` with a fixed timestamp so the formatted output
- * is stable across test runs.
- *
- * @param level - Severity level.
- *
- * @param message - Message body.
- *
- * @returns A complete `LogRecord`.
+ Builds a `LogRecord` with a fixed timestamp so the formatted output
+ is stable across test runs.
+ 
+ @param level - Severity level.
+ 
+ @param message - Message body.
+ 
+ @returns A complete `LogRecord`.
  */
 function record(
   {
@@ -44,11 +53,11 @@ function record(
 }
 
 /**
- * Appends `--verbose` to `process.argv` and removes it again when the returned
- * value goes out of `using` scope, so a verbose-detection test cannot leak the
- * flag into the sibling test that asserts the silenced default.
- *
- * @returns Disposable that restores `process.argv` on scope exit.
+ Appends `--verbose` to `process.argv` and removes it again when the returned
+ value goes out of `using` scope, so a verbose-detection test cannot leak the
+ flag into the sibling test that asserts the silenced default.
+ 
+ @returns Disposable that restores `process.argv` on scope exit.
  */
 function withVerboseArgv(): Disposable {
   process.argv
@@ -289,6 +298,31 @@ await describe({
         const emitted = spy.firstCall.args[0] as string;
         expect(emitted,)
           .toBe('[info] [1970-01-01T00:00:00.000Z] hi',);
+      },
+    },),
+
+    it({
+      name: 'neutralizes terminal control characters before they reach console',
+      fn: async ({ sinon, },) => {
+        process.env.MONOCHROMATIC_VERBOSE = 'true';
+        const sink = createConsoleSink();
+        const spy = sinon.spy(
+          console,
+          'info',
+        );
+
+        void sink.write(record({
+          level: 'info',
+          message: 'title:\u001B]0;PWNED\u0007 clear:\u001B[2J\n\tkept',
+        },),);
+        await waitForFlush();
+
+        const emitted = spy.firstCall.args[0] as string;
+        expect(emitted,)
+          .toBe('[info] [1970-01-01T00:00:00.000Z] title:\\u001B]0;PWNED\\u0007 clear:\\u001B[2J\n\tkept',);
+        expect(emitted,)
+          .not
+          .toContain('\u001B',);
       },
     },),
 

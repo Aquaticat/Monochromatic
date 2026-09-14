@@ -1,26 +1,26 @@
 /**
- * Morph Compact pi extension entry point.
- *
- * Replaces pi's default LLM summarization with Morph's line-deletion compression.
- * Calls the Morph Compact API via the official SDK, wrapping output with
- * explanatory headers so the LLM understands the verbatim-transcript format.
- *
- * Falls through to pi's default summarization on any error (missing key, API
- * failure, split-turn compaction, etc.).
- *
- * When the session is too small to compact (all messages fit within
- * pi's keepRecentTokens budget), cancels the compaction instead of
- * falling through to pi's default summarizer, which produces empty
- * "(none)" summaries in this case.
- *
- * For the `/morph-compact` command, compressed context is passed to the
- * new pi session via a tiered IPC fallback to avoid exceeding the OS
- * argument length limit:
- *
- * 1. Argv (text ≤ 100KB): simplest, zero cleanup
- * 2. Temp file: one write, one read, one delete
- * 3. Unix domain socket: avoids data on disk, fallback for full /tmp
- * 4. TCP localhost: zero filesystem dependency, final fallback
+ Morph Compact pi extension entry point.
+ 
+ Replaces pi's default LLM summarization with Morph's line-deletion compression.
+ Calls the Morph Compact API via the official SDK, wrapping output with
+ explanatory headers so the LLM understands the verbatim-transcript format.
+ 
+ Falls through to pi's default summarization on any error (missing key, API
+ failure, split-turn compaction, etc.).
+ 
+ When the session is too small to compact (all messages fit within
+ pi's keepRecentTokens budget), cancels the compaction instead of
+ falling through to pi's default summarizer, which produces empty
+ "(none)" summaries in this case.
+ 
+ For the `/morph-compact` command, compressed context is passed to the
+ new pi session via a tiered IPC fallback to avoid exceeding the OS
+ argument length limit:
+ 
+ 1. Argv (text ≤ 100KB): simplest, zero cleanup
+ 2. Temp file: one write, one read, one delete
+ 3. Unix domain socket: avoids data on disk, fallback for full /tmp
+ 4. TCP localhost: zero filesystem dependency, final fallback
  */
 
 import type {
@@ -55,12 +55,12 @@ import {
 //region Session state
 
 /**
- * Module-level slot for the pi extension API.
- *
- * Stored in a `Map` (instead of a top-level `let`) so the `session_start`
- * handler can call `pi.getFlag()` and `pi.sendUserMessage()` without
- * receiving the API as a parameter. The single key `'value'` distinguishes
- * "not yet registered" (no entry) from "registered" (entry present).
+ Module-level slot for the pi extension API.
+ 
+ Stored in a `Map` (instead of a top-level `let`) so the `session_start`
+ handler can call `pi.getFlag()` and `pi.sendUserMessage()` without
+ receiving the API as a parameter. The single key `'value'` distinguishes
+ "not yet registered" (no entry) from "registered" (entry present).
  */
 const extensionApiSlot = new Map<'value', ExtensionAPI>();
 
@@ -69,17 +69,17 @@ const extensionApiSlot = new Map<'value', ExtensionAPI>();
 //region Event handlers
 
 /**
- * Handle the `/morph-compact` command.
- * Compresses the session context read-only via the Morph Compact API
- * and launches a new terminal running pi with the compressed context.
- *
- * When the compressed text exceeds {@link MAX_COMPRESSED_ARG_BYTES},
- * falls back through IPC tiers in order: temp file, Unix domain
- * socket, TCP localhost.
- *
- * @param args - optional custom instructions for compression focus
- *
- * @param ctx - extension command context with session access and UI
+ Handle the `/morph-compact` command.
+ Compresses the session context read-only via the Morph Compact API
+ and launches a new terminal running pi with the compressed context.
+ 
+ When the compressed text exceeds {@link MAX_COMPRESSED_ARG_BYTES},
+ falls back through IPC tiers in order: temp file, Unix domain
+ socket, TCP localhost.
+ 
+ @param args - optional custom instructions for compression focus
+ 
+ @param ctx - extension command context with session access and UI
  */
 async function handleMorphCompactCommand({
   args,
@@ -89,7 +89,7 @@ async function handleMorphCompactCommand({
   readonly ctx: ExtensionCommandContext;
 },): Promise<void> {
   /**
-   * Resolved Morph key gates the command early when missing.
+   Resolved Morph key gates the command early when missing.
    */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === NO_MORPH_KEY) {
@@ -102,20 +102,20 @@ async function handleMorphCompactCommand({
   }
 
   /**
-   * Read-only branch view fed to the standalone compressor.
+   Read-only branch view fed to the standalone compressor.
    */
   const branchEntries = ctx.sessionManager
     .getBranch();
   /**
-   * Snapshot of current context pressure used to choose a ratio.
+   Snapshot of current context pressure used to choose a ratio.
    */
   const contextUsage = ctx.getContextUsage();
   /**
-   * Trimmed command-line instructions; empty string maps to undefined below.
+   Trimmed command-line instructions; empty string maps to undefined below.
    */
   const instructions = args.trim();
   /**
-   * Optional custom focus forwarded to compressBranch.
+   Optional custom focus forwarded to compressBranch.
    */
   const customInstructions = instructions !== ''
     ? instructions
@@ -129,7 +129,7 @@ async function handleMorphCompactCommand({
 
   try {
     /**
-     * Compressed branch text routed through the right IPC tier below.
+     Compressed branch text routed through the right IPC tier below.
      */
     const compressedText = await compressBranch({
       branchEntries,
@@ -165,7 +165,7 @@ async function handleMorphCompactCommand({
   }
   catch (error) {
     /**
-     * Best-effort diagnostic surfaced to the user via UI notify.
+     Best-effort diagnostic surfaced to the user via UI notify.
      */
     const message = caughtValueText(error,);
     ctx.ui
@@ -177,19 +177,19 @@ async function handleMorphCompactCommand({
 }
 
 /**
- * Handle the `session_start` event.
- *
- * Reads compressed context from whichever IPC channel is active
- * (checked in priority order: file → Unix socket → TCP) and
- * injects it as a user message. Then resets per-session state.
- *
- * Takes no parameters: the pi API is held in the module-level
- * {@link extensionApiSlot}, so the event payload itself is unused
- * by this handler.
+ Handle the `session_start` event.
+ 
+ Reads compressed context from whichever IPC channel is active
+ (checked in priority order: file → Unix socket → TCP) and
+ injects it as a user message. Then resets per-session state.
+ 
+ Takes no parameters: the pi API is held in the module-level
+ {@link extensionApiSlot}, so the event payload itself is unused
+ by this handler.
  */
 async function handleSessionStart(): Promise<void> {
   /**
-   * Late-bound pi API captured at extension init; absent before first registration.
+   Late-bound pi API captured at extension init; absent before first registration.
    */
   const api = extensionApiSlot.get('value',);
   if (api !== undefined)
@@ -204,17 +204,17 @@ async function handleSessionStart(): Promise<void> {
 //region Extension entry point
 
 /**
- * Morph Compact pi extension entry point.
- * Replaces pi's default LLM summarization with Morph's line-deletion compression.
- *
- * @example
- * ```typescript
- * // Auto-discovered from ~/.pi/agent/extensions/morph-compact/index.ts
- * // or loaded via pi install / pi -e
- * // Requires MORPH_API_KEY env var or entry in ~/.pi/agent/mcp.json
- * ```
- *
- * @param pi - the pi extension API
+ Morph Compact pi extension entry point.
+ Replaces pi's default LLM summarization with Morph's line-deletion compression.
+ 
+ @example
+ ```typescript
+ // Auto-discovered from ~/.pi/agent/extensions/morph-compact/index.ts
+ // or loaded via pi install / pi -e
+ // Requires MORPH_API_KEY env var or entry in ~/.pi/agent/mcp.json
+ ```
+ 
+ @param pi - the pi extension API
  */
 export default function morphCompact(
   pi: ForeignBorrowed<ExtensionAPI>,
@@ -262,22 +262,22 @@ export default function morphCompact(
   pi.on(
     'session_before_compact',
     /**
-     * Bridges host compaction event into Morph workflow.
-     *
-     * @param event - Host-owned compaction event.
-     *
-     * @param ctx - Active extension context.
-     *
-     * @returns Morph compaction, cancellation, or fallthrough signal.
-     *
-     * @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
+     Bridges host compaction event into Morph workflow.
+     
+     @param event - Host-owned compaction event.
+     
+     @param ctx - Active extension context.
+     
+     @returns Morph compaction, cancellation, or fallthrough signal.
+     
+     @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
      */
     async function bridgeBeforeCompact(
       event: ForeignBorrowed<SessionBeforeCompactEvent>,
       ctx,
     ) {
       /**
-       * Morph outcome mapped to pi's before-compact result contract.
+       Morph outcome mapped to pi's before-compact result contract.
        */
       const outcome = await handleBeforeCompact({
         event,

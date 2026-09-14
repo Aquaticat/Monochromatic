@@ -429,7 +429,6 @@ Remaining dependencies to audit,
 - [ ] decircular
 - [ ] safe-stringify
 - [ ] dot-prop
-- [ ] find-up
 - [ ] nano-spawn
 - [ ] execa
 - [ ] @optique/core

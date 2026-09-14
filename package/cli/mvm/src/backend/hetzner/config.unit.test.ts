@@ -1,8 +1,8 @@
 /**
- * Unit tests for Hetzner config: token requirement, server-type/location
- * resolution, and RFC 1123 name validation. No network.
- *
- * @module
+ Unit tests for Hetzner config: token requirement, server-type/location
+ resolution, and RFC 1123 name validation. No network.
+ 
+ @module
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/cli-mvm/ts/backend/hetzner/config.ts';
 
 /**
- * Sets an env var for the duration of a `using` scope, restoring it after.
+ Sets an env var for the duration of a `using` scope, restoring it after.
  */
 function withEnv(key: string, value?: string,): Disposable {
   const prior = process.env[key];
@@ -42,7 +42,7 @@ function withEnv(key: string, value?: string,): Disposable {
 }
 
 /**
- * Names whose final `mvm-<name>` is not a valid RFC 1123 hostname.
+ Names whose final `mvm-<name>` is not a valid RFC 1123 hostname.
  */
 const INVALID_NAMES = [
   '',

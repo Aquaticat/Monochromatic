@@ -1,17 +1,17 @@
 /**
- * HTML document structure for the syllable break demo.
- *
- * Uses h-html to produce a self-contained page with inlined CSS,
- * JavaScript, and three comparison columns showing different
- * word-breaking strategies.
+ HTML document structure for the syllable break demo.
+ 
+ Uses h-html to produce a self-contained page with inlined CSS,
+ JavaScript, and three comparison columns showing different
+ word-breaking strategies.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /**
- * Renders the input controls section: textarea for text entry
- * and a slider for container width.
- *
- * @returns HTML string for the controls section
+ Renders the input controls section: textarea for text entry
+ and a slider for container width.
+ 
+ @returns HTML string for the controls section
  */
 function renderControls(): string {
   return h({
@@ -77,17 +77,17 @@ function renderControls(): string {
 }
 
 /**
- * Renders a single comparison column with a heading, note, and output box.
- *
- * @param heading - column title
- *
- * @param note - explanatory text shown below the heading
- *
- * @param outputId - DOM id for the output container
- *
- * @param extraClass - additional CSS class for the output box
- *
- * @returns HTML string for the column
+ Renders a single comparison column with a heading, note, and output box.
+ 
+ @param heading - column title
+ 
+ @param note - explanatory text shown below the heading
+ 
+ @param outputId - DOM id for the output container
+ 
+ @param extraClass - additional CSS class for the output box
+ 
+ @returns HTML string for the column
  */
 function renderColumn(
   {
@@ -128,9 +128,9 @@ function renderColumn(
 }
 
 /**
- * Renders the three side-by-side comparison columns, each via {@link renderColumn}.
- *
- * @returns HTML string for the columns section
+ Renders the three side-by-side comparison columns, each via {@link renderColumn}.
+ 
+ @returns HTML string for the columns section
  */
 function renderColumns(): string {
   return h({
@@ -160,19 +160,19 @@ function renderColumns(): string {
 }
 
 /**
- * Renders the complete HTML document with all content inlined, combining
- * {@link renderControls} and {@link renderColumns}.
- *
- * @param css - CSS stylesheet string
- *
- * @param js - client-side JavaScript string
- *
- * @returns complete HTML document string
- *
- * @example
- * ```ts
- * const html = renderPage({ css: 'body {}', js: 'console.log("ok")' });
- * ```
+ Renders the complete HTML document with all content inlined, combining
+ {@link renderControls} and {@link renderColumns}.
+ 
+ @param css - CSS stylesheet string
+ 
+ @param js - client-side JavaScript string
+ 
+ @returns complete HTML document string
+ 
+ @example
+ ```ts
+ const html = renderPage({ css: 'body {}', js: 'console.log("ok")' });
+ ```
  */
 export function renderPage(
   {

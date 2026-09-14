@@ -55,9 +55,9 @@ Before reaching it,
 
 - `agent-browser` for web UIs;
   most clicks have a backing HTTP/IPC endpoint or keyboard shortcut.
-- `xdotool`,
-   `wtype`,
-   or `ydotool` for native UI clicks.
+- `nested-wayland-session` for isolated native Wayland UI testing.
+- An application HTTP/IPC surface for authorized live UI.
+- A caller-independent broker for authorized global virtual input.
 - `expect` for interactive auth flows.
 - A CLI flag or API token for actions the UI exposes.
 - A keyboard shortcut to synthesise the click

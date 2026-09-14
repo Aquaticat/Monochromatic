@@ -20,6 +20,7 @@ await describe({
         expect(layout,).toEqual({
           effectiveCwd: process.cwd(),
           subcommandIndex: 0,
+          willShortCircuit: false,
         },);
       },
     },),
@@ -38,6 +39,7 @@ await describe({
         expect(layout,).toEqual({
           effectiveCwd: '/tmp',
           subcommandIndex: 4,
+          willShortCircuit: false,
         },);
       },
     },),
@@ -59,6 +61,7 @@ await describe({
             'repo',
           ),
           subcommandIndex: 4,
+          willShortCircuit: false,
         },);
       },
     },),
@@ -75,7 +78,29 @@ await describe({
         expect(layout,).toEqual({
           effectiveCwd: process.cwd(),
           subcommandIndex: 0,
+          willShortCircuit: false,
         },);
+      },
+    },),
+    it({
+      name: 'distinguishes short-circuit option tokens from option values',
+      fn: async function testShortCircuitOptionRole(): Promise<void> {
+        /** Layout with flag-shaped `-C` value only. */
+        const valueLayout = parseGlobalOptions([
+          '-C',
+          '--version',
+          'cli-git',
+        ],);
+        /** Layout with real short-circuit token after `-C` value. */
+        const optionLayout = parseGlobalOptions([
+          '-C',
+          '--version',
+          '--version',
+          'cli-git',
+        ],);
+
+        expect(valueLayout.willShortCircuit,).toBe(false,);
+        expect(optionLayout.willShortCircuit,).toBe(true,);
       },
     },),
     it({
@@ -90,6 +115,7 @@ await describe({
         expect(layout,).toEqual({
           effectiveCwd: process.cwd(),
           subcommandIndex: 1,
+          willShortCircuit: false,
         },);
       },
     },),

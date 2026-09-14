@@ -1,7 +1,7 @@
 /**
- * Catalan adverbial renderer factory.
- *
- * @module
+ Catalan adverbial renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -11,11 +11,11 @@ import type {
 } from '../../ast.ts';
 
 /**
- * Picks the Catalan preposition for a location relation.
- *
- * @param relation - location relation from the AST
- *
- * @returns surface preposition
+ Picks the Catalan preposition for a location relation.
+ 
+ @param relation - location relation from the AST
+ 
+ @returns surface preposition
  */
 function locationPreposition(relation: 'at' | 'in' | 'to' | 'from',): string {
   if (relation === 'at')
@@ -28,11 +28,11 @@ function locationPreposition(relation: 'at' | 'in' | 'to' | 'from',): string {
 }
 
 /**
- * Picks the Catalan preposition/phrase for a time relation.
- *
- * @param relation - time relation from the AST
- *
- * @returns surface preposition
+ Picks the Catalan preposition/phrase for a time relation.
+ 
+ @param relation - time relation from the AST
+ 
+ @returns surface preposition
  */
 function timePreposition(relation: 'at' | 'before' | 'after',): string {
   if (relation === 'at')
@@ -43,16 +43,16 @@ function timePreposition(relation: 'at' | 'before' | 'after',): string {
 }
 
 /**
- * Builds a Catalan adverbial renderer that consumes already-built noun-phrase rendering.
- *
- * @param renderNounPhrase - noun-phrase render function
- *
- * @returns render function for adverbial clusters
- *
- * @example
- * ```ts
- * const renderAdverbials = makeCatalanAdverbialRenderer({ renderNounPhrase });
- * ```
+ Builds a Catalan adverbial renderer that consumes already-built noun-phrase rendering.
+ 
+ @param renderNounPhrase - noun-phrase render function
+ 
+ @returns render function for adverbial clusters
+ 
+ @example
+ ```ts
+ const renderAdverbials = makeCatalanAdverbialRenderer({ renderNounPhrase });
+ ```
  */
 export function makeCatalanAdverbialRenderer<S extends string, N extends string,>(
   {
@@ -62,11 +62,11 @@ export function makeCatalanAdverbialRenderer<S extends string, N extends string,
   },
 ): (advs?: readonly Adverbial<S, N>[],) => string {
   /**
-   * Renders a time operand handling both noun-phrase and external-text variants.
-   *
-   * @param operand - operand AST node
-   *
-   * @returns rendered surface
+   Renders a time operand handling both noun-phrase and external-text variants.
+   
+   @param operand - operand AST node
+   
+   @returns rendered surface
    */
   function renderTimeOperand(operand: NounPhrase<S, N> | ExternalText,): string {
     return operand.kind
@@ -74,11 +74,11 @@ export function makeCatalanAdverbialRenderer<S extends string, N extends string,
   }
 
   /**
-   * Renders a single adverbial node using Catalan prepositions.
-   *
-   * @param adv - adverbial AST node
-   *
-   * @returns rendered surface
+   Renders a single adverbial node using Catalan prepositions.
+   
+   @param adv - adverbial AST node
+   
+   @returns rendered surface
    */
   function renderAdverbial(adv: Adverbial<S, N>,): string {
     if (adv.kind
@@ -88,11 +88,11 @@ export function makeCatalanAdverbialRenderer<S extends string, N extends string,
   }
 
   /**
-   * Renders an adverbial cluster as a single space-joined string.
-   *
-   * @param advs - optional adverbial list
-   *
-   * @returns joined surface, or empty string for empty input
+   Renders an adverbial cluster as a single space-joined string.
+   
+   @param advs - optional adverbial list
+   
+   @returns joined surface, or empty string for empty input
    */
   function renderAdverbials(
     advs?: readonly Adverbial<S, N>[],

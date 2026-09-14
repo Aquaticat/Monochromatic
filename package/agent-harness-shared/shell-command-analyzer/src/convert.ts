@@ -1,7 +1,7 @@
 /**
- * Convert `unbash` nodes to public analyzer command records.
- *
- * @module
+ Convert `unbash` nodes to public analyzer command records.
+ 
+ @module
  */
 
 import type {
@@ -24,7 +24,7 @@ import type {
 //region Redirect conversion
 
 /**
- * Operators that write output to file-like targets.
+ Operators that write output to file-like targets.
  */
 const WRITE_FILE_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
   '>',
@@ -36,7 +36,7 @@ const WRITE_FILE_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
 ],);
 
 /**
- * Operators that read input from file-like targets.
+ Operators that read input from file-like targets.
  */
 const READ_FILE_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
   '<',
@@ -44,7 +44,7 @@ const READ_FILE_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
 ],);
 
 /**
- * Operators whose target can be a file descriptor when numeric.
+ Operators whose target can be a file descriptor when numeric.
  */
 const DESCRIPTOR_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
   '<&',
@@ -52,7 +52,7 @@ const DESCRIPTOR_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
 ],);
 
 /**
- * Operators that carry heredoc or here-string bodies.
+ Operators that carry heredoc or here-string bodies.
  */
 const HEREDOC_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
   '<<',
@@ -61,16 +61,16 @@ const HEREDOC_OPERATORS: ReadonlySet<UnbashRedirectOperator> = new Set([
 ],);
 
 /**
- * Whether target text names a numeric file descriptor.
- *
- * @param target - redirect target text
- *
- * @returns whether target is composed only of decimal digits
- *
- * @example
- * ```ts
- * isNumericDescriptor('2');
- * ```
+ Whether target text names a numeric file descriptor.
+ 
+ @param target - redirect target text
+ 
+ @returns whether target is composed only of decimal digits
+ 
+ @example
+ ```ts
+ isNumericDescriptor('2');
+ ```
  */
 function isNumericDescriptor(target: string,): boolean {
   if (target.length === 0)
@@ -83,18 +83,18 @@ function isNumericDescriptor(target: string,): boolean {
 }
 
 /**
- * Classify redirect target kind.
- *
- * @param operator - redirect operator
- *
- * @param target - redirect target text, when present
- *
- * @returns redirect kind used by callers
- *
- * @example
- * ```ts
- * redirectKind({ operator: '>&', target: '1' });
- * ```
+ Classify redirect target kind.
+ 
+ @param operator - redirect operator
+ 
+ @param target - redirect target text, when present
+ 
+ @returns redirect kind used by callers
+ 
+ @example
+ ```ts
+ redirectKind({ operator: '>&', target: '1' });
+ ```
  */
 function redirectKind(
   {
@@ -116,18 +116,18 @@ function redirectKind(
 }
 
 /**
- * Whether redirect writes to a file-like target.
- *
- * @param operator - redirect operator
- *
- * @param kind - redirect target classification
- *
- * @returns whether redirect writes file content
- *
- * @example
- * ```ts
- * redirectWritesFile({ operator: '>', kind: 'file' });
- * ```
+ Whether redirect writes to a file-like target.
+ 
+ @param operator - redirect operator
+ 
+ @param kind - redirect target classification
+ 
+ @returns whether redirect writes file content
+ 
+ @example
+ ```ts
+ redirectWritesFile({ operator: '>', kind: 'file' });
+ ```
  */
 function redirectWritesFile(
   {
@@ -145,18 +145,18 @@ function redirectWritesFile(
 }
 
 /**
- * Whether redirect reads from a file-like target.
- *
- * @param operator - redirect operator
- *
- * @param kind - redirect target classification
- *
- * @returns whether redirect reads file content
- *
- * @example
- * ```ts
- * redirectReadsFile({ operator: '<', kind: 'file' });
- * ```
+ Whether redirect reads from a file-like target.
+ 
+ @param operator - redirect operator
+ 
+ @param kind - redirect target classification
+ 
+ @returns whether redirect reads file content
+ 
+ @example
+ ```ts
+ redirectReadsFile({ operator: '<', kind: 'file' });
+ ```
  */
 function redirectReadsFile(
   {
@@ -174,30 +174,30 @@ function redirectReadsFile(
 }
 
 /**
- * Convert one `unbash` redirect to public redirect record.
- *
- * @param redirect - parsed redirect node
- *
- * @returns public redirect record
- *
- * @example
- * ```ts
- * redirectToInfo(redirect);
- * ```
+ Convert one `unbash` redirect to public redirect record.
+ 
+ @param redirect - parsed redirect node
+ 
+ @returns public redirect record
+ 
+ @example
+ ```ts
+ redirectToInfo(redirect);
+ ```
  */
 function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedirect {
   /**
-   * Parsed target text, when `unbash` produced one.
+   Parsed target text, when `unbash` produced one.
    */
   const target = redirect.target
     ?.value;
   /**
-   * Original source spelling paired with parsed target value.
+   Original source spelling paired with parsed target value.
    */
   const targetSourceText = redirect.target
     ?.text;
   /**
-   * Target classification.
+   Target classification.
    */
   const kind = redirectKind({
     operator: redirect.operator,
@@ -222,16 +222,16 @@ function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedire
 }
 
 /**
- * Extract file-like redirect targets.
- *
- * @param redirects - public redirect records
- *
- * @returns target text for file redirects only
- *
- * @example
- * ```ts
- * redirectTargets([redirect]);
- * ```
+ Extract file-like redirect targets.
+ 
+ @param redirects - public redirect records
+ 
+ @returns target text for file redirects only
+ 
+ @example
+ ```ts
+ redirectTargets([redirect]);
+ ```
  */
 function redirectTargets(redirects: readonly ShellRedirect[],): string[] {
   return redirects.flatMap(function targetForRedirect(redirect,): string[] {
@@ -244,16 +244,16 @@ function redirectTargets(redirects: readonly ShellRedirect[],): string[] {
 }
 
 /**
- * Extract file-like redirect values with original source spellings.
- *
- * @param redirects - public redirect records
- *
- * @returns target values and source text for file redirects only
- *
- * @example
- * ```ts
- * redirectTargetSources([redirect]);
- * ```
+ Extract file-like redirect values with original source spellings.
+ 
+ @param redirects - public redirect records
+ 
+ @returns target values and source text for file redirects only
+ 
+ @example
+ ```ts
+ redirectTargetSources([redirect]);
+ ```
  */
 function redirectTargetSources(redirects: readonly ShellRedirect[],): ShellWordSource[] {
   return redirects.flatMap(function sourceForRedirect(redirect,): ShellWordSource[] {
@@ -273,16 +273,16 @@ function redirectTargetSources(redirects: readonly ShellRedirect[],): ShellWordS
 //region Command conversion
 
 /**
- * Pair word value with source spelling, excluding process substitution placeholders.
- *
- * @param word - suffix word from `unbash`
- *
- * @returns singleton source record, or empty array for process substitution syntax
- *
- * @example
- * ```ts
- * wordToSource(word);
- * ```
+ Pair word value with source spelling, excluding process substitution placeholders.
+ 
+ @param word - suffix word from `unbash`
+ 
+ @returns singleton source record, or empty array for process substitution syntax
+ 
+ @example
+ ```ts
+ wordToSource(word);
+ ```
  */
 function wordToSource(word: ForeignBorrowed<UnbashWord>,): ShellWordSource[] {
   if ((word.parts ?? [])
@@ -300,16 +300,16 @@ function wordToSource(word: ForeignBorrowed<UnbashWord>,): ShellWordSource[] {
 }
 
 /**
- * Render assignment value text.
- *
- * @param assignment - assignment prefix from `unbash`
- *
- * @returns scalar, array, or empty value text
- *
- * @example
- * ```ts
- * assignmentValue(assignment);
- * ```
+ Render assignment value text.
+ 
+ @param assignment - assignment prefix from `unbash`
+ 
+ @returns scalar, array, or empty value text
+ 
+ @example
+ ```ts
+ assignmentValue(assignment);
+ ```
  */
 function assignmentValue(assignment: ForeignBorrowed<UnbashAssignmentPrefix>,): string {
   if (assignment.value !== undefined)
@@ -326,16 +326,16 @@ function assignmentValue(assignment: ForeignBorrowed<UnbashAssignmentPrefix>,): 
 }
 
 /**
- * Convert one assignment prefix to zero or one environment assignment.
- *
- * @param assignment - assignment prefix from `unbash`
- *
- * @returns analyzer assignment entries
- *
- * @example
- * ```ts
- * assignmentToEnvAssignment(assignment);
- * ```
+ Convert one assignment prefix to zero or one environment assignment.
+ 
+ @param assignment - assignment prefix from `unbash`
+ 
+ @returns analyzer assignment entries
+ 
+ @example
+ ```ts
+ assignmentToEnvAssignment(assignment);
+ ```
  */
 function assignmentToEnvAssignment(assignment: ForeignBorrowed<UnbashAssignmentPrefix>,): ShellEnvAssignment[] {
   if (assignment.name === undefined)
@@ -347,22 +347,22 @@ function assignmentToEnvAssignment(assignment: ForeignBorrowed<UnbashAssignmentP
 }
 
 /**
- * Convert one simple command node to analyzer command info.
- *
- * @param command - simple command node to convert
- *
- * @param inheritedRedirects - redirects inherited from wrapping statements
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @param context - execution context inherited by command
- *
- * @returns command info used by guardrail signal checks
- *
- * @example
- * ```ts
- * commandToInfo({ command, inheritedRedirects: [], paramRefs: [], context });
- * ```
+ Convert one simple command node to analyzer command info.
+ 
+ @param command - simple command node to convert
+ 
+ @param inheritedRedirects - redirects inherited from wrapping statements
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @param context - execution context inherited by command
+ 
+ @returns command info used by guardrail signal checks
+ 
+ @example
+ ```ts
+ commandToInfo({ command, inheritedRedirects: [], paramRefs: [], context });
+ ```
  */
 function commandToInfo(
   {
@@ -378,7 +378,7 @@ function commandToInfo(
   },
 ): ShellCommandInfo {
   /**
-   * Converted redirects from command and surrounding statement.
+   Converted redirects from command and surrounding statement.
    */
   const redirects = [
     ...command.redirects,
@@ -390,7 +390,7 @@ function commandToInfo(
       return redirectToInfo(redirect,);
     },);
   /**
-   * Suffix argument values paired with exact shell source spelling.
+   Suffix argument values paired with exact shell source spelling.
    */
   const argSources = command.suffix
     .flatMap(wordToSource,);
@@ -414,20 +414,20 @@ function commandToInfo(
 }
 
 /**
- * Emit synthetic command for redirects attached to compound syntax.
- *
- * @param redirects - redirects attached to compound syntax
- *
- * @param paramRefs - parameter references pre-scanned from raw source text
- *
- * @param context - execution context inherited by redirect command
- *
- * @returns command info carrying redirect targets only
- *
- * @example
- * ```ts
- * redirectOnlyCommand({ redirects, paramRefs: [], context });
- * ```
+ Emit synthetic command for redirects attached to compound syntax.
+ 
+ @param redirects - redirects attached to compound syntax
+ 
+ @param paramRefs - parameter references pre-scanned from raw source text
+ 
+ @param context - execution context inherited by redirect command
+ 
+ @returns command info carrying redirect targets only
+ 
+ @example
+ ```ts
+ redirectOnlyCommand({ redirects, paramRefs: [], context });
+ ```
  */
 function redirectOnlyCommand(
   {
@@ -441,7 +441,7 @@ function redirectOnlyCommand(
   },
 ): ShellCommandInfo {
   /**
-   * Converted redirects from compound syntax.
+   Converted redirects from compound syntax.
    */
   const convertedRedirects = redirects.map(function mapRedirectToInfo(redirect,): ShellRedirect {
     return redirectToInfo(redirect,);

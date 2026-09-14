@@ -1,7 +1,7 @@
 /**
- * Shell wrapper removal for terminal title command summaries.
- *
- * @module
+ Shell wrapper removal for terminal title command summaries.
+ 
+ @module
  */
 
 import {
@@ -20,7 +20,7 @@ import {
 //region Wrapper constants
 
 /**
- * Shell wrapper command names whose own invocation is title noise.
+ Shell wrapper command names whose own invocation is title noise.
  */
 const WRAPPER_COMMAND_NAMES: ReadonlySet<string> = new Set([
   'env',
@@ -30,7 +30,7 @@ const WRAPPER_COMMAND_NAMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- * Result of unwrapping one shell wrapper.
+ Result of unwrapping one shell wrapper.
  */
 type CommandTokensResult = CommandTokens | typeof COMMAND_TOKENS_MISSING;
 
@@ -39,23 +39,23 @@ type CommandTokensResult = CommandTokens | typeof COMMAND_TOKENS_MISSING;
 //region Cursor scanners
 
 /**
- * Finds wrapped command cursor for `env` arguments.
- *
- * @param args - because env accepts options and assignments before command
- *
- * @returns cursor for wrapped command or sentinel when absent
+ Finds wrapped command cursor for `env` arguments.
+ 
+ @param args - because env accepts options and assignments before command
+ 
+ @returns cursor for wrapped command or sentinel when absent
  */
 function envWrappedCursor(args: readonly string[],): number | typeof COMMAND_TOKENS_MISSING {
   {
     /**
-     * Cursor over env arguments before wrapped command.
+     Cursor over env arguments before wrapped command.
      */
     let cursor = 0;
     while (cursor
       < args.length)
     {
       /**
-       * Current env argument token.
+       Current env argument token.
        */
       const token = args[cursor];
       if (token === undefined)
@@ -79,23 +79,23 @@ function envWrappedCursor(args: readonly string[],): number | typeof COMMAND_TOK
 }
 
 /**
- * Finds wrapped command cursor for `nice` arguments.
- *
- * @param args - because nice accepts options before command
- *
- * @returns cursor for wrapped command or sentinel when absent
+ Finds wrapped command cursor for `nice` arguments.
+ 
+ @param args - because nice accepts options before command
+ 
+ @returns cursor for wrapped command or sentinel when absent
  */
 function niceWrappedCursor(args: readonly string[],): number | typeof COMMAND_TOKENS_MISSING {
   {
     /**
-     * Cursor over nice arguments before wrapped command.
+     Cursor over nice arguments before wrapped command.
      */
     let cursor = 0;
     while (cursor
       < args.length)
     {
       /**
-       * Current nice argument token.
+       Current nice argument token.
        */
       const token = args[cursor];
       if (token === undefined)
@@ -115,23 +115,23 @@ function niceWrappedCursor(args: readonly string[],): number | typeof COMMAND_TO
 }
 
 /**
- * Finds wrapped command cursor for `timeout` arguments.
- *
- * @param args - because timeout accepts options and one duration before command
- *
- * @returns cursor for wrapped command or sentinel when absent
+ Finds wrapped command cursor for `timeout` arguments.
+ 
+ @param args - because timeout accepts options and one duration before command
+ 
+ @returns cursor for wrapped command or sentinel when absent
  */
 function timeoutWrappedCursor(args: readonly string[],): number | typeof COMMAND_TOKENS_MISSING {
   {
     /**
-     * Cursor over timeout options and duration.
+     Cursor over timeout options and duration.
      */
     let cursor = 0;
     while (cursor
       < args.length)
     {
       /**
-       * Current timeout argument token.
+       Current timeout argument token.
        */
       const token = args[cursor];
       if (token === undefined)
@@ -155,13 +155,13 @@ function timeoutWrappedCursor(args: readonly string[],): number | typeof COMMAND
 //region Wrapper implementations
 
 /**
- * Converts wrapper cursor result to command tokens.
- *
- * @param args - because wrapper command passes remaining tokens as wrapped command
- *
- * @param cursor - because scanner determines wrapped command position
- *
- * @returns wrapped command tokens or sentinel
+ Converts wrapper cursor result to command tokens.
+ 
+ @param args - because wrapper command passes remaining tokens as wrapped command
+ 
+ @param cursor - because scanner determines wrapped command position
+ 
+ @returns wrapped command tokens or sentinel
  */
 function tokensFromCursor(
   {
@@ -181,11 +181,11 @@ function tokensFromCursor(
 }
 
 /**
- * Unwraps one recognized wrapper command.
- *
- * @param tokens - because wrappers should not dominate command titles
- *
- * @returns wrapped command tokens or sentinel when tokens are not a wrapper
+ Unwraps one recognized wrapper command.
+ 
+ @param tokens - because wrappers should not dominate command titles
+ 
+ @returns wrapped command tokens or sentinel when tokens are not a wrapper
  */
 function unwrapWrapper(tokens: CommandTokens,): CommandTokensResult {
   if (tokens.name === 'env') {
@@ -220,27 +220,27 @@ function unwrapWrapper(tokens: CommandTokens,): CommandTokensResult {
 //region Public wrapper API
 
 /**
- * Removes leading shell wrappers from parsed command tokens.
- *
- * @param tokens - because users care about meaningful work, not wrapper mechanics
- *
- * @returns innermost meaningful command tokens
- *
- * @example
- * ```ts
- * unwrapCommandTokens({ name: 'timeout', args: ['10', 'npm', 'test'] });
- * // { name: 'npm', args: ['test'] }
- * ```
+ Removes leading shell wrappers from parsed command tokens.
+ 
+ @param tokens - because users care about meaningful work, not wrapper mechanics
+ 
+ @returns innermost meaningful command tokens
+ 
+ @example
+ ```ts
+ unwrapCommandTokens({ name: 'timeout', args: ['10', 'npm', 'test'] });
+ // { name: 'npm', args: ['test'] }
+ ```
  */
 function unwrapCommandTokens(tokens: CommandTokens,): CommandTokens {
   {
     /**
-     * Current command tokens after each wrapper removal.
+     Current command tokens after each wrapper removal.
      */
     let current = tokens;
     while (WRAPPER_COMMAND_NAMES.has(current.name,)) {
       /**
-       * Next wrapped command tokens.
+       Next wrapped command tokens.
        */
       const next = unwrapWrapper(current,);
       if (((typeof next) === 'symbol') && (next === COMMAND_TOKENS_MISSING))

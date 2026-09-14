@@ -1,7 +1,7 @@
 /**
- * Tests the measurement sentinel and its narrowing guard.
- *
- * @module
+ Tests the measurement sentinel and its narrowing guard.
+ 
+ @module
  */
 
 import {

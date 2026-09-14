@@ -1,11 +1,11 @@
 /**
- * Main flagger and bash signal detection.
- *
- * Contains shouldFlag (the main entry point) and bashSignals.
- * Path signals are in path-signals.ts, content/text signals in
- * content-signals.ts, and tool event helpers in tool-helpers.ts.
- *
- * @module
+ Main flagger and bash signal detection.
+ 
+ Contains shouldFlag (the main entry point) and bashSignals.
+ Path signals are in path-signals.ts, content/text signals in
+ content-signals.ts, and tool event helpers in tool-helpers.ts.
+ 
+ @module
  */
 
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
@@ -54,25 +54,25 @@ import type {
 //region Main entry point
 
 /**
- * Should this tool call be sent to the judge?
- *
- * Returns `true` if any signal fires. No reason is propagated. Bash calls go
- * through {@link analyzeBashCommand} and {@link bashSignals}; other tool
- * calls are checked with {@link getFilePath} and {@link pathSignals} for
- * location, then {@link extractToolText}, {@link contentSignals}, and
- * {@link textSignals} for body text.
- *
- * @returns `true` if the action should be flagged for judge review
- *
- * @example
- * ```typescript
- * const flagged = shouldFlag({ event, ctx: { cwd, home } });
- * const skillRead = shouldFlag({
- *   event,
- *   ctx: { cwd, home },
- *   readAllowlistedDirs: ["/home/user/.agents/skills/example"],
- * });
- * ```
+ Should this tool call be sent to the judge?
+ 
+ Returns `true` if any signal fires. No reason is propagated. Bash calls go
+ through {@link analyzeBashCommand} and {@link bashSignals}; other tool
+ calls are checked with {@link getFilePath} and {@link pathSignals} for
+ location, then {@link extractToolText}, {@link contentSignals}, and
+ {@link textSignals} for body text.
+ 
+ @returns `true` if the action should be flagged for judge review
+ 
+ @example
+ ```typescript
+ const flagged = shouldFlag({ event, ctx: { cwd, home } });
+ const skillRead = shouldFlag({
+   event,
+   ctx: { cwd, home },
+   readAllowlistedDirs: ["/home/user/.agents/skills/example"],
+ });
+ ```
  */
 async function shouldFlag(
   {
@@ -84,18 +84,18 @@ async function shouldFlag(
     readonly event: ForeignBorrowed<ToolCallEvent>;
     readonly ctx: SignalContext;
     /**
-     * Directories whose contents are safe for read-tool skill activation.
+     Directories whose contents are safe for read-tool skill activation.
      */
     readonly readAllowlistedDirs?: readonly string[];
     /**
-     * Private agent temp directories trusted for bash helper execution.
+     Private agent temp directories trusted for bash helper execution.
      */
     readonly bashAllowlistedDirs?: readonly string[];
   },
 ): Promise<boolean> {
   if (isBashToolEvent(event,)) {
     /**
-     * Parsed bash AST used to walk individual commands and their redirect targets.
+     Parsed bash AST used to walk individual commands and their redirect targets.
      */
     const analysis = analyzeBashCommand(event.input
       .command,);
@@ -116,11 +116,11 @@ async function shouldFlag(
   }
 
   /**
-   * Path argument extracted from the tool event when one applies (read/write/edit/etc.).
+   Path argument extracted from the tool event when one applies (read/write/edit/etc.).
    */
   const filePath = getFilePath(event,);
   /**
-   * Skill directory allowlist applied only to read-tool activation, not writes or shell commands.
+   Skill directory allowlist applied only to read-tool activation, not writes or shell commands.
    */
   const pathAllowlistedDirs = isReadToolEvent(event,)
     ? readAllowlistedDirs
@@ -137,7 +137,7 @@ async function shouldFlag(
   }
 
   /**
-   * Free text extracted from the tool event (file body, search query) for content/text signals.
+   Free text extracted from the tool event (file body, search query) for content/text signals.
    */
   const text = extractToolText(event,);
   if (text !== '') {
@@ -156,25 +156,25 @@ async function shouldFlag(
 //region Bash signals
 
 /**
- * Check bash command analysis for dangerous patterns.
- *
- * Checks {@link hasTrustedAgentTempCredentialHandoff} for dotenv-to-helper
- * handoffs, then per command: {@link PRIVILEGE_COMMANDS},
- * {@link isMutatingCommand} and {@link hasFlag}, {@link hasRootTarget},
- * {@link ENV_DUMP_COMMANDS}, {@link INTERPRETER_COMMANDS} and
- * {@link hasInlineCode}. Path-shaped words found with {@link looksLikePath}
- * are tested with {@link pathSignals} and excused by
- * {@link isTrustedAgentTempBashPathAllowed}. Finally checks
- * {@link hasNetworkCommand} combined with {@link hasSecretParamRefs} or
- * {@link hasSensitiveSource}.
- *
- * @returns `true` if any bash signal fires
- *
- * @example
- * ```typescript
- * const analysis = analyzeBashCommand("sudo rm -rf /");
- * bashSignals({ analysis, ctx }); // true
- * ```
+ Check bash command analysis for dangerous patterns.
+ 
+ Checks {@link hasTrustedAgentTempCredentialHandoff} for dotenv-to-helper
+ handoffs, then per command: {@link PRIVILEGE_COMMANDS},
+ {@link isMutatingCommand} and {@link hasFlag}, {@link hasRootTarget},
+ {@link ENV_DUMP_COMMANDS}, {@link INTERPRETER_COMMANDS} and
+ {@link hasInlineCode}. Path-shaped words found with {@link looksLikePath}
+ are tested with {@link pathSignals} and excused by
+ {@link isTrustedAgentTempBashPathAllowed}. Finally checks
+ {@link hasNetworkCommand} combined with {@link hasSecretParamRefs} or
+ {@link hasSensitiveSource}.
+ 
+ @returns `true` if any bash signal fires
+ 
+ @example
+ ```typescript
+ const analysis = analyzeBashCommand("sudo rm -rf /");
+ bashSignals({ analysis, ctx }); // true
+ ```
  */
 async function bashSignals(
   {
@@ -185,7 +185,7 @@ async function bashSignals(
     readonly analysis: BashAnalysis;
     readonly ctx: SignalContext;
     /**
-     * Private agent temp directories trusted for bash helper execution.
+     Private agent temp directories trusted for bash helper execution.
      */
     readonly trustedAgentTempDirs?: readonly string[];
   },
@@ -194,7 +194,7 @@ async function bashSignals(
     return true;
 
   /**
-   * Whether this command can read project dotenv only to feed trusted temp helper credentials.
+   Whether this command can read project dotenv only to feed trusted temp helper credentials.
    */
   const allowProjectDotenvCredentialSource = await hasTrustedAgentTempCredentialHandoff({
     analysis,
@@ -202,7 +202,7 @@ async function bashSignals(
     trustedAgentTempDirs,
   },);
   /**
-   * Positive proof required for modeled inspection families and existing private scratch paths.
+   Positive proof required for modeled inspection families and existing private scratch paths.
    */
   const readOnlyProof = await classifyReadOnlyBash({
     analysis,
@@ -283,13 +283,13 @@ async function bashSignals(
   }
 
   /**
-   * Concurrent path-signal work for every parsed command.
+   Concurrent path-signal work for every parsed command.
    */
   const commandPathSignalPromises: Promise<boolean>[] = [];
   for (const command of analysis.commands) {
     commandPathSignalPromises[commandPathSignalPromises.length] = (async function commandHasUnallowedPathSignal(): Promise<boolean> {
       /**
-       * Path-shaped arguments plus redirect targets.
+       Path-shaped arguments plus redirect targets.
        */
       const files: string[] = [];
       for (const argument of command.args) {
@@ -299,7 +299,7 @@ async function bashSignals(
       for (const redirectTarget of command.redirectTargets)
         files[files.length] = redirectTarget;
       /**
-       * Concurrent path decisions for current command's file-like words.
+       Concurrent path decisions for current command's file-like words.
        */
       const fileSignalPromises: Promise<boolean>[] = [];
       for (const filePath of files) {
@@ -319,7 +319,7 @@ async function bashSignals(
         })();
       }
       /**
-       * Current command's path decisions after every independent check.
+       Current command's path decisions after every independent check.
        */
       const fileSignalDecisions = await Promise.all(fileSignalPromises,);
       for (const decision of fileSignalDecisions) {
@@ -330,7 +330,7 @@ async function bashSignals(
     })();
   }
   /**
-   * Per-command path decisions after every independent check.
+   Per-command path decisions after every independent check.
    */
   const commandPathSignalDecisions = await Promise.all(commandPathSignalPromises,);
   for (const decision of commandPathSignalDecisions) {

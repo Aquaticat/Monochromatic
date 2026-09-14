@@ -1,7 +1,7 @@
 /**
- * Tests for `createObservable`.
- *
- * @module
+ Tests for `createObservable`.
+ 
+ @module
  */
 
 import {

@@ -1,34 +1,34 @@
 /**
- * Results-panel styles for the wc text-stats tool: the six stat tiles
- * and the Frequency ARIA table.
- *
- * Tiles are flex-wrapped (no CSS grid). Frequency rows are flex rows so
- * per-row `content-visibility: auto` takes effect (it is ignored on
- * internal table boxes), keeping unbounded row counts cheap to render.
- * Number columns align purely through Inter's tabular numerals plus
- * figure-space padding done by the client script; no column widths are
- * managed in CSS. The word cell is pinned to `--word-col`, the widest
- * word's measured width (set by the client script on `.frequency`,
- * capped so one pathological token cannot crush the bars), and the bar
- * track flex-grows into all remaining width; with the number cells
- * equal through figure-space padding and the word cell fixed, the
- * grown track is identical in every row, so the bars fill the free
- * width while their lengths stay comparable. Words wider than their
- * cell truncate with an ellipsis on a single line (full word in
- * `title` and `aria-label`), keeping every row at the intrinsic block
- * size containment promises. Bars keep the five-stop grayscale
- * palette: the fill is the strong foreground stop and the track is
- * transparent. The transparent track requires an author background,
- * and any author background or border on `<progress>` switches both
- * engines from the natively themed widget (which honors
- * `accent-color`) to a fallback rendering that ignores it (Chromium
- * paints green-on-gray, Firefox a UA blue plus a blue-tinted
- * border), so the fill stop is pinned on both engines' fill
- * pseudo-elements, `::-webkit-progress-value` and
- * `::-moz-progress-bar`, which style exactly that fallback, and
- * Firefox's tinted fallback border is removed. Catalogued in
- * doc/troubleshooting/progress-element-fill-styling.md; verified in
- * containerized Firefox and Chromium by ./page.browser.test.ts.
+ Results-panel styles for the wc text-stats tool: the six stat tiles
+ and the Frequency ARIA table.
+ 
+ Tiles are flex-wrapped (no CSS grid). Frequency rows are flex rows so
+ per-row `content-visibility: auto` takes effect (it is ignored on
+ internal table boxes), keeping unbounded row counts cheap to render.
+ Number columns align purely through Inter's tabular numerals plus
+ figure-space padding done by the client script; no column widths are
+ managed in CSS. The word cell is pinned to `--word-col`, the widest
+ word's measured width (set by the client script on `.frequency`,
+ capped so one pathological token cannot crush the bars), and the bar
+ track flex-grows into all remaining width; with the number cells
+ equal through figure-space padding and the word cell fixed, the
+ grown track is identical in every row, so the bars fill the free
+ width while their lengths stay comparable. Words wider than their
+ cell truncate with an ellipsis on a single line (full word in
+ `title` and `aria-label`), keeping every row at the intrinsic block
+ size containment promises. Bars keep the five-stop grayscale
+ palette: the fill is the strong foreground stop and the track is
+ transparent. The transparent track requires an author background,
+ and any author background or border on `<progress>` switches both
+ engines from the natively themed widget (which honors
+ `accent-color`) to a fallback rendering that ignores it (Chromium
+ paints green-on-gray, Firefox a UA blue plus a blue-tinted
+ border), so the fill stop is pinned on both engines' fill
+ pseudo-elements, `::-webkit-progress-value` and
+ `::-moz-progress-bar`, which style exactly that fallback, and
+ Firefox's tinted fallback border is removed. Catalogued in
+ doc/troubleshooting/progress-element-fill-styling.md; verified in
+ containerized Firefox and Chromium by ./page.browser.test.ts.
  */
 import {
   cssCompounded,
@@ -48,65 +48,65 @@ import {
 } from './styles-layout.ts';
 
 /**
- * Tile headline-number weight, heavier than body but below bold so the
- * variable font renders it crisply at display size.
+ Tile headline-number weight, heavier than body but below bold so the
+ variable font renders it crisply at display size.
  */
 const WEIGHT_VALUE = 650;
 
 /**
- * Section-heading weight.
+ Section-heading weight.
  */
 const WEIGHT_HEADING = 600;
 
 /**
- * Tile label and tile sub-stat text size in rem, floored at the browser's
- * default 1rem so no on-page text renders smaller than the user's base
- * font size.
+ Tile label and tile sub-stat text size in rem, floored at the browser's
+ default 1rem so no on-page text renders smaller than the user's base
+ font size.
  */
 const LABEL_TEXT_REM = 1;
 
 /**
- * Tile headline-number size in rem.
+ Tile headline-number size in rem.
  */
 const VALUE_SIZE_REM = 2;
 
 /**
- * Estimated frequency-row block size in rem for
- * `contain-intrinsic-block-size`, so skipped rows keep the scrollbar
- * stable.
+ Estimated frequency-row block size in rem for
+ `contain-intrinsic-block-size`, so skipped rows keep the scrollbar
+ stable.
  */
 const ROW_INTRINSIC_REM = 2 + QUARTER;
 
 /**
- * Tile minimum inline size in rem, a floor so a short-content tile (e.g.
- * bytes, with no sub-stat) doesn't shrink to an unreadably narrow card;
- * tiles otherwise size to their own content instead of stretching to
- * match row siblings.
+ Tile minimum inline size in rem, a floor so a short-content tile (e.g.
+ bytes, with no sub-stat) doesn't shrink to an unreadably narrow card;
+ tiles otherwise size to their own content instead of stretching to
+ match row siblings.
  */
 const TILE_MIN_REM = ((2 * 2) * 2)
   + HALF;
 
 /**
- * Full-length percentage.
+ Full-length percentage.
  */
 const FULL_PERCENT = 100;
 
 /**
- * Bar track minimum inline size in rem, a floor so bars stay legible
- * when a long word column squeezes a narrow row; below it the word
- * cell shrinks and wraps instead.
+ Bar track minimum inline size in rem, a floor so bars stay legible
+ when a long word column squeezes a narrow row; below it the word
+ cell shrinks and wraps instead.
  */
 const BAR_TRACK_MIN_REM = 2 + 2;
 
 /**
- * Generates results-panel, tiles, and frequency rules.
- *
- * @returns minified CSS string
- *
- * @example
- * ```ts
- * const css = renderResultsStyles();
- * ```
+ Generates results-panel, tiles, and frequency rules.
+ 
+ @returns minified CSS string
+ 
+ @example
+ ```ts
+ const css = renderResultsStyles();
+ ```
  */
 export function renderResultsStyles(): string {
   return [

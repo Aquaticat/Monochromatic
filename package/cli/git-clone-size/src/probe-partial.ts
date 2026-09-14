@@ -8,17 +8,17 @@ import {
 import { spawnResult, } from './spawn.ts';
 
 /**
- * Sentinel returned by {@link partialCommitCount} when tree:0 cloning is unsupported.
+ Sentinel returned by {@link partialCommitCount} when tree:0 cloning is unsupported.
  */
 export const NO_TREE0: unique symbol = Symbol('git-clone-size/tree-zero-partial-clone-unsupported',);
 
 /**
- * Sentinel returned by {@link partialChurn} when blobless cloning is unsupported.
+ Sentinel returned by {@link partialChurn} when blobless cloning is unsupported.
  */
 export const NO_CHURN: unique symbol = Symbol('git-clone-size/blobless-partial-clone-churn-unavailable',);
 
 /**
- * Commit count from a commits-only partial clone, with a lower-bound flag.
+ Commit count from a commits-only partial clone, with a lower-bound flag.
  */
 export type CommitCountResult = {
   readonly count: number;
@@ -26,9 +26,9 @@ export type CommitCountResult = {
 };
 
 /**
- * Churn signal from a blobless partial clone: distinct historical blob/tree
- * versions carrying a path, versus files at the tip. Approximate (the listing
- * counts trees alongside blobs), so downstream weights it low with a wide band.
+ Churn signal from a blobless partial clone: distinct historical blob/tree
+ versions carrying a path, versus files at the tip. Approximate (the listing
+ counts trees alongside blobs), so downstream weights it low with a wide band.
  */
 export type ChurnResult = {
   readonly distinctPathObjects: number;
@@ -36,23 +36,23 @@ export type ChurnResult = {
 };
 
 /**
- * Commit count via a `--filter=tree:0` partial clone (commits only, no trees or
- * blobs), then `git rev-list --count --all`. Returns undefined when the server
- * lacks partial-clone support, so the orchestrator falls back to deepen or host
- * API rather than refusing.
- *
- * @param url - remote clone URL
- *
- * @param dest - temp directory the bare clone is created inside
- *
- * @param signal - abort signal enforcing the wall-clock budget
- *
- * @returns commit count, or {@link NO_TREE0} when the filtered clone is unsupported
- *
- * @example
- * ```ts
- * const n = await partialCommitCount({ url, dest: tmp.path });
- * ```
+ Commit count via a `--filter=tree:0` partial clone (commits only, no trees or
+ blobs), then `git rev-list --count --all`. Returns undefined when the server
+ lacks partial-clone support, so the orchestrator falls back to deepen or host
+ API rather than refusing.
+ 
+ @param url - remote clone URL
+ 
+ @param dest - temp directory the bare clone is created inside
+ 
+ @param signal - abort signal enforcing the wall-clock budget
+ 
+ @returns commit count, or {@link NO_TREE0} when the filtered clone is unsupported
+ 
+ @example
+ ```ts
+ const n = await partialCommitCount({ url, dest: tmp.path });
+ ```
  */
 export async function partialCommitCount(
   {
@@ -66,7 +66,7 @@ export async function partialCommitCount(
   },
 ): Promise<CommitCountResult | typeof NO_TREE0> {
   /**
-   * Tagged logger naming the commit-count probe.
+   Tagged logger naming the commit-count probe.
    */
   const rl = tagged({
     tag: partialCommitCount.name,
@@ -74,14 +74,14 @@ export async function partialCommitCount(
   },);
 
   /**
-   * Bare commits-only clone target.
+   Bare commits-only clone target.
    */
   const clonePath = join(
     dest,
     'tree0.git',
   );
   /**
-   * Result of the commits-only filtered clone.
+   Result of the commits-only filtered clone.
    */
   const clone = await spawnResult({
     signal,
@@ -100,7 +100,7 @@ export async function partialCommitCount(
   }
 
   /**
-   * Captured `rev-list --count --all` output and exit code.
+   Captured `rev-list --count --all` output and exit code.
    */
   const {
     stdout,
@@ -116,7 +116,7 @@ export async function partialCommitCount(
     ],
   },);
   /**
-   * Parsed commit count across all refs.
+   Parsed commit count across all refs.
    */
   const count = Math.trunc(Number(stdout,),);
   if ((exitCode !== 0) || (!Number.isFinite(count,)))
@@ -129,16 +129,16 @@ export async function partialCommitCount(
 }
 
 /**
- * Counts entries with a path in `git rev-list --objects --all` output (blobs and
- * trees across history), as a churn proxy.
- *
- * @param clonePath - bare blobless clone directory
- *
- * @returns number of object lines carrying a path
+ Counts entries with a path in `git rev-list --objects --all` output (blobs and
+ trees across history), as a churn proxy.
+ 
+ @param clonePath - bare blobless clone directory
+ 
+ @returns number of object lines carrying a path
  */
 async function countPathObjects({ clonePath, }: { readonly clonePath: string; },): Promise<number> {
   /**
-   * Captured `rev-list --objects --all` listing and exit code.
+   Captured `rev-list --objects --all` listing and exit code.
    */
   const {
     stdout,
@@ -164,23 +164,23 @@ async function countPathObjects({ clonePath, }: { readonly clonePath: string; },
 }
 
 /**
- * Churn probe via a `--filter=blob:none` partial clone (commits + trees, no blob
- * content). Counts distinct historical path-bearing objects against tip file
- * count. Blob sizes stay unknown without download, so callers combine this with
- * the tip size. Returns undefined when blobless cloning is unsupported.
- *
- * @param url - remote clone URL
- *
- * @param dest - temp directory the bare clone is created inside
- *
- * @param signal - abort signal enforcing the wall-clock budget
- *
- * @returns churn counts, or {@link NO_CHURN} when unsupported
- *
- * @example
- * ```ts
- * const churn = await partialChurn({ url, dest: tmp.path });
- * ```
+ Churn probe via a `--filter=blob:none` partial clone (commits + trees, no blob
+ content). Counts distinct historical path-bearing objects against tip file
+ count. Blob sizes stay unknown without download, so callers combine this with
+ the tip size. Returns undefined when blobless cloning is unsupported.
+ 
+ @param url - remote clone URL
+ 
+ @param dest - temp directory the bare clone is created inside
+ 
+ @param signal - abort signal enforcing the wall-clock budget
+ 
+ @returns churn counts, or {@link NO_CHURN} when unsupported
+ 
+ @example
+ ```ts
+ const churn = await partialChurn({ url, dest: tmp.path });
+ ```
  */
 export async function partialChurn(
   {
@@ -194,7 +194,7 @@ export async function partialChurn(
   },
 ): Promise<ChurnResult | typeof NO_CHURN> {
   /**
-   * Tagged logger naming the churn probe.
+   Tagged logger naming the churn probe.
    */
   const rl = tagged({
     tag: partialChurn.name,
@@ -202,14 +202,14 @@ export async function partialChurn(
   },);
 
   /**
-   * Bare blobless clone target.
+   Bare blobless clone target.
    */
   const clonePath = join(
     dest,
     'blobless.git',
   );
   /**
-   * Result of the blobless filtered clone.
+   Result of the blobless filtered clone.
    */
   const clone = await spawnResult({
     signal,
@@ -228,12 +228,12 @@ export async function partialChurn(
   }
 
   /**
-   * Distinct path-bearing objects across all history.
+   Distinct path-bearing objects across all history.
    */
   const distinctPathObjects = await countPathObjects({ clonePath, },);
 
   /**
-   * Files present at the tip, the churn denominator.
+   Files present at the tip, the churn denominator.
    */
   const tip = await spawnResult({
     command: 'git',
@@ -247,7 +247,7 @@ export async function partialChurn(
     ],
   },);
   /**
-   * Tip file count; at least 1 to avoid a zero denominator.
+   Tip file count; at least 1 to avoid a zero denominator.
    */
   const tipFiles = (tip.exitCode === 0) && (tip.stdout !== '') ? tip.stdout
     .split('\n',)

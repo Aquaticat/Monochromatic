@@ -250,7 +250,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "i/o error: " + e;
             // ```
-            PlayerError::Io(e) => write!(f, "i/o error: {e}"),
+            PlayerError::Io(e) => return write!(f, "i/o error: {e}"),
             // What:     `PlayerError::Decode(e) => write!(f, "decode error: {e}")`.
             //           Same shape as the `Io` arm: match the `Decode` variant, bind
             //           its inner symphonia error to `e`, then `write!` a prefixed
@@ -261,7 +261,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "decode error: " + e;
             // ```
-            PlayerError::Decode(e) => write!(f, "decode error: {e}"),
+            PlayerError::Decode(e) => return write!(f, "decode error: {e}"),
             // What:     `PlayerError::Opus(e) => write!(f, "opus error: {e}")`. Match
             //           the `Opus` variant, bind its inner `opus::Error` to `e`, and
             //           `write!` a prefixed message; `{e}` interpolates the opus
@@ -272,7 +272,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "opus error: " + e;
             // ```
-            PlayerError::Opus(e) => write!(f, "opus error: {e}"),
+            PlayerError::Opus(e) => return write!(f, "opus error: {e}"),
             // What:     `PlayerError::Unsupported(m) => write!(f, "unsupported: {m}")`.
             //           Match the `Unsupported` variant and bind its inner message to
             //           `m`. Because `self` is borrowed, `m` is a `&String` (a
@@ -285,7 +285,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "unsupported: " + m;
             // ```
-            PlayerError::Unsupported(m) => write!(f, "unsupported: {m}"),
+            PlayerError::Unsupported(m) => return write!(f, "unsupported: {m}"),
             // What:     `PlayerError::Audio(m) => write!(f, "audio output error: {m}")`.
             //           Match the `Audio` variant and bind its inner AAudio message
             //           to `m` (a `&String` borrow, as above). The literal prefix is
@@ -298,7 +298,7 @@ impl fmt::Display for PlayerError {
             // ```ts
             // return "audio output error: " + m;
             // ```
-            PlayerError::Audio(m) => write!(f, "audio output error: {m}"),
+            PlayerError::Audio(m) => return write!(f, "audio output error: {m}"),
         }
     }
 }
@@ -354,7 +354,7 @@ impl From<std::io::Error> for PlayerError {
         // ```ts
         // return { kind: "io", cause: e };
         // ```
-        PlayerError::Io(e)
+        return PlayerError::Io(e)
     }
 }
 
@@ -388,7 +388,7 @@ impl From<symphonia::core::errors::Error> for PlayerError {
         // ```ts
         // return { kind: "decode", cause: e };
         // ```
-        PlayerError::Decode(e)
+        return PlayerError::Decode(e)
     }
 }
 
@@ -420,6 +420,6 @@ impl From<opus::Error> for PlayerError {
         // ```ts
         // return { kind: "opus", cause: e };
         // ```
-        PlayerError::Opus(e)
+        return PlayerError::Opus(e)
     }
 }

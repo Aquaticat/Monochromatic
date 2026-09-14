@@ -1,24 +1,24 @@
 /**
- * Zoom state and CSS transform application for the doodle widget canvas.
- *
- * Tracks zoom scale and pan offset. Zoom is purely visual via CSS
- * transforms on a wrapper element; content coordinates are unchanged.
+ Zoom state and CSS transform application for the doodle widget canvas.
+ 
+ Tracks zoom scale and pan offset. Zoom is purely visual via CSS
+ transforms on a wrapper element; content coordinates are unchanged.
  */
 
 //region Constants
 
 /**
- * Minimum zoom scale (no zoom-out past original size)
+ Minimum zoom scale (no zoom-out past original size)
  */
 const MIN_SCALE = 1;
 
 /**
- * Maximum zoom scale
+ Maximum zoom scale
  */
 const MAX_SCALE = 8;
 
 /**
- * Zoom step multiplier per click
+ Zoom step multiplier per click
  */
 const ZOOM_STEP = 2;
 
@@ -27,22 +27,22 @@ const ZOOM_STEP = 2;
 //region State
 
 /**
- * Zoom and pan state container.
- *
- * Stored as object properties so module-root state stays in a `const`
- * container (`no-module-root-let` would otherwise reject top-level `let`).
+ Zoom and pan state container.
+ 
+ Stored as object properties so module-root state stays in a `const`
+ container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const zoomState: {
   /**
-   * Current zoom scale (1 = no zoom)
+   Current zoom scale (1 = no zoom)
    */
   scale: number;
   /**
-   * Pan offset X in CSS pixels relative to container
+   Pan offset X in CSS pixels relative to container
    */
   panX: number;
   /**
-   * Pan offset Y in CSS pixels relative to container
+   Pan offset Y in CSS pixels relative to container
    */
   panY: number;
 } = {
@@ -54,59 +54,59 @@ const zoomState: {
 //endregion State
 
 /**
- * Returns the current zoom scale.
- *
- * @returns zoom scale where 1 means no zoom
- *
- * @example
- * ```ts
- * const s = getScale();
- * ```
+ Returns the current zoom scale.
+ 
+ @returns zoom scale where 1 means no zoom
+ 
+ @example
+ ```ts
+ const s = getScale();
+ ```
  */
 export function getScale(): number {
   return zoomState.scale;
 }
 
 /**
- * Returns the current pan X offset.
- *
- * @returns pan X in CSS pixels
- *
- * @example
- * ```ts
- * const x = getPanX();
- * ```
+ Returns the current pan X offset.
+ 
+ @returns pan X in CSS pixels
+ 
+ @example
+ ```ts
+ const x = getPanX();
+ ```
  */
 export function getPanX(): number {
   return zoomState.panX;
 }
 
 /**
- * Returns the current pan Y offset.
- *
- * @returns pan Y in CSS pixels
- *
- * @example
- * ```ts
- * const y = getPanY();
- * ```
+ Returns the current pan Y offset.
+ 
+ @returns pan Y in CSS pixels
+ 
+ @example
+ ```ts
+ const y = getPanY();
+ ```
  */
 export function getPanY(): number {
   return zoomState.panY;
 }
 
 /**
- * Applies the current zoom and pan as a CSS transform on the zoom layer.
- *
- * Clears the transform entirely at default zoom (scale 1) to
- * avoid unnecessary compositing layers.
- *
- * @param zoomLayer - container element for zoomed content
- *
- * @example
- * ```ts
- * applyZoomTransform(zoomLayer);
- * ```
+ Applies the current zoom and pan as a CSS transform on the zoom layer.
+ 
+ Clears the transform entirely at default zoom (scale 1) to
+ avoid unnecessary compositing layers.
+ 
+ @param zoomLayer - container element for zoomed content
+ 
+ @example
+ ```ts
+ applyZoomTransform(zoomLayer);
+ ```
  */
 export function applyZoomTransform(zoomLayer: HTMLElement,): void {
   if (zoomState.scale
@@ -124,16 +124,16 @@ export function applyZoomTransform(zoomLayer: HTMLElement,): void {
 }
 
 /**
- * Clamps pan offset so content always covers the container viewport.
- *
- * @param containerWidth - container width in CSS pixels
- *
- * @param containerHeight - container height in CSS pixels
- *
- * @example
- * ```ts
- * clampPan({ containerWidth: 800, containerHeight: 600 });
- * ```
+ Clamps pan offset so content always covers the container viewport.
+ 
+ @param containerWidth - container width in CSS pixels
+ 
+ @param containerHeight - container height in CSS pixels
+ 
+ @example
+ ```ts
+ clampPan({ containerWidth: 800, containerHeight: 600 });
+ ```
  */
 export function clampPan({
   containerWidth,
@@ -167,16 +167,16 @@ export function clampPan({
 }
 
 /**
- * Sets the pan offset directly, called by the pan gesture module.
- *
- * @param x - new pan X offset in CSS pixels
- *
- * @param y - new pan Y offset in CSS pixels
- *
- * @example
- * ```ts
- * setPan({ x: 10, y: 20 });
- * ```
+ Sets the pan offset directly, called by the pan gesture module.
+ 
+ @param x - new pan X offset in CSS pixels
+ 
+ @param y - new pan Y offset in CSS pixels
+ 
+ @example
+ ```ts
+ setPan({ x: 10, y: 20 });
+ ```
  */
 export function setPan({
   x,
@@ -190,27 +190,27 @@ export function setPan({
 }
 
 /**
- * Zooms in or out centered on a screen-space point relative to the container.
- *
- * Adjusts pan offset so the content point under the cursor stays
- * stationary after the scale change.
- *
- * @param screenX - pointer X relative to container left edge
- *
- * @param screenY - pointer Y relative to container top edge
- *
- * @param direction - 'in' to zoom in, 'out' to zoom out
- *
- * @param containerWidth - container width in CSS pixels
- *
- * @param containerHeight - container height in CSS pixels
- *
- * @param zoomLayer - element to apply CSS transform to
- *
- * @example
- * ```ts
- * zoomAt({ screenX: 400, screenY: 300, direction: 'in', containerWidth: 800, containerHeight: 600, zoomLayer });
- * ```
+ Zooms in or out centered on a screen-space point relative to the container.
+ 
+ Adjusts pan offset so the content point under the cursor stays
+ stationary after the scale change.
+ 
+ @param screenX - pointer X relative to container left edge
+ 
+ @param screenY - pointer Y relative to container top edge
+ 
+ @param direction - 'in' to zoom in, 'out' to zoom out
+ 
+ @param containerWidth - container width in CSS pixels
+ 
+ @param containerHeight - container height in CSS pixels
+ 
+ @param zoomLayer - element to apply CSS transform to
+ 
+ @example
+ ```ts
+ zoomAt({ screenX: 400, screenY: 300, direction: 'in', containerWidth: 800, containerHeight: 600, zoomLayer });
+ ```
  */
 export function zoomAt(
   {
@@ -230,11 +230,11 @@ export function zoomAt(
   },
 ): void {
   /**
-   * Direction-aware multiplier so a single formula handles both zoom in and zoom out.
+   Direction-aware multiplier so a single formula handles both zoom in and zoom out.
    */
   const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
   /**
-   * Clamped destination scale so the gesture cannot push past the configured bounds.
+   Clamped destination scale so the gesture cannot push past the configured bounds.
    */
   const newScale = Math.max(
     MIN_SCALE,
@@ -248,7 +248,7 @@ export function zoomAt(
     .scale)
     return;
   /**
-   * Ratio between new and old scale for pan adjustment
+   Ratio between new and old scale for pan adjustment
    */
   const actualFactor = newScale / zoomState
     .scale;
@@ -265,14 +265,14 @@ export function zoomAt(
 }
 
 /**
- * Resets zoom to 1x with no pan offset.
- *
- * @param zoomLayer - element to clear CSS transform from
- *
- * @example
- * ```ts
- * resetZoom(zoomLayer);
- * ```
+ Resets zoom to 1x with no pan offset.
+ 
+ @param zoomLayer - element to clear CSS transform from
+ 
+ @example
+ ```ts
+ resetZoom(zoomLayer);
+ ```
  */
 export function resetZoom(zoomLayer: HTMLElement,): void {
   zoomState.scale = 1;
@@ -282,18 +282,18 @@ export function resetZoom(zoomLayer: HTMLElement,): void {
 }
 
 /**
- * Re-clamps pan after a container resize and reapplies the transform.
- *
- * @param containerWidth - new container width in CSS pixels
- *
- * @param containerHeight - new container height in CSS pixels
- *
- * @param zoomLayer - element to apply CSS transform to
- *
- * @example
- * ```ts
- * refreshZoomTransform({ containerWidth: 800, containerHeight: 600, zoomLayer });
- * ```
+ Re-clamps pan after a container resize and reapplies the transform.
+ 
+ @param containerWidth - new container width in CSS pixels
+ 
+ @param containerHeight - new container height in CSS pixels
+ 
+ @param zoomLayer - element to apply CSS transform to
+ 
+ @example
+ ```ts
+ refreshZoomTransform({ containerWidth: 800, containerHeight: 600, zoomLayer });
+ ```
  */
 export function refreshZoomTransform({
   containerWidth,

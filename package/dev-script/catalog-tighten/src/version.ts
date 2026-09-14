@@ -1,8 +1,8 @@
 /**
- * Barrel re-export for version utilities.
- *
- * Semver parsing lives in `version-parse.ts`;
- * installed-version resolution lives in `version-resolve.ts`.
+ Barrel re-export for version utilities.
+ 
+ Semver parsing lives in `version-parse.ts`;
+ installed-version resolution lives in `version-resolve.ts`.
  */
 
 export {

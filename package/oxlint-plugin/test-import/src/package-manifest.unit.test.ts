@@ -12,20 +12,20 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Reduces a manifest object to the targets it declares.
- *
- * The production entry takes text because parsing is what keeps the parsed tree
- * from crossing a function boundary; tests state their fixtures as objects and
- * serialize here so each case stays readable.
- *
- * @param manifest - manifest fixture to serialize and read
- *
- * @returns declared shipping targets
- *
- * @example
- * ```ts
- * targetsOf({ name: '@scope/pkg', main: './dist/final/node/index.mjs' });
- * ```
+ Reduces a manifest object to the targets it declares.
+ 
+ The production entry takes text because parsing is what keeps the parsed tree
+ from crossing a function boundary; tests state their fixtures as objects and
+ serialize here so each case stays readable.
+ 
+ @param manifest - manifest fixture to serialize and read
+ 
+ @returns declared shipping targets
+ 
+ @example
+ ```ts
+ targetsOf({ name: '@scope/pkg', main: './dist/final/node/index.mjs' });
+ ```
  */
 const targetsOf = (manifest: unknown,): readonly string[] => {
   const facts = manifestFacts({ text: JSON.stringify(manifest,), },);

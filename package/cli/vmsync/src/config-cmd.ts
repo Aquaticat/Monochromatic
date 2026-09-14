@@ -1,7 +1,7 @@
 /**
- * Config command; updates boot settings for a managed VM.
- *
- * @module
+ Config command; updates boot settings for a managed VM.
+ 
+ @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -11,30 +11,30 @@ import {
 } from './config.ts';
 
 /**
- * Logger root for vmsync after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for vmsync after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Updates the boot settings on a named VM's {@link VmsyncConfig}.
- *
- * @param name - VM name
- *
- * @param memory - New memory allocation (e.g. "8G"), or undefined to keep current
- *
- * @param cpus - New CPU count, or undefined to keep current
- *
- * @throws Error when the VM config is missing
- *
- * @example
- * ```ts
- * await updateConfig({ name: 'alpine', memory: '8G', cpus: 8 });
- * ```
+ Updates the boot settings on a named VM's {@link VmsyncConfig}.
+ 
+ @param name - VM name
+ 
+ @param memory - New memory allocation (e.g. "8G"), or undefined to keep current
+ 
+ @param cpus - New CPU count, or undefined to keep current
+ 
+ @throws Error when the VM config is missing
+ 
+ @example
+ ```ts
+ await updateConfig({ name: 'alpine', memory: '8G', cpus: 8 });
+ ```
  */
 export async function updateConfig(
   {
@@ -48,7 +48,7 @@ export async function updateConfig(
   },
 ): Promise<void> {
   /**
-   * Tagged logger so config-update entries are scoped to `updateConfig` in the output.
+   Tagged logger so config-update entries are scoped to `updateConfig` in the output.
    */
   const rl = tagged({
     tag: updateConfig.name,
@@ -57,12 +57,12 @@ export async function updateConfig(
   rl.info(`updating config for "${name}"`,);
 
   /**
-   * Current configuration to modify.
+   Current configuration to modify.
    */
   const config = await readConfig(name,);
 
   /**
-   * Updated boot config with overrides applied.
+   Updated boot config with overrides applied.
    */
   const updatedBoot = {
     memory: memory
@@ -76,7 +76,7 @@ export async function updateConfig(
   };
 
   /**
-   * New config with updated boot settings.
+   New config with updated boot settings.
    */
   const updatedConfig = {
     ...config,

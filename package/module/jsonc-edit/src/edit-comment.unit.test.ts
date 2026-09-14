@@ -1,9 +1,9 @@
 /**
- * Unit tests for the comment-transform branches: descending into array elements
- * and the right record entry, missing-path and type errors, duplicate-key
- * last-wins for both value and key comments, and targeting one key among many.
- *
- * @module
+ Unit tests for the comment-transform branches: descending into array elements
+ and the right record entry, missing-path and type errors, duplicate-key
+ last-wins for both value and key comments, and targeting one key among many.
+ 
+ @module
  */
 
 import {
@@ -12,15 +12,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   COMMENT_ABSENT,
   jsoncGetComment,
   jsoncGetKeyComment,
   jsoncSetComment,
   jsoncSetKeyComment,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 
@@ -31,6 +31,11 @@ const dup = (): ReturnType<typeof parseJsoncEdit> =>
   parseJsoncEdit({ source: asJsonc('{ "a": 1, "a": 2 } // c',), },);
 
 const block = { type: 'block', text: ' e ', } as const;
+
+/**
+ Fractional segment used to verify array indexes must be integers.
+ */
+const HALF_INDEX = 1 / 2;
 
 await describe({
   name: 'edit-comment branches',
@@ -104,10 +109,10 @@ await describe({
           },
         },),
         it({
-          name: 'throws on an out-of-range, boundary, or negative array index',
+          name: 'throws on an out-of-range, boundary, negative, or fractional array index',
           fn: async () => {
             const state = parseJsoncEdit({ source: asJsonc('{ "list": [1, 2] } // c',), },);
-            for (const index of [5, 2, -1,]) {
+            for (const index of [5, 2, -1, HALF_INDEX,]) {
               expect(() => {
                 jsoncSetComment({ state, path: ['list', index,], comment: block, },);
               },).toThrow('no JSONC node at path',);

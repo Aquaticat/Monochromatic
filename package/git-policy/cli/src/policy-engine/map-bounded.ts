@@ -1,24 +1,24 @@
 /**
- * Deterministic bounded asynchronous mapping.
- *
- * @module
+ Deterministic bounded asynchronous mapping.
+ 
+ @module
  */
 
 /**
- * Asynchronously maps values through deterministic lanes while preserving input order.
- *
- * @param values - ordered input values
- *
- * @param concurrency - maximum active asynchronous lanes
- *
- * @param map - mapper receiving one value and its stable input index
- *
- * @returns mapped values in input order
- *
- * @example
- * ```ts
- * await mapBounded({ values: ['a'], concurrency: 1, map: async ({ value }) => value.length });
- * ```
+ Asynchronously maps values through deterministic lanes while preserving input order.
+ 
+ @param values - ordered input values
+ 
+ @param concurrency - maximum active asynchronous lanes
+ 
+ @param map - mapper receiving one value and its stable input index
+ 
+ @returns mapped values in input order
+ 
+ @example
+ ```ts
+ await mapBounded({ values: ['a'], concurrency: 1, map: async ({ value }) => value.length });
+ ```
  */
 export async function mapBounded<const Value, Result>({
   values,
@@ -35,7 +35,7 @@ export async function mapBounded<const Value, Result>({
   if ((concurrency < 1) || (!Number.isInteger(concurrency)))
     throw new TypeError('Bounded map concurrency must be a positive integer.',);
   /**
-   * Active lane count bounded by configured cap and input count.
+   Active lane count bounded by configured cap and input count.
    */
   const laneCount = Math.min(
     concurrency,
@@ -44,14 +44,14 @@ export async function mapBounded<const Value, Result>({
   if (laneCount === 0)
     return [];
   /**
-   * Indexed input retaining value capability under readonly containing properties.
+   Indexed input retaining value capability under readonly containing properties.
    */
   type IndexedValue = Readonly<{
     index: number;
     value: Value;
   }>;
   /**
-   * Indexed value lanes retaining deterministic input positions.
+   Indexed value lanes retaining deterministic input positions.
    */
   const lanes = Array.from(
     { length: laneCount, },
@@ -73,13 +73,13 @@ export async function mapBounded<const Value, Result>({
     },
   );
   /**
-   * Independently mapped lanes with asynchronous work sequenced per lane.
+   Independently mapped lanes with asynchronous work sequenced per lane.
    */
   const loadedLanes = await Promise.all(lanes.map(async function mapLane(
     lane: readonly IndexedValue[],
   ) {
     /**
-     * Results accumulated in current lane order.
+     Results accumulated in current lane order.
      */
     const loaded: Readonly<{
       index: number;

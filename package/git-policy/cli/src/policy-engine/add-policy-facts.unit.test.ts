@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
   createAddPolicyFacts,
@@ -29,11 +29,11 @@ type RepositoryFixture = Readonly<{
 }>;
 
 /**
- * Runs real Git in fixture repository.
- *
- * @param repository - fixture repository root
- *
- * @param args - exact Git arguments
+ Runs real Git in fixture repository.
+ 
+ @param repository - fixture repository root
+ 
+ @param args - exact Git arguments
  */
 async function runGit({
   repository,
@@ -50,9 +50,9 @@ async function runGit({
 }
 
 /**
- * Creates configured repository with one baseline commit.
- *
- * @returns disposable committed repository
+ Creates configured repository with one baseline commit.
+ 
+ @returns disposable committed repository
  */
 async function createRepository(): Promise<RepositoryFixture> {
   /** Disposable repository root. */
@@ -72,13 +72,13 @@ async function createRepository(): Promise<RepositoryFixture> {
 }
 
 /**
- * Creates scoped add facts and returns staged candidate paths.
- *
- * @param repository - fixture repository root
- *
- * @param addArguments - arguments after the add subcommand
- *
- * @returns sorted candidate paths this add staged
+ Creates scoped add facts and returns staged candidate paths.
+ 
+ @param repository - fixture repository root
+ 
+ @param addArguments - arguments after the add subcommand
+ 
+ @returns sorted candidate paths this add staged
  */
 async function addFactPaths({
   repository,

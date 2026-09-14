@@ -1,37 +1,37 @@
 /**
- * Perceptual image difference comparison using multimodal embeddings
- * from Voyage AI and Google Gemini.
- *
- * By default, all available providers are called concurrently with their
- * latest models. Use the `provider` config field to select a specific backend.
- *
- * @example
- * ```ts
- * import { compareAll } from '@monochromatic-dev/module-image-diff';
- *
- * // Compare using all providers (Voyage + Gemini)
- * const results = await compareAll({
- *   imageA: { path: './before.png' },
- *   imageB: { path: './after.png' },
- * });
- * for (const { provider, result } of results) {
- *   console.log(`${provider}: similarity=${result.similarity}`);
- * }
- * ```
- *
- * @example
- * ```ts
- * import { compare } from '@monochromatic-dev/module-image-diff';
- *
- * // Compare using a specific provider
- * const result = await compare({
- *   imageA: { path: './before.png' },
- *   imageB: { path: './after.png' },
- *   config: { provider: 'gemini' },
- * });
- * ```
- *
- * @packageDocumentation
+ Perceptual image difference comparison using multimodal embeddings
+ from Voyage AI and Google Gemini.
+ 
+ By default, all available providers are called concurrently with their
+ latest models. Use the `provider` config field to select a specific backend.
+ 
+ @example
+ ```ts
+ import { compareAll } from '@monochromatic-dev/module-image-diff';
+ 
+ // Compare using all providers (Voyage + Gemini)
+ const results = await compareAll({
+   imageA: { path: './before.png' },
+   imageB: { path: './after.png' },
+ });
+ for (const { provider, result } of results) {
+   console.log(`${provider}: similarity=${result.similarity}`);
+ }
+ ```
+ 
+ @example
+ ```ts
+ import { compare } from '@monochromatic-dev/module-image-diff';
+ 
+ // Compare using a specific provider
+ const result = await compare({
+   imageA: { path: './before.png' },
+   imageB: { path: './after.png' },
+   config: { provider: 'gemini' },
+ });
+ ```
+ 
+ @packageDocumentation
  */
 
 export { compareAll, } from './client.multi.compare.ts';

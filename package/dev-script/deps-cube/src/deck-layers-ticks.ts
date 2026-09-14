@@ -1,16 +1,16 @@
 /**
- * Tick-mark PathLayer factory.
- *
- * Split out from {@link ./deck-layers.ts} so each file stays under the
- * 300-line cap. Imports the shared axis-geometry helper
- * ({@link computeAxisGeometry}) and {@link PathDatum} accessor from
- * `deck-layers.ts`.
- *
- * @example
- * ```ts
- * import { buildAxisTickLayer } from './deck-layers-ticks.ts';
- * const ticks = buildAxisTickLayer({ bounds, chrome: detectScheme() });
- * ```
+ Tick-mark PathLayer factory.
+ 
+ Split out from {@link ./deck-layers.ts} so each file stays under the
+ 300-line cap. Imports the shared axis-geometry helper
+ ({@link computeAxisGeometry}) and {@link PathDatum} accessor from
+ `deck-layers.ts`.
+ 
+ @example
+ ```ts
+ import { buildAxisTickLayer } from './deck-layers-ticks.ts';
+ const ticks = buildAxisTickLayer({ bounds, chrome: detectScheme() });
+ ```
  */
 
 import type { Layer, } from '@deck.gl/core';
@@ -27,15 +27,15 @@ import type { ChromeColors, } from './script/scheme.ts';
 //region Constants
 
 /**
- * Axis tick line width in pixels.
+ Axis tick line width in pixels.
  */
 const AXIS_TICK_WIDTH = 1.5;
 /**
- * Number of tick marks per axis (evenly spaced including endpoints).
+ Number of tick marks per axis (evenly spaced including endpoints).
  */
 const TICK_COUNT = 5;
 /**
- * Tick mark length, as a fraction of the axis extent.
+ Tick mark length, as a fraction of the axis extent.
  */
 const TICK_LENGTH_FRACTION = 0.02;
 
@@ -44,23 +44,23 @@ const TICK_LENGTH_FRACTION = 0.02;
 //region Tick marks
 
 /**
- * Builds the tick-marks PathLayer: short perpendicular segments at
- * evenly spaced intervals along each axis, derived from
- * {@link computeAxisGeometry}.
- *
- * @param bounds - Scene bounds.
- *
- * @param chrome - Theme-aware colour palette.
- *
- * @returns PathLayer with `3 * (TICK_COUNT + 1)` tick segments.
- *
- * @example
- * ```ts
- * const ticks = buildAxisTickLayer({
- *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
- *   chrome: detectScheme(),
- * });
- * ```
+ Builds the tick-marks PathLayer: short perpendicular segments at
+ evenly spaced intervals along each axis, derived from
+ {@link computeAxisGeometry}.
+ 
+ @param bounds - Scene bounds.
+ 
+ @param chrome - Theme-aware colour palette.
+ 
+ @returns PathLayer with `3 * (TICK_COUNT + 1)` tick segments.
+ 
+ @example
+ ```ts
+ const ticks = buildAxisTickLayer({
+   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+   chrome: detectScheme(),
+ });
+ ```
  */
 export function buildAxisTickLayer(
   {
@@ -72,23 +72,23 @@ export function buildAxisTickLayer(
   },
 ): Layer {
   /**
-   * Cached axis geometry; tick positions and lengths derive from its extents.
+   Cached axis geometry; tick positions and lengths derive from its extents.
    */
   const g = computeAxisGeometry({
     bounds,
   },);
   /**
-   * Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent.
+   Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent.
    */
   const tx = g.dx
     * TICK_LENGTH_FRACTION;
   /**
-   * Tick mark length on the Y axis in world units.
+   Tick mark length on the Y axis in world units.
    */
   const ty = g.dy
     * TICK_LENGTH_FRACTION;
   /**
-   * `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks.
+   `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks.
    */
   const ts: readonly number[] = Array.from(
     {
@@ -102,23 +102,23 @@ export function buildAxisTickLayer(
     },
   );
   /**
-   * Flattened tick paths: three perpendicular segments per `t` value, one per axis.
+   Flattened tick paths: three perpendicular segments per `t` value, one per axis.
    */
   const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
     /**
-     * World-space X coordinate of the tick on the X axis for parameter `t`.
+     World-space X coordinate of the tick on the X axis for parameter `t`.
      */
     const xAt = g.xMin
       + (g.dx
         * t);
     /**
-     * World-space Y coordinate of the tick on the Y axis for parameter `t`.
+     World-space Y coordinate of the tick on the Y axis for parameter `t`.
      */
     const yAt = g.yMin
       + (g.dy
         * t);
     /**
-     * World-space Z coordinate of the tick on the Z axis for parameter `t`.
+     World-space Z coordinate of the tick on the Z axis for parameter `t`.
      */
     const zAt = g.zMin
       + (g.dz

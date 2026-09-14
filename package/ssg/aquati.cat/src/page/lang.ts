@@ -1,8 +1,8 @@
 /**
- * Language landing page.
- *
- * Shows the site description as heading and a grid of all posts
- * available in the given language.
+ Language landing page.
+ 
+ Shows the site description as heading and a grid of all posts
+ available in the given language.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
@@ -16,20 +16,20 @@ import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../template/layout.ts';
 
 /**
- * Generates the language landing page HTML.
- *
- * @param lang - language code
- *
- * @param posts - posts filtered to this language
- *
- * @param canonicalUrl - full canonical URL for this page
- *
- * @returns complete HTML document for the language landing page
- *
- * @example
- * ```ts
- * const html = langPage({ lang: 'en', posts: englishPosts, canonicalUrl: 'https://aquati.cat/en/' });
- * ```
+ Generates the language landing page HTML.
+ 
+ @param lang - language code
+ 
+ @param posts - posts filtered to this language
+ 
+ @param canonicalUrl - full canonical URL for this page
+ 
+ @returns complete HTML document for the language landing page
+ 
+ @example
+ ```ts
+ const html = langPage({ lang: 'en', posts: englishPosts, canonicalUrl: 'https://aquati.cat/en/' });
+ ```
  */
 export function langPage(
   {
@@ -43,7 +43,7 @@ export function langPage(
   },
 ): string {
   /**
-   * Page heading mirrors the site description for the language landing page.
+   Page heading mirrors the site description for the language landing page.
    */
   const title = i18n.label(
     lang,
@@ -51,7 +51,7 @@ export function langPage(
   );
 
   /**
-   * Main element tree composed before the page layout wraps it with `<head>` and friends.
+   Main element tree composed before the page layout wraps it with `<head>` and friends.
    */
   const content = h({
     tag: 'main',

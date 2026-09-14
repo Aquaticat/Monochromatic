@@ -1,7 +1,7 @@
 /**
- * Advisor model selection helper.
- *
- * @module
+ Advisor model selection helper.
+ 
+ @module
  */
 
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
@@ -9,6 +9,10 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
+import {
+  assertAdvisorEndpointOutputCapacity,
+  requireAdvisorScopeWithOutputCapacity,
+} from './output-eligibility.ts';
 import type {
   AdvisorConfig,
   AdvisorModelSelection,
@@ -18,7 +22,7 @@ import type {
 //region Types
 
 /**
- * Current primary model identity used to keep Advisor independent by default.
+ Current primary model identity used to keep Advisor independent by default.
  */
 export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['model'], 'provider' | 'id'>;
 
@@ -27,27 +31,27 @@ export type CurrentMainModelIdentity = Pick<AdvisorModelSelection['selected']['m
 //region Public API
 
 /**
- * Select explicit model or default highest expected-cost non-current model.
- *
- * @param scope - effective scoped model set
- *
- * @param requestedSlug - optional requested model slug
- *
- * @param config - runtime Advisor config
- *
- * @param estimatedInputTokens - estimated Advisor input tokens
- *
- * @param modelRegistry - pi model registry
- *
- * @param currentMainModel - active primary model to avoid for default selection when possible
- *
- * @returns selected Advisor model
- *
- *
- * @example
- * ```typescript
- * selectAdvisorModel({ scope, config, estimatedInputTokens, modelRegistry, currentMainModel });
- * ```
+ Select explicit model or default highest expected-cost non-current model.
+ 
+ @param scope - effective scoped model set
+ 
+ @param requestedSlug - optional requested model slug
+ 
+ @param config - runtime Advisor config
+ 
+ @param estimatedInputTokens - estimated Advisor input tokens
+ 
+ @param modelRegistry - pi model registry
+ 
+ @param currentMainModel - active primary model to avoid for default selection when possible
+ 
+ @returns selected Advisor model
+ 
+ 
+ @example
+ ```typescript
+ selectAdvisorModel({ scope, config, estimatedInputTokens, modelRegistry, currentMainModel });
+ ```
  */
 export function selectAdvisorModel(
   {
@@ -68,23 +72,42 @@ export function selectAdvisorModel(
 ): AdvisorModelSelection {
   if ((requestedSlug !== undefined) && (requestedSlug.trim()
     !== '')) {
-    return resolveAdvisorRequestedModel({
+    /**
+     Explicit model resolved against authenticated scope before output eligibility validation.
+     */
+    const selection = resolveAdvisorRequestedModel({
       scope,
       requestedSlug,
       modelRegistry,
     },);
+    assertAdvisorEndpointOutputCapacity({
+      endpointSlug: selection.selected
+        .canonicalSlug,
+      advertisedOutputTokens: selection.selected
+        .model
+        .maxTokens,
+      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+    },);
+    return selection;
   }
 
   /**
-   * Default-selection scope with current main model removed when alternatives exist.
+   Scoped models whose endpoints advertise configured output capacity.
+   */
+  const eligibleScope = requireAdvisorScopeWithOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+  },);
+  /**
+   Default-selection scope with current main model removed when alternatives exist.
    */
   const defaultScope = scopeAvoidingCurrentMainModel({
-    scope,
+    scope: eligibleScope,
     ...(currentMainModel
       === undefined ? {} : { currentMainModel, }),
   },);
   /**
-   * Default model selection for empty params.
+   Default model selection for empty params.
    */
   const defaultSelection = selectDefaultModel({
     scope: defaultScope,
@@ -98,18 +121,18 @@ export function selectAdvisorModel(
 }
 
 /**
- * Return scope entries excluding current main model when at least one alternative remains.
- *
- * @param scope - effective scoped model set
- *
- * @param currentMainModel - active primary model to avoid for default Advisor selection
- *
- * @returns original scope or same metadata with current main model omitted
- *
- * @example
- * ```typescript
- * scopeAvoidingCurrentMainModel({ scope, currentMainModel });
- * ```
+ Return scope entries excluding current main model when at least one alternative remains.
+ 
+ @param scope - effective scoped model set
+ 
+ @param currentMainModel - active primary model to avoid for default Advisor selection
+ 
+ @returns original scope or same metadata with current main model omitted
+ 
+ @example
+ ```typescript
+ scopeAvoidingCurrentMainModel({ scope, currentMainModel });
+ ```
  */
 export function scopeAvoidingCurrentMainModel(
   {
@@ -124,11 +147,11 @@ export function scopeAvoidingCurrentMainModel(
     return scope;
 
   /**
-   * Canonical slug for active primary model.
+   Canonical slug for active primary model.
    */
   const currentMainModelSlug = `${currentMainModel.provider}/${currentMainModel.id}`;
   /**
-   * Scoped entries that differ from active primary model.
+   Scoped entries that differ from active primary model.
    */
   const alternativeEntries: EffectiveModelScope['entries'][number][] = [];
   for (const entry of scope.entries) {
@@ -138,23 +161,23 @@ export function scopeAvoidingCurrentMainModel(
   }
 
   /**
-   * Count of non-current default candidates.
+   Count of non-current default candidates.
    */
   const alternativeEntryCount = alternativeEntries.length;
   /**
-   * Whether no non-current default candidate exists.
+   Whether no non-current default candidate exists.
    */
   const noAlternativeEntries = alternativeEntryCount === 0;
   /**
-   * Original scoped entries before default-candidate filtering.
+   Original scoped entries before default-candidate filtering.
    */
   const { entries: scopedEntries, } = scope;
   /**
-   * Count of original scoped entries.
+   Count of original scoped entries.
    */
   const scopedEntryCount = scopedEntries.length;
   /**
-   * Whether active primary model was absent from scope.
+   Whether active primary model was absent from scope.
    */
   const currentMainModelAbsentFromScope = alternativeEntryCount === scopedEntryCount;
   if (noAlternativeEntries || currentMainModelAbsentFromScope)

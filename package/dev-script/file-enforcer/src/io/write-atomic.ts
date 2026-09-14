@@ -13,12 +13,12 @@ import { caughtErrorHasCode, } from './error.ts';
 //region Atomic write constants and types
 
 /**
- * Suffix appended to same-directory temp files used for destination replacement.
+ Suffix appended to same-directory temp files used for destination replacement.
  */
 const TEMP_FILE_SUFFIX = '.tmp';
 
 /**
- * Error codes meaning directory fsync is unsupported by platform or filesystem.
+ Error codes meaning directory fsync is unsupported by platform or filesystem.
  */
 const UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES = [
   'EACCES',
@@ -30,17 +30,17 @@ const UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES = [
 ] as const;
 
 /**
- * Writes content to same-directory temp file before atomic rename.
+ Writes content to same-directory temp file before atomic rename.
  */
 export type AtomicTempFileWriter = (
   args: {
     /**
-     * Same-directory temp path that will be renamed into place after writing.
+     Same-directory temp path that will be renamed into place after writing.
      */
     readonly tempPath: string;
 
     /**
-     * Destination content to persist.
+     Destination content to persist.
      */
     readonly content: string;
   },
@@ -51,16 +51,16 @@ export type AtomicTempFileWriter = (
 //region File descriptor durability helpers
 
 /**
- * Returns whether caught error means directory fsync is unsupported.
- *
- * @param error - Unknown caught value from directory open or fsync.
- *
- * @returns Whether directory fsync should degrade to best effort.
- *
- * @example
- * ```ts
- * const unsupported = directoryFsyncUnsupported(error);
- * ```
+ Returns whether caught error means directory fsync is unsupported.
+ 
+ @param error - Unknown caught value from directory open or fsync.
+ 
+ @returns Whether directory fsync should degrade to best effort.
+ 
+ @example
+ ```ts
+ const unsupported = directoryFsyncUnsupported(error);
+ ```
  */
 export function directoryFsyncUnsupported(error: unknown,): boolean {
   return UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES.some(function errorCodeMatches(code,): boolean {
@@ -72,16 +72,16 @@ export function directoryFsyncUnsupported(error: unknown,): boolean {
 }
 
 /**
- * Writes and fsyncs destination temp file before rename.
- *
- * @param tempPath - Same-directory temp path.
- *
- * @param content - Destination content to write.
- *
- * @example
- * ```ts
- * await writeTempFileDurably({ tempPath, content });
- * ```
+ Writes and fsyncs destination temp file before rename.
+ 
+ @param tempPath - Same-directory temp path.
+ 
+ @param content - Destination content to write.
+ 
+ @example
+ ```ts
+ await writeTempFileDurably({ tempPath, content });
+ ```
  */
 export async function writeTempFileDurably(
   {
@@ -93,7 +93,7 @@ export async function writeTempFileDurably(
   },
 ): Promise<void> {
   /**
-   * Writable temp-file handle fsynced before rename.
+   Writable temp-file handle fsynced before rename.
    */
   await using tempFile = await open(
     tempPath,
@@ -104,21 +104,21 @@ export async function writeTempFileDurably(
 }
 
 /**
- * Fsyncs directory containing renamed destination to persist directory entry,
- * degrading to best effort when {@link directoryFsyncUnsupported} says the
- * platform or filesystem cannot fsync directories.
- *
- * @param directoryPath - Directory path to fsync.
- *
- * @example
- * ```ts
- * await fsyncDirectory('/tmp/output-directory');
- * ```
+ Fsyncs directory containing renamed destination to persist directory entry,
+ degrading to best effort when {@link directoryFsyncUnsupported} says the
+ platform or filesystem cannot fsync directories.
+ 
+ @param directoryPath - Directory path to fsync.
+ 
+ @example
+ ```ts
+ await fsyncDirectory('/tmp/output-directory');
+ ```
  */
 export async function fsyncDirectory(directoryPath: string,): Promise<void> {
   try {
     /**
-     * Directory handle fsynced after destination rename.
+     Directory handle fsynced after destination rename.
      */
     await using directory = await open(
       directoryPath,
@@ -139,21 +139,21 @@ export async function fsyncDirectory(directoryPath: string,): Promise<void> {
 //region Atomic destination replacement
 
 /**
- * Writes file content through same-directory temp file (via {@link writeTempFileDurably}
- * by default) and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
- *
- * @param filePath - Destination file path to replace.
- *
- * @param content - Destination content to persist.
- *
- * @param tempFileWriter - Optional {@link AtomicTempFileWriter} seam for fault-injection tests.
- *
- * @returns Destination mtime in whole milliseconds after rename.
- *
- * @example
- * ```ts
- * await writeFileAtomically({ filePath: './CLAUDE.md', content: '# Generated' });
- * ```
+ Writes file content through same-directory temp file (via {@link writeTempFileDurably}
+ by default) and atomic rename, fsyncing the directory afterward with {@link fsyncDirectory}.
+ 
+ @param filePath - Destination file path to replace.
+ 
+ @param content - Destination content to persist.
+ 
+ @param tempFileWriter - Optional {@link AtomicTempFileWriter} seam for fault-injection tests.
+ 
+ @returns Destination mtime in whole milliseconds after rename.
+ 
+ @example
+ ```ts
+ await writeFileAtomically({ filePath: './CLAUDE.md', content: '# Generated' });
+ ```
  */
 export async function writeFileAtomically(
   {
@@ -167,7 +167,7 @@ export async function writeFileAtomically(
   },
 ): Promise<number> {
   /**
-   * Directory containing final destination and same-directory temp file.
+   Directory containing final destination and same-directory temp file.
    */
   const destinationDirectory = dirname(filePath,);
   await mkdir(
@@ -175,11 +175,11 @@ export async function writeFileAtomically(
     { recursive: true, },
   );
   /**
-   * Same-directory temp path used for atomic replacement.
+   Same-directory temp path used for atomic replacement.
    */
   const tempPath = `${filePath}.${String(process.pid,)}.${randomUUID()}${TEMP_FILE_SUFFIX}`;
   /**
-   * Cleanup handle for temp file when write or rename fails.
+   Cleanup handle for temp file when write or rename fails.
    */
   await using _tempCleanup = {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -199,7 +199,7 @@ export async function writeFileAtomically(
   );
   await fsyncDirectory(destinationDirectory,);
   /**
-   * Actual post-rename mtime used by watch echo suppression.
+   Actual post-rename mtime used by watch echo suppression.
    */
   const destinationStat = await stat(filePath,);
   return Math.floor(destinationStat.mtimeMs,);

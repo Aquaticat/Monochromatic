@@ -1,4 +1,4 @@
-//! Watches user application cgroups and retains marker links for Ghostty, Steam, Helium, and Pale Moon targets.
+//! Watches user application cgroups and retains marker links for selected named and executable-owned targets.
 
 /// Target discovery across named app-slice services and executable-owned processes.
 use crate::application_targets::{scan_application_targets, ScanRoots};
@@ -13,7 +13,7 @@ use std::os::unix::ffi::OsStrExt;
 /// Target paths.
 use std::path::{Path, PathBuf};
 
-/// Periodic process rescan closes Helium and Pale Moon moves into already-existing cgroups.
+/// Periodic process rescan closes browser moves into already-existing cgroups.
 const RESCAN_INTERVAL_MS: libc::c_int = 250;
 /// Buffer size for draining cgroup directory inotify records.
 const INOTIFY_BUFFER_SIZE: usize = 16_384;

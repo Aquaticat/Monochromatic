@@ -9,37 +9,37 @@ import {
 } from './range.ts';
 
 /**
- * Parameters for {@link needsPerLineFix}.
+ Parameters for {@link needsPerLineFix}.
  */
 export type NeedsPerLineFixParams = {
   /**
-   * Full file source text.
+   Full file source text.
    */
   readonly sourceText: string;
   /**
-   * Container AST node.
+   Container AST node.
    */
   readonly container: Span;
   /**
-   * Explicit delimiter offsets when the container span is wider than the list.
+   Explicit delimiter offsets when the container span is wider than the list.
    */
   readonly boundary?: PerLineBoundaryOffsets;
   /**
-   * Child items to check (must be non-empty).
+   Child items to check (must be non-empty).
    */
   readonly items: readonly Span[];
 };
 
 /**
- * Checks whether any items share a source line with each other
- * or with the container delimiters.
- *
- * @returns whether a fix is needed
- *
- * @example
- * ```ts
- * if (needsPerLineFix({ sourceText, container, items })) { /* report *\/ }
- * ```
+ Checks whether any items share a source line with each other
+ or with the container delimiters.
+ 
+ @returns whether a fix is needed
+ 
+ @example
+ ```ts
+ if (needsPerLineFix({ sourceText, container, items })) { /* report *\/ }
+ ```
  */
 export function needsPerLineFix({
   sourceText,
@@ -48,18 +48,18 @@ export function needsPerLineFix({
   items,
 }: ForeignBorrowed<NeedsPerLineFixParams>,): boolean {
   /**
-   * Container span boundaries; fallback delimiter offsets when no explicit boundary is supplied.
+   Container span boundaries; fallback delimiter offsets when no explicit boundary is supplied.
    */
   const containerRange = rangeOf(container,);
   /**
-   * Delimiter offsets compared against item lines to detect inline first/last items.
+   Delimiter offsets compared against item lines to detect inline first/last items.
    */
   const boundaryOffsets = boundary ?? {
     openOffset: containerRange[0],
     closeOffset: containerRange[1],
   };
   /**
-   * First item's range; used to test whether it shares a line with the opening delimiter.
+   First item's range; used to test whether it shares a line with the opening delimiter.
    */
   const firstRange = rangeOf(at({
     arr: items,
@@ -78,7 +78,7 @@ export function needsPerLineFix({
   }
 
   /**
-   * Last item's range; used to test whether it shares a line with the closing delimiter.
+   Last item's range; used to test whether it shares a line with the closing delimiter.
    */
   const lastRange = rangeOf(at({
     arr: items,
@@ -99,14 +99,14 @@ export function needsPerLineFix({
   for (let loopIndex = 1; loopIndex < items
     .length; loopIndex++) {
     /**
-     * Previous item's range; paired with `currRange` to detect items sharing a line.
+     Previous item's range; paired with `currRange` to detect items sharing a line.
      */
     const prevRange = rangeOf(at({
       arr: items,
       index: loopIndex - 1,
     },),);
     /**
-     * Current item's range; paired with `prevRange` to detect items sharing a line.
+     Current item's range; paired with `prevRange` to detect items sharing a line.
      */
     const currRange = rangeOf(at({
       arr: items,

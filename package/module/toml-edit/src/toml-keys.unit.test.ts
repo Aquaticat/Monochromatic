@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlKeys`.
- *
- * @module
+ Tests for `tomlKeys`.
+ 
+ @module
  */
 
 import {

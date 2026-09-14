@@ -55,7 +55,7 @@ static LOGGING: OnceLock<()> = OnceLock::new();
 pub fn init() {
     LOGGING.get_or_init(|| {
         // The level filter from RUST_LOG, or `info` when unset or malformed.
-        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| return EnvFilter::new("info"));
         // Compose the env-filter with the logcat layer under a fixed tag; `with_ansi(false)`
         // drops the color escapes that would otherwise clutter logcat. Ignore an error when a
         // global subscriber is already set (the OnceLock already prevents our own reruns).

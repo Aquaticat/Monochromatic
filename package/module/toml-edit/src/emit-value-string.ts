@@ -1,11 +1,11 @@
 /**
- * String leaf emission helpers for parsed TOML values.
- *
- * Basic-string escaping lives in the shared `basic-escape.ts` so this emitter
- * and the from-scratch value and key encoders cannot drift apart; here it is
- * applied per the parsed node's style and `multiline` flag.
- *
- * @module
+ String leaf emission helpers for parsed TOML values.
+ 
+ Basic-string escaping lives in the shared `basic-escape.ts` so this emitter
+ and the from-scratch value and key encoders cannot drift apart; here it is
+ applied per the parsed node's style and `multiline` flag.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -19,16 +19,16 @@ import {
 //region String emission
 
 /**
- * Emit a `TOMLStringValue` per its style and `multiline` flag.
- *
- * @param node - Parsed TOML string value.
- *
- * @returns Computed string.
- *
- * @example
- * ```ts
- * emitStringValue({ node: tomlStringNode, },);
- * ```
+ Emit a `TOMLStringValue` per its style and `multiline` flag.
+ 
+ @param node - Parsed TOML string value.
+ 
+ @returns Computed string.
+ 
+ @example
+ ```ts
+ emitStringValue({ node: tomlStringNode, },);
+ ```
  */
 export function emitStringValue({
   node,

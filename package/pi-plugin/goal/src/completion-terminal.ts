@@ -1,10 +1,10 @@
 /**
- * Manual and reviewer-unavailable terminal goal transitions.
- *
- * @module
+ Manual approval and reviewer-unavailable terminal transitions.
+ 
+ @module
  */
 
-import type { ValidGoalCompletionRequest, } from './completion-types.ts';
+import type { GoalSettlementReviewRequest, } from './completion-types.ts';
 import { reduceGoalEvent, } from './reducer.ts';
 import type {
   GoalControllerState,
@@ -12,32 +12,36 @@ import type {
 } from './types.ts';
 
 /**
- * Persist manual approval after every model reviewer attempt failed.
- *
- * @param controller - current revalidated controller
- *
- * @param request - normalized completion claim
- *
- * @param diagnostic - normalized model failure diagnostic
- *
- * @param timestamp - ISO completion timestamp
- *
- * @returns terminal manually approved transition
- *
- * @example
- * ```ts
- * manuallyApproveGoalCompletion({ controller, request, diagnostic, timestamp });
- * ```
+ Persist manual approval after every model reviewer attempt failed.
+ 
+ @param controller - current revalidated controller
+ 
+ @param request - captured settlement identity
+ 
+ @param attemptedReviewerIdentities - exhausted model transports
+ 
+ @param diagnostic - normalized model failure diagnostic
+ 
+ @param timestamp - ISO completion timestamp
+ 
+ @returns terminal manually approved transition
+ 
+ @example
+ ```ts
+ manuallyApproveGoalCompletion({ controller, request, attemptedReviewerIdentities: [], diagnostic, timestamp });
+ ```
  */
 function manuallyApproveGoalCompletion(
   {
     controller,
     request,
+    attemptedReviewerIdentities,
     diagnostic,
     timestamp,
   }: {
     readonly controller: GoalControllerState;
-    readonly request: ValidGoalCompletionRequest;
+    readonly request: GoalSettlementReviewRequest;
+    readonly attemptedReviewerIdentities: readonly string[];
     readonly diagnostic: string;
     readonly timestamp: string;
   },
@@ -47,7 +51,7 @@ function manuallyApproveGoalCompletion(
     !== 'active')
     throw new Error('Cannot manually approve completion for non-active goal',);
   /**
-   * Persisted manually approved terminal event.
+   Persisted manually approved terminal event.
    */
   const event = {
     kind: 'run_completed_manual',
@@ -55,12 +59,12 @@ function manuallyApproveGoalCompletion(
       .runId,
     generationId: request.goal
       .generationId,
-    summary: request.summary,
-    reviewerFeedback: diagnostic,
+    reviewerRationale: diagnostic,
+    attemptedReviewerIdentities,
     completedAt: timestamp,
   } as const;
   /**
-   * Terminal state derived through branch reducer.
+   Terminal state derived through branch reducer.
    */
   const goal = reduceGoalEvent({
     state: controller.goal,
@@ -78,11 +82,26 @@ function manuallyApproveGoalCompletion(
         type: 'persist',
         event,
       },
+      {
+        type: 'persist_completion_diagnostic',
+        diagnostic: {
+          runId: request.goal
+            .runId,
+          generationId: request.goal
+            .generationId,
+          approvalSource: 'manual',
+          reviewerIdentity: 'manual',
+          reviewerRationale: diagnostic,
+          attemptedReviewerIdentities,
+          transcriptTruncated: false,
+          completedAt: timestamp,
+        },
+      },
       { type: 'clear_footer', },
       {
         type: 'log',
         level: 'warn',
-        message: `goal completion manually approved after reviewer exhaustion for ${request.goal
+        message: `goal completion manually approved for ${request.goal
           .runId}`,
       },
     ],
@@ -90,24 +109,24 @@ function manuallyApproveGoalCompletion(
 }
 
 /**
- * Persist non-interactive reviewer exhaustion as terminal goal state.
- *
- * @param controller - current revalidated controller
- *
- * @param request - normalized completion claim
- *
- * @param attemptedReviewerIdentities - model transports that started
- *
- * @param diagnostic - normalized model failure diagnostic
- *
- * @param timestamp - ISO terminal timestamp
- *
- * @returns terminal reviewer-unavailable transition and renderable diagnostic
- *
- * @example
- * ```ts
- * markGoalReviewUnavailable({ controller, request, attemptedReviewerIdentities, diagnostic, timestamp });
- * ```
+ Persist non-interactive reviewer exhaustion as terminal goal state.
+ 
+ @param controller - current revalidated controller
+ 
+ @param request - captured settlement identity
+ 
+ @param attemptedReviewerIdentities - model transports that started
+ 
+ @param diagnostic - normalized model failure diagnostic
+ 
+ @param timestamp - ISO terminal timestamp
+ 
+ @returns terminal reviewer-unavailable transition and renderable diagnostic
+ 
+ @example
+ ```ts
+ markGoalReviewUnavailable({ controller, request, attemptedReviewerIdentities, diagnostic, timestamp });
+ ```
  */
 function markGoalReviewUnavailable(
   {
@@ -118,7 +137,7 @@ function markGoalReviewUnavailable(
     timestamp,
   }: {
     readonly controller: GoalControllerState;
-    readonly request: ValidGoalCompletionRequest;
+    readonly request: GoalSettlementReviewRequest;
     readonly attemptedReviewerIdentities: readonly string[];
     readonly diagnostic: string;
     readonly timestamp: string;
@@ -129,7 +148,7 @@ function markGoalReviewUnavailable(
     !== 'active')
     throw new Error('Cannot mark reviewer unavailable for non-active goal',);
   /**
-   * Persisted non-interactive terminal event.
+   Persisted non-interactive terminal event.
    */
   const event = {
     kind: 'review_unavailable',
@@ -137,13 +156,12 @@ function markGoalReviewUnavailable(
       .runId,
     generationId: request.goal
       .generationId,
-    summary: request.summary,
     attemptedReviewerIdentities,
     diagnostic,
     terminalAt: timestamp,
   } as const;
   /**
-   * Terminal state derived through branch reducer.
+   Terminal state derived through branch reducer.
    */
   const goal = reduceGoalEvent({
     state: controller.goal,

@@ -1,7 +1,7 @@
 /**
- * English fragment renderer factory.
- *
- * @module
+ English fragment renderer factory.
+ 
+ @module
  */
 
 import type {
@@ -23,7 +23,7 @@ import {
 } from './types.ts';
 
 /**
- * Dependency bundle for {@link makeEnglishFragmentRenderer}.
+ Dependency bundle for {@link makeEnglishFragmentRenderer}.
  */
 type FragmentDeps<L extends string, S extends string, V extends string,
   N extends string,> = {
@@ -37,13 +37,13 @@ type FragmentDeps<L extends string, S extends string, V extends string,
   };
 
 /**
- * Picks the English non-finite verb surface for a verb-phrase fragment.
- *
- * @param entry - English verb entry
- *
- * @param form - requested non-finite form
- *
- * @returns non-finite surface
+ Picks the English non-finite verb surface for a verb-phrase fragment.
+ 
+ @param entry - English verb entry
+ 
+ @param form - requested non-finite form
+ 
+ @returns non-finite surface
  */
 function nonFiniteSurface(
   {
@@ -65,13 +65,13 @@ function nonFiniteSurface(
 }
 
 /**
- * Capitalizes a fragment surface using English case-invariants.
- *
- * @param text - rendered surface
- *
- * @param mode - capitalization mode
- *
- * @returns capitalized surface
+ Capitalizes a fragment surface using English case-invariants.
+ 
+ @param text - rendered surface
+ 
+ @param mode - capitalization mode
+ 
+ @returns capitalized surface
  */
 function capitalize(
   {
@@ -90,15 +90,15 @@ function capitalize(
 }
 
 /**
- * Renders a nested fragment complement using the head verb's attachment strategy.
- *
- * @param entry - head verb entry controlling bare vs infinitive attachment
- *
- * @param phrase - nested verb phrase to render
- *
- * @param renderVerbPhrase - verb-phrase renderer
- *
- * @returns rendered complement surface
+ Renders a nested fragment complement using the head verb's attachment strategy.
+ 
+ @param entry - head verb entry controlling bare vs infinitive attachment
+ 
+ @param phrase - nested verb phrase to render
+ 
+ @param renderVerbPhrase - verb-phrase renderer
+ 
+ @returns rendered complement surface
  */
 function renderComplement<S extends string, V extends string, N extends string,>(
   {
@@ -112,7 +112,7 @@ function renderComplement<S extends string, V extends string, N extends string,>
   },
 ): string {
   /**
-   * Rendered nested verb phrase before complement marker selection.
+   Rendered nested verb phrase before complement marker selection.
    */
   const rendered = renderVerbPhrase(phrase,);
   return complementFormForVerb({ entry, },)
@@ -120,16 +120,16 @@ function renderComplement<S extends string, V extends string, N extends string,>
 }
 
 /**
- * Builds an English fragment renderer.
- *
- * @param deps - per-locale dependencies (labels, verbs, sub-renderers)
- *
- * @returns render function for fragments
- *
- * @example
- * ```ts
- * const renderFragment = makeEnglishFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
- * ```
+ Builds an English fragment renderer.
+ 
+ @param deps - per-locale dependencies (labels, verbs, sub-renderers)
+ 
+ @returns render function for fragments
+ 
+ @example
+ ```ts
+ const renderFragment = makeEnglishFragmentRenderer({ labels, verbs, renderNounPhrase, renderVerbPhrase, renderAdverbials });
+ ```
  */
 export function makeEnglishFragmentRenderer<
   L extends string,
@@ -140,7 +140,7 @@ export function makeEnglishFragmentRenderer<
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
   /**
-   * Destructured locale dependencies captured for use across every sub-renderer below.
+   Destructured locale dependencies captured for use across every sub-renderer below.
    */
   const {
     labels,
@@ -151,29 +151,29 @@ export function makeEnglishFragmentRenderer<
   } = deps;
 
   /**
-   * Renders a verb-phrase fragment using the requested non-finite form.
-   *
-   * @param fragment - verb-phrase fragment AST
-   *
-   * @returns rendered surface
+   Renders a verb-phrase fragment using the requested non-finite form.
+   
+   @param fragment - verb-phrase fragment AST
+   
+   @returns rendered surface
    */
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /**
-     * Verb entry used by every non-finite branch.
+     Verb entry used by every non-finite branch.
      */
     const entry = verbs[fragment.phrase
       .verb];
     /**
-     * Non-finite surface for the requested form.
+     Non-finite surface for the requested form.
      */
     const head = nonFiniteSurface({
       entry,
       form: fragment.form,
     },);
     /**
-     * Rendered object surface; empty string when absent.
+     Rendered object surface; empty string when absent.
      */
     const object = fragment.phrase
       .object
@@ -182,7 +182,7 @@ export function makeEnglishFragmentRenderer<
       : renderNounPhrase(fragment.phrase
         .object,);
     /**
-     * Rendered infinitive or bare complement; empty string when absent.
+     Rendered infinitive or bare complement; empty string when absent.
      */
     const complement = fragment.phrase
       .complement
@@ -196,12 +196,12 @@ export function makeEnglishFragmentRenderer<
         renderVerbPhrase,
       },);
     /**
-     * Rendered adverbial cluster; empty string when none.
+     Rendered adverbial cluster; empty string when none.
      */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
     /**
-     * Joined surface before capitalization fixup.
+     Joined surface before capitalization fixup.
      */
     const body = joinTokens([
       head,
@@ -217,11 +217,11 @@ export function makeEnglishFragmentRenderer<
   }
 
   /**
-   * Renders a single sequence part.
-   *
-   * @param part - part AST
-   *
-   * @returns rendered surface
+   Renders a single sequence part.
+   
+   @param part - part AST
+   
+   @returns rendered surface
    */
   function renderPart(
     part: Extract<Fragment<L, S, V, N>, { kind: 'fragment.sequence'; }>['parts'][number],
@@ -236,11 +236,11 @@ export function makeEnglishFragmentRenderer<
   }
 
   /**
-   * Renders a fragment AST by dispatching on `kind`.
-   *
-   * @param fragment - fragment AST
-   *
-   * @returns rendered surface
+   Renders a fragment AST by dispatching on `kind`.
+   
+   @param fragment - fragment AST
+   
+   @returns rendered surface
    */
   function renderFragment(fragment: Fragment<L, S, V, N>,): string {
     if (fragment.kind
@@ -255,7 +255,7 @@ export function makeEnglishFragmentRenderer<
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
     /**
-     * Rendered sequence parts space-joined.
+     Rendered sequence parts space-joined.
      */
     const joined = fragment
       .parts

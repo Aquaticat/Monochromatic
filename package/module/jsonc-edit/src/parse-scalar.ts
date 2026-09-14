@@ -9,22 +9,22 @@ import type { JsoncValue, } from './value.ts';
 //region Constants
 
 /**
- * `true` literal keyword.
+ `true` literal keyword.
  */
 const KEYWORD_TRUE = 'true';
 
 /**
- * `false` literal keyword.
+ `false` literal keyword.
  */
 const KEYWORD_FALSE = 'false';
 
 /**
- * `null` literal keyword.
+ `null` literal keyword.
  */
 const KEYWORD_NULL = 'null';
 
 /**
- * Digits that may begin a number (a leading `-` is handled separately).
+ Digits that may begin a number (a leading `-` is handled separately).
  */
 const DIGITS = new Set([
   '0',
@@ -44,7 +44,7 @@ const DIGITS = new Set([
 //region Value scan result
 
 /**
- * A parsed node paired with the offset just past it.
+ A parsed node paired with the offset just past it.
  */
 export type ValueScan = {
   readonly node: JsoncValue;
@@ -56,22 +56,22 @@ export type ValueScan = {
 //region Scalar parser
 
 /**
- * Parses a non-container value (string, number, `true`, `false`, or `null`) at
- * `index`. Throws when the character there opens no valid value.
- *
- * @param source - Full JSONC source.
- *
- * @param index - Offset of the value's first character.
- *
- * @returns Parsed scalar node and end offset.
- *
- * @throws JsoncParseError when no scalar value starts at the offset.
- *
- * @example
- * ```ts
- * parseScalar({ source: 'true', index: 0 });
- * // => { node: { kind: 'boolean', value: true }, end: 4 }
- * ```
+ Parses a non-container value (string, number, `true`, `false`, or `null`) at
+ `index`. Throws when the character there opens no valid value.
+ 
+ @param source - Full JSONC source.
+ 
+ @param index - Offset of the value's first character.
+ 
+ @returns Parsed scalar node and end offset.
+ 
+ @throws JsoncParseError when no scalar value starts at the offset.
+ 
+ @example
+ ```ts
+ parseScalar({ source: 'true', index: 0 });
+ // => { node: { kind: 'boolean', value: true }, end: 4 }
+ ```
  */
 export function parseScalar({
   source,
@@ -81,12 +81,12 @@ export function parseScalar({
   readonly index: number;
 },): ValueScan {
   /**
-   * First character of the value, selecting which scalar production to parse.
+   First character of the value, selecting which scalar production to parse.
    */
   const char = source[index];
   if (char === '"') {
     /**
-     * Scanned string token.
+     Scanned string token.
      */
     const scan = scanString({
       source,
@@ -136,7 +136,7 @@ export function parseScalar({
     };
   if ((char === '-') || ((char !== undefined) && DIGITS.has(char,))) {
     /**
-     * Scanned number token.
+     Scanned number token.
      */
     const scan = scanNumber({
       source,

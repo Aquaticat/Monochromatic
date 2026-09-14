@@ -1,9 +1,9 @@
 /**
- * CLI argument parser definitions for the vmsync command.
- * Defines the result type and combines subcommand parsers
- * into a single top-level parser.
- *
- * @module
+ CLI argument parser definitions for the vmsync command.
+ Defines the result type and combines subcommand parsers
+ into a single top-level parser.
+ 
+ @module
  */
 
 // TODO: deprecate Optique
@@ -23,7 +23,7 @@ import {
 //region Result types: discriminated union for subcommand dispatch
 
 /**
- * Discriminated union of all subcommand parse results.
+ Discriminated union of all subcommand parse results.
  */
 export type VmsyncArgs =
   | {
@@ -55,14 +55,14 @@ export type VmsyncArgs =
 
 /* oxlint-disable typescript-eslint/no-explicit-any -- Parser is invariant in TState; opaque nested state types can't use unknown */
 /**
- * TODO: deprecate Optique
- * Combined top-level parser across all subcommands: {@link importCmd}, {@link bootCmd},
- * {@link syncCmd}, {@link statusCmd}, {@link listCmd}, and {@link configCmd}.
- *
- * @example
- * ```ts
- * const result = parser.parse(process.argv.slice(2,),);
- * ```
+ TODO: deprecate Optique
+ Combined top-level parser across all subcommands: {@link importCmd}, {@link bootCmd},
+ {@link syncCmd}, {@link statusCmd}, {@link listCmd}, and {@link configCmd}.
+ 
+ @example
+ ```ts
+ const result = parser.parse(process.argv.slice(2,),);
+ ```
  */
 export const parser: Parser<'sync', VmsyncArgs, any> = or(
   importCmd,

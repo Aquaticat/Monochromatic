@@ -1,22 +1,22 @@
 /**
- * Auto-mode judge-model availability error.
- *
- * @module
+ Auto-mode judge-model availability error.
+ 
+ @module
  */
 
 /**
- * Error thrown when fixed judge selection cannot return an authenticated model.
- *
- * @example
- * ```typescript
- * throw new NoBudgetModelError('no active model set');
- * ```
+ Error thrown when fixed judge selection cannot return an authenticated model.
+ 
+ @example
+ ```typescript
+ throw new NoBudgetModelError('no active model set');
+ ```
  */
 class NoBudgetModelError extends Error {
   /**
-   * Create unavailable-model error with remediation through Pi's host model registry.
-   *
-   * @param reason - why fixed judge selection failed
+   Create unavailable-model error with remediation through Pi's host model registry.
+   
+   @param reason - why fixed judge selection failed
    */
   public constructor(reason: string,) {
     super(

@@ -1,7 +1,7 @@
 /**
- * Tests for `tomlGetNode`.
- *
- * @module
+ Tests for `tomlGetNode`.
+ 
+ @module
  */
 
 import {

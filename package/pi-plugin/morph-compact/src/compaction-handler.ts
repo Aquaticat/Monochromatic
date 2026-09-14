@@ -1,11 +1,11 @@
 /**
- * Handler for the `session_before_compact` event.
- *
- * Checks preconditions, attempts Morph compaction, and either
- * returns the compaction result, cancels the compaction, or
- * returns `undefined` to fall through to pi's default summarization.
- *
- * @module
+ Handler for the `session_before_compact` event.
+ 
+ Checks preconditions, attempts Morph compaction, and either
+ returns the compaction result, cancels the compaction, or
+ returns `undefined` to fall through to pi's default summarization.
+ 
+ @module
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
@@ -22,49 +22,49 @@ import { attemptMorphCompaction, } from './compaction.ts';
 import type { MorphBeforeCompactOutcome, } from './types.ts';
 
 /**
- * Latches for one-time warnings during a session.
- * Set membership replaces a module-root boolean so the module stays free of
- * top-level `let` (workspace lint rule).
+ Latches for one-time warnings during a session.
+ Set membership replaces a module-root boolean so the module stays free of
+ top-level `let` (workspace lint rule).
  */
 const warnedFlags = new Set<'missingKey'>();
 
 /**
- * Reset the missing-key warning flag for a new session.
- *
- * @example
- * ```typescript
- * resetMissingKeyWarning();
- * ```
+ Reset the missing-key warning flag for a new session.
+ 
+ @example
+ ```typescript
+ resetMissingKeyWarning();
+ ```
  */
 export function resetMissingKeyWarning(): void {
   warnedFlags.delete('missingKey',);
 }
 
 /**
- * Handle the `session_before_compact` event.
- * Checks preconditions, attempts Morph compaction via {@link attemptMorphCompaction}, and either
- * returns the compaction result, cancels the compaction, or
- * returns `undefined` to fall through to pi's default summarization
- * (including when the resolved key is {@link NO_MORPH_KEY}).
- *
- * Compaction is cancelled (not fallen through) when the session is
- * too small to compact: all messages fit within pi's keepRecentTokens
- * budget, leaving messagesToSummarize empty. Pi's default summarizer
- * produces useless empty "(none)" summaries in this case, so we cancel
- * to avoid polluting the session with blank compaction entries.
- *
- * @param event - the session_before_compact event
- *
- * @param ctx - extension context with UI and context usage access
- *
- * @returns compaction result, cancellation, or undefined to fall through
- *
- * @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
- *
- * @example
- * ```typescript
- * pi.on("session_before_compact", (event, ctx) => handleBeforeCompact({ event, ctx }));
- * ```
+ Handle the `session_before_compact` event.
+ Checks preconditions, attempts Morph compaction via {@link attemptMorphCompaction}, and either
+ returns the compaction result, cancels the compaction, or
+ returns `undefined` to fall through to pi's default summarization
+ (including when the resolved key is {@link NO_MORPH_KEY}).
+ 
+ Compaction is cancelled (not fallen through) when the session is
+ too small to compact: all messages fit within pi's keepRecentTokens
+ budget, leaving messagesToSummarize empty. Pi's default summarizer
+ produces useless empty "(none)" summaries in this case, so we cancel
+ to avoid polluting the session with blank compaction entries.
+ 
+ @param event - the session_before_compact event
+ 
+ @param ctx - extension context with UI and context usage access
+ 
+ @returns compaction result, cancellation, or undefined to fall through
+ 
+ @mutates event - Compaction can retain `event.signal` through a dependent `AbortSignal.any` relation.
+ 
+ @example
+ ```typescript
+ pi.on("session_before_compact", (event, ctx) => handleBeforeCompact({ event, ctx }));
+ ```
  */
 export async function handleBeforeCompact({
   event,
@@ -74,7 +74,7 @@ export async function handleBeforeCompact({
   readonly ctx: ExtensionContext;
 },): Promise<MorphBeforeCompactOutcome> {
   /**
-   * Resolved Morph key; sentinel disables the integration for this event.
+   Resolved Morph key; sentinel disables the integration for this event.
    */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === NO_MORPH_KEY) {
@@ -98,7 +98,7 @@ export async function handleBeforeCompact({
     return { kind: 'fallthrough', };
 
   /**
-   * Preparation slices read for the pre-flight emptiness check.
+   Preparation slices read for the pre-flight emptiness check.
    */
   const {
     messagesToSummarize,
@@ -107,7 +107,7 @@ export async function handleBeforeCompact({
   } = event.preparation;
 
   /**
-   * True when either pending list has at least one message.
+   True when either pending list has at least one message.
    */
   const hasMessages = (messagesToSummarize.length
     > 0)
@@ -123,7 +123,7 @@ export async function handleBeforeCompact({
   }
 
   /**
-   * Total messages slated for compaction; surfaced in the status notify.
+   Total messages slated for compaction; surfaced in the status notify.
    */
   const msgCount = messagesToSummarize.length
     + turnPrefixMessages
@@ -137,13 +137,13 @@ export async function handleBeforeCompact({
   );
 
   /**
-   * Current context pressure snapshot; absent when pi cannot report usage.
+   Current context pressure snapshot; absent when pi cannot report usage.
    */
   const contextUsage = ctx.getContextUsage();
 
   try {
     /**
-     * Outcome of the Morph attempt; success surfaces a CompactionResult.
+     Outcome of the Morph attempt; success surfaces a CompactionResult.
      */
     const attempt = await attemptMorphCompaction({
       event,
@@ -156,19 +156,19 @@ export async function handleBeforeCompact({
       return { kind: 'fallthrough', };
 
     /**
-     * Extracted CompactionResult forwarded back to pi after the notify.
+     Extracted CompactionResult forwarded back to pi after the notify.
      */
     const { result, } = attempt;
 
     if (!event.signal
       .aborted) {
       /**
-       * Telemetry block stored on result.details; absent when the API omitted usage.
+       Telemetry block stored on result.details; absent when the API omitted usage.
        */
       const morphUsage = result.details
         ?.morphUsage;
       /**
-       * Whole-percent reduction reported to the UI; zero when ratio unavailable.
+       Whole-percent reduction reported to the UI; zero when ratio unavailable.
        */
       const reductionPct = ((morphUsage?.compressionRatio
         !== undefined)
@@ -180,19 +180,19 @@ export async function handleBeforeCompact({
         )
         : 0;
       /**
-       * Input token count rendered with locale separators for the notify.
+       Input token count rendered with locale separators for the notify.
        */
       const inTokens = morphUsage?.inputTokens
         ?.toLocaleString()
         ?? '?';
       /**
-       * Output token count rendered with locale separators for the notify.
+       Output token count rendered with locale separators for the notify.
        */
       const outTokens = morphUsage?.outputTokens
         ?.toLocaleString()
         ?? '?';
       /**
-       * Processing time string rendered for the notify line.
+       Processing time string rendered for the notify line.
        */
       const ms = morphUsage?.processingTimeMs
         ?.toLocaleString()
@@ -215,7 +215,7 @@ export async function handleBeforeCompact({
       return { kind: 'fallthrough', };
 
     /**
-     * Best-effort diagnostic forwarded into the UI notify body.
+     Best-effort diagnostic forwarded into the UI notify body.
      */
     const message = caughtValueText(error,);
     ctx.ui

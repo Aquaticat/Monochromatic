@@ -73,7 +73,7 @@ pub struct FullScanRule {
 impl fmt::Display for FullScanRule {
     /// Write the cutoff, the routed/violator counts, and the decoded gap on one line.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
+        return write!(
             formatter,
             "full-scan if sampled_max_db >= {:.3}dB | routes {}/{} long tracks, catches all {} violators | real_decoded={:.1}s (target {:.1}s, delta {:+.1}s) worst_quiet={:+.3}dB",
             self.cutoff_db,
@@ -91,9 +91,9 @@ impl fmt::Display for FullScanRule {
 /// Convert a linear peak to dBTP, treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
-        f64::NEG_INFINITY
+        return f64::NEG_INFINITY
     } else {
-        peak_dbtp(peak)
+        return peak_dbtp(peak)
     }
 }
 
@@ -113,11 +113,11 @@ pub fn diagnose(tracks: &[Track], candidate: Candidate) {
         }
         let pct = |values: &mut Vec<f64>, fraction: f64| {
             values.sort_by(f64::total_cmp);
-            values[((values.len() as f64 - 1.0) * fraction) as usize]
+            return values[((values.len() as f64 - 1.0) * fraction) as usize]
         };
-        let mut maxes: Vec<f64> = group.iter().map(|f| f.sampled_max_db).collect();
-        let mut reads: Vec<f64> = group.iter().map(|f| f.under_read_db).collect();
-        let mut durs: Vec<f64> = group.iter().map(|f| f.duration_secs).collect();
+        let mut maxes: Vec<f64> = group.iter().map(|f| return f.sampled_max_db).collect();
+        let mut reads: Vec<f64> = group.iter().map(|f| return f.under_read_db).collect();
+        let mut durs: Vec<f64> = group.iter().map(|f| return f.duration_secs).collect();
         println!(
             "  {label}: n={} | sampled_max_db [{:.2} {:.2} {:.2}] under_read_db [{:.2} {:.2} {:.2}] dur [{:.0} {:.0} {:.0}]",
             group.len(),
@@ -127,24 +127,24 @@ pub fn diagnose(tracks: &[Track], candidate: Candidate) {
         );
     };
     println!("feature distributions [min median max] at margin {:.3}dB:", candidate.probe_margin_db);
-    report("violators    ", features.iter().filter(|f| f.is_violator).collect());
-    report("non-violators", features.iter().filter(|f| !f.is_violator).collect());
+    report("violators    ", features.iter().filter(|f| return f.is_violator).collect());
+    report("non-violators", features.iter().filter(|f| return !f.is_violator).collect());
 }
 
 /// Extract probe features and the violator label for every long track.
 fn long_features(tracks: &[Track], candidate: Candidate, policy: &Policy) -> Vec<LongFeatures> {
     let threshold = candidate.window_count as f64 * candidate.window_seconds;
-    tracks
+    return tracks
         .iter()
-        .filter(|track| track.duration_secs > threshold)
+        .filter(|track| return track.duration_secs > threshold)
         .map(|track| {
             let windows = sampled_windows(track, candidate);
-            let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| peak.max(window));
+            let sampled_max = windows.iter().fold(0.0_f64, |peak, &window| return peak.max(window));
             let estimated = probe_estimated_peak(sampled_max, candidate.probe_margin_db);
             let probe = (policy.ceiling_dbtp - db(estimated)).min(0.0);
             let exact = (policy.ceiling_dbtp - db(f64::from(track.full_peak))).min(0.0);
             let error = probe - exact;
-            LongFeatures {
+            return LongFeatures {
                 path: track.path.clone(),
                 windows,
                 sampled_max_db: db(sampled_max),
@@ -200,7 +200,7 @@ pub fn write_long_features(
         writer.write_all(line.as_bytes())?;
         writer.write_all(b"\n")?;
     }
-    Ok(())
+    return Ok(())
 }
 
 /// Fit the simplest full-recall full-scan rule from the loudest-window feature.
@@ -214,43 +214,43 @@ pub fn write_long_features(
 pub fn fit_full_scan_rule(tracks: &[Track], candidate: Candidate, target_secs: f64) -> FullScanRule {
     let policy: Policy = default_policy();
     let features = long_features(tracks, candidate, &policy);
-    let violators: Vec<&LongFeatures> = features.iter().filter(|f| f.is_violator).collect();
+    let violators: Vec<&LongFeatures> = features.iter().filter(|f| return f.is_violator).collect();
 
     // Cutoff = the quietest violator's loudest window; routing at or above it catches all.
     let cutoff_db = violators
         .iter()
-        .map(|violator| violator.sampled_max_db)
+        .map(|violator| return violator.sampled_max_db)
         .fold(f64::INFINITY, f64::min);
 
     let routed = features
         .iter()
-        .filter(|feature| feature.sampled_max_db >= cutoff_db)
+        .filter(|feature| return feature.sampled_max_db >= cutoff_db)
         .count();
 
     let threshold = candidate.window_count as f64 * candidate.window_seconds;
     let short_secs: f64 = tracks
         .iter()
-        .filter(|track| track.duration_secs <= threshold)
-        .map(|track| track.duration_secs)
+        .filter(|track| return track.duration_secs <= threshold)
+        .map(|track| return track.duration_secs)
         .sum();
     // Long tracks pay the probe, plus a full scan when the rule routes them.
     let long_secs: f64 = features
         .iter()
         .map(|feature| {
             if feature.sampled_max_db >= cutoff_db {
-                threshold + feature.duration_secs
+                return threshold + feature.duration_secs
             } else {
-                threshold
+                return threshold
             }
         })
         .sum();
     let worst_quiet_db = features
         .iter()
-        .filter(|feature| feature.sampled_max_db < cutoff_db)
-        .map(|feature| feature.error_db)
+        .filter(|feature| return feature.sampled_max_db < cutoff_db)
+        .map(|feature| return feature.error_db)
         .fold(0.0_f64, f64::min);
 
-    FullScanRule {
+    return FullScanRule {
         cutoff_db,
         routed,
         long_tracks: features.len(),

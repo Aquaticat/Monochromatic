@@ -7,7 +7,10 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  join,
+  relative,
+} from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import {
@@ -42,9 +45,9 @@ type SemanticFixtureDirectory = {
 };
 
 /**
- * Creates non-hidden disposable directory included by fixture project.
- *
- * @returns disposable configured-project directory.
+ Creates non-hidden disposable directory included by fixture project.
+ 
+ @returns disposable configured-project directory.
  */
 function createSemanticFixtureDirectory(): SemanticFixtureDirectory {
   /** Unique directory path under configured fixture package. */
@@ -176,6 +179,54 @@ await describe({
           },
         },),
         it({
+          name: 'refreshes overlay for source an outer project already holds',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Nested project source the fixture project also contains. */
+            const nestedPath = join(directory.path, 'input.ts',);
+            /** Nested source text retained on disk. */
+            const diskSource = 'export function read(value: { readonly before: string; },): void { void value; }\n';
+            /** Nested source text supplied only through overlay. */
+            const overlaidSource = 'export function read(value: { readonly after: number; },): void { void value; }\n';
+            /* Both files exist before any snapshot, so the fixture project reads the nested source
+             * from disk and the service holds it before the nested project is ever discovered. */
+            writeFileSync(
+              join(directory.path, 'tsconfig.json',),
+              `${JSON.stringify({
+                compilerOptions: { strict: true, },
+                include: ['input.ts',],
+              },)}\n`,
+            );
+            writeFileSync(nestedPath, diskSource,);
+            /** Fixture session whose program pulls in nested source from disk. */
+            const outer = openSemanticFile({
+              fileName: FIXTURE_PATH,
+              sourceText: SOURCE,
+              hasBOM: false,
+            },);
+            /* Positive control. Without this the assertion below passes for the wrong reason,
+             * since a service that never read the nested source has nothing stale to serve. */
+            expect(
+              outer.project.program
+                .getSourceFile(nestedPath,)
+                ?.text,
+            ).toBe(diskSource,);
+            /** Nested session whose project the walk refuses to answer from cache. */
+            const session = openSemanticFile({
+              fileName: nestedPath,
+              sourceText: overlaidSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(overlaidSource.indexOf('value:',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected nested overlay parameter type.',);
+            expect(session.checker.typeToString(type,),).toBe('{ readonly after: number; }',);
+            expect(readFileSync(nestedPath, 'utf8',),).toBe(diskSource,);
+          },
+        },),
+        it({
           name: 'fails closed when offset is outside source tree',
           fn: async () => {
             const session = openSemanticFile({
@@ -246,6 +297,57 @@ await describe({
             if (type === undefined)
               throw new Error('Expected renamed source type.',);
             expect(session.checker.typeToString(type,),).toBe('number',);
+            /* The type above proves the created half. This proves the deleted half, which nothing
+             * asserted while both halves rode on one flag. */
+            expect(
+              session.project.program
+                .getSourceFile(originalPath,),
+            ).toBe(undefined,);
+          },
+        },),
+        it({
+          name: 'invalidates a deleted source while reopening one already held',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Source deleted while another source of same project is reopened. */
+            const goingPath = join(directory.path, 'going.ts',);
+            /** Source already held by project when deletion is reported. */
+            const stayingPath = join(directory.path, 'staying.ts',);
+            /** Text of source that disappears. */
+            const goingSource = 'export const goingValue: string = \'going\';\n';
+            /** Text of source that remains. */
+            const stayingSource = 'export const stayingValue: number = 1;\n';
+            writeFileSync(goingPath, goingSource,);
+            writeFileSync(stayingPath, stayingSource,);
+            /* Open the staying source first so the project holds it, then the going one so it is
+             * the active source. Reopening the staying source now takes the reuse-free path with no
+             * discovery, which is the branch that carries the deletion in the second update. */
+            openSemanticFile({
+              fileName: stayingPath,
+              sourceText: stayingSource,
+              hasBOM: false,
+            },);
+            openSemanticFile({
+              fileName: goingPath,
+              sourceText: goingSource,
+              hasBOM: false,
+            },);
+            rmSync(goingPath,);
+            const session = openSemanticFile({
+              fileName: stayingPath,
+              sourceText: stayingSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(stayingSource.indexOf('stayingValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected staying source type.',);
+            expect(session.checker.typeToString(type,),).toBe('number',);
+            expect(
+              session.project.program
+                .getSourceFile(goingPath,),
+            ).toBe(undefined,);
           },
         },),
         it({
@@ -337,6 +439,182 @@ await describe({
           },
         },),
         it({
+          name: 'releases the snapshot it replaced when discovery fails',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Configured source opened before discovery fails for another one. */
+            const heldPath = join(directory.path, 'held.ts',);
+            /** Text of source held before failure. */
+            const heldSource = 'export const heldValue: string = \'held\';\n';
+            writeFileSync(heldPath, heldSource,);
+            /** Session reading through snapshot that failure replaces. */
+            const before = openSemanticFile({
+              fileName: heldPath,
+              sourceText: heldSource,
+              hasBOM: false,
+            },);
+            /** Disposable source outside every configured project. */
+            const unconfiguredRoot = mkdtempSync(join(tmpdir(), 'semantic-unconfigured-',),);
+            using unconfigured: SemanticFixtureDirectory = {
+              path: unconfiguredRoot,
+              [Symbol.dispose]: function removeUnconfiguredFixture(): void {
+                rmSync(unconfiguredRoot, { recursive: true, force: true, },);
+              },
+            };
+            /** Unconfigured source path. */
+            const outsidePath = join(unconfigured.path, 'input.ts',);
+            /** Unconfigured source text. */
+            const outsideSource = 'export const value: string = \'outside\';\n';
+            writeFileSync(outsidePath, outsideSource,);
+            let refused: unknown;
+            try {
+              openSemanticFile({
+                fileName: outsidePath,
+                sourceText: outsideSource,
+                hasBOM: false,
+              },);
+            }
+            catch (error) {
+              refused = error;
+            }
+            expect((refused as Error).message,).toContain('no configured project',);
+            /* Keeping the newer snapshot is one half; letting go of the one it replaced is the
+             * other, and nothing asks a snapshot whether it was disposed. Reading through the
+             * replaced one does ask, because the native service no longer has it. */
+            let caughtUse: unknown;
+            try {
+              before.project.program
+                .getSourceFile(heldPath,);
+            }
+            catch (error) {
+              caughtUse = error;
+            }
+            expect(caughtUse,).toBeInstanceOf(Error,);
+            expect((caughtUse as Error).message,).toContain('snapshot',);
+          },
+        },),
+        it({
+          name: 'refuses to leave refused text where an importer can reach it',
+          fn: async () => {
+            closeSemanticBridge();
+            /** Disposable dependency directory outside every configured project. */
+            const dependencyRoot = mkdtempSync(join(tmpdir(), 'semantic-refused-',),);
+            using dependencyDirectory: SemanticFixtureDirectory = {
+              path: dependencyRoot,
+              [Symbol.dispose]: function removeRefusedFixture(): void {
+                rmSync(dependencyRoot, { recursive: true, force: true, },);
+              },
+            };
+            using directory = createSemanticFixtureDirectory();
+            /** Dependency path this bridge refuses before any importer names it. */
+            const dependencyPath = join(dependencyDirectory.path, 'outside.ts',);
+            /** Dependency text retained on disk. */
+            const diskSource = 'export type Value = { readonly fromDisk: string; };\n';
+            writeFileSync(dependencyPath, diskSource,);
+            let caught: unknown;
+            try {
+              openSemanticFile({
+                fileName: dependencyPath,
+                sourceText: 'export type Value = { readonly fromOverlay: number; };\n',
+                hasBOM: false,
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect((caught as Error).message,).toContain('no configured project',);
+            /* The refusal is not the end of that text. Discovery handed it to the service, and the
+             * service keeps it until told otherwise, so a configured source importing this path
+             * gets typed against text this bridge refused and disk never had. */
+            const importerPath = join(directory.path, 'importer.ts',);
+            /** Import specifier reaching the refused dependency from configured project. */
+            const specifier = relative(directory.path, dependencyPath,)
+              .replaceAll('\\', '/',);
+            /** Configured importer naming refused dependency. */
+            const importerSource =
+              `import type { Value } from '${specifier}';\nexport function read(value: Value,): Value { return value; }\n`;
+            writeFileSync(importerPath, importerSource,);
+            const session = openSemanticFile({
+              fileName: importerPath,
+              sourceText: importerSource,
+              hasBOM: false,
+            },);
+            const type = session.checker.getTypeAtLocation(
+              session.nodeAtOffset(importerSource.indexOf('value:',),),
+            );
+            if (type === undefined)
+              throw new Error('Expected imported dependency type.',);
+            expect(
+              session.checker
+                .getPropertiesOfType(type,)
+                .map(function propertyName(property,): string {
+                  return property.name;
+                },),
+            ).toEqual(['fromDisk',],);
+          },
+        },),
+        it({
+          name: 'reopens a source the failed discovery reported as deleted',
+          fn: async () => {
+            closeSemanticBridge();
+            using directory = createSemanticFixtureDirectory();
+            /** Configured source held before deletion. */
+            const heldPath = join(directory.path, 'held.ts',);
+            /** Source text present at first open. */
+            const firstSource = 'export const heldValue: string = \'first\';\n';
+            /** Source text present after recreation. */
+            const secondSource = 'export const heldValue: number = 2;\n';
+            writeFileSync(heldPath, firstSource,);
+            openSemanticFile({
+              fileName: heldPath,
+              sourceText: firstSource,
+              hasBOM: false,
+            },);
+            /* Deleting the active source makes the next open report it as deleted, and that open
+             * fails discovery, so the deletion reaches the service through an update whose snapshot
+             * the bridge used to throw away. */
+            rmSync(heldPath,);
+            /** Disposable source outside every configured project. */
+            const unconfiguredRoot = mkdtempSync(join(tmpdir(), 'semantic-unconfigured-',),);
+            using unconfigured: SemanticFixtureDirectory = {
+              path: unconfiguredRoot,
+              [Symbol.dispose]: function removeUnconfiguredFixture(): void {
+                rmSync(unconfiguredRoot, { recursive: true, force: true, },);
+              },
+            };
+            /** Unconfigured source path. */
+            const outsidePath = join(unconfigured.path, 'input.ts',);
+            /** Unconfigured source text. */
+            const outsideSource = 'export const value: string = \'outside\';\n';
+            writeFileSync(outsidePath, outsideSource,);
+            let caught: unknown;
+            try {
+              openSemanticFile({
+                fileName: outsidePath,
+                sourceText: outsideSource,
+                hasBOM: false,
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect((caught as Error).message,).toContain('no configured project',);
+            writeFileSync(heldPath, secondSource,);
+            /** Session over recreated source, which the service no longer holds. */
+            const session = openSemanticFile({
+              fileName: heldPath,
+              sourceText: secondSource,
+              hasBOM: false,
+            },);
+            const node = session.nodeAtOffset(secondSource.indexOf('heldValue',),);
+            const type = session.checker.getTypeAtLocation(node,);
+            if (type === undefined)
+              throw new Error('Expected recreated source type.',);
+            expect(session.checker.typeToString(type,),).toBe('number',);
+          },
+        },),
+        it({
           name: 'discovers nested project after caching containing parent project',
           fn: async () => {
             closeSemanticBridge();
@@ -384,6 +662,7 @@ await describe({
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 1,
               projectRootCount: 1,
+              projectDiscoveryCount: 1,
             },);
             /* A second, different source of the same project. Reopening the same path twice
              * cannot tell retention from clearing, which is what the earlier form of this
@@ -396,9 +675,14 @@ await describe({
             /* Two overlays, not one. The bridge no longer clears down to the active source,
              * because clearing left the native server holding text for a source the overlay had
              * stopped claiming, and nothing ever reported that source as changed. */
+            /* One discovery, not two. The sibling belongs to a project this bridge has already
+             * discovered, and it reaches that answer through the root cache rather than by asking
+             * TypeScript again. A root key spelled the way the host spells paths, rather than the
+             * way this bridge normalizes them, misses here and asks twice. */
             expect(semanticBridgeCacheStats(),).toEqual({
               overlayCount: 2,
               projectRootCount: 1,
+              projectDiscoveryCount: 1,
             },);
           },
         },),

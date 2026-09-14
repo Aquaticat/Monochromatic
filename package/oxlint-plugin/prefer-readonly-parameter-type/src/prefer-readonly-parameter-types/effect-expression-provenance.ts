@@ -1,13 +1,13 @@
 /**
- * Which callable parameters one expression's value can be reached from.
- *
- * The single resolver every origin extractor delegates to. Before it existed,
- * `expressionOrigins` and `rootParameterOrigins` each stripped property and element
- * access down to an identifier and stopped, so they agreed only by coincidence and
- * both stopped at a call. Having one definition is what lets a verified member
- * result be followed to its receiver everywhere rather than in one extractor.
- *
- * @module
+ Which callable parameters one expression's value can be reached from.
+ 
+ The single resolver every origin extractor delegates to. Before it existed,
+ `expressionOrigins` and `rootParameterOrigins` each stripped property and element
+ access down to an identifier and stopped, so they agreed only by coincidence and
+ both stopped at a call. Having one definition is what lets a verified member
+ result be followed to its receiver everywhere rather than in one extractor.
+ 
+ @module
  */
 
 import {
@@ -59,28 +59,28 @@ import {
 } from './effect-summary-model.ts';
 
 /**
- * Operators whose value may come from either operand.
- *
- * `??` is the one that matters most, and a resolver handling only calls would miss
- * this package's own blocking shape: `target.get(key) ?? new Set()` is a
- * `BinaryExpression`, so following calls alone never reaches the lookup. Measured
- * more widely than that: `expressionRoot` strips property access but not a binary
- * operator, so before this every alias established through `??` carried no origin at
- * all, including `config.eviction ?? []` in `package/module/kv-store`.
- *
- * `||` belongs here too, since it yields its left operand whenever that is truthy,
- * and a mutable object is truthy.
- *
- * `&&` deliberately does not, and that asymmetry is the point. It yields its left
- * operand only when that operand is falsy, and no falsy value is a mutable object, so
- * any object the expression produces came from the right operand. Following the left
- * one could only over-attribute: `input && new Set()` would credit `input` for a
- * `Set` that is always freshly built, and a false mutation record withholds a
- * read-only offer the parameter deserves. `&&` is handled as right-operand-only in
- * `provenanceSuccessors`.
- *
- * Arithmetic and comparison operators are absent because their result is a fresh
- * primitive, which carries no state to attribute.
+ Operators whose value may come from either operand.
+ 
+ `??` is the one that matters most, and a resolver handling only calls would miss
+ this package's own blocking shape: `target.get(key) ?? new Set()` is a
+ `BinaryExpression`, so following calls alone never reaches the lookup. Measured
+ more widely than that: `expressionRoot` strips property access but not a binary
+ operator, so before this every alias established through `??` carried no origin at
+ all, including `config.eviction ?? []` in `package/module/kv-store`.
+ 
+ `||` belongs here too, since it yields its left operand whenever that is truthy,
+ and a mutable object is truthy.
+ 
+ `&&` deliberately does not, and that asymmetry is the point. It yields its left
+ operand only when that operand is falsy, and no falsy value is a mutable object, so
+ any object the expression produces came from the right operand. Following the left
+ one could only over-attribute: `input && new Set()` would credit `input` for a
+ `Set` that is always freshly built, and a false mutation record withholds a
+ read-only offer the parameter deserves. `&&` is handled as right-operand-only in
+ `provenanceSuccessors`.
+ 
+ Arithmetic and comparison operators are absent because their result is a fresh
+ primitive, which carries no state to attribute.
  */
 const EITHER_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.QuestionQuestionToken,
@@ -88,12 +88,12 @@ const EITHER_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Operators whose value is always their right operand's.
- *
- * `&&` for the truthiness reason recorded on `EITHER_OPERAND_OPERATORS`. Simple
- * assignment because `holder = facts.get(key)` evaluates to what was assigned, so a
- * mutation through the assignment expression's value reaches the right side. The comma
- * operator discards its left operand outright.
+ Operators whose value is always their right operand's.
+ 
+ `&&` for the truthiness reason recorded on `EITHER_OPERAND_OPERATORS`. Simple
+ assignment because `holder = facts.get(key)` evaluates to what was assigned, so a
+ mutation through the assignment expression's value reaches the right side. The comma
+ operator discards its left operand outright.
  */
 const RIGHT_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
   SyntaxKind.AmpersandAmpersandToken,
@@ -102,41 +102,41 @@ const RIGHT_OPERAND_OPERATORS: ReadonlySet<SyntaxKind> = new Set([
 ],);
 
 /**
- * Sentinel when an expression wraps nothing whose value it passes through.
- *
- * A sentinel rather than `undefined`, since this repo models absence without nullish
- * unions.
+ Sentinel when an expression wraps nothing whose value it passes through.
+ 
+ A sentinel rather than `undefined`, since this repo models absence without nullish
+ unions.
  */
 export const NOTHING_WRAPPED: unique symbol = Symbol(
   'expression passes through no operand value',
 );
 
 /**
- * Expressions whose value is exactly their operand's.
- *
- * Every form here erases at runtime or passes its operand through unchanged, so the
- * value that arrives is the operand's own. `as`, an angle-bracket assertion and `satisfies`
- * matter as much as parentheses: `facts.get(key) as Set<string>` is the ordinary way
- * to narrow a lookup, and treating it as opaque loses attribution for the whole
- * expression.
- *
- * `await` is deliberately absent. Thenable assimilation means an awaited value need
- * not be the operand's, so admitting it would assert an identity nothing here proves.
- *
- * @param node - Expression to unwrap.
- *
- * @returns inner expression, or sentinel when nothing is wrapped.
- *
- * @example
- * ```ts
- * transparentOperand({ node });
- * ```
+ Expressions whose value is exactly their operand's.
+ 
+ Every form here erases at runtime or passes its operand through unchanged, so the
+ value that arrives is the operand's own. `as`, an angle-bracket assertion and `satisfies`
+ matter as much as parentheses: `facts.get(key) as Set<string>` is the ordinary way
+ to narrow a lookup, and treating it as opaque loses attribution for the whole
+ expression.
+ 
+ `await` is deliberately absent. Thenable assimilation means an awaited value need
+ not be the operand's, so admitting it would assert an identity nothing here proves.
+ 
+ @param node - Expression to unwrap.
+ 
+ @returns inner expression, or sentinel when nothing is wrapped.
+ 
+ @example
+ ```ts
+ transparentOperand({ node });
+ ```
  */
 export function transparentOperand(
   { node, }: { readonly node: Node; },
 ): Node | typeof NOTHING_WRAPPED {
   /**
-   * Whether this node's value is exactly its operand's.
+   Whether this node's value is exactly its operand's.
    */
   const passesThrough = isParenthesizedExpression(node,)
     || isNonNullExpression(node,)
@@ -148,37 +148,37 @@ export function transparentOperand(
 }
 
 /**
- * Operands one of which the expression's own value already is.
- *
- * The selection family, kept apart from the aggregate family below it because the two
- * answer different questions. Everything here yields a value that some operand already
- * held, either by erasing at runtime or by choosing between operands, so any walk asking
- * "where did this value come from" inherits from these without needing a relation to
- * explain the step. An aggregate is the opposite: `[a, b,]` builds a value no operand
- * held, and crediting its contents is a separate claim about what a container packages.
- *
- * Exported because the element walk needs exactly this family and nothing else. Measured
- * 2026-08-07: `return (rows.slice(0,));` and `return cond ? rows.slice(0,) : [];` recorded
- * no element origins while the bare `return (rows);` and `return cond ? rows : [];`
- * recorded them correctly, because value provenance saw through the wrappers and the
- * container relation did not. Sharing one definition is what stops the two walks
- * disagreeing about identical state, which is the same hazard the spread rule on
- * `isArrayLiteralExpression` was written to avoid.
- *
- * @param node - Expression whose selected operands are wanted.
- *
- * @returns operands whose value this expression's own may be.
- *
- * @example
- * ```ts
- * selectedOperandSuccessors({ node });
- * ```
+ Operands one of which the expression's own value already is.
+ 
+ The selection family, kept apart from the aggregate family below it because the two
+ answer different questions. Everything here yields a value that some operand already
+ held, either by erasing at runtime or by choosing between operands, so any walk asking
+ "where did this value come from" inherits from these without needing a relation to
+ explain the step. An aggregate is the opposite: `[a, b,]` builds a value no operand
+ held, and crediting its contents is a separate claim about what a container packages.
+ 
+ Exported because the element walk needs exactly this family and nothing else. Measured
+ 2026-08-07: `return (rows.slice(0,));` and `return cond ? rows.slice(0,) : [];` recorded
+ no element origins while the bare `return (rows);` and `return cond ? rows : [];`
+ recorded them correctly, because value provenance saw through the wrappers and the
+ container relation did not. Sharing one definition is what stops the two walks
+ disagreeing about identical state, which is the same hazard the spread rule on
+ `isArrayLiteralExpression` was written to avoid.
+ 
+ @param node - Expression whose selected operands are wanted.
+ 
+ @returns operands whose value this expression's own may be.
+ 
+ @example
+ ```ts
+ selectedOperandSuccessors({ node });
+ ```
  */
 export function selectedOperandSuccessors(
   { node, }: { readonly node: Node; },
 ): readonly Node[] {
   /**
-   * Operand of a wrapper that changes nothing about the value.
+   Operand of a wrapper that changes nothing about the value.
    */
   const unwrapped = transparentOperand({ node, },);
   if (unwrapped !== NOTHING_WRAPPED)
@@ -210,22 +210,22 @@ export function selectedOperandSuccessors(
 }
 
 /**
- * Successor expressions whose origins the current expression inherits.
- *
- * Every returned node is a strict AST descendant of the input, which is what bounds
- * the walk: no step can revisit an ancestor, so the stack drains without needing a
- * visited set or a pass limit.
- *
- * @param project - TypeScript project proving default-library ownership.
- *
- * @param node - Expression whose value sources are wanted.
- *
- * @returns descendants contributing origins to this expression.
- *
- * @example
- * ```ts
- * provenanceSuccessors({ project, node });
- * ```
+ Successor expressions whose origins the current expression inherits.
+ 
+ Every returned node is a strict AST descendant of the input, which is what bounds
+ the walk: no step can revisit an ancestor, so the stack drains without needing a
+ visited set or a pass limit.
+ 
+ @param project - TypeScript project proving default-library ownership.
+ 
+ @param node - Expression whose value sources are wanted.
+ 
+ @returns descendants contributing origins to this expression.
+ 
+ @example
+ ```ts
+ provenanceSuccessors({ project, node });
+ ```
  */
 function provenanceSuccessors({
   project,
@@ -235,7 +235,7 @@ function provenanceSuccessors({
   readonly node: Node;
 },): readonly Node[] {
   /**
-   * Operands this expression's value may already be, when it selects rather than builds.
+   Operands this expression's value may already be, when it selects rather than builds.
    */
   const selected = selectedOperandSuccessors({ node, },);
   if (selected.length > 0)
@@ -279,7 +279,7 @@ function provenanceSuccessors({
         if (!isSpreadElement(element,))
           return [element,];
         /**
-         * Type of the container being spread, when the checker resolves one.
+         Type of the container being spread, when the checker resolves one.
          */
         const spreadType = project.checker
           .getTypeAtLocation(element.expression,);
@@ -295,7 +295,7 @@ function provenanceSuccessors({
          * returned rather than one: the value answers when a parameter is spread directly,
          * and the receiver answers when a fresh container is. */
         /**
-         * Receiver whose elements the spread container holds, when that is verified.
+         Receiver whose elements the spread container holds, when that is verified.
          */
         const elementReceiver = containerElementReceiver({
           project,
@@ -326,20 +326,20 @@ function provenanceSuccessors({
    * result is state the receiver held. Absent that, a call is where provenance stops:
    * the result is either fresh or unproven, and neither may be credited. */
   /**
-   * Checker for the project resolving this call.
+   Checker for the project resolving this call.
    */
   const { checker, } = project;
   /* A verified reader's result holds the values it read, so provenance runs to the value
    * it was given rather than to its receiver, which is a global. */
   /**
-   * Declaration this call resolves to, when one does.
+   Declaration this call resolves to, when one does.
    */
   const readerDeclaration = checker.getResolvedSignature(node,)
     ?.declaration
     ?.resolve(project,);
   if (readerDeclaration !== undefined) {
     /**
-     * Verified reader and the value it reads, when this call is one.
+     Verified reader and the value it reads, when this call is one.
      */
     const reader = verifiedReaderCall({
       project,
@@ -352,7 +352,7 @@ function provenanceSuccessors({
       return [reader.operand,];
   }
   /**
-   * Receiver whose state this call's result is verified to be, when any.
+   Receiver whose state this call's result is verified to be, when any.
    */
   const receiver = callResultReceiver({
     project,
@@ -365,24 +365,24 @@ function provenanceSuccessors({
 }
 
 /**
- * Resolves every callable parameter one expression's value can be reached from.
- *
- * Walks the expression with an explicit stack rather than recursion, per `ITR`: the
- * shape being followed is a spine of receivers and operands, and branch operators
- * make it a small tree, so the stack both flattens it and unions the branches.
- *
- * @param project - TypeScript project resolving symbols and signatures.
- *
- * @param bindingOriginBySymbolId - Known parameter and alias origins.
- *
- * @param node - Expression whose value provenance is wanted.
- *
- * @returns every parameter origin the value can carry, empty when none.
- *
- * @example
- * ```ts
- * expressionValueOrigins({ project, bindingOriginBySymbolId, node });
- * ```
+ Resolves every callable parameter one expression's value can be reached from.
+ 
+ Walks the expression with an explicit stack rather than recursion, per `ITR`: the
+ shape being followed is a spine of receivers and operands, and branch operators
+ make it a small tree, so the stack both flattens it and unions the branches.
+ 
+ @param project - TypeScript project resolving symbols and signatures.
+ 
+ @param bindingOriginBySymbolId - Known parameter and alias origins.
+ 
+ @param node - Expression whose value provenance is wanted.
+ 
+ @returns every parameter origin the value can carry, empty when none.
+ 
+ @example
+ ```ts
+ expressionValueOrigins({ project, bindingOriginBySymbolId, node });
+ ```
  */
 export function expressionValueOrigins({
   project,
@@ -394,32 +394,32 @@ export function expressionValueOrigins({
   readonly node: Node;
 },): SlotOrigins {
   /**
-   * Origins accumulated across every branch reached.
+   Origins accumulated across every branch reached.
    */
   const origins = new Set<EffectSlot>();
   /**
-   * Expressions still to examine, mostly but not only descendants of one already seen.
-   *
-   * The qualification is the point, and the flat claim that stood here was wrong. Successors
-   * are descendants and `provenanceSuccessors` says so, but the element-access and spread
-   * branches also queue a `containerElementReceiver` result, and that follows a name to its
-   * declaration initializer, which is anywhere in the file. So the descendant argument
-   * covers most of what is queued and not all of it, and this walk keeps no visited set.
-   *
-   * Probed rather than left as a worry, on five self-referential and mutually referential
-   * container declarations, including `const a = [...b]; const b = [...a];` and
-   * `const a = [a[0]!];`. None failed to terminate. Two exhaust the stack instead, inside
-   * the checker's own member aggregation rather than here, and `effect-demand-index` catches
-   * that, logs the omission and leaves the callable without a summary, which the unresolved
-   * boundary then withholds on. Degraded and safe rather than unsound.
-   *
-   * A visited set is therefore not added here. It would cost a set operation per node on one
-   * of the hottest walks in the rule, against a cycle nothing has produced.
+   Expressions still to examine, mostly but not only descendants of one already seen.
+   
+   The qualification is the point, and the flat claim that stood here was wrong. Successors
+   are descendants and `provenanceSuccessors` says so, but the element-access and spread
+   branches also queue a `containerElementReceiver` result, and that follows a name to its
+   declaration initializer, which is anywhere in the file. So the descendant argument
+   covers most of what is queued and not all of it, and this walk keeps no visited set.
+   
+   Probed rather than left as a worry, on five self-referential and mutually referential
+   container declarations, including `const a = [...b]; const b = [...a];` and
+   `const a = [a[0]!];`. None failed to terminate. Two exhaust the stack instead, inside
+   the checker's own member aggregation rather than here, and `effect-demand-index` catches
+   that, logs the omission and leaves the callable without a summary, which the unresolved
+   boundary then withholds on. Degraded and safe rather than unsound.
+   
+   A visited set is therefore not added here. It would cost a set operation per node on one
+   of the hottest walks in the rule, against a cycle nothing has produced.
    */
   const pending: Node[] = [node,];
   while (pending.length > 0) {
     /**
-     * Next expression whose value sources are examined.
+     Next expression whose value sources are examined.
      */
     const current = pending.pop();
     if (current === undefined)
@@ -436,7 +436,7 @@ export function expressionValueOrigins({
      * receiver's own opacity is what withholds the offer until it is discharged. */
     if (isElementAccessExpression(current,)) {
       /**
-       * Receiver whose elements this container holds, when that is verified.
+       Receiver whose elements this container holds, when that is verified.
        */
       const elementReceiver = containerElementReceiver({
         project,
@@ -449,7 +449,7 @@ export function expressionValueOrigins({
       }
     }
     /**
-     * Root after property and element access removal.
+     Root after property and element access removal.
      */
     const root = expressionRoot(current,);
     /* A `this` expression is not an identifier, so this branch skipped it and the walk fell
@@ -464,16 +464,16 @@ export function expressionValueOrigins({
      * front of the lookup had to widen. */
     if (isIdentifier(root,) || isThisExpression(root,)) {
       /**
-       * Symbol the root identifier or `this` expression resolves to.
-       *
-       * A shorthand property's name resolves to the property rather than to the local it
-       * reads, so the value symbol has to be asked for separately. Every other walk in this
-       * package already does: `packagedCallableOrigins`, `parameterIndexes` and the
-       * `ForeignBorrowed` classifier. This one did not, and the object-literal branch above
-       * hands it exactly that node, so a returned `{ slice }` recorded no origin while
-       * `{ slice: slice }` recorded one. Measured: a caller writing through the returned
-       * object was attributed nothing and kept its read-only offer, while the identical
-       * write through the explicit form reported the mutation.
+       Symbol the root identifier or `this` expression resolves to.
+       
+       A shorthand property's name resolves to the property rather than to the local it
+       reads, so the value symbol has to be asked for separately. Every other walk in this
+       package already does: `packagedCallableOrigins`, `parameterIndexes` and the
+       `ForeignBorrowed` classifier. This one did not, and the object-literal branch above
+       hands it exactly that node, so a returned `{ slice }` recorded no origin while
+       `{ slice: slice }` recorded one. Measured: a caller writing through the returned
+       object was attributed nothing and kept its read-only offer, while the identical
+       write through the explicit form reported the mutation.
        */
       const symbol = isShorthandPropertyAssignment(root.parent,)
           && (root.parent
@@ -484,7 +484,7 @@ export function expressionValueOrigins({
         : project.checker
           .getSymbolAtLocation(root,);
       /**
-       * Origins already recorded for this binding.
+       Origins already recorded for this binding.
        */
       const known = symbol === undefined
         ? NO_SLOT_ORIGIN

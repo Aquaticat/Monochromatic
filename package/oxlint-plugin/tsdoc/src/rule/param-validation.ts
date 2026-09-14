@@ -1,9 +1,9 @@
 /**
- * TSDoc parameter name and description validation rules.
- *
- * Extracted from `params.ts` to keep files under 100 countable lines.
- *
- * @module
+ TSDoc parameter name and description validation rules.
+ 
+ Extracted from `params.ts` to keep files under 100 countable lines.
+ 
+ @module
  */
 
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -19,9 +19,9 @@ import {
 } from './tsdoc-visitors.ts';
 
 /**
- * Requires that every `\@param` tag has a parameter name.
- *
- * Reports `\@param - description` (missing name before the hyphen).
+ Requires that every `\@param` tag has a parameter name.
+ 
+ Reports `\@param - description` (missing name before the hyphen).
  */
 export const requireParamName: CreateOnceRule = {
   meta: {
@@ -35,16 +35,16 @@ export const requireParamName: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({
@@ -73,22 +73,22 @@ export const requireParamName: CreateOnceRule = {
 };
 
 /**
- * Requires that every `\@param` tag has a description after the parameter name.
- *
- * Relies on the scanner's precomputed `hasDescription`, which is true when the
- * block has any non-whitespace text after the parameter name and optional
- * hyphen separator.
- *
- * @example
- * ```ts
- * // Bad; no description
- * /\** \@param name *\/
- * function foo(name: string): void {}
- *
- * // Good
- * /\** \@param name - user name to display *\/
- * function foo(name: string): void {}
- * ```
+ Requires that every `\@param` tag has a description after the parameter name.
+ 
+ Relies on the scanner's precomputed `hasDescription`, which is true when the
+ block has any non-whitespace text after the parameter name and optional
+ hyphen separator.
+ 
+ @example
+ ```ts
+ // Bad; no description
+ /\** \@param name *\/
+ function foo(name: string): void {}
+ 
+ // Good
+ /\** \@param name - user name to display *\/
+ function foo(name: string): void {}
+ ```
  */
 export const requireParamDescription: CreateOnceRule = {
   meta: {
@@ -102,16 +102,16 @@ export const requireParamDescription: CreateOnceRule = {
     },
   },
   /**
-   * Handles effectful plugin callback.
-   *
-   * @param context - Foreign callback value carrying diagnostic capability.
-   *
-   * @mutates context - Emits Oxlint diagnostics through foreign rule context.
-   *
-   * @example
-   * ```ts
-   * createOnce(context);
-   * ```
+   Handles effectful plugin callback.
+   
+   @param context - Foreign callback value carrying diagnostic capability.
+   
+   @mutates context - Emits Oxlint diagnostics through foreign rule context.
+   
+   @example
+   ```ts
+   createOnce(context);
+   ```
    */
   createOnce(context: ForeignBorrowed<Context>,): VisitorWithHooks {
     return createFunctionTsdocVisitor({

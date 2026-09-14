@@ -1,7 +1,7 @@
 /**
- * Verifies built current-time-context extension registration and message shape.
- *
- * @module
+ Verifies built current-time-context extension registration and message shape.
+ 
+ @module
  */
 
 import type { ExtensionFactory, } from '@earendil-works/pi-coding-agent';
@@ -16,17 +16,17 @@ import { isTimeContextContent, } from './time-context-shape.ts';
 //region Constants
 
 /**
- * Built extension path consumed by Pi.
+ Built extension path consumed by Pi.
  */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
 /**
- * Expected event registration from the extension entry point.
+ Expected event registration from the extension entry point.
  */
 const EXPECTED_REGISTRATION = 'event:before_agent_start';
 
 /**
- * Expected custom message type emitted by the extension.
+ Expected custom message type emitted by the extension.
  */
 const EXPECTED_CUSTOM_TYPE = 'current-time-context';
 
@@ -35,11 +35,11 @@ const EXPECTED_CUSTOM_TYPE = 'current-time-context';
 //region Types
 
 /**
- * Built current-time-context extension module shape.
+ Built current-time-context extension module shape.
  */
 type CurrentTimeContextExtensionModule = {
   /**
-   * Pi extension factory.
+   Pi extension factory.
    */
   default: ExtensionFactory;
 };
@@ -49,24 +49,24 @@ type CurrentTimeContextExtensionModule = {
 //region Verification
 
 /**
- * Verifies built extension registers and emits hidden time context: builds a
- * {@link fakePiApi} harness, drives the captured handler (found via
- * {@link getBeforeAgentStartHandler}) with a {@link createBeforeAgentStartEvent}
- * event and {@link createExtensionContext}, then checks the resulting message
- * content with {@link isTimeContextContent}.
- *
- * @returns verification result text
- *
- * @throws when built extension import, registration, or handler output fails
- *
- * @example
- * ```typescript
- * console.log(await verifyBuiltExtension());
- * ```
+ Verifies built extension registers and emits hidden time context: builds a
+ {@link fakePiApi} harness, drives the captured handler (found via
+ {@link getBeforeAgentStartHandler}) with a {@link createBeforeAgentStartEvent}
+ event and {@link createExtensionContext}, then checks the resulting message
+ content with {@link isTimeContextContent}.
+ 
+ @returns verification result text
+ 
+ @throws when built extension import, registration, or handler output fails
+ 
+ @example
+ ```typescript
+ console.log(await verifyBuiltExtension());
+ ```
  */
 async function verifyBuiltExtension(): Promise<string> {
   /**
-   * Built extension module imported through package output.
+   Built extension module imported through package output.
    */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isCurrentTimeContextExtensionModule(mod,)) {
@@ -76,7 +76,7 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Fake Pi API harness for registration and handler verification.
+   Fake Pi API harness for registration and handler verification.
    */
   const harness = fakePiApi();
   await mod.default(harness.api,);
@@ -89,12 +89,12 @@ async function verifyBuiltExtension(): Promise<string> {
   }
 
   /**
-   * Captured before-agent-start handler.
+   Captured before-agent-start handler.
    */
   const handler = getBeforeAgentStartHandler(harness.handlers,);
 
   /**
-   * Handler result emitted by the built extension.
+   Handler result emitted by the built extension.
    */
   const result = await handler(
     createBeforeAgentStartEvent(),
@@ -104,7 +104,7 @@ async function verifyBuiltExtension(): Promise<string> {
     throw new Error('before_agent_start handler returned no result',);
 
   /**
-   * Custom message returned by the extension.
+   Custom message returned by the extension.
    */
   const { message, } = result;
   if (message === undefined)
@@ -133,16 +133,16 @@ async function verifyBuiltExtension(): Promise<string> {
 }
 
 /**
- * Detects built current-time-context extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports extension factory
- *
- * @example
- * ```typescript
- * isCurrentTimeContextExtensionModule(await import('../dist/final/node/index.mjs'));
- * ```
+ Detects built current-time-context extension module shape.
+ 
+ @param value - imported module namespace
+ 
+ @returns whether module exports extension factory
+ 
+ @example
+ ```typescript
+ isCurrentTimeContextExtensionModule(await import('../dist/final/node/index.mjs'));
+ ```
  */
 function isCurrentTimeContextExtensionModule(
   value: unknown,

@@ -1,16 +1,16 @@
 /**
- * Property-based fuzz tests for the XML entry editor in `./xml.ts`.
- *
- * Properties: `listXmlEntries` and `findXmlEntryByKey` are total over
- * arbitrary input (the Lezer parser error-recovers, so they return an
- * array or the absence sentinel and never throw), and their results agree;
- * and inserting a well-formed entry into a document with a `<map>` makes
- * the entry findable by key, with its option value surviving the
- * parse-and-decode round-trip for arbitrary (escaped) keys and values.
- *
- * Run plan and seed policy: see `../fuzz-budget.ts`.
- *
- * @module
+ Property-based fuzz tests for the XML entry editor in `./xml.ts`.
+ 
+ Properties: `listXmlEntries` and `findXmlEntryByKey` are total over
+ arbitrary input (the Lezer parser error-recovers, so they return an
+ array or the absence sentinel and never throw), and their results agree;
+ and inserting a well-formed entry into a document with a `<map>` makes
+ the entry findable by key, with its option value surviving the
+ parse-and-decode round-trip for arbitrary (escaped) keys and values.
+ 
+ Run plan and seed policy: see `../fuzz-budget.ts`.
+ 
+ @module
  */
 
 import {
@@ -42,12 +42,12 @@ import {
 //region Constants and arbitraries
 
 /**
- * Run plan resolved once for every property in this file.
+ Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
 
 /**
- * A minimal JetBrains-shaped document with an empty `<map>` to insert into.
+ A minimal JetBrains-shaped document with an empty `<map>` to insert into.
  */
 const MAP_DOCUMENT = [
   '<application>',
@@ -60,9 +60,9 @@ const MAP_DOCUMENT = [
 ].join('\n',);
 
 /**
- * Arbitrary XML-ish text: arbitrary strings unioned with concrete document
- * fragments, some valid and some malformed, to drive the parser's
- * error-recovery branches as well as the entry-bearing path.
+ Arbitrary XML-ish text: arbitrary strings unioned with concrete document
+ fragments, some valid and some malformed, to drive the parser's
+ error-recovery branches as well as the entry-bearing path.
  */
 const xmlArbitrary = oneof(
   string(),
@@ -77,9 +77,9 @@ const xmlArbitrary = oneof(
 );
 
 /**
- * Arbitrary key or value text limited to non-control characters (including
- * XML delimiters and an astral code point) so the constructed document
- * stays valid XML once escaped.
+ Arbitrary key or value text limited to non-control characters (including
+ XML delimiters and an astral code point) so the constructed document
+ stays valid XML once escaped.
  */
 const safeTextArbitrary = string({
   unit: constantFrom(
@@ -117,7 +117,7 @@ await describe({
                 xmlArbitrary,
                 async function listTotality(xml,) {
                   /**
-                   * Entries parsed from the document.
+                   Entries parsed from the document.
                    */
                   const entries = listXmlEntries({ xml, },);
                   expect(Array.isArray(entries,),).toBe(true,);
@@ -158,7 +158,7 @@ await describe({
                   key,
                 },) {
                   /**
-                   * Lookup result for the requested key.
+                   Lookup result for the requested key.
                    */
                   const found = findXmlEntryByKey({
                     xml,
@@ -202,13 +202,13 @@ await describe({
                   value,
                 },) {
                   /**
-                   * Well-formed entry block carrying one escaped option.
+                   Well-formed entry block carrying one escaped option.
                    */
                   const block = `<entry key="${escapeXmlAttribute({ value: key, },)}">`
                     + `<option name="opt" value="${escapeXmlAttribute({ value, },)}" />`
                     + '</entry>';
                   /**
-                   * Document after inserting the entry into the map.
+                   Document after inserting the entry into the map.
                    */
                   const updated = replaceOrInsertXmlEntry({
                     xml: MAP_DOCUMENT,
@@ -216,7 +216,7 @@ await describe({
                     block,
                   },);
                   /**
-                   * Entry located by key in the updated document.
+                   Entry located by key in the updated document.
                    */
                   const found = findXmlEntryByKey({
                     xml: updated,
@@ -224,7 +224,7 @@ await describe({
                   },);
                   expect(found,).not.toBe(ABSENT_XML_ENTRY,);
                   /**
-                   * Located entry narrowed past the absence sentinel.
+                   Located entry narrowed past the absence sentinel.
                    */
                   const entry = found as XmlEntry;
                   expect(entry.key,).toBe(key,);

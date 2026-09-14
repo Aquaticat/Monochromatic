@@ -20,21 +20,21 @@ import {
 import type { BypassState, } from './tunnel-bypass-types.ts';
 
 /**
- * Sentinel representing absent state path.
+ Sentinel representing absent state path.
  */
 export const BYPASS_STATE_ABSENT: unique symbol = Symbol('bypass state path is absent',);
 
 /**
- * Narrows caught value to Node filesystem error.
- *
- * @param error - Caught value.
- *
- * @returns Whether value carries error code.
- *
- * @example
- * ```ts
- * isErrnoException({ code: 'ENOENT' }); // true
- * ```
+ Narrows caught value to Node filesystem error.
+ 
+ @param error - Caught value.
+ 
+ @returns Whether value carries error code.
+ 
+ @example
+ ```ts
+ isErrnoException({ code: 'ENOENT' }); // true
+ ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
   return ((typeof error) === 'object')
@@ -43,16 +43,16 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Reads UTF-8 path with explicit absence.
- *
- * @param path - Path to read.
- *
- * @returns Text or absence sentinel.
- *
- * @example
- * ```ts
- * await readIfExists('/run/wg-quicker/state.json');
- * ```
+ Reads UTF-8 path with explicit absence.
+ 
+ @param path - Path to read.
+ 
+ @returns Text or absence sentinel.
+ 
+ @example
+ ```ts
+ await readIfExists('/run/wg-quicker/state.json');
+ ```
  */
 async function readIfExists(
   path: string,
@@ -71,24 +71,24 @@ async function readIfExists(
 }
 
 /**
- * Reads state from explicit path for watcher process.
- *
- * @param path - State path passed by detached watcher.
- *
- * @returns Validated state.
- *
- * @throws {@link BypassStateError} when absent or invalid.
- *
- * @example
- * ```ts
- * await readBypassStatePath({ path: '/run/wg-quicker/interface-key.json' });
- * ```
+ Reads state from explicit path for watcher process.
+ 
+ @param path - State path passed by detached watcher.
+ 
+ @returns Validated state.
+ 
+ @throws {@link BypassStateError} when absent or invalid.
+ 
+ @example
+ ```ts
+ await readBypassStatePath({ path: '/run/wg-quicker/interface-key.json' });
+ ```
  */
 export async function readBypassStatePath(
   { path, }: { readonly path: string; },
 ): Promise<BypassState> {
   /**
-   * State text when path exists.
+   State text when path exists.
    */
   const text = await readIfExists(path,);
   if (text === BYPASS_STATE_ABSENT)
@@ -100,32 +100,32 @@ export async function readBypassStatePath(
 }
 
 /**
- * Reads state for interface when present.
- *
- * @param interfaceName - Interface identity.
- *
- * @returns State or absence sentinel.
- *
- * @example
- * ```ts
- * await readBypassState({ interfaceName: 'wg0' });
- * ```
+ Reads state for interface when present.
+ 
+ @param interfaceName - Interface identity.
+ 
+ @returns State or absence sentinel.
+ 
+ @example
+ ```ts
+ await readBypassState({ interfaceName: 'wg0' });
+ ```
  */
 export async function readBypassState(
   { interfaceName, }: { readonly interfaceName: string; },
 ): Promise<BypassState | typeof BYPASS_STATE_ABSENT> {
   /**
-   * Interface-specific path.
+   Interface-specific path.
    */
   const path = bypassStatePath({ interfaceName, },);
   /**
-   * State text when path exists.
+   State text when path exists.
    */
   const text = await readIfExists(path,);
   if (text === BYPASS_STATE_ABSENT)
     return BYPASS_STATE_ABSENT;
   /**
-   * Validated state from interface path.
+   Validated state from interface path.
    */
   const state = parseBypassState({
     text,
@@ -140,12 +140,12 @@ export async function readBypassState(
 }
 
 /**
- * Ensures private runtime directory exists.
- *
- * @example
- * ```ts
- * await ensureRuntimeDirectory();
- * ```
+ Ensures private runtime directory exists.
+ 
+ @example
+ ```ts
+ await ensureRuntimeDirectory();
+ ```
  */
 async function ensureRuntimeDirectory(): Promise<void> {
   await mkdir(
@@ -158,18 +158,18 @@ async function ensureRuntimeDirectory(): Promise<void> {
 }
 
 /**
- * Selects collision-safe table and preference under caller-held allocation lock.
- *
- * @param interfaceName - Interface becoming owner.
- *
- * @param mark - Socket mark persisted with state.
- *
- * @returns Unpersisted state carrying resource identity.
- *
- * @example
- * ```ts
- * await claimBypassState({ interfaceName: 'wg0', mark: 8888 });
- * ```
+ Selects collision-safe table and preference under caller-held allocation lock.
+ 
+ @param interfaceName - Interface becoming owner.
+ 
+ @param mark - Socket mark persisted with state.
+ 
+ @returns Unpersisted state carrying resource identity.
+ 
+ @example
+ ```ts
+ await claimBypassState({ interfaceName: 'wg0', mark: 8888 });
+ ```
  */
 export async function claimBypassState(
   {
@@ -182,7 +182,7 @@ export async function claimBypassState(
 ): Promise<BypassState> {
   await ensureRuntimeDirectory();
   /**
-   * Free routing resources observed while global kernel lock is held.
+   Free routing resources observed while global kernel lock is held.
    */
   const [table, preference,] = await Promise.all([
     findFreeBypassTable({ minimum: 0, },),
@@ -200,29 +200,29 @@ export async function claimBypassState(
 }
 
 /**
- * Atomically persists claimed state.
- *
- * @param state - Complete ownership state.
- *
- * @example
- * ```ts
- * await persistBypassState({ state });
- * ```
+ Atomically persists claimed state.
+ 
+ @param state - Complete ownership state.
+ 
+ @example
+ ```ts
+ await persistBypassState({ state });
+ ```
  */
 export async function persistBypassState(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   await ensureRuntimeDirectory();
   /**
-   * Final interface state path.
+   Final interface state path.
    */
   const path = bypassStatePath({ interfaceName: state.interfaceName, },);
   /**
-   * Unique same-directory temporary path.
+   Unique same-directory temporary path.
    */
   const temporaryPath = `${path}.${randomUUID()}.tmp`;
   /**
-   * Fresh route JSON values detached from caller-owned route containers.
+   Fresh route JSON values detached from caller-owned route containers.
    */
   const serializedRoutes: {
     readonly proto: string;
@@ -266,22 +266,22 @@ export async function persistBypassState(
 }
 
 /**
- * Removes state after watcher,
- * rules,
- * and routes are confirmed absent.
- *
- * @param state - Ownership state being released.
- *
- * @example
- * ```ts
- * await releaseBypassState({ state });
- * ```
+ Removes state after watcher,
+ rules,
+ and routes are confirmed absent.
+ 
+ @param state - Ownership state being released.
+ 
+ @example
+ ```ts
+ await releaseBypassState({ state });
+ ```
  */
 export async function releaseBypassState(
   { state, }: { readonly state: BypassState; },
 ): Promise<void> {
   /**
-   * Current state validated before ownership record removal.
+   Current state validated before ownership record removal.
    */
   const current = await readBypassState({ interfaceName: state.interfaceName, },);
   if (current === BYPASS_STATE_ABSENT)

@@ -92,7 +92,7 @@ fuzz_target!(|input: RuleFileAndContent| {
     let hits = scan_file(PATH, content, &loaded);
 
     // Upper bound on any 1-based line index: one more than the newline count.
-    let max_line = content.iter().filter(|&&byte| byte == b'\n').count() + 1;
+    let max_line = content.iter().filter(|&&byte| return byte == b'\n').count() + 1;
     let engine_error = format!("{PATH}: engine error");
 
     let mut prev_line = 0usize;

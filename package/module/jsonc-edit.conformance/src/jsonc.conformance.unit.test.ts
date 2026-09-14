@@ -1,10 +1,10 @@
 /**
- * Curated JSONC conformance corpus against VS Code JSONC semantics: JSON plus
- * `//` and block comments and trailing commas, but not JSON5 (no single quotes,
- * unquoted keys, or hex). Valid cases parse to an expected value; invalid cases
- * throw.
- *
- * @module
+ Curated JSONC conformance corpus against VS Code JSONC semantics: JSON plus
+ `//` and block comments and trailing commas, but not JSON5 (no single quotes,
+ unquoted keys, or hex). Valid cases parse to an expected value; invalid cases
+ throw.
+ 
+ @module
  */
 
 import {

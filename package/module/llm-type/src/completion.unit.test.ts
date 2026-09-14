@@ -1,7 +1,7 @@
 /**
- * Tests for non-streaming chat-completion response shapes.
- *
- * @module
+ Tests for non-streaming chat-completion response shapes.
+ 
+ @module
  */
 
 import {

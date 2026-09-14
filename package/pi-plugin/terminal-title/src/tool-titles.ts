@@ -1,11 +1,11 @@
 /**
- * pi tool title registry.
- *
- * Maps pi tool names to shared terminal-title entries.
- * Host-specific code owns tool-name and input-field vocabulary;
- * shared terminal-title owns entry semantics.
- *
- * @module
+ pi tool title registry.
+ 
+ Maps pi tool names to shared terminal-title entries.
+ Host-specific code owns tool-name and input-field vocabulary;
+ shared terminal-title owns entry semantics.
+ 
+ @module
  */
 
 import {
@@ -16,9 +16,9 @@ import {
 } from '@monochromatic-dev/agent-harness-shared-terminal-title/ts';
 
 /**
- * Tool title entries for pi built-in tools.
- *
- * Custom and MCP tools are handled by the shared generic unknown-tool fallback.
+ Tool title entries for pi built-in tools.
+ 
+ Custom and MCP tools are handled by the shared generic unknown-tool fallback.
  */
 const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   bash: shellCommandTitleEntry({ field: 'command', },),

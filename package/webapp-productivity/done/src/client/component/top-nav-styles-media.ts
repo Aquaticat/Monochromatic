@@ -1,5 +1,5 @@
 /**
- * Desktop media-query styles for the `<top-nav>` web component.
+ Desktop media-query styles for the `<top-nav>` web component.
  */
 import {
   cssCalc,
@@ -9,7 +9,7 @@ import {
 import { $ as css, } from '../css.ts';
 
 /**
- * Desktop breakpoint overrides for `<top-nav>`: shows full nav, hides hamburger.
+ Desktop breakpoint overrides for `<top-nav>`: shows full nav, hides hamburger.
  */
 export const TOP_NAV_MEDIA_STYLES: string = css({
   at: 'media',

@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Music player design: dark dynamic-color matrix</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --color-page: #f8f4fc;
+      --color-surface: #fffaff;
+      --color-surface-soft: #f0ebf5;
+      --color-surface-strong: #e5dded;
+      --color-ink: #241f29;
+      --color-ink-soft: #625b68;
+      --color-accent: #65558f;
+      --color-accent-soft: #e9ddff;
+      --color-focus: #49366f;
+      --color-line: #cbc3d2;
+      --color-shadow: rgb(36 31 41 / 18%);
+      --color-backdrop: rgb(20 16 24 / 72%);
+      --color-device: #242124;
+      --color-device-edge: #777177;
+      --color-camera: #080708;
+      --color-screen: #000000;
+      font-family: system-ui, sans-serif;
+      background-color: var(--color-page);
+      color: var(--color-ink);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-inline-size: 20rem;
+      margin-block: 0;
+      margin-inline: 0;
+      background-color: var(--color-page);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    label {
+      min-block-size: 3rem;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline-color: var(--color-focus);
+      outline-offset: 0.1875rem;
+      outline-style: solid;
+      outline-width: 0.1875rem;
+    }
+
+    main {
+      inline-size: min(100% - 2rem, 96rem);
+      margin-inline: auto;
+      padding-block: 2rem 5rem;
+    }
+
+    header {
+      margin-block-end: 1.5rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-block-start: 0;
+    }
+
+    h1 {
+      max-inline-size: 19ch;
+      margin-block-end: 1rem;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      line-height: 0.98;
+    }
+
+    h2 {
+      margin-block-end: 0.75rem;
+      font-size: clamp(1.45rem, 3vw, 2.35rem);
+    }
+
+    h3 {
+      margin-block-end: 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    p,
+    li {
+      line-height: 1.55;
+    }
+
+    .lede {
+      max-inline-size: 76ch;
+      color: var(--color-ink-soft);
+      font-size: 1.1rem;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: 3rem;
+      margin-block-end: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-accent);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 999rem;
+      background-color: var(--color-accent-soft);
+      font-weight: 700;
+    }
+
+    .panel {
+      margin-block: 1.25rem;
+      padding-block: clamp(1rem, 3vw, 2rem);
+      padding-inline: clamp(1rem, 3vw, 2rem);
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1.25rem;
+      background-color: var(--color-surface);
+      box-shadow: 0 0.75rem 2rem var(--color-shadow);
+    }
+
+    .requirement-grid,
+    .strategy-grid,
+    .assessment {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+      gap: 1rem;
+    }
+
+    .requirement,
+    .strategy-card {
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .strategy-card[data-recommended] {
+      border-color: var(--color-accent);
+      border-width: 0.125rem;
+      background-color: var(--color-accent-soft);
+    }
+
+    .code {
+      display: inline-block;
+      margin-block-end: 0.5rem;
+      color: var(--color-accent);
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .role-list {
+      padding-inline-start: 1.25rem;
+    }
+
+    .assessment {
+      margin-block-start: 0.75rem;
+    }
+
+    .assessment section {
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface);
+    }
+
+    .assessment ul {
+      margin-block: 0.35rem 0;
+      padding-inline-start: 1.25rem;
+    }
+
+    .ranking,
+    .fixed-note {
+      margin-block-start: 1rem;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .ranking {
+      border-inline-start-color: var(--color-accent);
+      border-inline-start-style: solid;
+      border-inline-start-width: 0.35rem;
+    }
+
+    .fixed-note {
+      background-color: var(--color-accent-soft);
+    }
+
+    .matrix-key {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(14rem, 1fr));
+      gap: 0.75rem;
+      margin-block: 1rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface-strong);
+    }
+
+    .matrix-key strong {
+      color: var(--color-accent);
+    }
+
+    .matrix-row {
+      margin-block-start: 1.5rem;
+      padding-block-start: 1.5rem;
+      border-block-start-color: var(--color-line);
+      border-block-start-style: solid;
+      border-block-start-width: 0.0625rem;
+    }
+
+    .environment-meta {
+      color: var(--color-ink-soft);
+    }
+
+    .matrix-scroll {
+      overflow-x: auto;
+      padding-block-end: 0.75rem;
+      scrollbar-gutter: stable;
+    }
+
+    .matrix-band + .matrix-band {
+      margin-block-start: 1rem;
+    }
+
+    .matrix-candidates {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(18rem, 1fr));
+      gap: 0.75rem;
+      min-inline-size: 56rem;
+    }
+
+    .matrix-row-label {
+      display: flex;
+      align-items: center;
+      min-block-size: 3rem;
+      margin-block-end: 0.5rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-strong);
+      font-weight: 750;
+    }
+
+    .evidence-card {
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.9rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .evidence-button {
+      inline-size: 100%;
+      min-inline-size: 3rem;
+      padding-block: 0.65rem;
+      padding-inline: 0.65rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 0.8rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      cursor: pointer;
+    }
+
+    .evidence-button img {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: 0.55rem;
+      background-color: var(--color-screen);
+    }
+
+    .evidence-label {
+      display: block;
+      margin-block-start: 0.55rem;
+      color: var(--color-accent);
+      font-weight: 750;
+    }
+
+    fieldset {
+      margin-block: 1.25rem;
+      margin-inline: 0;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1rem;
+    }
+
+    legend {
+      padding-inline: 0.5rem;
+      font-weight: 800;
+    }
+
+    .review-choice {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 0.75rem;
+      margin-block: 0.5rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-soft);
+      cursor: pointer;
+    }
+
+    .review-choice[data-recommended] {
+      background-color: var(--color-accent-soft);
+    }
+
+    .review-choice input {
+      inline-size: 1.35rem;
+      block-size: 1.35rem;
+      margin-block-start: 0.15rem;
+      accent-color: var(--color-accent);
+    }
+
+    textarea {
+      inline-size: 100%;
+      min-block-size: 8rem;
+      padding-block: 0.75rem;
+      padding-inline: 0.75rem;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-block-start: 1rem;
+    }
+
+    .action-button,
+    .toolbar-button {
+      min-inline-size: 3rem;
+      padding-inline: 1rem;
+      border-color: var(--color-accent);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 999rem;
+      background-color: var(--color-accent);
+      color: var(--color-surface);
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .action-button[data-secondary],
+    .toolbar-button {
+      background-color: var(--color-surface);
+      color: var(--color-accent);
+    }
+
+    #output {
+      margin-block-start: 1rem;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      border-radius: 0.75rem;
+      background-color: var(--color-surface-strong);
+      white-space: pre-wrap;
+    }
+
+    dialog {
+      inline-size: calc(100% - 2rem);
+      max-inline-size: none;
+      block-size: calc(100% - 2rem);
+      max-block-size: none;
+      padding-block: 0;
+      padding-inline: 0;
+      border-color: var(--color-line);
+      border-style: solid;
+      border-width: 0.0625rem;
+      border-radius: 1.25rem;
+      background-color: var(--color-surface);
+      color: var(--color-ink);
+    }
+
+    dialog::backdrop {
+      background-color: var(--color-backdrop);
+    }
+
+    .dialog-shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      block-size: 100%;
+    }
+
+    .dialog-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      padding-block: 0.75rem;
+      padding-inline: 1rem;
+      border-block-end-color: var(--color-line);
+      border-block-end-style: solid;
+      border-block-end-width: 0.0625rem;
+      background-color: var(--color-surface);
+    }
+
+    .dialog-toolbar h2 {
+      flex: 1 1 18rem;
+      margin-block-end: 0;
+      font-size: 1.25rem;
+    }
+
+    #preview-details {
+      flex-basis: 100%;
+      color: var(--color-ink-soft);
+    }
+
+    .preview-stage {
+      overflow: auto;
+      padding-block: 1rem;
+      padding-inline: 1rem;
+      background-color: var(--color-surface-soft);
+    }
+
+    .device-shell {
+      --preview-scale-x: 1;
+      --preview-scale-y: 1;
+      position: relative;
+      inline-size: calc(907px * var(--preview-scale-x));
+      block-size: calc(937px * var(--preview-scale-y));
+      margin-inline: auto;
+      border-color: var(--color-device-edge);
+      border-style: solid;
+      border-width: max(0.0625rem, calc(2px * var(--preview-scale-x)));
+      border-radius: calc(48px * var(--preview-scale-x));
+      background-color: var(--color-device);
+    }
+
+    .device-screen {
+      position: absolute;
+      inset-block-start: calc(27px * var(--preview-scale-y));
+      inset-inline-start: calc(27px * var(--preview-scale-x));
+      inline-size: calc(852px * var(--preview-scale-x));
+      block-size: calc(883px * var(--preview-scale-y));
+      overflow: hidden;
+      border-radius: calc(32px * var(--preview-scale-x));
+      background-color: var(--color-screen);
+    }
+
+    .device-screen img {
+      display: block;
+      inline-size: calc(852px * var(--preview-scale-x));
+      block-size: calc(883px * var(--preview-scale-y));
+    }
+
+    .device-camera {
+      position: absolute;
+      z-index: 2;
+      inset-block-start: calc(43.6px * var(--preview-scale-y));
+      inset-inline-start: calc(826.2px * var(--preview-scale-x));
+      inline-size: calc(32.4px * var(--preview-scale-x));
+      block-size: calc(32.4px * var(--preview-scale-y));
+      border-color: var(--color-device-edge);
+      border-style: solid;
+      border-width: max(0.0625rem, calc(1px * var(--preview-scale-x)));
+      border-radius: 999rem;
+      background-color: var(--color-camera);
+    }
+
+    .device-hinge {
+      position: absolute;
+      inset-inline-start: 50%;
+      inline-size: calc(28px * var(--preview-scale-x));
+      block-size: calc(4px * var(--preview-scale-y));
+      border-radius: 999rem;
+      background-color: var(--color-device-edge);
+      transform: translateX(-50%);
+    }
+
+    .device-hinge[data-edge="top"] {
+      inset-block-start: calc(7px * var(--preview-scale-y));
+    }
+
+    .device-hinge[data-edge="bottom"] {
+      inset-block-end: calc(7px * var(--preview-scale-y));
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-page: #121016;
+        --color-surface: #1d1a20;
+        --color-surface-soft: #28242c;
+        --color-surface-strong: #352f3b;
+        --color-ink: #f0e9f2;
+        --color-ink-soft: #d0c4d4;
+        --color-accent: #d0bcff;
+        --color-accent-soft: #3d3351;
+        --color-focus: #e3d5ff;
+        --color-line: #6f6574;
+        --color-shadow: rgb(0 0 0 / 45%);
+        --color-backdrop: rgb(0 0 0 / 78%);
+        --color-device: #080708;
+        --color-device-edge: #777177;
+        --color-camera: #000000;
+        --color-screen: #000000;
+      }
+    }
+
+    @media (max-width: 42rem) {
+      main {
+        inline-size: min(100% - 1rem, 96rem);
+        padding-block-start: 1rem;
+      }
+
+      .panel {
+        padding-block: 1rem;
+        padding-inline: 0.75rem;
+      }
+
+      .matrix-key {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog-toolbar {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .dialog-toolbar h2,
+      #preview-details {
+        grid-column: 1 / -1;
+      }
+
+      .dialog-toolbar h2 {
+        font-size: 1rem;
+      }
+
+      .toolbar-button {
+        min-inline-size: 3rem;
+        padding-inline: 0.25rem;
+        font-size: 0.75rem;
+      }
+
+      #preview-details {
+        font-size: 0.75rem;
+        line-height: 1.3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="status">Design only · native Android dynamic-color evidence</span>
+      <h1>Choose dark dynamic-color behavior</h1>
+      <p class="lede">Dark mode and Android dynamic color are required. This matrix asks separately how far wallpaper-derived roles reach into structural surfaces and whether the soft-neutral current row uses a fixed or generated neutral. It does not authorize production implementation.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="fixed-title">
+      <h2 id="fixed-title">Fixed requirements</h2>
+      <div class="requirement-grid">
+        <article class="requirement">
+          <span class="code">Uncontrolled input</span>
+          <h3>Wallpaper can change</h3>
+          <p>Palette rows are stress inputs, not choices. The strategy must survive users changing wallpaper, Android color style, and contrast.</p>
+        </article>
+        <article class="requirement">
+          <span class="code">Standing rule</span>
+          <h3>True black remains visible</h3>
+          <p>Every candidate keeps a pure-black base and track canvas. Generated accents never replace the required black identity.</p>
+        </article>
+        <article class="requirement">
+          <span class="code">Accepted screen</span>
+          <h3>Only color reach changes</h3>
+          <p>3B, transport 1B, tonal Open, full title width, F1 traversal, S1 speech, 24% seek, system bars, and adaptive mode behavior remain fixed.</p>
+        </article>
+        <article class="requirement">
+          <span class="code">Native source</span>
+          <h3>Android supplies dynamic roles</h3>
+          <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources; each candidate then applies its disclosed fixed-surface overrides. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
+        </article>
+      </div>
+      <div class="fixed-note"><strong>Measured contrast:</strong> selected rendered text combinations have a minimum of 4.63:1. Generated rail outlines have a minimum of 3.80:1 against every adjacent black or generated container sampled by these candidates. Reduced-motion and TalkBack requirements are unchanged.</div>
+    </section>
+
+    <section class="panel" aria-labelledby="surface-title">
+      <h2 id="surface-title">Decision one: structural surface reach</h2>
+      <div class="strategy-grid">
+        <article class="strategy-card" data-recommended>
+          <span class="code">R1 · recommended</span>
+          <h3>Stable black structure</h3>
+          <p>Keep the folder canvas, rail, track canvas, and deck on the accepted fixed black ladder. Android still generates component accents, text, and outlines.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> structural surface colors remain fixed across wallpaper changes; preserves B2 literally.</li>
+            <li><strong>Cons:</strong> generated neutral tint stays out of large structural surfaces.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">R2</span>
+          <h3>Zoned dynamic structure</h3>
+          <p>Keep both content canvases black. Use generated <code>surfaceContainerLow</code> for the letter rail and deck.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> adds bounded Material You surface expression without tinting either content canvas.</li>
+            <li><strong>Cons:</strong> wallpaper changes the visual weight of the rail and deck.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">R3</span>
+          <h3>Tonal folder structure</h3>
+          <p>Keep the track canvas black. Apply generated low, standard, and high containers across the folder canvas, rail, and deck.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> gives the strongest system-personalized pane hierarchy.</li>
+            <li><strong>Cons:</strong> uncontrolled palette color occupies the complete folder pane and competes with true black.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: R1 &gt; R2 &gt; R3.</strong> R1 beats R2 because every meaningful component accent still follows Android while structural surface colors stay stable. R2 beats R3 because it confines generated surfaces to bounded regions instead of letting an uncontrolled palette dominate the folder pane.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="current-row-title">
+      <h2 id="current-row-title">Decision two: current-row neutral source</h2>
+      <div class="strategy-grid">
+        <article class="strategy-card" data-recommended>
+          <span class="code">C1 · recommended</span>
+          <h3>Fixed soft neutral</h3>
+          <p>Keep the accepted current row at fixed <code>#0A0A0D</code> plus bold title, independent of structural surface reach.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> preserves one calm current-state treatment under every wallpaper and contrast setting.</li>
+            <li><strong>Cons:</strong> the row container itself does not inherit Android's generated neutral hue.</li>
+          </ul>
+        </article>
+        <article class="strategy-card">
+          <span class="code">C2</span>
+          <h3>Dynamic soft neutral</h3>
+          <p>Use Android-generated <code>surfaceContainerLow</code> plus the same bold title, independent of structural surface reach.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> keeps the semantic Material role synchronized with the user's current palette and contrast.</li>
+            <li><strong>Cons:</strong> gold, magenta, and high-contrast environments visibly change the row's weight and hue.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="ranking"><strong>Ranking: C1 &gt; C2.</strong> C1 beats C2 because it keeps the accepted current-state weight stable while controls and foregrounds already follow Android. C2 remains neutral, but its generated hue and weight change with the system palette.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="matrix-title">
+      <h2 id="matrix-title">Native matrix</h2>
+      <p>Each environment contains a 2 × 3 matrix. Columns vary structural reach; rows vary only the current-row neutral source. All six candidates share one Android-generated role output, system bars, data, and accepted geometry. Open any candidate for Fit, native pixels, 100% reset, dimensions, and scrolling state.</p>
+      <div class="matrix-key" role="group" aria-label="Matrix columns">
+        <strong>R1 · Stable structure</strong>
+        <strong>R2 · Zoned structure</strong>
+        <strong>R3 · Tonal structure</strong>
+      </div>
+
+      @@MATRIX_ROWS@@
+    </section>
+
+    <section class="panel" aria-labelledby="analysis-title">
+      <h2 id="analysis-title">Analysis and recommended additions</h2>
+      <div class="requirement-grid">
+        <article class="requirement"><h3>Wallpaper robustness</h3><p>Every candidate changes controls, selected accents, text, and outlines with Android. R1 alone fixes structural surfaces; R2 and R3 intentionally add generated neutral tint.</p></article>
+        <article class="requirement"><h3>True-black expression</h3><p>R1 keeps the folder canvas, rail, and track canvas black. R2 keeps both content canvases black. R3 keeps the track canvas black but makes the folder canvas dynamic.</p></article>
+        <article class="requirement"><h3>Current state</h3><p>Every candidate retains a neutral current-row container plus bold title. C1 fixes its color; C2 accepts Android's generated neutral hue and contrast response.</p></article>
+        <article class="requirement"><h3>Evidence boundary</h3><p>These captures establish palette-dependent appearance. They do not establish live wallpaper refresh because each debug candidate is relaunched after Android roles settle.</p></article>
+        <article class="requirement"><h3>Implementation follow-through</h3><p>Later implementation should follow system theme changes live, retain a baseline dark fallback below Android 12, use generated <code>outline</code> for the dark rail boundary, and regression-test wallpaper changes without restarting the app.</p></article>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="answer-title">
+      <h2 id="answer-title">Your decisions</h2>
+      <form id="review-form">
+        <fieldset>
+          <legend>Choose structural surface reach</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="surfaceReach" value="R1 Stable black structure" required><span><strong>R1 Stable black structure (Recommended).</strong> Pros: dynamic components with fixed structural surfaces and literal B2 preservation. Cons: generated neutral tint stays out of large structural surfaces.</span></label>
+          <label class="review-choice"><input type="radio" name="surfaceReach" value="R2 Zoned dynamic structure" required><span><strong>R2 Zoned dynamic structure.</strong> Pros: bounded Material You surfaces while content canvases stay black. Cons: wallpaper changes the rail and deck weight.</span></label>
+          <label class="review-choice"><input type="radio" name="surfaceReach" value="R3 Tonal folder structure" required><span><strong>R3 Tonal folder structure.</strong> Pros: strongest system-personalized pane hierarchy. Cons: uncontrolled palette color occupies the folder pane and weakens true-black expression.</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Choose current-row neutral source</legend>
+          <label class="review-choice" data-recommended><input type="radio" name="currentRowSource" value="C1 Fixed soft neutral" required><span><strong>C1 Fixed soft neutral (Recommended).</strong> Pros: current-state weight remains calm and stable. Cons: row container hue does not follow Android.</span></label>
+          <label class="review-choice"><input type="radio" name="currentRowSource" value="C2 Dynamic soft neutral" required><span><strong>C2 Dynamic soft neutral.</strong> Pros: current row follows Android's neutral role and contrast. Cons: wallpaper and style visibly change its hue and weight.</span></label>
+        </fieldset>
+        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if both selections are accepted.</label>
+        <textarea id="other-corrections" name="otherCorrections" required></textarea>
+        <div class="actions">
+          <button class="action-button" type="submit">Prepare answer</button>
+          <button class="action-button" data-secondary type="reset">Clear</button>
+        </div>
+      </form>
+      <div id="output" hidden aria-live="polite"></div>
+      <p class="fixed-note"><strong>Response path:</strong> reply in chat with both codes, for example <code>R1, C1</code>, plus any correction.</p>
+    </section>
+  </main>
+
+  <dialog id="preview-dialog" aria-labelledby="preview-title">
+    <div class="dialog-shell">
+      <div class="dialog-toolbar">
+        <h2 id="preview-title">Native dark dynamic-color evidence</h2>
+        <button class="toolbar-button" id="zoom-out" type="button">Zoom out</button>
+        <button class="toolbar-button" id="zoom-in" type="button">Zoom in</button>
+        <button class="toolbar-button" id="fit" type="button">Fit</button>
+        <button class="toolbar-button" id="native" type="button">Native pixels</button>
+        <button class="toolbar-button" id="reset" type="button">Reset 100%</button>
+        <button class="toolbar-button" id="preview-close" type="button">Close preview</button>
+        <span id="preview-details">Source 2076 × 2152 physical px · design 852 × 883dp · 100%</span>
+      </div>
+      <div class="preview-stage" id="preview-stage">
+        <div class="device-shell" id="preview-device">
+          <div class="device-screen"><img id="preview-image" width="852" height="883" alt=""></div>
+          <span class="device-camera" aria-hidden="true"></span>
+          <span class="device-hinge" data-edge="top" aria-hidden="true"></span>
+          <span class="device-hinge" data-edge="bottom" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    const dialog = document.querySelector('#preview-dialog');
+    const stage = document.querySelector('#preview-stage');
+    const device = document.querySelector('#preview-device');
+    const previewImage = document.querySelector('#preview-image');
+    const previewTitle = document.querySelector('#preview-title');
+    const previewDetails = document.querySelector('#preview-details');
+    const sourceWidth = 2076;
+    const sourceHeight = 2152;
+    const designWidth = 852;
+    const designHeight = 883;
+    const frameWidth = 907;
+    const frameHeight = 937;
+    const nativeScaleX = sourceWidth / designWidth;
+    const nativeScaleY = sourceHeight / designHeight;
+    const maximumUniformScale = Math.min(nativeScaleX, nativeScaleY);
+    let scaleX = 1;
+    let scaleY = 1;
+    let fitActive = false;
+    let returnTarget = null;
+
+    function updatePreviewDetails() {
+      if (!dialog.open) {
+        return;
+      }
+      const frame = device.getBoundingClientRect();
+      const screen = device.querySelector('.device-screen').getBoundingClientRect();
+      const scrolling = stage.scrollWidth > stage.clientWidth || stage.scrollHeight > stage.clientHeight
+        ? 'scrolling available'
+        : 'no scrolling needed';
+      const percent = Math.round(scaleX * 100);
+      const nextText = `Source 2076 × 2152 physical px · design 852 × 883dp · ${percent}% · ${Math.round(screen.width)} × ${Math.round(screen.height)} CSS px screen · ${Math.round(frame.width)} × ${Math.round(frame.height)} CSS px frame · ${scrolling}`;
+      if (previewDetails.textContent !== nextText) {
+        previewDetails.textContent = nextText;
+      }
+    }
+
+    function applyScale(nextScaleX, nextScaleY = nextScaleX) {
+      scaleX = Math.max(0.08, Math.min(nativeScaleX, nextScaleX));
+      scaleY = Math.max(0.08, Math.min(nativeScaleY, nextScaleY));
+      device.style.setProperty('--preview-scale-x', String(scaleX));
+      device.style.setProperty('--preview-scale-y', String(scaleY));
+      stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      updatePreviewDetails();
+    }
+
+    function fitPreview() {
+      fitActive = true;
+      const availableWidth = Math.max(1, stage.clientWidth - 32);
+      const availableHeight = Math.max(1, stage.clientHeight - 32);
+      const nextScale = Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight);
+      if (Math.abs(scaleX - nextScale) < 0.0001 && Math.abs(scaleY - nextScale) < 0.0001) {
+        updatePreviewDetails();
+        return;
+      }
+      applyScale(nextScale);
+    }
+
+    function settleFitPreview() {
+      fitPreview();
+      fitPreview();
+    }
+
+    document.querySelectorAll('.evidence-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        returnTarget = button;
+        previewTitle.textContent = button.dataset.previewTitle;
+        previewImage.src = button.dataset.previewSrc;
+        previewImage.alt = button.querySelector('img').alt;
+        dialog.showModal();
+        settleFitPreview();
+      });
+    });
+
+    document.querySelector('#zoom-out').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(Math.min(scaleX, scaleY) - 0.1);
+    });
+    document.querySelector('#zoom-in').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(Math.min(maximumUniformScale, Math.max(scaleX, scaleY) + 0.1));
+    });
+    document.querySelector('#fit').addEventListener('click', settleFitPreview);
+    document.querySelector('#native').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(nativeScaleX, nativeScaleY);
+    });
+    document.querySelector('#reset').addEventListener('click', () => {
+      fitActive = false;
+      applyScale(1);
+    });
+    document.querySelector('#preview-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      fitActive = false;
+      if (returnTarget) {
+        setTimeout(() => returnTarget.focus(), 100);
+      }
+    });
+    const previewResizeObserver = new ResizeObserver(() => {
+      if (dialog.open && fitActive) {
+        fitPreview();
+      } else {
+        updatePreviewDetails();
+      }
+    });
+    previewResizeObserver.observe(stage);
+
+    const form = document.querySelector('#review-form');
+    const corrections = document.querySelector('#other-corrections');
+    const output = document.querySelector('#output');
+
+    function invalidatePreparedAnswer() {
+      output.hidden = true;
+    }
+
+    corrections.addEventListener('input', () => {
+      corrections.setCustomValidity('');
+      invalidatePreparedAnswer();
+    });
+    form.addEventListener('change', invalidatePreparedAnswer);
+    form.addEventListener('reset', () => {
+      corrections.setCustomValidity('');
+      output.hidden = true;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (corrections.value.trim().length === 0) {
+        corrections.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
+        corrections.reportValidity();
+        corrections.focus();
+        return;
+      }
+      corrections.setCustomValidity('');
+      const data = new FormData(form);
+      const preparedAnswer = [
+        `Structural surface reach: ${data.get('surfaceReach')}`,
+        `Current-row neutral source: ${data.get('currentRowSource')}`,
+        `Corrections: ${corrections.value.trim()}`,
+      ].join('\n');
+      output.textContent = preparedAnswer;
+      output.hidden = false;
+      output.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    });
+  </script>
+</body>
+</html>

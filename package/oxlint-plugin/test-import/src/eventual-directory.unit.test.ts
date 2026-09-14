@@ -10,16 +10,16 @@ import { eventualDirectories, } from '../dist/final/node/index.mjs';
 const ROOT = '/repo/package/module/x';
 
 /**
- * Computes eventual directories for declared targets, sorted for stable comparison.
- *
- * @param shippingTargets - specifiers a manifest declared as entries
- *
- * @returns sorted normalized directories
- *
- * @example
- * ```ts
- * directoriesOf(['./dist/final/node/index.mjs']);
- * ```
+ Computes eventual directories for declared targets, sorted for stable comparison.
+ 
+ @param shippingTargets - specifiers a manifest declared as entries
+ 
+ @returns sorted normalized directories
+ 
+ @example
+ ```ts
+ directoriesOf(['./dist/final/node/index.mjs']);
+ ```
  */
 function directoriesOf(shippingTargets: readonly string[],): readonly string[] {
   return eventualDirectories({

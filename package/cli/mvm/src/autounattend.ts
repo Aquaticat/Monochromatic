@@ -8,40 +8,40 @@ import { windowsPeSection, } from './autounattend-winpe.ts';
 import { createIso, } from './iso9660.ts';
 
 /**
- * Logger root for mvm after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for mvm after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'mvm', },);
 
 //region Autounattend XML generation
 
 /**
- * Generates a complete Windows Autounattend.xml answer file for unattended
- * installation of Windows Server from an evaluation ISO on KVM with VirtIO.
- *
- * The answer file configures:
- * - VirtIO storage and network driver loading during WinPE, via {@link windowsPeSection}
- * - MBR disk partitioning (system reserved + OS partition) for BIOS boot
- * - Unattended OS image selection by WIM index
- * - Locale and timezone settings
- * - Administrator account with auto-logon
- * - QEMU guest agent installation via FirstLogonCommands, running {@link virtioInstallCommand}
- * - OOBE bypass for fully automated setup
- *
- * @param hostname - VM hostname for the specialize pass
- *
- * @param imageIndex - WIM image index for edition selection
- *
- * @returns Complete Autounattend.xml content string
- *
- * @example
- * ```ts
- * const xml = generateAutounattend({ imageIndex: 1, hostname: 'template-setup' });
- * ```
+ Generates a complete Windows Autounattend.xml answer file for unattended
+ installation of Windows Server from an evaluation ISO on KVM with VirtIO.
+ 
+ The answer file configures:
+ - VirtIO storage and network driver loading during WinPE, via {@link windowsPeSection}
+ - MBR disk partitioning (system reserved + OS partition) for BIOS boot
+ - Unattended OS image selection by WIM index
+ - Locale and timezone settings
+ - Administrator account with auto-logon
+ - QEMU guest agent installation via FirstLogonCommands, running {@link virtioInstallCommand}
+ - OOBE bypass for fully automated setup
+ 
+ @param hostname - VM hostname for the specialize pass
+ 
+ @param imageIndex - WIM image index for edition selection
+ 
+ @returns Complete Autounattend.xml content string
+ 
+ @example
+ ```ts
+ const xml = generateAutounattend({ imageIndex: 1, hostname: 'template-setup' });
+ ```
  */
 export function generateAutounattend({
   hostname,
@@ -127,22 +127,22 @@ ${windowsPeSection({ imageIndex, },)}
 //region Autounattend ISO generation
 
 /**
- * Creates an ISO9660 image, via {@link createIso}, containing the
- * Autounattend.xml answer file rendered by {@link generateAutounattend}.
- * Windows PE automatically searches removable media (including CDROMs)
- * for the answer file during setup. The ISO is attached as a secondary
- * CDROM during Windows template creation.
- *
- * @param hostname - VM hostname
- *
- * @param imageIndex - WIM image index for edition selection
- *
- * @returns ISO9660 image bytes ready to write to disk
- *
- * @example
- * ```ts
- * const iso = createAutounattendIso({ imageIndex: 1, hostname: 'setup' });
- * ```
+ Creates an ISO9660 image, via {@link createIso}, containing the
+ Autounattend.xml answer file rendered by {@link generateAutounattend}.
+ Windows PE automatically searches removable media (including CDROMs)
+ for the answer file during setup. The ISO is attached as a secondary
+ CDROM during Windows template creation.
+ 
+ @param hostname - VM hostname
+ 
+ @param imageIndex - WIM image index for edition selection
+ 
+ @returns ISO9660 image bytes ready to write to disk
+ 
+ @example
+ ```ts
+ const iso = createAutounattendIso({ imageIndex: 1, hostname: 'setup' });
+ ```
  */
 export function createAutounattendIso({
   hostname,
@@ -152,26 +152,26 @@ export function createAutounattendIso({
   readonly imageIndex: number;
 },): Uint8Array {
   /**
-   * Tagged logger so ISO-creation messages name the call site.
+   Tagged logger so ISO-creation messages name the call site.
    */
   const rl = tagged({
     tag: createAutounattendIso.name,
     l,
   },);
   /**
-   * Rendered ahead of ISO packing so the encoder operates on a final string.
+   Rendered ahead of ISO packing so the encoder operates on a final string.
    */
   const xml = generateAutounattend({
     hostname,
     imageIndex,
   },);
   /**
-   * Reused for the single XML payload below.
+   Reused for the single XML payload below.
    */
   const encoder = new TextEncoder();
 
   /**
-   * Captured before the success log so the bytes are returned after announcement.
+   Captured before the success log so the bytes are returned after announcement.
    */
   const iso = createIso({
     files: [

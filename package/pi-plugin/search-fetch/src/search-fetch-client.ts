@@ -1,8 +1,8 @@
 
 /**
- * Provider-routing client for Pi Search Fetch tools.
- *
- * @module
+ Provider-routing client for Pi Search Fetch tools.
+ 
+ @module
  */
 
 import { caughtValueText as errorMessage, } from '@monochromatic-dev/module-caught-value/ts';
@@ -30,17 +30,17 @@ import type {
 } from './search-fetch-types.ts';
 
 /**
- * Logger root for pi-search-fetch after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: searchFetchLogger, },);
- * ```
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: searchFetchLogger, },);
+ ```
  */
 const searchFetchLogger = tagged({ tag: 'pi-search-fetch', },);
 
 /**
- * Module logger.
+ Module logger.
  */
 const l = tagged({
   tag: 'search-fetch-client',
@@ -50,22 +50,22 @@ const l = tagged({
 //region Client factory
 
 /**
- * Create provider-routing Search Fetch client.
- *
- * @param clientOptions - client options
- *
- * @returns frozen provider-routing client
- *
- * @example
- * ```ts
- * const client = createSearchFetchClient({ exaApiKey: 'key', blocklist: [] });
- * ```
+ Create provider-routing Search Fetch client.
+ 
+ @param clientOptions - client options
+ 
+ @returns frozen provider-routing client
+ 
+ @example
+ ```ts
+ const client = createSearchFetchClient({ exaApiKey: 'key', blocklist: [] });
+ ```
  */
 function createSearchFetchClient(
   clientOptions: ForeignBorrowed<SearchFetchClientOptions>,
 ): SearchFetchClient {
   /**
-   * Runtime dependencies captured by client methods.
+   Runtime dependencies captured by client methods.
    */
   const runtime: SearchFetchClientRuntime = {
     ...(clientOptions.exaApiKey === undefined ? {} : { exaApiKey: clientOptions.exaApiKey, }),
@@ -76,7 +76,7 @@ function createSearchFetchClient(
     fetchImpl: clientOptions.fetchImpl ?? fetch,
   };
   /**
-   * Exa client shared by routed operations.
+   Exa client shared by routed operations.
    */
   const exaClient = createExaClient({
     ...(runtime.exaApiKey === undefined ? {} : { apiKey: runtime.exaApiKey, }),
@@ -85,7 +85,7 @@ function createSearchFetchClient(
     fetchImpl: runtime.fetchImpl,
   },);
   /**
-   * Linkup client shared by routed operations.
+   Linkup client shared by routed operations.
    */
   const linkupClient = createLinkupClient({
     ...(runtime.linkupApiKey === undefined ? {} : { apiKey: runtime.linkupApiKey, }),
@@ -119,17 +119,17 @@ function createSearchFetchClient(
 //region Routed operations
 
 /**
- * Search through Exa first and fall back to Linkup.
- *
- * @param runtime - client runtime dependencies
- *
- * @param exaClient - Exa client
- *
- * @param linkupClient - Linkup client
- *
- * @param options - search options
- *
- * @returns provider-tagged search response
+ Search through Exa first and fall back to Linkup.
+ 
+ @param runtime - client runtime dependencies
+ 
+ @param exaClient - Exa client
+ 
+ @param linkupClient - Linkup client
+ 
+ @param options - search options
+ 
+ @returns provider-tagged search response
  */
 async function searchWithFallback(
   {
@@ -153,7 +153,7 @@ async function searchWithFallback(
     }
     catch (error: unknown) {
       /**
-       * Safe Exa failure text for logs and details.
+       Safe Exa failure text for logs and details.
        */
       const reason = errorMessage(error,);
       l.warn(`Exa search unavailable; falling back to Linkup: ${reason}`,);
@@ -182,17 +182,17 @@ async function searchWithFallback(
 }
 
 /**
- * Fetch through Linkup first and fall back to Exa contents.
- *
- * @param runtime - client runtime dependencies
- *
- * @param exaClient - Exa client
- *
- * @param linkupClient - Linkup client
- *
- * @param options - fetch options
- *
- * @returns provider-tagged fetch response
+ Fetch through Linkup first and fall back to Exa contents.
+ 
+ @param runtime - client runtime dependencies
+ 
+ @param exaClient - Exa client
+ 
+ @param linkupClient - Linkup client
+ 
+ @param options - fetch options
+ 
+ @returns provider-tagged fetch response
  */
 async function fetchWithFallback(
   {
@@ -216,7 +216,7 @@ async function fetchWithFallback(
     }
     catch (error: unknown) {
       /**
-       * Safe Linkup failure text for logs and details.
+       Safe Linkup failure text for logs and details.
        */
       const reason = errorMessage(error,);
       l.warn(`Linkup fetch unavailable; falling back to Exa: ${reason}`,);
@@ -249,15 +249,15 @@ async function fetchWithFallback(
 //region Fallback helpers
 
 /**
- * Execute Linkup search fallback and wrap failures with original fallback context.
- *
- * @param linkupClient - Linkup client
- *
- * @param options - search options
- *
- * @param fallback - fallback metadata
- *
- * @returns provider-tagged Linkup response
+ Execute Linkup search fallback and wrap failures with original fallback context.
+ 
+ @param linkupClient - Linkup client
+ 
+ @param options - search options
+ 
+ @param fallback - fallback metadata
+ 
+ @returns provider-tagged Linkup response
  */
 async function searchLinkupFallback(
   {
@@ -288,15 +288,15 @@ async function searchLinkupFallback(
 }
 
 /**
- * Execute Exa fetch fallback and wrap failures with original fallback context.
- *
- * @param exaClient - Exa client
- *
- * @param options - fetch options
- *
- * @param fallback - fallback metadata
- *
- * @returns provider-tagged Exa response
+ Execute Exa fetch fallback and wrap failures with original fallback context.
+ 
+ @param exaClient - Exa client
+ 
+ @param options - fetch options
+ 
+ @param fallback - fallback metadata
+ 
+ @returns provider-tagged Exa response
  */
 async function fetchExaFallback(
   {
@@ -327,19 +327,19 @@ async function fetchExaFallback(
 }
 
 /**
- * Build an error that includes first fallback reason and final provider failure.
- *
- * @param operation - operation name
- *
- * @param fallback - fallback metadata
- *
- * @param finalProvider - final provider display name
- *
- * @param finalError - final provider error
- *
- * @returns combined provider failure
- *
- * @mutates finalError - `errorMessage` may invoke string-conversion hooks.
+ Build an error that includes first fallback reason and final provider failure.
+ 
+ @param operation - operation name
+ 
+ @param fallback - fallback metadata
+ 
+ @param finalProvider - final provider display name
+ 
+ @param finalError - final provider error
+ 
+ @returns combined provider failure
+ 
+ @mutates finalError - `errorMessage` may invoke string-conversion hooks.
  */
 function combinedFallbackError(
   {
@@ -365,11 +365,11 @@ function combinedFallbackError(
 //region Utility helpers
 
 /**
- * Return whether optional credential has non-blank content.
- *
- * @param value - optional credential
- *
- * @returns whether credential is configured
+ Return whether optional credential has non-blank content.
+ 
+ @param value - optional credential
+ 
+ @returns whether credential is configured
  */
 function hasCredential({ value, }: { readonly value: string; }): boolean {
   return value.trim() !== '';

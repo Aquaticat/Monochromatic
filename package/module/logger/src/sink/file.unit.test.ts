@@ -9,18 +9,18 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { LogRecord, } from '@monochromatic-dev/module-logger';
 import {
+  _findNodeModulesUp as findNodeModulesUp,
+  _NO_NODE_MODULES_FOUND as NO_NODE_MODULES_FOUND,
   createFileSink,
-  findNodeModulesUp,
-  NO_NODE_MODULES_FOUND,
-} from './file.ts';
-import type { LogRecord, } from '../types.ts';
+} from '@monochromatic-dev/module-logger/node';
 
 /**
- * Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
- * walks the whole tree and exhausts without matching.
- *
- * @returns Never; always throws.
+ Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
+ walks the whole tree and exhausts without matching.
+ 
+ @returns Never; always throws.
  */
 function statAlwaysMissing(): never {
   const error: NodeJS.ErrnoException = Object.assign(
@@ -31,9 +31,9 @@ function statAlwaysMissing(): never {
 }
 
 /**
- * Mock `stat` that always throws an unexpected permission error.
- *
- * @returns Never; always throws.
+ Mock `stat` that always throws an unexpected permission error.
+ 
+ @returns Never; always throws.
  */
 function statAlwaysDenied(): never {
   const error: NodeJS.ErrnoException = Object.assign(
@@ -44,11 +44,11 @@ function statAlwaysDenied(): never {
 }
 
 /**
- * Builds a LogRecord for write-path tests.
- *
- * @param message - Message body.
- *
- * @returns Record at a fixed timestamp.
+ Builds a LogRecord for write-path tests.
+ 
+ @param message - Message body.
+ 
+ @returns Record at a fixed timestamp.
  */
 function record({ message, }: { readonly message: string; },): LogRecord {
   return {
@@ -161,9 +161,9 @@ await describe({
     it({
       name: 'write before verify resolves without touching the filesystem',
       fn: async () => {
-        // Verification resolves the log path and caches `appendFile`; without
-        // it both stay unset, so write takes the unset-guard early return,
-        // resolving as a silent no-op rather than throwing or writing.
+        // Verification resolves the log path; without it the path stays
+        // unset, so write takes the unset-guard early return, resolving as a
+        // silent no-op rather than throwing or writing.
         const sink = createFileSink();
         await expect(
           sink.write(record({ message: 'before verify', },),),

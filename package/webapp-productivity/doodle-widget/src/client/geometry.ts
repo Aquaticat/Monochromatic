@@ -1,35 +1,35 @@
 /**
- * 2D geometry helpers for segment distance and intersection tests.
- *
- * Used by the eraser to detect proximity between the eraser travel
- * path and stroke geometry (both individual points and line segments).
+ 2D geometry helpers for segment distance and intersection tests.
+ 
+ Used by the eraser to detect proximity between the eraser travel
+ path and stroke geometry (both individual points and line segments).
  */
 
 /**
- * Computes the squared distance from point P to the closest point
- * on line segment AB, in pixel space.
- *
- * Uses projection clamped to [0, 1] to find the nearest point on the
- * segment rather than the infinite line.
- *
- * @param px - point x in pixels
- *
- * @param py - point y in pixels
- *
- * @param ax - segment start x in pixels
- *
- * @param ay - segment start y in pixels
- *
- * @param bx - segment end x in pixels
- *
- * @param by - segment end y in pixels
- *
- * @returns squared pixel distance from P to nearest point on AB
- *
- * @example
- * ```ts
- * const distSq = distToSegmentSq({ px: 5, py: 5, ax: 0, ay: 0, bx: 10, by: 0 });
- * ```
+ Computes the squared distance from point P to the closest point
+ on line segment AB, in pixel space.
+ 
+ Uses projection clamped to [0, 1] to find the nearest point on the
+ segment rather than the infinite line.
+ 
+ @param px - point x in pixels
+ 
+ @param py - point y in pixels
+ 
+ @param ax - segment start x in pixels
+ 
+ @param ay - segment start y in pixels
+ 
+ @param bx - segment end x in pixels
+ 
+ @param by - segment end y in pixels
+ 
+ @returns squared pixel distance from P to nearest point on AB
+ 
+ @example
+ ```ts
+ const distSq = distToSegmentSq({ px: 5, py: 5, ax: 0, ay: 0, bx: 10, by: 0 });
+ ```
  */
 export function distToSegmentSq(
   {
@@ -49,15 +49,15 @@ export function distToSegmentSq(
   },
 ): number {
   /**
-   * Cached so {@link lenSq} and the projection share one subtraction.
+   Cached so {@link lenSq} and the projection share one subtraction.
    */
   const dx = bx - ax;
   /**
-   * Companion to {@link dx} on the y axis.
+   Companion to {@link dx} on the y axis.
    */
   const dy = by - ay;
   /**
-   * Squared length of segment AB; zero means degenerate (A == B)
+   Squared length of segment AB; zero means degenerate (A == B)
    */
   const lenSq = (dx * dx) + (dy * dy);
 
@@ -65,7 +65,7 @@ export function distToSegmentSq(
     return ((px - ax) ** 2) + ((py - ay) ** 2);
 
   /**
-   * Projection parameter clamped to [0, 1] so closest point stays on segment
+   Projection parameter clamped to [0, 1] so closest point stays on segment
    */
   const t = Math.max(
     0,
@@ -75,11 +75,11 @@ export function distToSegmentSq(
     ),
   );
   /**
-   * Closest point on segment
+   Closest point on segment
    */
   const cx = ax + (t * dx);
   /**
-   * Companion to {@link cx} on the y axis.
+   Companion to {@link cx} on the y axis.
    */
   const cy = ay + (t * dy);
 
@@ -87,24 +87,24 @@ export function distToSegmentSq(
 }
 
 /**
- * 2D cross product of vectors (B - A) and (C - A).
- *
- * Positive when C is counter-clockwise from AB, negative when clockwise,
- * zero when collinear.
- *
- * @param ax - first point x
- *
- * @param ay - first point y
- *
- * @param bx - second point x
- *
- * @param by - second point y
- *
- * @param cx - third point x
- *
- * @param cy - third point y
- *
- * @returns signed area of the parallelogram spanned by AB and AC
+ 2D cross product of vectors (B - A) and (C - A).
+ 
+ Positive when C is counter-clockwise from AB, negative when clockwise,
+ zero when collinear.
+ 
+ @param ax - first point x
+ 
+ @param ay - first point y
+ 
+ @param bx - second point x
+ 
+ @param by - second point y
+ 
+ @param cx - third point x
+ 
+ @param cy - third point y
+ 
+ @returns signed area of the parallelogram spanned by AB and AC
  */
 function cross(
   {
@@ -127,7 +127,7 @@ function cross(
 }
 
 /**
- * Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq}.
+ Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq}.
  */
 export type TwoSegments = {
   readonly a1x: number;
@@ -141,35 +141,35 @@ export type TwoSegments = {
 };
 
 /**
- * Tests whether two line segments properly intersect (cross each other).
- *
- * Uses the orientation (cross-product sign) test: segments AB and CD
- * intersect when A and B are on opposite sides of line CD, and C and D
- * are on opposite sides of line AB. Collinear/touching cases return
- * false because the radius check in the caller already covers near misses.
- *
- * @param a1x - segment 1 start x
- *
- * @param a1y - segment 1 start y
- *
- * @param a2x - segment 1 end x
- *
- * @param a2y - segment 1 end y
- *
- * @param b1x - segment 2 start x
- *
- * @param b1y - segment 2 start y
- *
- * @param b2x - segment 2 end x
- *
- * @param b2y - segment 2 end y
- *
- * @returns true when the segments properly cross each other
- *
- * @example
- * ```ts
- * segmentsIntersect({ a1x: 0, a1y: 0, a2x: 10, a2y: 10, b1x: 10, b1y: 0, b2x: 0, b2y: 10 });
- * ```
+ Tests whether two line segments properly intersect (cross each other).
+ 
+ Uses the orientation (cross-product sign) test: segments AB and CD
+ intersect when A and B are on opposite sides of line CD, and C and D
+ are on opposite sides of line AB. Collinear/touching cases return
+ false because the radius check in the caller already covers near misses.
+ 
+ @param a1x - segment 1 start x
+ 
+ @param a1y - segment 1 start y
+ 
+ @param a2x - segment 1 end x
+ 
+ @param a2y - segment 1 end y
+ 
+ @param b1x - segment 2 start x
+ 
+ @param b1y - segment 2 start y
+ 
+ @param b2x - segment 2 end x
+ 
+ @param b2y - segment 2 end y
+ 
+ @returns true when the segments properly cross each other
+ 
+ @example
+ ```ts
+ segmentsIntersect({ a1x: 0, a1y: 0, a2x: 10, a2y: 10, b1x: 10, b1y: 0, b2x: 0, b2y: 10 });
+ ```
  */
 export function segmentsIntersect(
   {
@@ -184,7 +184,7 @@ export function segmentsIntersect(
   }: TwoSegments,
 ): boolean {
   /**
-   * Orientation of A1 relative to segment B
+   Orientation of A1 relative to segment B
    */
   const d1 = cross({
     ax: b1x,
@@ -195,7 +195,7 @@ export function segmentsIntersect(
     cy: a1y,
   },);
   /**
-   * Orientation of A2 relative to segment B
+   Orientation of A2 relative to segment B
    */
   const d2 = cross({
     ax: b1x,
@@ -206,7 +206,7 @@ export function segmentsIntersect(
     cy: a2y,
   },);
   /**
-   * Orientation of B1 relative to segment A
+   Orientation of B1 relative to segment A
    */
   const d3 = cross({
     ax: a1x,
@@ -217,7 +217,7 @@ export function segmentsIntersect(
     cy: b1y,
   },);
   /**
-   * Orientation of B2 relative to segment A
+   Orientation of B2 relative to segment A
    */
   const d4 = cross({
     ax: a1x,
@@ -233,34 +233,34 @@ export function segmentsIntersect(
 }
 
 /**
- * Computes the squared minimum distance between two line segments.
- *
- * Handles two cases:
- * 1. Segments intersect; distance is 0
- * 2. Otherwise; minimum of the four endpoint-to-opposite-segment distances
- *
- * @param a1x - segment 1 start x
- *
- * @param a1y - segment 1 start y
- *
- * @param a2x - segment 1 end x
- *
- * @param a2y - segment 1 end y
- *
- * @param b1x - segment 2 start x
- *
- * @param b1y - segment 2 start y
- *
- * @param b2x - segment 2 end x
- *
- * @param b2y - segment 2 end y
- *
- * @returns squared pixel distance between the closest points on the two segments
- *
- * @example
- * ```ts
- * const distSq = segToSegDistSq({ a1x: 0, a1y: 0, a2x: 5, a2y: 0, b1x: 3, b1y: 1, b2x: 3, b2y: 5 });
- * ```
+ Computes the squared minimum distance between two line segments.
+ 
+ Handles two cases:
+ 1. Segments intersect; distance is 0
+ 2. Otherwise; minimum of the four endpoint-to-opposite-segment distances
+ 
+ @param a1x - segment 1 start x
+ 
+ @param a1y - segment 1 start y
+ 
+ @param a2x - segment 1 end x
+ 
+ @param a2y - segment 1 end y
+ 
+ @param b1x - segment 2 start x
+ 
+ @param b1y - segment 2 start y
+ 
+ @param b2x - segment 2 end x
+ 
+ @param b2y - segment 2 end y
+ 
+ @returns squared pixel distance between the closest points on the two segments
+ 
+ @example
+ ```ts
+ const distSq = segToSegDistSq({ a1x: 0, a1y: 0, a2x: 5, a2y: 0, b1x: 3, b1y: 1, b2x: 3, b2y: 5 });
+ ```
  */
 export function segToSegDistSq(
   {
@@ -324,34 +324,34 @@ export function segToSegDistSq(
 }
 
 /**
- * Tests whether a line segment intersects an axis-aligned rectangle.
- *
- * Checks the segment against all four edges of the rectangle using
- * {@link segmentsIntersect}. Does **not** check whether either endpoint
- * is inside the rect; the caller handles that separately.
- *
- * @param sx - segment start x
- *
- * @param sy - segment start y
- *
- * @param ex - segment end x
- *
- * @param ey - segment end y
- *
- * @param left - rectangle left edge (min x)
- *
- * @param top - rectangle top edge (min y)
- *
- * @param right - rectangle right edge (max x)
- *
- * @param bottom - rectangle bottom edge (max y)
- *
- * @returns true when the segment crosses any edge of the rectangle
- *
- * @example
- * ```ts
- * segmentIntersectsRect({ sx: 0, sy: 0, ex: 10, ey: 10, left: 5, top: 0, right: 15, bottom: 10 });
- * ```
+ Tests whether a line segment intersects an axis-aligned rectangle.
+ 
+ Checks the segment against all four edges of the rectangle using
+ {@link segmentsIntersect}. Does **not** check whether either endpoint
+ is inside the rect; the caller handles that separately.
+ 
+ @param sx - segment start x
+ 
+ @param sy - segment start y
+ 
+ @param ex - segment end x
+ 
+ @param ey - segment end y
+ 
+ @param left - rectangle left edge (min x)
+ 
+ @param top - rectangle top edge (min y)
+ 
+ @param right - rectangle right edge (max x)
+ 
+ @param bottom - rectangle bottom edge (max y)
+ 
+ @returns true when the segment crosses any edge of the rectangle
+ 
+ @example
+ ```ts
+ segmentIntersectsRect({ sx: 0, sy: 0, ex: 10, ey: 10, left: 5, top: 0, right: 15, bottom: 10 });
+ ```
  */
 export function segmentIntersectsRect(
   {
@@ -375,7 +375,7 @@ export function segmentIntersectsRect(
   },
 ): boolean {
   /**
-   * Top edge: left,top -> right,top
+   Top edge: left,top -> right,top
    */
   if (segmentsIntersect({
     a1x: sx,
@@ -390,7 +390,7 @@ export function segmentIntersectsRect(
     return true;
   }
   /**
-   * Bottom edge: left,bottom -> right,bottom
+   Bottom edge: left,bottom -> right,bottom
    */
   if (segmentsIntersect({
     a1x: sx,
@@ -405,7 +405,7 @@ export function segmentIntersectsRect(
     return true;
   }
   /**
-   * Left edge: left,top -> left,bottom
+   Left edge: left,top -> left,bottom
    */
   if (segmentsIntersect({
     a1x: sx,
@@ -420,7 +420,7 @@ export function segmentIntersectsRect(
     return true;
   }
   /**
-   * Right edge: right,top -> right,bottom
+   Right edge: right,top -> right,bottom
    */
   if (segmentsIntersect({
     a1x: sx,

@@ -20,17 +20,17 @@ import { SESSION_NOT_FOUND_WARNING, } from './cli-core.ts';
 import { tempDir, } from './test-support.ts';
 
 /**
- * Number of polling attempts used while waiting for detached fake terminal-exec output.
+ Number of polling attempts used while waiting for detached fake terminal-exec output.
  */
 const DETACHED_WRITE_ATTEMPTS = 50;
 
 /**
- * Milliseconds between detached fake terminal-exec output checks.
+ Milliseconds between detached fake terminal-exec output checks.
  */
 const DETACHED_WRITE_DELAY_MS = 10;
 
 /**
- * Source CLI path used for fallback smoke coverage.
+ Source CLI path used for fallback smoke coverage.
  */
 const SOURCE_CLI_PATH = fileURLToPath(new URL(
   'cli.ts',
@@ -38,59 +38,59 @@ const SOURCE_CLI_PATH = fileURLToPath(new URL(
 ),);
 
 /**
- * Directory name used for fake executables in CLI tests.
+ Directory name used for fake executables in CLI tests.
  */
 const FAKE_BIN_DIRNAME = 'bin';
 
 /**
- * File name used for fake terminal-exec executable in CLI tests.
+ File name used for fake terminal-exec executable in CLI tests.
  */
 const FAKE_TERMINAL_EXEC_NAME = 'terminal-exec';
 
 /**
- * Environment variable carrying fake terminal-exec launch record path.
+ Environment variable carrying fake terminal-exec launch record path.
  */
 const FAKE_TERMINAL_RECORD_PATH_ENV = 'SPAWN_PI_FAKE_TERMINAL_RECORD_PATH';
 
 /**
- * Non-nullish sentinel written when fake terminal-exec receives no spawn identifier.
+ Non-nullish sentinel written when fake terminal-exec receives no spawn identifier.
  */
 const FAKE_TERMINAL_SPAWN_ID_ABSENT = '<absent>';
 
 /**
- * Executable permission bits for fake terminal-exec.
+ Executable permission bits for fake terminal-exec.
  */
 const EXECUTABLE_PERMISSION = 0o755;
 
 /**
- * Captured fake terminal-exec launch record.
+ Captured fake terminal-exec launch record.
  */
 type FakeTerminalRecord = {
   /**
-   * Arguments passed to terminal-exec.
+   Arguments passed to terminal-exec.
    */
   readonly argv: readonly string[];
   /**
-   * Working directory observed by fake terminal-exec.
+   Working directory observed by fake terminal-exec.
    */
   readonly cwd: string;
   /**
-   * Spawn identifier inherited by terminal-exec, or sentinel text in unlinked mode.
+   Spawn identifier inherited by terminal-exec, or sentinel text in unlinked mode.
    */
   readonly spawnId: string;
 };
 
 /**
- * Writes fake terminal-exec executable that records its launch payload.
- *
- * @param binDir - directory receiving fake executable.
- *
- * @returns path to fake terminal-exec executable.
- *
- * @example
- * ```typescript
- * const fakeTerminal = writeFakeTerminalExec('/tmp/bin');
- * ```
+ Writes fake terminal-exec executable that records its launch payload.
+ 
+ @param binDir - directory receiving fake executable.
+ 
+ @returns path to fake terminal-exec executable.
+ 
+ @example
+ ```typescript
+ const fakeTerminal = writeFakeTerminalExec('/tmp/bin');
+ ```
  */
 function writeFakeTerminalExec(binDir: string,): string {
   mkdirSync(
@@ -99,7 +99,7 @@ function writeFakeTerminalExec(binDir: string,): string {
   );
 
   /**
-   * Fake terminal-exec executable path.
+   Fake terminal-exec executable path.
    */
   const fakeTerminalPath = join(
     binDir,
@@ -131,31 +131,31 @@ function writeFakeTerminalExec(binDir: string,): string {
 }
 
 /**
- * Waits for detached fake terminal-exec to write its launch record.
- *
- * @param recordPath - JSON record path expected from fake terminal-exec.
- *
- * @returns parsed launch record.
- *
- * @throws when fake terminal-exec does not write record before polling ends.
- *
- * @example
- * ```typescript
- * const record = await readDetachedRecord('/tmp/record.json');
- * ```
+ Waits for detached fake terminal-exec to write its launch record.
+ 
+ @param recordPath - JSON record path expected from fake terminal-exec.
+ 
+ @returns parsed launch record.
+ 
+ @throws when fake terminal-exec does not write record before polling ends.
+ 
+ @example
+ ```typescript
+ const record = await readDetachedRecord('/tmp/record.json');
+ ```
  */
 async function readDetachedRecord(recordPath: string,): Promise<FakeTerminalRecord> {
   for (let attempt = 0; attempt < DETACHED_WRITE_ATTEMPTS; attempt += 1) {
     if (existsSync(recordPath,)) {
       /**
-       * Raw JSON written by fake terminal-exec.
+       Raw JSON written by fake terminal-exec.
        */
       const raw = readFileSync(
         recordPath,
         'utf8',
       );
       /**
-       * Parsed fake terminal-exec launch record.
+       Parsed fake terminal-exec launch record.
        */
       const record = JSON.parse(raw,) as FakeTerminalRecord;
       return record;
@@ -181,14 +181,14 @@ await describe({
             await using dir = await tempDir({ prefix: 'spawn-pi-cli-fallback-', },);
 
             /**
-             * Fake executable directory prepended to PATH.
+             Fake executable directory prepended to PATH.
              */
             const fakeBinDir = join(
               dir.path,
               FAKE_BIN_DIRNAME,
             );
             /**
-             * Captured fake terminal-exec launch record path.
+             Captured fake terminal-exec launch record path.
              */
             const recordPath = join(
               dir.path,
@@ -198,7 +198,7 @@ await describe({
             writeFakeTerminalExec(fakeBinDir,);
 
             /**
-             * Source CLI result when no PID mapping directory exists.
+             Source CLI result when no PID mapping directory exists.
              */
             const result = spawnSync(
               'node',
@@ -226,7 +226,7 @@ await describe({
             expect(result.stdout.trim(),).toBe('{"resultForwarding":false}',);
 
             /**
-             * Launch record written by detached fake terminal-exec.
+             Launch record written by detached fake terminal-exec.
              */
             const record = await readDetachedRecord(recordPath,);
 

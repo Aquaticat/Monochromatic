@@ -1,7 +1,7 @@
 /**
- * Shared scanner for project-specific `@mutates` TSDoc contracts.
- *
- * @module
+ Shared scanner for project-specific `@mutates` TSDoc contracts.
+ 
+ @module
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 } from './text-character.ts';
 
 /**
- * Block tags that terminate an open `@mutates` block.
+ Block tags that terminate an open `@mutates` block.
  */
 const BLOCK_TAG_NAMES: ReadonlySet<string> = new Set([
   '@decorator',
@@ -33,31 +33,31 @@ const BLOCK_TAG_NAMES: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Triple-backtick delimiter controlling fenced example state.
+ Triple-backtick delimiter controlling fenced example state.
  */
 const FENCE_DELIMITER = '```';
 
 /**
- * Sentinel while scanner has no open mutation segment.
+ Sentinel while scanner has no open mutation segment.
  */
 const OPEN_MUTATION_UNAVAILABLE: unique symbol = Symbol(
   'mutation scanner lacks open contract segment',
 );
 
 /**
- * Parsed mutation contract shared by documentation and semantic rules.
- *
- * @example
- * ```ts
- * const block: ParsedMutationContractBlock = {
- *   parameterName: 'state',
- *   description: 'Updates shared state.',
- *   hasDescription: true,
- *   lineOffset: 4,
- *   blockStartOffset: 20,
- *   blockEndOffset: 67,
- * };
- * ```
+ Parsed mutation contract shared by documentation and semantic rules.
+ 
+ @example
+ ```ts
+ const block: ParsedMutationContractBlock = {
+   parameterName: 'state',
+   description: 'Updates shared state.',
+   hasDescription: true,
+   lineOffset: 4,
+   blockStartOffset: 20,
+   blockEndOffset: 67,
+ };
+ ```
  */
 export type ParsedMutationContractBlock = {
   readonly parameterName: string;
@@ -69,7 +69,7 @@ export type ParsedMutationContractBlock = {
 };
 
 /**
- * One normalized comment line with source offsets.
+ One normalized comment line with source offsets.
  */
 type ContractLine = {
   readonly text: string;
@@ -80,7 +80,7 @@ type ContractLine = {
 };
 
 /**
- * Open mutation segment accumulating continuation text.
+ Open mutation segment accumulating continuation text.
  */
 type OpenMutationSegment = {
   readonly parts: string[];
@@ -89,7 +89,7 @@ type OpenMutationSegment = {
 };
 
 /**
- * Readonly projection accepted by segment finalization.
+ Readonly projection accepted by segment finalization.
  */
 type ReadonlyOpenMutationSegment = {
   readonly parts: readonly string[];
@@ -98,11 +98,11 @@ type ReadonlyOpenMutationSegment = {
 };
 
 /**
- * Returns exclusive end of first non-whitespace token.
- *
- * @param text - Text containing token.
- *
- * @returns token end offset.
+ Returns exclusive end of first non-whitespace token.
+ 
+ @param text - Text containing token.
+ 
+ @returns token end offset.
  */
 function firstTokenEnd(text: string,): number {
   for (let index = 0; index < text.length; index++) {
@@ -113,11 +113,11 @@ function firstTokenEnd(text: string,): number {
 }
 
 /**
- * Returns leading `@word` tag.
- *
- * @param text - Normalized comment line.
- *
- * @returns tag text or empty string when absent.
+ Returns leading `@word` tag.
+ 
+ @param text - Normalized comment line.
+ 
+ @returns tag text or empty string when absent.
  */
 function leadingBlockTag(text: string,): string {
   if (!text.startsWith('@',))
@@ -133,15 +133,15 @@ function leadingBlockTag(text: string,): string {
 }
 
 /**
- * Normalizes comment body lines while retaining source offsets and fence state.
- *
- * @param commentValue - Oxlint-style block comment body without delimiters.
- *
- * @returns normalized lines in source order.
+ Normalizes comment body lines while retaining source offsets and fence state.
+ 
+ @param commentValue - Oxlint-style block comment body without delimiters.
+ 
+ @returns normalized lines in source order.
  */
 function normalizedContractLines(commentValue: string,): readonly ContractLine[] {
   /**
-   * Fold state carrying source cursor, fence state, and rows.
+   Fold state carrying source cursor, fence state, and rows.
    */
   const state: {
     cursor: number;
@@ -158,29 +158,29 @@ function normalizedContractLines(commentValue: string,): readonly ContractLine[]
       lineOffset,
     ): void {
     /**
-     * Raw line start before newline separator.
+     Raw line start before newline separator.
      */
     const rawStartOffset = state.cursor;
     /**
-     * Raw line end before newline separator.
+     Raw line end before newline separator.
      */
     const rawEndOffset = rawStartOffset + rawLine.length;
     /**
-     * Content after indentation and optional comment star.
+     Content after indentation and optional comment star.
      */
     const leadingTrimmed = rawLine.trimStart();
     /**
-     * Content after leading star marker.
+     Content after leading star marker.
      */
     const withoutStar = leadingTrimmed.startsWith('*',)
       ? leadingTrimmed.slice(1,)
       : leadingTrimmed;
     /**
-     * Normalized content used for tag and fence scanning.
+     Normalized content used for tag and fence scanning.
      */
     const text = withoutStar.trimStart();
     /**
-     * Whether current line opens or closes fenced code.
+     Whether current line opens or closes fenced code.
      */
     const fenceLine = text.startsWith(FENCE_DELIMITER,);
     state.lines
@@ -199,13 +199,13 @@ function normalizedContractLines(commentValue: string,): readonly ContractLine[]
 }
 
 /**
- * Converts open segment to parsed mutation contract.
- *
- * @param segment - Open segment to finalize.
- *
- * @param blockEndOffset - Exclusive source offset ending block.
- *
- * @returns parsed block.
+ Converts open segment to parsed mutation contract.
+ 
+ @param segment - Open segment to finalize.
+ 
+ @param blockEndOffset - Exclusive source offset ending block.
+ 
+ @returns parsed block.
  */
 function finalizeSegment({
   segment,
@@ -215,29 +215,29 @@ function finalizeSegment({
   readonly blockEndOffset: number;
 },): ParsedMutationContractBlock {
   /**
-   * Joined content after `@mutates` tag.
+   Joined content after `@mutates` tag.
    */
   const text = segment.parts
     .join('\n',)
     .trimStart();
   /**
-   * Exclusive parameter-name token end.
+   Exclusive parameter-name token end.
    */
   const nameEnd = firstTokenEnd(text,);
   /**
-   * Raw first token, with separator-only token treated as absent.
+   Raw first token, with separator-only token treated as absent.
    */
   const rawName = text.slice(
     0,
     nameEnd,
   );
   /**
-   * Text following parameter name before separator normalization.
+   Text following parameter name before separator normalization.
    */
   const afterName = text.slice(nameEnd,)
     .trimStart();
   /**
-   * Description with one optional hyphen separator removed.
+   Description with one optional hyphen separator removed.
    */
   const description = (afterName.startsWith('-',)
     ? afterName.slice(1,)
@@ -253,21 +253,21 @@ function finalizeSegment({
 }
 
 /**
- * Parses every project `@mutates` block from one TSDoc comment body.
- *
- * Fenced examples are ignored. Recognized TSDoc block tags terminate an open
- * mutation block, while ordinary continuation lines contribute description.
- *
- * @param commentValue - Block comment body without opening and closing delimiters.
- *
- * @returns parsed mutation contracts in source order.
- *
- * @example
- * ```ts
- * const blocks = parseMutationContractBlocks({
- *   commentValue: '* @mutates state - Updates shared state.',
- * });
- * ```
+ Parses every project `@mutates` block from one TSDoc comment body.
+ 
+ Fenced examples are ignored. Recognized TSDoc block tags terminate an open
+ mutation block, while ordinary continuation lines contribute description.
+ 
+ @param commentValue - Block comment body without opening and closing delimiters.
+ 
+ @returns parsed mutation contracts in source order.
+ 
+ @example
+ ```ts
+ const blocks = parseMutationContractBlocks({
+   commentValue: '* @mutates state - Updates shared state.',
+ });
+ ```
  */
 export function parseMutationContractBlocks({
   commentValue,
@@ -275,11 +275,11 @@ export function parseMutationContractBlocks({
   readonly commentValue: string;
 },): readonly ParsedMutationContractBlock[] {
   /**
-   * Parsed result blocks in source order.
+   Parsed result blocks in source order.
    */
   const blocks: ParsedMutationContractBlock[] = [];
   /**
-   * Mutable holder for current segment without nullish state.
+   Mutable holder for current segment without nullish state.
    */
   const current: {
     value: OpenMutationSegment | typeof OPEN_MUTATION_UNAVAILABLE;
@@ -287,7 +287,7 @@ export function parseMutationContractBlocks({
   normalizedContractLines(commentValue,)
     .forEach(function scan(line,): void {
     /**
-     * Leading block tag outside fenced examples.
+     Leading block tag outside fenced examples.
      */
     const tag = line.inFence ? '' : leadingBlockTag(line.text,);
     if ((tag !== '') && BLOCK_TAG_NAMES.has(tag,)) {

@@ -1,10 +1,10 @@
 /**
- * `/guard` command registration.
- *
- * Keeps trust-directive command handling out of the extension entry point so
- * index.ts stays focused on lifecycle wiring.
- *
- * @module
+ `/guard` command registration.
+ 
+ Keeps trust-directive command handling out of the extension entry point so
+ index.ts stays focused on lifecycle wiring.
+ 
+ @module
  */
 
 import type {
@@ -16,19 +16,19 @@ import { getTrustDirectives, } from './context.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
 /**
- * Register `/guard` trust-directive command.
- *
- * Lists active directives with {@link getTrustDirectives} and records resets
- * and additions through the {@link TRUST_ENTRY_TYPE} session entry.
- *
- * @param pi - extension API used to register commands and persist entries
- *
- * @mutates pi - `pi.registerCommand` stores command registration and deferred handler entries
- *
- * @example
- * ```typescript
- * registerGuardCommand({ pi });
- * ```
+ Register `/guard` trust-directive command.
+ 
+ Lists active directives with {@link getTrustDirectives} and records resets
+ and additions through the {@link TRUST_ENTRY_TYPE} session entry.
+ 
+ @param pi - extension API used to register commands and persist entries
+ 
+ @mutates pi - `pi.registerCommand` stores command registration and deferred handler entries
+ 
+ @example
+ ```typescript
+ registerGuardCommand({ pi });
+ ```
  */
 function registerGuardCommand(
   {
@@ -42,27 +42,27 @@ function registerGuardCommand(
     {
       description: 'Manage auto-mode: /guard <trust directive> or /guard reset',
       /**
-       * Handles one `/guard` invocation.
-       *
-       * @param args - User-supplied command text.
-       *
-       * @param ctx - Active Pi command context.
-       *
-       * @returns settled completion after synchronous command updates
-       *
-       * @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state.
+       Handles one `/guard` invocation.
+       
+       @param args - User-supplied command text.
+       
+       @param ctx - Active Pi command context.
+       
+       @returns settled completion after synchronous command updates
+       
+       @mutates ctx - `ctx.ui.notify` changes displayed Pi notification state.
        */
       handler(
         args: string,
         ctx: ForeignHostCapability<ExtensionContext>,
       ): Promise<void> {
         /**
-         * Trimmed argument string; empty string falls through to the list-directives branch.
+         Trimmed argument string; empty string falls through to the list-directives branch.
          */
         const trimmed = args.trim();
         if (trimmed === '') {
           /**
-           * Current trust directives for the session, listed back to the user when `/guard` is bare.
+           Current trust directives for the session, listed back to the user when `/guard` is bare.
            */
           const directives = getTrustDirectives(ctx,);
           if (directives.length

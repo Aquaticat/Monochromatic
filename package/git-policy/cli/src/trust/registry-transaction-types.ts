@@ -1,68 +1,68 @@
 /**
- * Recursive provenance transaction schemas. @module
+ Recursive provenance transaction schemas. @module
  */
 import { validateTrustRecord, } from './record-validation.ts';
 import { TrustStorageError, } from './registry-io.ts';
 import type { TrustIdentity, } from './types.ts';
 
 /**
- * One final provenance state.
+ One final provenance state.
  */
 export type ProvenanceOperation =
   | Readonly<{
     /**
-     * Exact record identity.
+     Exact record identity.
      */
     identity: TrustIdentity;
     /**
-     * Removes installed record.
+     Removes installed record.
      */
     action: 'remove';
   }>
   | Readonly<{
     /**
-     * Exact record identity.
+     Exact record identity.
      */
     identity: TrustIdentity;
     /**
-     * Rewrites provenance.
+     Rewrites provenance.
      */
     action: 'update';
     /**
-     * Final authorizing roots.
+     Final authorizing roots.
      */
     authorizingRoots: readonly TrustIdentity[];
   }>;
 /**
- * Persistent recovery journal.
+ Persistent recovery journal.
  */
 export type TransactionJournal = Readonly<{
   /**
-   * Journal schema.
+   Journal schema.
    */
   schemaVersion: 1;
   /**
-   * Process owning active transaction.
+   Process owning active transaction.
    */
   ownerPid: number;
   /**
-   * Unique transaction ID.
+   Unique transaction ID.
    */
   transactionId: string;
   /**
-   * Deterministically ordered operations.
+   Deterministically ordered operations.
    */
   operations: readonly ProvenanceOperation[];
 }>;
 
 /**
- * Validates identity and authorizers through canonical trust schema.
- *
- * @param identity - unknown operation identity
- *
- * @param authorizingRoots - unknown provenance list
- *
- * @returns validated identity and provenance
+ Validates identity and authorizers through canonical trust schema.
+ 
+ @param identity - unknown operation identity
+ 
+ @param authorizingRoots - unknown provenance list
+ 
+ @returns validated identity and provenance
  */
 function validateOperationFields({
   identity,
@@ -75,7 +75,7 @@ function validateOperationFields({
   authorizingRoots: readonly TrustIdentity[];
 }> {
   /**
-   * Synthetic record reuses authoritative identity validation.
+   Synthetic record reuses authoritative identity validation.
    */
   const validated = validateTrustRecord({
     schemaVersion: 1,
@@ -101,11 +101,11 @@ function validateOperationFields({
 }
 
 /**
- * Validates one unknown operation.
- *
- * @param value - parsed operation
- *
- * @returns validated discriminated operation
+ Validates one unknown operation.
+ 
+ @param value - parsed operation
+ 
+ @returns validated discriminated operation
  */
 function validateOperation(value: unknown,): ProvenanceOperation {
   if (((typeof value) !== 'object') || (value === null)
@@ -115,7 +115,7 @@ function validateOperation(value: unknown,): ProvenanceOperation {
     throw new TrustStorageError('Recursive trust transaction operation is invalid.',);
   if (value.action === 'remove') {
     /**
-     * Validated removal identity.
+     Validated removal identity.
      */
     const fields = validateOperationFields({
       identity: value.identity,
@@ -129,7 +129,7 @@ function validateOperation(value: unknown,): ProvenanceOperation {
   if ((!('authorizingRoots' in value)) || (!Array.isArray(value.authorizingRoots)))
     throw new TrustStorageError('Recursive trust update provenance is invalid.',);
   /**
-   * Validated update identity and roots.
+   Validated update identity and roots.
    */
   const fields = validateOperationFields({
     identity: value.identity,
@@ -143,20 +143,20 @@ function validateOperation(value: unknown,): ProvenanceOperation {
 }
 
 /**
- * Parses and validates one journal.
- *
- * @param bytes - UTF-8 journal bytes
- *
- * @returns validated journal
- *
- * @example
- * ```ts
- * parseTransactionJournal('{"schemaVersion":1}');
- * ```
+ Parses and validates one journal.
+ 
+ @param bytes - UTF-8 journal bytes
+ 
+ @returns validated journal
+ 
+ @example
+ ```ts
+ parseTransactionJournal('{"schemaVersion":1}');
+ ```
  */
 export function parseTransactionJournal(bytes: string,): TransactionJournal {
   /**
-   * Parsed JSON retained behind unknown boundary.
+   Parsed JSON retained behind unknown boundary.
    */
   const value: unknown = JSON.parse(bytes,);
   if (((typeof value) !== 'object') || (value === null)
@@ -172,7 +172,7 @@ export function parseTransactionJournal(bytes: string,): TransactionJournal {
     || (!Array.isArray(value.operations)))
     throw new TrustStorageError('Recursive trust transaction journal is invalid.',);
   /**
-   * Unknown operations narrowed independently.
+   Unknown operations narrowed independently.
    */
   const operationValues: readonly unknown[] = value.operations;
   return {

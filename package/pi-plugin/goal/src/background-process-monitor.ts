@@ -1,7 +1,7 @@
 /**
- * Runtime-local observation of live processes managed by `@aliou/pi-processes`.
- *
- * @module
+ Runtime-local observation of live processes managed by `@aliou/pi-processes`.
+ 
+ @module
  */
 
 import type {
@@ -11,32 +11,32 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
- * Public tool name registered by `@aliou/pi-processes`.
- *
- * @example
- * ```ts
- * console.log(PROCESS_TOOL_NAME);
- * ```
+ Public tool name registered by `@aliou/pi-processes`.
+ 
+ @example
+ ```ts
+ console.log(PROCESS_TOOL_NAME);
+ ```
  */
 const PROCESS_TOOL_NAME = 'process';
 
 /**
- * Public custom-message type emitted for process lifecycle updates.
- *
- * @example
- * ```ts
- * console.log(PROCESS_UPDATE_CUSTOM_TYPE);
- * ```
+ Public custom-message type emitted for process lifecycle updates.
+ 
+ @example
+ ```ts
+ console.log(PROCESS_UPDATE_CUSTOM_TYPE);
+ ```
  */
 const PROCESS_UPDATE_CUSTOM_TYPE = 'ad-process:update';
 
 /**
- * Process statuses that still represent live operating-system work.
- *
- * @example
- * ```ts
- * console.log(LIVE_PROCESS_STATUSES.running);
- * ```
+ Process statuses that still represent live operating-system work.
+ 
+ @example
+ ```ts
+ console.log(LIVE_PROCESS_STATUSES.running);
+ ```
  */
 const LIVE_PROCESS_STATUSES = {
   running: true,
@@ -45,17 +45,17 @@ const LIVE_PROCESS_STATUSES = {
 } as const satisfies Readonly<Record<string, true>>;
 
 /**
- * Sentinel returned when an external snapshot does not represent live work.
- *
- * @example
- * ```ts
- * console.log(typeof PROCESS_SNAPSHOT_NOT_LIVE);
- * ```
+ Sentinel returned when an external snapshot does not represent live work.
+ 
+ @example
+ ```ts
+ console.log(typeof PROCESS_SNAPSHOT_NOT_LIVE);
+ ```
  */
 const PROCESS_SNAPSHOT_NOT_LIVE: unique symbol = Symbol('process snapshot does not represent live work',);
 
 /**
- * Immutable runtime view of live process identities.
+ Immutable runtime view of live process identities.
  */
 type BackgroundProcessState = {
   readonly liveProcessIds: readonly string[];
@@ -63,36 +63,36 @@ type BackgroundProcessState = {
 };
 
 /**
- * Goal-owned monitor boundary used by settlement policy.
+ Goal-owned monitor boundary used by settlement policy.
  */
 type BackgroundProcessMonitor = {
   /**
-   * Report whether observed process state contains live work.
+   Report whether observed process state contains live work.
    */
   readonly hasLiveBackgroundProcess: () => boolean;
 };
 
 /**
- * Minimal message-end event accepted from Pi's extension callback.
+ Minimal message-end event accepted from Pi's extension callback.
  */
 type ObservedMessageEndEvent = {
   /**
-   * Finalized Pi message with extension-specific fields guarded at runtime.
+   Finalized Pi message with extension-specific fields guarded at runtime.
    */
   readonly message: unknown;
 };
 
 /**
- * Narrow unknown value to property record.
- *
- * @param value - candidate structured value
- *
- * @returns whether named property lookup is safe
- *
- * @example
- * ```ts
- * isPropertyRecord({ status: 'running' });
- * ```
+ Narrow unknown value to property record.
+ 
+ @param value - candidate structured value
+ 
+ @returns whether named property lookup is safe
+ 
+ @example
+ ```ts
+ isPropertyRecord({ status: 'running' });
+ ```
  */
 function isPropertyRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
   return (value !== null)
@@ -100,16 +100,16 @@ function isPropertyRecord(value: unknown,): value is Readonly<Record<string, unk
 }
 
 /**
- * Test whether external process status still represents live work.
- *
- * @param status - untrusted status from process result details
- *
- * @returns whether status is live
- *
- * @example
- * ```ts
- * isLiveProcessStatus('running');
- * ```
+ Test whether external process status still represents live work.
+ 
+ @param status - untrusted status from process result details
+ 
+ @returns whether status is live
+ 
+ @example
+ ```ts
+ isLiveProcessStatus('running');
+ ```
  */
 function isLiveProcessStatus(status: unknown,): boolean {
   if ((typeof status) !== 'string')
@@ -121,16 +121,16 @@ function isLiveProcessStatus(status: unknown,): boolean {
 }
 
 /**
- * Read live identity from one external process snapshot.
- *
- * @param value - candidate `ProcessInfo` object
- *
- * @returns live process identity or domain sentinel for malformed or terminal snapshots
- *
- * @example
- * ```ts
- * liveProcessId({ id: 'proc_1', status: 'running' });
- * ```
+ Read live identity from one external process snapshot.
+ 
+ @param value - candidate `ProcessInfo` object
+ 
+ @returns live process identity or domain sentinel for malformed or terminal snapshots
+ 
+ @example
+ ```ts
+ liveProcessId({ id: 'proc_1', status: 'running' });
+ ```
  */
 function liveProcessId(value: unknown,): string | typeof PROCESS_SNAPSHOT_NOT_LIVE {
   if (!isPropertyRecord(value,))
@@ -143,18 +143,18 @@ function liveProcessId(value: unknown,): string | typeof PROCESS_SNAPSHOT_NOT_LI
 }
 
 /**
- * Add one process identity without mutating prior state.
- *
- * @param processIds - current unique identities
- *
- * @param processId - identity to retain
- *
- * @returns identity list containing process
- *
- * @example
- * ```ts
- * addProcessId({ processIds: [], processId: 'proc_1' });
- * ```
+ Add one process identity without mutating prior state.
+ 
+ @param processIds - current unique identities
+ 
+ @param processId - identity to retain
+ 
+ @returns identity list containing process
+ 
+ @example
+ ```ts
+ addProcessId({ processIds: [], processId: 'proc_1' });
+ ```
  */
 function addProcessId(
   {
@@ -174,18 +174,18 @@ function addProcessId(
 }
 
 /**
- * Remove one terminal process identity without mutating prior state.
- *
- * @param liveProcessIds - current unique identities
- *
- * @param processId - identity no longer live
- *
- * @returns identities excluding process
- *
- * @example
- * ```ts
- * removeLiveProcessId({ liveProcessIds: ['proc_1'], processId: 'proc_1' });
- * ```
+ Remove one terminal process identity without mutating prior state.
+ 
+ @param liveProcessIds - current unique identities
+ 
+ @param processId - identity no longer live
+ 
+ @returns identities excluding process
+ 
+ @example
+ ```ts
+ removeLiveProcessId({ liveProcessIds: ['proc_1'], processId: 'proc_1' });
+ ```
  */
 function removeLiveProcessId(
   {
@@ -202,22 +202,22 @@ function removeLiveProcessId(
 }
 
 /**
- * Apply finalized `process` tool details to monitor state.
- *
- * Start results add one live identity.
- * List results reconcile every currently live identity.
- * Other tools and malformed details leave state unchanged.
- *
- * @param state - current runtime process state
- *
- * @param event - finalized Pi tool result
- *
- * @returns next runtime process state
- *
- * @example
- * ```ts
- * observeProcessToolResult({ state, event });
- * ```
+ Apply finalized `process` tool details to monitor state.
+ 
+ Start results add one live identity.
+ List results reconcile every currently live identity.
+ Other tools and malformed details leave state unchanged.
+ 
+ @param state - current runtime process state
+ 
+ @param event - finalized Pi tool result
+ 
+ @returns next runtime process state
+ 
+ @example
+ ```ts
+ observeProcessToolResult({ state, event });
+ ```
  */
 function observeProcessToolResult(
   {
@@ -231,7 +231,7 @@ function observeProcessToolResult(
   if (event.toolName !== PROCESS_TOOL_NAME)
     return state;
   /**
-   * Process tool details guarded before action-specific observation.
+   Process tool details guarded before action-specific observation.
    */
   const { details, } = event;
   if (!isPropertyRecord(details,))
@@ -253,13 +253,13 @@ function observeProcessToolResult(
   if (details.action !== 'start')
     return state;
   /**
-   * Live identity from successful process start result.
+   Live identity from successful process start result.
    */
   const processId = liveProcessId(details.process,);
   if ((typeof processId) === 'symbol')
     return state;
   /**
-   * Current live and terminal identities used by delayed-result guard.
+   Current live and terminal identities used by delayed-result guard.
    */
   const {
     liveProcessIds,
@@ -277,18 +277,18 @@ function observeProcessToolResult(
 }
 
 /**
- * Apply process lifecycle custom message to monitor state.
- *
- * @param state - current runtime process state
- *
- * @param event - finalized Pi message event
- *
- * @returns next runtime process state
- *
- * @example
- * ```ts
- * observeProcessLifecycleMessage({ state, event });
- * ```
+ Apply process lifecycle custom message to monitor state.
+ 
+ @param state - current runtime process state
+ 
+ @param event - finalized Pi message event
+ 
+ @returns next runtime process state
+ 
+ @example
+ ```ts
+ observeProcessLifecycleMessage({ state, event });
+ ```
  */
 function observeProcessLifecycleMessage(
   {
@@ -302,11 +302,11 @@ function observeProcessLifecycleMessage(
   if (!isPropertyRecord(event.message,))
     return state;
   /**
-   * Finalized message record inspected for process lifecycle provenance.
+   Finalized message record inspected for process lifecycle provenance.
    */
   const { message, } = event;
   /**
-   * Provenance and lifecycle payload from finalized custom message.
+   Provenance and lifecycle payload from finalized custom message.
    */
   const {
     customType,
@@ -320,7 +320,7 @@ function observeProcessLifecycleMessage(
   if (!isPropertyRecord(details,))
     return state;
   /**
-   * Process lifecycle details guarded before state update.
+   Process lifecycle details guarded before state update.
    */
   if ((details.kind !== 'lifecycle')
     || ((details.status !== 'exited') && (details.status !== 'killed'))
@@ -340,24 +340,24 @@ function observeProcessLifecycleMessage(
 }
 
 /**
- * Register process observations and expose current liveness to goal settlement.
- *
- * @param pi - Pi extension API receiving passive result and message observers
- *
- * @returns runtime-local liveness monitor
- *
- * @mutates pi - registers `tool_result` and `message_end` handlers
- *
- * @example
- * ```ts
- * const monitor = registerBackgroundProcessMonitor(pi);
- * ```
+ Register process observations and expose current liveness to goal settlement.
+ 
+ @param pi - Pi extension API receiving passive result and message observers
+ 
+ @returns runtime-local liveness monitor
+ 
+ @mutates pi - registers `tool_result` and `message_end` handlers
+ 
+ @example
+ ```ts
+ const monitor = registerBackgroundProcessMonitor(pi);
+ ```
  */
 function registerBackgroundProcessMonitor(
   pi: ForeignBorrowed<ExtensionAPI>,
 ): BackgroundProcessMonitor {
   /**
-   * Runtime-local immutable process-state cursor shared by passive observers.
+   Runtime-local immutable process-state cursor shared by passive observers.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Pi result and message handlers jointly maintain one runtime-local immutable process snapshot.
   let state: BackgroundProcessState = {
@@ -387,7 +387,7 @@ function registerBackgroundProcessMonitor(
   return {
     hasLiveBackgroundProcess: function hasLiveBackgroundProcess(): boolean {
       /**
-       * Current immutable identity list read from shared state cursor.
+       Current immutable identity list read from shared state cursor.
        */
       const { liveProcessIds, } = state;
       return liveProcessIds.length > 0;

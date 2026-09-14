@@ -105,7 +105,7 @@ impl TruePeakSource for AndroidSource {
         // ```ts
         // return { rate: spec.rate, channels: spec.channels, durationSecs: spec.durationSecs };
         // ```
-        AudioSpec {
+        return AudioSpec {
             rate: spec.rate,
             channels: spec.channels,
             duration_secs: spec.duration_secs,
@@ -130,9 +130,9 @@ impl TruePeakSource for AndroidSource {
         // ```ts
         // return mapErr(this.inner.nextChunk(), (e) => ({ kind: "decode", message: String(e) }));
         // ```
-        self.inner
+        return self.inner
             .next_chunk()
-            .map_err(|error| TruePeakError::Decode { message: error.to_string() })
+            .map_err(|error| return TruePeakError::Decode { message: error.to_string() })
     }
 
     /// What:     `fn seek_to_frame(&mut self, frame: u64) -> Result<(), TruePeakError>`. Seek
@@ -173,9 +173,9 @@ impl TruePeakSource for AndroidSource {
         // ```ts
         // return mapErr(this.inner.seek(seconds), (e) => ({ kind: "seek", message: String(e) }));
         // ```
-        self.inner
+        return self.inner
             .seek(seconds)
-            .map_err(|error| TruePeakError::Seek { message: error.to_string() })
+            .map_err(|error| return TruePeakError::Seek { message: error.to_string() })
     }
 }
 
@@ -207,7 +207,7 @@ pub fn resolve_current(source: Box<dyn Source>) -> Result<Decision, TruePeakErro
     // ```ts
     // return resolveDecision(defaultPolicy(), adapter);
     // ```
-    resolve_decision(&default_policy(), &mut adapter)
+    return resolve_decision(&default_policy(), &mut adapter)
 }
 
 /// What:     `pub fn resolve_full(source: Box<dyn Source>) -> Result<Decision, TruePeakError>`.
@@ -238,5 +238,5 @@ pub fn resolve_full(source: Box<dyn Source>) -> Result<Decision, TruePeakError> 
     // ```ts
     // return resolveFullScan(defaultPolicy(), adapter);
     // ```
-    resolve_full_scan(&default_policy(), &mut adapter)
+    return resolve_full_scan(&default_policy(), &mut adapter)
 }

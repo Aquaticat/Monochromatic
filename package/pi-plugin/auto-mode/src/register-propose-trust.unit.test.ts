@@ -1,7 +1,7 @@
 /**
- * Tests for propose_trust tool registration.
- *
- * @module
+ Tests for propose_trust tool registration.
+ 
+ @module
  */
 
 import type {
@@ -83,20 +83,20 @@ type SelectHandler = (
 type ToolMap = Map<string, ProposeTrustExecute>;
 
 /**
- * Create mock extension API recording registered tools and appended entries.
- *
- * @param tools - map receiving registered tool execute handlers
- *
- * @param entries - array receiving appended session entries
- *
- * @param branch - optional mock session branch receiving real custom entries
- *
- * @returns mock extension API
- *
- * @example
- * ```typescript
- * const api = createMockApi({ tools: new Map(), entries: [] });
- * ```
+ Create mock extension API recording registered tools and appended entries.
+ 
+ @param tools - map receiving registered tool execute handlers
+ 
+ @param entries - array receiving appended session entries
+ 
+ @param branch - optional mock session branch receiving real custom entries
+ 
+ @returns mock extension API
+ 
+ @example
+ ```typescript
+ const api = createMockApi({ tools: new Map(), entries: [] });
+ ```
  */
 function createMockApi(
   {
@@ -139,22 +139,22 @@ function createMockApi(
 }
 
 /**
- * Create mock extension context with branch history and optional UI behavior.
- *
- * @param branch - session branch returned by mock session manager
- *
- * @param hasUI - whether context reports interactive UI availability
- *
- * @param select - test-controlled UI selection behavior
- *
- * @param selectionCalls - array receiving UI prompts
- *
- * @returns mock extension context
- *
- * @example
- * ```typescript
- * const ctx = createContext({ branch: [trustEntry({ rule: TRUST_RULE })] });
- * ```
+ Create mock extension context with branch history and optional UI behavior.
+ 
+ @param branch - session branch returned by mock session manager
+ 
+ @param hasUI - whether context reports interactive UI availability
+ 
+ @param select - test-controlled UI selection behavior
+ 
+ @param selectionCalls - array receiving UI prompts
+ 
+ @returns mock extension context
+ 
+ @example
+ ```typescript
+ const ctx = createContext({ branch: [trustEntry({ rule: TRUST_RULE })] });
+ ```
  */
 function createContext(
   {
@@ -196,16 +196,16 @@ function createContext(
 }
 
 /**
- * Build trust-directive branch entry.
- *
- * @param rule - active trust directive text
- *
- * @returns mock trust-directive entry
- *
- * @example
- * ```typescript
- * trustEntry({ rule: TRUST_RULE });
- * ```
+ Build trust-directive branch entry.
+ 
+ @param rule - active trust directive text
+ 
+ @returns mock trust-directive entry
+ 
+ @example
+ ```typescript
+ trustEntry({ rule: TRUST_RULE });
+ ```
  */
 function trustEntry(
   {
@@ -222,14 +222,14 @@ function trustEntry(
 }
 
 /**
- * Build reset branch entry clearing prior trust directives.
- *
- * @returns mock trust reset entry
- *
- * @example
- * ```typescript
- * trustResetEntry();
- * ```
+ Build reset branch entry clearing prior trust directives.
+ 
+ @returns mock trust reset entry
+ 
+ @example
+ ```typescript
+ trustResetEntry();
+ ```
  */
 function trustResetEntry(): MockBranchEntry {
   return {
@@ -240,18 +240,18 @@ function trustResetEntry(): MockBranchEntry {
 }
 
 /**
- * Retrieve registered propose_trust execute handler.
- *
- * @param tools - map containing registered tool handlers
- *
- * @returns propose_trust execute handler
- *
- * @throws when propose_trust was not registered
- *
- * @example
- * ```typescript
- * const execute = getProposeTrustExecute({ tools });
- * ```
+ Retrieve registered propose_trust execute handler.
+ 
+ @param tools - map containing registered tool handlers
+ 
+ @returns propose_trust execute handler
+ 
+ @throws when propose_trust was not registered
+ 
+ @example
+ ```typescript
+ const execute = getProposeTrustExecute({ tools });
+ ```
  */
 function getProposeTrustExecute(
   {
@@ -267,18 +267,18 @@ function getProposeTrustExecute(
 }
 
 /**
- * Extract text from single-text tool result.
- *
- * @param result - propose_trust execution result
- *
- * @returns text content from first result item
- *
- * @throws when result content is missing or non-text
- *
- * @example
- * ```typescript
- * const text = resultText(result);
- * ```
+ Extract text from single-text tool result.
+ 
+ @param result - propose_trust execution result
+ 
+ @returns text content from first result item
+ 
+ @throws when result content is missing or non-text
+ 
+ @example
+ ```typescript
+ const text = resultText(result);
+ ```
  */
 function resultText(
   result: ProposeTrustResult,
@@ -292,60 +292,60 @@ function resultText(
 }
 
 /**
- * Selection handler that fails when auto-approval should skip UI.
- *
- * @returns never, because prompt is unexpected
- *
- * @throws whenever called
- *
- * @example
- * ```typescript
- * await rejectUnexpectedSelection();
- * ```
+ Selection handler that fails when auto-approval should skip UI.
+ 
+ @returns never, because prompt is unexpected
+ 
+ @throws whenever called
+ 
+ @example
+ ```typescript
+ await rejectUnexpectedSelection();
+ ```
  */
 async function rejectUnexpectedSelection(): Promise<string> {
   throw new Error('propose_trust unexpectedly prompted for selection.',);
 }
 
 /**
- * Selection handler accepting trust proposal.
- *
- * @returns accept choice
- *
- * @example
- * ```typescript
- * await acceptSelection();
- * ```
+ Selection handler accepting trust proposal.
+ 
+ @returns accept choice
+ 
+ @example
+ ```typescript
+ await acceptSelection();
+ ```
  */
 async function acceptSelection(): Promise<string> {
   return 'Accept';
 }
 
 /**
- * Selection handler rejecting trust proposal.
- *
- * @returns reject choice
- *
- * @example
- * ```typescript
- * await rejectSelection();
- * ```
+ Selection handler rejecting trust proposal.
+ 
+ @returns reject choice
+ 
+ @example
+ ```typescript
+ await rejectSelection();
+ ```
  */
 async function rejectSelection(): Promise<string> {
   return 'Reject';
 }
 
 /**
- * Register propose_trust and return execute handler plus recorded entries.
- *
- * @param branch - optional mock session branch receiving real custom entries
- *
- * @returns registered handler and mutable entry log
- *
- * @example
- * ```typescript
- * const { execute } = registerForTest();
- * ```
+ Register propose_trust and return execute handler plus recorded entries.
+ 
+ @param branch - optional mock session branch receiving real custom entries
+ 
+ @returns registered handler and mutable entry log
+ 
+ @example
+ ```typescript
+ const { execute } = registerForTest();
+ ```
  */
 function registerForTest(
   {

@@ -9,8 +9,8 @@
 //           `*_tests.rs` files are exempt from the linter).
 
 // What:     `use super::*;` imports everything from the parent module (the
-//           queue) into the test scope, including the `ShuffleMode` it imports.
-// Why:      Tests need `Queue`, `ShuffleMode`, etc.
+//           queue) into the test scope, including the `PlaybackMode` it imports.
+// Why:      Tests need `Queue`, `PlaybackMode`, etc.
 use super::*;
 
 // What:     `fn paths(n: usize) -> Vec<PathBuf>` test helper building `n`
@@ -22,7 +22,7 @@ fn paths(n: usize) -> Vec<PathBuf> {
     //           `i.to_string()` allocates a `String`; `PathBuf::from` wraps it.
     //           Tail expression.
     // Why:      Distinct dummy paths with no folder.
-    (0..n).map(|i| PathBuf::from(i.to_string())).collect()
+    return (0..n).map(|i| return PathBuf::from(i.to_string())).collect()
 }
 
 // What:     `fn track_paths(list: &[&str]) -> Vec<PathBuf>` test helper turning
@@ -34,7 +34,7 @@ fn track_paths(list: &[&str]) -> Vec<PathBuf> {
     //           `&&str`; `*s` derefs it to `&str`; `PathBuf::from` wraps it.
     //           Tail expression.
     // Why:      Build the owned path vector preserving folders.
-    list.iter().map(|s| PathBuf::from(*s)).collect()
+    return list.iter().map(|s| return PathBuf::from(*s)).collect()
 }
 
 // What:     `#[test]` marks the next function as a test case.
@@ -89,13 +89,15 @@ fn repeat_track_replays_on_natural_end_only() {
     q.set_tracks(paths(3));
     // What:     turn "repeat track" on.
     // Why:      A natural end should replay the same track.
-    q.set_repeat_track(true);
+    q.set_playback_mode(PlaybackMode::Repeat);
     // What:     natural=true: the track replays itself (stays 0).
     // Why:      Repeat-track semantics.
     assert_eq!(q.advance(true), Some(0));
     // What:     natural=false: the user pressing Next still advances to 1.
     // Why:      Repeat-track must not trap the user on one track.
     assert_eq!(q.advance(false), Some(1));
+    assert_eq!(q.prev(), Some(0));
+    assert_eq!(q.prev(), Some(2));
 }
 
 #[test]
@@ -133,9 +135,9 @@ fn shuffle_all_keeps_current_track_and_covers_all() {
     // Why:      Toggling shuffle must keep track 2 current.
     assert_eq!(q.advance(false), Some(1));
     assert_eq!(q.advance(false), Some(2));
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     // What:     after shuffling, the current track is still 2.
-    // Why:      The contract of set_shuffle.
+    // Why:      The contract of set_playback_mode.
     assert_eq!(q.current_index(), Some(2));
     // What:     `let mut seen = std::collections::HashSet::new();` an owned
     //           hash set of usize. `HashSet` is the unordered unique-set type.
@@ -165,8 +167,8 @@ fn turning_shuffle_off_restores_load_order() {
     q.set_tracks(paths(4));
     // What:     shuffle everything, then turn shuffle back off.
     // Why:      Order should return to 0,1,2,3 traversal within the page.
-    q.set_shuffle(ShuffleMode::All);
-    q.set_shuffle(ShuffleMode::Off);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
+    q.set_playback_mode(PlaybackMode::InOrder);
     // What:     starting from current (0), advancing gives 1,2,3 in order.
     // Why:      Confirm identity order restored (bare names form one page).
     assert_eq!(q.current_index(), Some(0));
@@ -203,7 +205,7 @@ fn shuffle_within_page_covers_only_current_page() {
     q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "A/3.flac", "B/4.flac"]));
     // What:     enable within-page shuffle (anchored on current track 0, in A).
     // Why:      Scope becomes a shuffle of {0,1,2}.
-    q.set_shuffle(ShuffleMode::WithinPage);
+    q.set_playback_mode(PlaybackMode::ShufflePage);
     assert_eq!(q.current_index(), Some(0));
     // What:     `let mut seen = std::collections::HashSet::new();`. Visited set.
     // Why:      Confirm the page's three tracks are covered and 3 never is.
@@ -233,7 +235,7 @@ fn shuffle_all_crosses_pages() {
     q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac"]));
     // What:     shuffle the whole queue.
     // Why:      Scope is all three across both pages.
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     // What:     collect the current track plus three advances.
     // Why:      A 3-element scope is fully covered by wrapping advances.
     let mut seen = std::collections::HashSet::new();
@@ -335,7 +337,7 @@ fn shuffle_plays_each_track_once_before_repeating() {
     // Why:      One scope (no pages) keeps the cycle = all 5 tracks.
     let mut q = Queue::with_rng_seed(42);
     q.set_tracks(paths(5));
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     // What:     collect the current track plus four advances (a full cycle of 5).
     // Why:      These are one cycle's worth of picks.
     let mut seen: Vec<usize> = vec![q.current_index().unwrap()];
@@ -358,7 +360,7 @@ fn shuffle_prev_then_next_retraces_history() {
     // Why:      Build a history to step back into and retrace.
     let mut q = Queue::with_rng_seed(7);
     q.set_tracks(paths(6));
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     let a = q.current_index().unwrap();
     let b = q.advance(false).unwrap();
     let c = q.advance(false).unwrap();
@@ -381,7 +383,7 @@ fn shuffle_prev_at_history_start_stays() {
     // Why:      The cursor is at the start of the history.
     let mut q = Queue::with_rng_seed(3);
     q.set_tracks(paths(4));
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     let start = q.current_index().unwrap();
     // What:     `prev` returns the same current track and does not move.
     // Why:      No earlier history; stay put rather than invent a track.
@@ -398,7 +400,7 @@ fn shuffle_new_cycle_avoids_immediate_repeat() {
     // Why:      The 5th pick begins the next cycle.
     let mut q = Queue::with_rng_seed(99);
     q.set_tracks(paths(4));
-    q.set_shuffle(ShuffleMode::All);
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
     let mut cycle: Vec<usize> = vec![q.current_index().unwrap()];
     for _ in 0..3 {
         cycle.push(q.advance(false).unwrap());
@@ -407,4 +409,69 @@ fn shuffle_new_cycle_avoids_immediate_repeat() {
     // Why:      No immediate back-to-back repeat across the cycle boundary.
     let next = q.advance(false).unwrap();
     assert_ne!(next, *cycle.last().unwrap());
+}
+
+/// Displayed page changes retain an off-page current track until manual transport.
+#[test]
+fn displayed_page_scope_keeps_current_until_manual_transport() {
+    let mut q = Queue::with_rng_seed(17);
+    q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"]));
+    q.set_page_scope(vec![2, 3]);
+    assert_eq!(q.current_index(), Some(0));
+    assert_eq!(q.advance(false), Some(2));
+    assert_eq!(q.advance(false), Some(3));
+    assert_eq!(q.advance(false), Some(2));
+    assert_eq!(q.prev(), Some(3));
+}
+
+/// Displayed-page identity survives a library replacement by label.
+#[test]
+fn displayed_page_scope_survives_track_replacement() {
+    let mut q = Queue::with_rng_seed(13);
+    q.set_tracks(track_paths(&["A/1.flac", "B/2.flac"]));
+    q.set_page_scope(vec![1]);
+    q.set_tracks(track_paths(&["AA/0.flac", "A/1.flac", "B/2.flac"]));
+    assert_eq!(q.restore_index_preserving_page(1), Some(1));
+    assert_eq!(q.current_index(), Some(1));
+    assert_eq!(q.advance(false), Some(2));
+}
+
+/// Duplicate displayed labels retain distinct folder versus root-letter identities.
+#[test]
+fn duplicate_page_labels_preserve_root_page_scope() {
+    let mut q = Queue::with_rng_seed(29);
+    q.set_tracks(track_paths(&["A/folder.flac", "Apple.flac"]));
+    q.set_page_scope(vec![1]);
+    q.set_tracks(track_paths(&["0/zero.flac", "A/folder.flac", "Apple.flac"]));
+    assert_eq!(q.restore_index_preserving_page(1), Some(1));
+    assert_eq!(q.advance(false), Some(2));
+}
+
+/// A page change preserves prior Shuffle page history for Previous and Next.
+#[test]
+fn shuffle_page_change_preserves_history() {
+    let mut q = Queue::with_rng_seed(19);
+    q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"]));
+    q.set_page_scope(vec![0, 1]);
+    q.set_playback_mode(PlaybackMode::ShufflePage);
+    assert_eq!(q.advance(false), Some(1));
+    q.set_page_scope(vec![2, 3]);
+    assert_eq!(q.prev(), Some(0));
+    assert_eq!(q.advance(false), Some(1));
+    assert!([2, 3].contains(&q.advance(false).unwrap()));
+}
+
+/// Shuffle page uses the displayed page and retains the current track on selection.
+#[test]
+fn shuffle_page_uses_displayed_page_and_keeps_current() {
+    let mut q = Queue::with_rng_seed(23);
+    q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac", "B/4.flac"]));
+    q.set_page_scope(vec![2, 3]);
+    q.set_playback_mode(PlaybackMode::ShufflePage);
+    assert_eq!(q.current_index(), Some(0));
+    let mut seen = std::collections::HashSet::new();
+    for _ in 0..4 {
+        seen.insert(q.advance(false).unwrap());
+    }
+    assert_eq!(seen, std::collections::HashSet::from([2, 3]));
 }

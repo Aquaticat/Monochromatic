@@ -56,10 +56,10 @@ mise run watch:test    # alias: tW
 Run `mise run buildAndTest` after source changes,
  including when narrowing to one file,
 because `mise run test` alone can exercise stale artifacts.
- Use `mise run test`
-only when the same verification sequence already rebuilt `dist`,
- or when the
-file tests the test harness itself instead of package output.
+Use a package-scoped test task only after the same verification sequence rebuilt its artifact.
+Harness self-tests also import built output;
+source/built interoperability tests are deliberate exceptions,
+not permission to skip the harness build.
 
 ## Browser and e2e tests
 
@@ -208,7 +208,7 @@ if (untestableCondition) {
 
 - Use descriptive test names that explain expected behavior
 - Group related tests using nested `describe` blocks as children
-- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see `TROUBLESHOOTING.testing.md`)
+- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see [testing troubleshooting](../../../doc/troubleshooting/testing.md))
 - Use `.map()` to generate parameterized `it` entries in the `children` array
 - Test both happy path and error scenarios
 
@@ -386,7 +386,9 @@ The global `expect` also works but does not support assertion counting.
 
 ### Sinon sandbox for spies/stubs
 
-The test context provides a sinon sandbox that auto-restores after the test:
+Each body attempt receives a fresh Sinon sandbox,
+including repeats.
+Completion or timeout closes its mutation authority before automatic restoration:
 
 ```ts
 it({
@@ -398,6 +400,38 @@ it({
   },
 },);
 ```
+
+In Node,
+keep tests concurrent when `ctx.sinon.stub(target, key)` or `spy(target, key)` replaces an own,
+configurable,
+writable function-valued data property.
+Each attempt reads its own fake;
+unstubbed readers see the original.
+This includes `console.warn` and methods owned by a prototype.
+
+For other shared state,
+prefer test-local resources.
+When sharing is unavoidable,
+sequence every affected reader and writer under one common `concurrency: 1` ancestor.
+Separate sequential sibling suites can still overlap.
+This applies to shared fake timers,
+`process.env`,
+`process.argv`,
+files,
+whole-object replacements,
+mocks,
+and browser stubs.
+These families do not gain context isolation from the method adapter.
+
+Await or stop background work before finishing a test:
+closing sandbox authority does not cancel application work.
+For inherited/accessor/proxy targets,
+descriptor mutation,
+captured references,
+call-sequence controllers,
+or callback ownership,
+read the [harness ownership contract](../../../package/module/test/README.md#stubs-and-spies)
+before choosing a fixture.
 
 ## Async error assertions
 
@@ -602,4 +636,4 @@ expect(isError(new Error(),),).toBe(true,);
 For known testing issues (duplicate describe blocks,
  missing test output,
  misattributed logs),
-see `TROUBLESHOOTING.testing.md` in the repository root.
+see [testing troubleshooting](../../../doc/troubleshooting/testing.md).

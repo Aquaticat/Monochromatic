@@ -1,10 +1,10 @@
 /**
- * Pi Advisor extension entry point.
- *
- * Registers an `advisor` tool and `/advisor` command that consult a scoped
- * secondary reviewer model using serialized conversation context.
- *
- * @module
+ Pi Advisor extension entry point.
+ 
+ Registers an `advisor` tool and `/advisor` command that consult a scoped
+ secondary reviewer model using serialized conversation context.
+ 
+ @module
  */
 
 import type {
@@ -33,22 +33,25 @@ import {
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
 import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
+import { createAdvisorProjectContextState, } from './project-context.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
+import { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
 
 /**
- * Logger root for pi-advisor after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
- * ```
+ Logger root for pi-advisor after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: parentLogger, },);
+ ```
  */
 const parentLogger = tagged({ tag: 'pi-advisor', },);
 
 /**
- * Tagged logger for the Advisor entry point.
+ Tagged logger for the Advisor entry point.
  */
 const l = tagged({
   tag: 'index',
@@ -58,46 +61,56 @@ const l = tagged({
 //region Extension entry point
 
 /**
- * Advisor pi extension.
- *
- * @param pi - pi extension API
- *
- * @mutates pi - `pi.registerTool`, `pi.registerMessageRenderer`, `pi.on`, and delegated `pi.registerCommand` change Pi host registrations
- *
- * @example
- * ```typescript
- * // In ~/.pi/agent/settings.json:
- * { "packages": ["./packages/pi-plugin/advisor"] }
- * ```
+ Advisor pi extension.
+ 
+ @param pi - pi extension API
+ 
+ @mutates pi - `pi.registerTool`, `pi.registerMessageRenderer`, `pi.on`, and delegated `pi.registerCommand` change Pi host registrations
+ 
+ @example
+ ```typescript
+ // In ~/.pi/agent/settings.json:
+ { "packages": ["./packages/pi-plugin/advisor"] }
+ ```
  */
 export default async function advisor(
   pi: ForeignHostCapability<ExtensionAPI>,
 ): Promise<void> {
   /**
-   * Logger tagged with the extension factory name.
+   Logger tagged with the extension factory name.
    */
   const innerL = tagged({
     tag: advisor.name,
     l,
   },);
   /**
-   * Runtime config loaded at extension startup.
+   Runtime config loaded at extension startup.
    */
   const config = await loadMergedConfig({ cwd: process.cwd(), },);
   /**
-   * Mutable session state controlled by `/advisor on` and `/advisor off`.
+   Mutable session state controlled by `/advisor on` and `/advisor off`.
    */
   const state = createAdvisorSessionState(config.enabled,);
+  /**
+   Pi-loaded project context retained across compact-and-continue runs.
+   */
+  const projectContextState = createAdvisorProjectContextState();
 
   innerL.debug(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
+  /**
+   Restore failed nested usage when Pi finalizes the thrown tool error.
+   */
+  const onFailure = registerAdvisorFailureAccounting(pi,);
   pi.registerTool(createAdvisorTool({
+    onFailure,
     getConfig: function getConfig() {
       return config;
     },
     getSessionEnabled: function getSessionEnabled() {
       return state.getEnabled();
     },
+    getProjectContext: projectContextState.get,
   },),);
 
   registerAdvisorCommands({
@@ -111,17 +124,17 @@ export default async function advisor(
   pi.registerMessageRenderer(
     ADVISOR_MESSAGE_TYPE,
     /**
-     * Render manual Advisor message through Pi theme capability.
-     *
-     * @param message - custom Advisor message payload
-     *
-     * @param options - Pi transcript expansion state
-     *
-     * @param theme - Pi theme used to style message
-     *
-     * @returns styled Advisor message component
-     *
-     * @mutates theme - theme methods can update Pi host styling caches
+     Render manual Advisor message through Pi theme capability.
+     
+     @param message - custom Advisor message payload
+     
+     @param options - Pi transcript expansion state
+     
+     @param theme - Pi theme used to style message
+     
+     @returns styled Advisor message component
+     
+     @mutates theme - theme methods can update Pi host styling caches
      */
     function renderMessage(
       message: ReadonlyDeep<{
@@ -142,6 +155,7 @@ export default async function advisor(
   pi.on(
     'session_start',
     function handleSessionStart() {
+      projectContextState.clear();
       syncAdvisorActiveTool({
         pi,
         enabled: state.getEnabled(),
@@ -152,25 +166,30 @@ export default async function advisor(
   pi.on(
     'before_agent_start',
     /**
-     * Adds Advisor guidance before each enabled agent turn.
-     *
-     * @param event - Pi prompt event.
-     *
-     * @param ctx - Pi extension context.
-     *
-     * @returns Prompt replacement when Advisor is enabled.
-     *
-     * @mutates ctx - `buildMainModelGuidance` invokes context scope and model-registry callbacks
+     Adds Advisor guidance before each enabled agent turn.
+     
+     @param event - Pi prompt event.
+     
+     @param ctx - Pi extension context.
+     
+     @returns Prompt replacement when Advisor is enabled.
+     
+     @mutates ctx - `buildMainModelGuidance` invokes context scope and model-registry callbacks
      */
     async function handleBeforeAgentStart(
       event: ForeignBorrowed<BeforeAgentStartEvent>,
       ctx: ForeignHostCapability<ExtensionContext>,
     ) {
+      /**
+       Authoritative loaded context files for current agent run.
+       */
+      const { contextFiles = [], } = event.systemPromptOptions;
+      projectContextState.replace(contextFiles,);
       if (!state.getEnabled())
         return undefined;
 
       /**
-       * Advisor guidance appended to the main model system prompt.
+       Advisor guidance appended to the main model system prompt.
        */
       const guidance = await buildMainModelGuidance({
         ctx,
@@ -188,20 +207,20 @@ export default async function advisor(
 //region Prompt guidance
 
 /**
- * Build dynamic main-model guidance for Advisor.
- *
- * @param ctx - pi extension context
- *
- * @param config - runtime Advisor config
- *
- * @returns prompt text appended to main model system prompt
- *
- * @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
- *
- * @example
- * ```typescript
- * buildMainModelGuidance({ ctx, config });
- * ```
+ Build dynamic main-model guidance for Advisor.
+ 
+ @param ctx - pi extension context
+ 
+ @param config - runtime Advisor config
+ 
+ @returns prompt text appended to main model system prompt
+ 
+ @mutates ctx - `resolveEffectiveScope` invokes context live-scope and model-registry callbacks
+ 
+ @example
+ ```typescript
+ buildMainModelGuidance({ ctx, config });
+ ```
  */
 async function buildMainModelGuidance(
   {
@@ -213,21 +232,28 @@ async function buildMainModelGuidance(
   },
 ): Promise<string> {
   /**
-   * Effective scoped model set.
+   Effective scoped model set.
    */
   const scope = await resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);
   /**
-   * Default model for empty Advisor params.
+   Scoped models whose endpoints advertise configured output capacity.
    */
-  const defaultSelection = scope.entries
+  const eligibleScope = filterAdvisorScopeByOutputCapacity({
+    scope,
+    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+  },);
+  /**
+   Default model for empty Advisor params.
+   */
+  const defaultSelection = eligibleScope.entries
     .length
     === 0
     ? undefined
     : selectAdvisorModel({
-      scope,
+      scope: eligibleScope,
       config,
       estimatedInputTokens: 0,
       modelRegistry: ctx.modelRegistry,
@@ -236,11 +262,11 @@ async function buildMainModelGuidance(
     },)
       .defaultSelection;
   /**
-   * Canonical slugs available to Advisor.
+   Canonical slugs available to Advisor.
    */
-  const scopedSlugs = scope.entries
+  const scopedSlugs = eligibleScope.entries
     .map(function mapEntry(
-      entry: ReadonlyDeep<(typeof scope.entries)[number]>,
+      entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
     ) {
     return entry.canonicalSlug;
   },);
@@ -262,30 +288,82 @@ async function buildMainModelGuidance(
 
 //endregion Prompt guidance
 
-export { buildAdvisorStatus, } from './commands.ts';
+/**
+ Operation internals exported for built-artifact verification. @internal
+ */
+export { createAdvisorOperationLedger, } from './operation-ledger.ts';
+export { runAdvisorOperation, } from './operation.ts';
+export { formatAdvisorProgress, } from './operation-progress.ts';
+export {
+  renderAdvisorOperationSummary,
+  NO_ADVISOR_OPERATION_SUMMARY,
+} from './rendering-operation.ts';
+export { createAdvisorTool, } from './tool.ts';
+export { registerAdvisorFailureAccounting, } from './operation-failure-accounting.ts';
+export { AdvisorOperationError, } from './operation-error.ts';
+export { AdvisorCompletionError, } from './advisor-completion-error.ts';
+export type { AdvisorOperationOptions, } from './operation.ts';
+export type {
+  AdvisorDispatch,
+  AdvisorOperationCandidate,
+} from './operation-attempt.ts';
+export {
+  NO_ADVISOR_CANDIDATE,
+  nextAdvisorCandidate,
+} from './operation-candidates.ts';
+export {
+  assertAdvisorProviderAvailable,
+  isAdvisorCreditExhaustion,
+} from './provider-credit.ts';
+export {
+  ADVISOR_CLOCK_BOUNDARY,
+  createAdvisorCancellation,
+  waitForAdvisorEvent,
+} from './operation-clock.ts';
+export {
+  aggregateAdvisorUsage,
+  copyAdvisorUsage,
+} from './operation-usage.ts';
+export type {
+  AdvisorAttemptRecord,
+  AdvisorOperationSnapshot,
+} from './operation-types.ts';
+
+export { buildAdvisorStatus, } from './status.ts';
 export { buildMainModelGuidance, };
 
 /**
- * Internal provider-call behavior exported for built-artifact verification.
- *
- * @internal
+ Internal project-context helpers exported for built-artifact verification.
+ 
+ @internal
  */
 export {
-  completeAdvisor,
+  createAdvisorProjectContextState,
+  serializeAdvisorProjectContext,
+} from './project-context.ts';
+
+/**
+ Internal provider-call behavior exported for built-artifact verification.
+ 
+ @internal
+ */
+export {
+  buildAdvisorSystemPromptForProject,
   type CompleteAdvisorModel,
 } from './advisor-client.ts';
 
 /**
- * Internal request formatter exported for built-artifact verification.
- *
- * @internal
+ Internal request formatter exported for built-artifact verification.
+ 
+ @internal
  */
 export { buildAdvisorUserMessageText, } from './advisor-request.ts';
+export { completeAdvisor, } from './advisor-completion-client.ts';
 
 /**
- * Internal config helpers exported for built-artifact verification.
- *
- * @internal
+ Internal config helpers exported for built-artifact verification.
+ 
+ @internal
  */
 export {
   DEFAULT_CONFIG,
@@ -293,9 +371,9 @@ export {
 } from './config.ts';
 
 /**
- * Internal extension constants exported for built-artifact verification.
- *
- * @internal
+ Internal extension constants exported for built-artifact verification.
+ 
+ @internal
  */
 export {
   ADVISOR_MESSAGE_TYPE,
@@ -303,9 +381,9 @@ export {
 } from './constants.ts';
 
 /**
- * Internal context helpers exported for built-artifact verification.
- *
- * @internal
+ Internal context helpers exported for built-artifact verification.
+ 
+ @internal
  */
 export {
   buildAdvisorContext,
@@ -314,39 +392,39 @@ export {
 } from './context.ts';
 
 /**
- * Internal rendering helper exported for built-artifact verification.
- *
- * @internal
+ Internal rendering helper exported for built-artifact verification.
+ 
+ @internal
  */
 export { renderAdvisorResult, } from './rendering.ts';
 export { firstAdvisoryLine, } from './rendering-summary.ts';
 
 /**
- * Internal selection helpers exported for built-artifact verification.
- *
- * @internal
+ Internal selection helpers exported for built-artifact verification.
+ 
+ @internal
  */
 export { selectAdvisorModel, } from './advisor-selection.ts';
 export { selectAdvisorRunContext, } from './tool-context-selection.ts';
 
 /**
- * Internal tool argument adapter exported for built-artifact verification.
- *
- * @internal
+ Internal tool argument adapter exported for built-artifact verification.
+ 
+ @internal
  */
 export { prepareAdvisorArguments, } from './tool-params.ts';
 
 /**
- * Internal Advisor execution exported for built-artifact verification.
- *
- * @internal
+ Internal Advisor execution exported for built-artifact verification.
+ 
+ @internal
  */
 export { runAdvisor, } from './tool.ts';
 
 /**
- * Internal Advisor data types exported for built-artifact verification.
- *
- * @internal
+ Internal Advisor data types exported for built-artifact verification.
+ 
+ @internal
  */
 export type {
   AdvisorConfig,

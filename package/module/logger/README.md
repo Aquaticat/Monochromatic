@@ -1,16 +1,18 @@
 # module-logger
 
 Zero-config multi-sink logger with tagged composition.
-Works immediately at import:
- auto-discovers available backends for the current runtime,
+Works immediately with no setup call:
+ the first log or flush call builds the default logger and auto-discovers available backends for the current runtime,
 and records emitted while async backend verification is still pending replay to those
 backends as soon as they verify.
- Consumers do not await `initPromise` before logging.
+Importing the package runs no discovery,
+ no timers,
+ and no I/O.
 
 ## Usage
 
 ```ts
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger';
 
 const l = tagged({ tag: 'http', },);
 l.info('server started on port 3000',);
@@ -45,10 +47,42 @@ function handleRequest({ l, }: { l: Logger; },): void {
 Import the singleton directly when tags are not needed:
 
 ```ts
-import { logger, } from '@monochromatic-dev/module-logger/logger';
+import { logger, } from '@monochromatic-dev/module-logger';
 
 logger.error('unexpected shutdown',);
 ```
+
+## Runtime support
+
+Node 24 or newer (the build calls `Error.isError`),
+ plus current browsers,
+ Deno,
+ and Bun for the sinks whose `verify` finds a backend there.
+### Global-scope-restricted runtimes
+
+Cloudflare Workers (and any runtime that forbids timers,
+ I/O,
+ and random values in global scope) can import the root entry and `tagged` freely:
+nothing is built at import,
+ so no sink probe and no timer runs in global scope.
+The first log or flush call inside a handler builds the default logger and verifies its sinks there.
+A Worker that wants a logger scoped to one request can still build its own with `createLogger` over `sinks.createConsoleSink()`
+and hand `flush()` to `ctx.waitUntil`.
+
+The published package exposes the built artifact only.
+The `/ts` source subpath used inside this workspace is stripped at publish time,
+ because Node refuses `.ts` files under `node_modules`.
+
+The root entry is platform-neutral and is built twice.
+The `node` export condition serves a build whose default logger includes the file sink,
+ with static `node:fs/promises` and `node:path` imports,
+ and which carries no browser storage code.
+Every other resolution (`default`) serves a build whose default logger includes the IndexedDB sink
+ and which references no Node module.
+Neither build contains a dynamic `import()`,
+ and a unit test reads every chunk of both builds to keep it that way.
+The root types are identical on both conditions.
+A Node consumer whose bundler resolves the `default` condition gets the neutral build and no file logging.
 
 ## Log levels
 
@@ -79,9 +113,19 @@ already provides its own log-level filtering.
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified at module load;
- records emitted while an async sink is
+Availability is verified at module load,
+ every sink concurrently,
+ each under its own time limit (`verifyTimeoutMs`,
+ default `DEFAULT_VERIFY_TIMEOUT_MS`,
+ 5000 ms);
+ a sink that does not answer in time counts as unavailable,
+ so one hung backend probe cannot starve the others.
+Records emitted while an async sink is
 still being verified are replayed to that sink when it becomes available.
+That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
+ exported);
+ past the cap the oldest buffered record is dropped,
+ and once every sink has answered one `warn` record naming the dropped count is written to every available sink.
 
 - **console**:
    formats as `[level] [ISO timestamp] message`;
@@ -168,15 +212,16 @@ still being verified are replayed to that sink when it becomes available.
    discards all records;
    a stand-in that disables logging without removing log calls
 
-Each sink is a factory,
+Each sink is a factory.
+The cross-platform ones,
  `createConsoleSink()`,
- `createFileSink()`,
- `createIndexedDbSink()`,
- `createOpfsSink()`,
-`createSessionStorageSink()`,
+ `createSessionStorageSink()`,
  `createLocalStorageSink()`,
  and `createNoopSink()`,
- exported under the `sinks` namespace.
+ are exported under the `sinks` namespace of the root entry.
+`createFileSink()` is exported from `@monochromatic-dev/module-logger/node`,
+ and `createIndexedDbSink()` and `createOpfsSink()` from `@monochromatic-dev/module-logger/browser`,
+ so importing a platform-only sink is the consumer's own assertion of the platform.
 A sink instance keeps its own buffers,
  streams,
  and counters,
@@ -194,6 +239,21 @@ A sink is dropped only when its `verify` reports the backend unavailable (resolv
  a sink whose `flush` hook rejects is also dropped.
 Individual `write` failures are the sink's own concern and do not disable the backend,
 so one transient I/O hiccup never silently kills a sink for the rest of the run.
+
+## Console output safety
+
+Log text can carry attacker-influenced content,
+ and a terminal treats control characters as commands (clear screen,
+ set title,
+ move the cursor,
+ write the clipboard).
+The console sink renders every C0 control except newline and tab,
+ `DEL`,
+ and every C1 control as a `\uXXXX` escape before the text reaches `console.*` or `process.stderr`,
+ so the attempted sequence stays visible but inert.
+Newlines and tabs pass through because multi-line messages are core.
+The JSONL sinks need no such step:
+ `JSON.stringify` already escapes control characters.
 
 ## Log record format
 
@@ -215,15 +275,33 @@ File,
 
 ## Error handling
 
-- `initPromise` resolves after eager verification and startup replay;
-   consumers do not await it before logging
+- The default logger is built by the first log or flush call,
+   never at import;
+   there is no readiness promise to await,
+   because `flush()` awaits verification and startup replay internally
 - `logger.flush()` awaits startup verification,
    pending sink writes,
-   and sink-owned flush hooks
-- Throws at log time once initialization has completed with no available backend
-- A sink is dropped when its `verify` reports unavailable (or its flush hook rejects);
-   remaining sinks continue
+   and sink-owned flush hooks,
+   all under one deadline (`flushDeadlineMs`,
+   default `DEFAULT_FLUSH_DEADLINE_MS`,
+   5000 ms).
+   When the deadline elapses the logger reports one `console.warn` breadcrumb,
+   drops the in-flight writes from its view (sinks expose no cancellation,
+   so the work continues in the background),
+   and resolves,
+   so a wedged backend cannot hang a shutdown
+- Throws at log time once initialization has completed with no available backend.
+   The console sink verifies wherever `console` and `queueMicrotask` exist,
+   so this is reachable only through `createLogger` with sinks that all fail verification
+- A sink is dropped when its `verify` reports unavailable,
+   runs past `verifyTimeoutMs`,
+   or its flush hook rejects;
+   remaining sinks continue,
+   and a late verify answer after the limit is ignored
 - Individual `write` failures are handled per sink and do not disable the backend
+- Records logged before every sink has answered buffer under `STARTUP_BUFFER_CAP`;
+   on overflow the oldest is dropped and the count is reported as one `warn` record after initialization,
+   never silently
 
 ## Custom loggers
 
@@ -240,6 +318,20 @@ import { createLogger, sinks, } from '@monochromatic-dev/module-logger';
 const { logger, initPromise, } = createLogger({ sinks: [sinks.createNoopSink()], },);
 logger.info('goes nowhere');
 await initPromise; // optional; flush() awaits it internally
+```
+
+Raise the flush deadline for a slow but working backend,
+ such as a network filesystem:
+
+```ts
+import { createLogger, } from '@monochromatic-dev/module-logger';
+import { createFileSink, } from '@monochromatic-dev/module-logger/node';
+
+const { logger, } = createLogger({
+  sinks: [createFileSink(),],
+  flushDeadlineMs: 30_000,
+  verifyTimeoutMs: 30_000,
+},);
 ```
 
 A custom sink is any object satisfying the `Sink` interface,
@@ -278,6 +370,18 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
 - String-only messages;
    callers own serialization;
    no auto-stringify
+- Sinks are self-describing factories;
+   the logger owns availability
+- Write failures do not disable a sink;
+   only verify failure does
+- localStorage and IndexedDB sink designs and measurements
+- Console output neutralizes control characters
+- `flush()` has a deadline
+- Sinks verify concurrently under a time limit
+- The startup buffer is bounded and overflow is reported
+- Platform-specific sinks live behind `./node` and `./browser`
+- Zero-config at import,
+   no configure step (the logtape migration observations)
 
 ## Source files
 
@@ -294,11 +398,24 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    flush)
 - `src/logger.ts`:
    default singleton built by applying `createLogger` to the default sinks
+- `src/node.ts`:
+   the `./node` subpath entry,
+   `createFileSink()`
+- `src/browser.ts`:
+   the `./browser` subpath entry,
+   `createIndexedDbSink()` and `createOpfsSink()`
+- `src/default-sinks.node.ts` and `src/default-sinks.neutral.ts`:
+   the two default sink lists,
+   selected at build time through the `#default-sinks` entry of `package.json` `imports`
+- `src/artifact-platform-split.unit.test.ts`:
+   guard that reads every chunk of both builds and rejects dynamic imports and cross-platform leaks
 - `src/tagged.ts`:
    `tagged()` wrapper for composable prefixes
 - `src/sink/console.ts`:
    `createConsoleSink()`,
    verbose-mode gating and microtask batching
+- `src/sink/console-control-chars.ts`:
+   control-character neutralization for console-bound text
 - `src/sink/file.ts`:
    `createFileSink()`,
    Node.

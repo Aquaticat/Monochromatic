@@ -1,7 +1,7 @@
 /**
- * Component-wise private registry directory creation.
- *
- * @module
+ Component-wise private registry directory creation.
+ 
+ @module
  */
 
 import { mkdir, } from 'node:fs/promises';
@@ -18,16 +18,16 @@ import {
 } from './registry-io.ts';
 
 /**
- * Creates missing registry descendants and protects each before deeper creation.
- *
- * @param registryRoot - complete protected registry root
- *
- * @param targetDirectory - descendant directory to ensure
- *
- * @example
- * ```ts
- * await ensurePrivateRegistryDirectory({ registryRoot: '/r', targetDirectory: '/r/records/id' });
- * ```
+ Creates missing registry descendants and protects each before deeper creation.
+ 
+ @param registryRoot - complete protected registry root
+ 
+ @param targetDirectory - descendant directory to ensure
+ 
+ @example
+ ```ts
+ await ensurePrivateRegistryDirectory({ registryRoot: '/r', targetDirectory: '/r/records/id' });
+ ```
  */
 export async function ensurePrivateRegistryDirectory({
   registryRoot,
@@ -37,7 +37,7 @@ export async function ensurePrivateRegistryDirectory({
   targetDirectory: string;
 }>,): Promise<void> {
   /**
-   * Component-aware relative descendant path.
+   Component-aware relative descendant path.
    */
   const relativeTarget = relative(
     registryRoot,
@@ -49,13 +49,13 @@ export async function ensurePrivateRegistryDirectory({
   ) !== resolve(targetDirectory,)))
     throw new TrustStorageError('Trust registry path escapes registry root.',);
   /**
-   * Native descendant path segments.
+   Native descendant path segments.
    */
   const segments = relativeTarget === ''
     ? []
     : relativeTarget.split(process.platform === 'win32' ? '\\' : '/',);
   /**
-   * Ordered descendants excluding already-protected root.
+   Ordered descendants excluding already-protected root.
    */
   const paths = segments.map(function descendantPath(
     _segment,

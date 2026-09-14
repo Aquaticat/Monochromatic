@@ -1,7 +1,7 @@
 /**
- * No-follow transaction recovery file operations.
- *
- * @module
+ No-follow transaction recovery file operations.
+ 
+ @module
  */
 import { constants, } from 'node:fs';
 import {
@@ -22,27 +22,27 @@ import {
 } from './commit-transaction-recovery-validation.ts';
 
 /**
- * Reads exact regular artifact bytes through no-follow descriptor.
- *
- * @param path - required private recovery file
- *
- * @returns exact artifact bytes
- *
- * @example
- * ```ts
- * await readRegularRecoveryFile('/repo/.git/cli-git-transaction/journal.json');
- * ```
+ Reads exact regular artifact bytes through no-follow descriptor.
+ 
+ @param path - required private recovery file
+ 
+ @returns exact artifact bytes
+ 
+ @example
+ ```ts
+ await readRegularRecoveryFile('/repo/.git/cli-git-transaction/journal.json');
+ ```
  */
 export async function readRegularRecoveryFile(path: string,): Promise<Uint8Array> {
   /**
-   * No-follow recovery artifact handle.
+   No-follow recovery artifact handle.
    */
   await using handle = await open(
     path,
     constants.O_RDONLY | constants.O_NOFOLLOW,
   );
   /**
-   * Descriptor metadata for exact consumed artifact.
+   Descriptor metadata for exact consumed artifact.
    */
   const metadata = await handle.stat();
   if (!metadata.isFile())
@@ -51,20 +51,20 @@ export async function readRegularRecoveryFile(path: string,): Promise<Uint8Array
 }
 
 /**
- * Installs prepared post-index through exact owned lock.
- *
- * @param lockPath - verified lock path
- *
- * @param realIndexPath - journal real index path
- *
- * @param postIndexPath - prepared exact post index
- *
- * @param journal - prepared lock identity
- *
- * @example
- * ```ts
- * await installRecoveredIndex({ lockPath, realIndexPath, postIndexPath, journal });
- * ```
+ Installs prepared post-index through exact owned lock.
+ 
+ @param lockPath - verified lock path
+ 
+ @param realIndexPath - journal real index path
+ 
+ @param postIndexPath - prepared exact post index
+ 
+ @param journal - prepared lock identity
+ 
+ @example
+ ```ts
+ await installRecoveredIndex({ lockPath, realIndexPath, postIndexPath, journal });
+ ```
  */
 export async function installRecoveredIndex({
   lockPath,
@@ -78,18 +78,18 @@ export async function installRecoveredIndex({
   journal: PreparedTransactionJournal;
 }>,): Promise<void> {
   /**
-   * Exact intended post-index bytes from no-follow descriptor.
+   Exact intended post-index bytes from no-follow descriptor.
    */
   const bytes = await readRegularRecoveryFile(postIndexPath,);
   /**
-   * Existing no-follow owned lock handle.
+   Existing no-follow owned lock handle.
    */
   await using lock = await open(
     lockPath,
     constants.O_RDWR | constants.O_NOFOLLOW,
   );
   /**
-   * Exact consumed lock descriptor metadata.
+   Exact consumed lock descriptor metadata.
    */
   const lockMetadata = await lock.stat({ bigint: true, },);
   if ((String(lockMetadata.dev,) !== journal.lockDevice)
@@ -103,7 +103,7 @@ export async function installRecoveredIndex({
     lockPath,
   },);
   /**
-   * Private owner-preserving installation name.
+   Private owner-preserving installation name.
    */
   const installPath = join(
     dirname(postIndexPath,),
@@ -129,16 +129,16 @@ export async function installRecoveredIndex({
 }
 
 /**
- * Removes completed recovery artifacts durably.
- *
- * @param directory - exact transaction directory
- *
- * @param lockPath - optional owned lock path
- *
- * @example
- * ```ts
- * await removeRecoveryArtifacts({ directory, lockPath });
- * ```
+ Removes completed recovery artifacts durably.
+ 
+ @param directory - exact transaction directory
+ 
+ @param lockPath - optional owned lock path
+ 
+ @example
+ ```ts
+ await removeRecoveryArtifacts({ directory, lockPath });
+ ```
  */
 export async function removeRecoveryArtifacts({
   directory,

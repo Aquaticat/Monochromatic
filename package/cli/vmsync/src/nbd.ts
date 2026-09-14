@@ -1,10 +1,10 @@
 /**
- * NBD (Network Block Device) management for incremental block-level sync.
- *
- * Exposes disk images as Linux block devices via `qemu-nbd`,
- * then uses `dd` to copy only changed regions between them.
- *
- * @module
+ NBD (Network Block Device) management for incremental block-level sync.
+ 
+ Exposes disk images as Linux block devices via `qemu-nbd`,
+ then uses `dd` to copy only changed regions between them.
+ 
+ @module
  */
 
 import { access, } from 'node:fs/promises';
@@ -17,50 +17,50 @@ import { spawn, } from './spawn.ts';
 import type { QemuMapRegion, } from './types.ts';
 
 /**
- * Logger root for vmsync after removing the package log shim.
- *
- * @example
- * ```ts
- * const rl = tagged({ tag: someFunction.name, l, },);
- * ```
+ Logger root for vmsync after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l, },);
+ ```
  */
 const l = tagged({ tag: 'vmsync', },);
 
 /**
- * Maximum NBD devices to search when finding a free slot.
+ Maximum NBD devices to search when finding a free slot.
  */
 const MAX_NBD_DEVICES = 16;
 
 /**
- * Block size for dd transfers (1 MiB).
+ Block size for dd transfers (1 MiB).
  */
 const DD_BLOCK_SIZE = 1_048_576;
 
 /**
- * Bytes per sector for dd block size alignment.
+ Bytes per sector for dd block size alignment.
  */
 const SECTOR_SIZE = 512;
 
 //region NBD device discovery
 
 /**
- * Finds the first unused `/dev/nbdN` device.
- * Checks whether each device file exists and is not already connected
- * by attempting to read its size via sysfs.
- *
- * @returns Device path, e.g. `/dev/nbd0`
- *
- * @throws Error when all NBD device slots are occupied
- *
- * @example
- * ```ts
- * const dev = await findFreeNbdDevice();
- * // "/dev/nbd3"
- * ```
+ Finds the first unused `/dev/nbdN` device.
+ Checks whether each device file exists and is not already connected
+ by attempting to read its size via sysfs.
+ 
+ @returns Device path, e.g. `/dev/nbd0`
+ 
+ @throws Error when all NBD device slots are occupied
+ 
+ @example
+ ```ts
+ const dev = await findFreeNbdDevice();
+ // "/dev/nbd3"
+ ```
  */
 export async function findFreeNbdDevice(): Promise<string> {
   /**
-   * Function-tagged logger so NBD device discovery is traceable in shared logs.
+   Function-tagged logger so NBD device discovery is traceable in shared logs.
    */
   const rl = tagged({
     tag: findFreeNbdDevice.name,
@@ -68,14 +68,14 @@ export async function findFreeNbdDevice(): Promise<string> {
   },);
 
   /**
-   * Immutable paths identifying one candidate NBD device.
+   Immutable paths identifying one candidate NBD device.
    */
   type NbdCandidate = Readonly<{
     device: string;
     sysfsSize: string;
   }>;
   /**
-   * Check all candidate devices concurrently and return the first free one.
+   Check all candidate devices concurrently and return the first free one.
    */
   const candidates = Array.from(
     { length: MAX_NBD_DEVICES, },
@@ -91,7 +91,7 @@ export async function findFreeNbdDevice(): Promise<string> {
   );
 
   /**
-   * Check all devices concurrently to find free ones.
+   Check all devices concurrently to find free ones.
    */
   const freeChecks = await Promise.all(
     candidates.map(
@@ -102,7 +102,7 @@ export async function findFreeNbdDevice(): Promise<string> {
         },
       ) {
         /**
-         * Whether this device is free (not connected).
+         Whether this device is free (not connected).
          */
         const isFree = await checkDeviceFree({
           sysfsSize,
@@ -114,7 +114,7 @@ export async function findFreeNbdDevice(): Promise<string> {
   );
 
   /**
-   * First free device from the concurrent checks.
+   First free device from the concurrent checks.
    */
   const freeDevice = freeChecks.find(
     function isDefined(d,) {
@@ -133,13 +133,13 @@ export async function findFreeNbdDevice(): Promise<string> {
 }
 
 /**
- * Checks whether an NBD device is free by reading its sysfs size.
- *
- * @param sysfsSize - Path to the sysfs size file
- *
- * @param rl - {@link Logger} for debug output
- *
- * @returns True when the device is free
+ Checks whether an NBD device is free by reading its sysfs size.
+ 
+ @param sysfsSize - Path to the sysfs size file
+ 
+ @param rl - {@link Logger} for debug output
+ 
+ @returns True when the device is free
  */
 async function checkDeviceFree(
   {
@@ -153,7 +153,7 @@ async function checkDeviceFree(
   try {
     await access(sysfsSize,);
     /**
-     * Size value from sysfs; "0" means not connected.
+     Size value from sysfs; "0" means not connected.
      */
     const sizeStr = await spawn({
       command: 'cat',
@@ -176,19 +176,19 @@ async function checkDeviceFree(
 //region NBD connection lifecycle
 
 /**
- * Disposable NBD connection handle.
- * Use with `await using` to ensure automatic disconnection.
- *
- * @example
- * ```ts
- * await using conn = await connectDisposable({
- *   imagePath: '/data/disk.qcow2',
- *   device: '/dev/nbd0',
- *   readOnly: true,
- *   format: 'qcow2',
- * });
- * // device is automatically disconnected when scope exits
- * ```
+ Disposable NBD connection handle.
+ Use with `await using` to ensure automatic disconnection.
+ 
+ @example
+ ```ts
+ await using conn = await connectDisposable({
+   imagePath: '/data/disk.qcow2',
+   device: '/dev/nbd0',
+   readOnly: true,
+   format: 'qcow2',
+ });
+ // device is automatically disconnected when scope exits
+ ```
  */
 export type NbdConnection = {
   readonly device: string;
@@ -196,30 +196,30 @@ export type NbdConnection = {
 };
 
 /**
- * Connects a disk image to an NBD device via `qemu-nbd`
- * and returns a disposable handle for automatic cleanup.
- *
- * @param imagePath - Absolute path to the disk image
- *
- * @param device - NBD device path (e.g. `/dev/nbd0`)
- *
- * @param readOnly - Mount read-only when true
- *
- * @param format - Image format (e.g. 'qcow2', 'vhdx')
- *
- * @returns disposable {@link NbdConnection} handle
- *
- * @throws Error when connection fails (e.g. device busy, permission denied)
- *
- * @example
- * ```ts
- * await using conn = await connectDisposable({
- *   imagePath: '/data/alpine/overlay.qcow2',
- *   device: '/dev/nbd0',
- *   readOnly: true,
- *   format: 'qcow2',
- * });
- * ```
+ Connects a disk image to an NBD device via `qemu-nbd`
+ and returns a disposable handle for automatic cleanup.
+ 
+ @param imagePath - Absolute path to the disk image
+ 
+ @param device - NBD device path (e.g. `/dev/nbd0`)
+ 
+ @param readOnly - Mount read-only when true
+ 
+ @param format - Image format (e.g. 'qcow2', 'vhdx')
+ 
+ @returns disposable {@link NbdConnection} handle
+ 
+ @throws Error when connection fails (e.g. device busy, permission denied)
+ 
+ @example
+ ```ts
+ await using conn = await connectDisposable({
+   imagePath: '/data/alpine/overlay.qcow2',
+   device: '/dev/nbd0',
+   readOnly: true,
+   format: 'qcow2',
+ });
+ ```
  */
 export async function connectDisposable(
   {
@@ -235,7 +235,7 @@ export async function connectDisposable(
   },
 ): Promise<NbdConnection> {
   /**
-   * Function-tagged logger so connect/disconnect events are paired in traces.
+   Function-tagged logger so connect/disconnect events are paired in traces.
    */
   const rl = tagged({
     tag: connectDisposable.name,
@@ -243,7 +243,7 @@ export async function connectDisposable(
   },);
 
   /**
-   * Argument list built dynamically based on options.
+   Argument list built dynamically based on options.
    */
   const args = [
     '-c',
@@ -283,26 +283,26 @@ export async function connectDisposable(
 //region Block-level patching
 
 /**
- * Copies changed blocks from a source NBD device to a target NBD device.
- * Only regions marked as overlay data (`depth === 0` and `data === true`)
- * in the block map are transferred.
- *
- * @param sourceDevice - NBD device exposing the overlay (read-only)
- *
- * @param targetDevice - NBD device exposing the target image (read-write)
- *
- * @param changedRegions - {@link QemuMapRegion} entries from `qemu-img map` with `depth === 0`
- *
- * @throws Error when a dd transfer fails
- *
- * @example
- * ```ts
- * await patchBlocks({
- *   sourceDevice: '/dev/nbd0',
- *   targetDevice: '/dev/nbd1',
- *   changedRegions: regions.filter(r => r.depth === 0 && r.data),
- * });
- * ```
+ Copies changed blocks from a source NBD device to a target NBD device.
+ Only regions marked as overlay data (`depth === 0` and `data === true`)
+ in the block map are transferred.
+ 
+ @param sourceDevice - NBD device exposing the overlay (read-only)
+ 
+ @param targetDevice - NBD device exposing the target image (read-write)
+ 
+ @param changedRegions - {@link QemuMapRegion} entries from `qemu-img map` with `depth === 0`
+ 
+ @throws Error when a dd transfer fails
+ 
+ @example
+ ```ts
+ await patchBlocks({
+   sourceDevice: '/dev/nbd0',
+   targetDevice: '/dev/nbd1',
+   changedRegions: regions.filter(r => r.depth === 0 && r.data),
+ });
+ ```
  */
 export async function patchBlocks(
   {
@@ -316,7 +316,7 @@ export async function patchBlocks(
   },
 ): Promise<void> {
   /**
-   * Function-tagged logger so per-region copy operations are traceable.
+   Function-tagged logger so per-region copy operations are traceable.
    */
   const rl = tagged({
     tag: patchBlocks.name,
@@ -324,7 +324,7 @@ export async function patchBlocks(
   },);
 
   /**
-   * Total bytes to transfer across all changed regions.
+   Total bytes to transfer across all changed regions.
    */
   const totalBytes = changedRegions.reduce(
     function sumLength(
@@ -343,7 +343,7 @@ export async function patchBlocks(
   );
 
   /**
-   * Transfer promises collected for parallel execution.
+   Transfer promises collected for parallel execution.
    */
   const transfers = changedRegions.map(
     function buildTransfer(region,) {
@@ -361,17 +361,17 @@ export async function patchBlocks(
 }
 
 /**
- * Transfers a single changed region between NBD devices via dd.
- *
- * @param sourceDevice - Source NBD device
- *
- * @param targetDevice - Target NBD device
- *
- * @param region - {@link QemuMapRegion} descriptor from the block map
- *
- * @param rl - {@link Logger} for debug output
- *
- * @throws Error when the region is not sector-aligned or dd fails
+ Transfers a single changed region between NBD devices via dd.
+ 
+ @param sourceDevice - Source NBD device
+ 
+ @param targetDevice - Target NBD device
+ 
+ @param region - {@link QemuMapRegion} descriptor from the block map
+ 
+ @param rl - {@link Logger} for debug output
+ 
+ @throws Error when the region is not sector-aligned or dd fails
  */
 async function transferRegion(
   {
@@ -397,12 +397,12 @@ async function transferRegion(
   }
 
   /**
-   * Number of dd-sized blocks, rounding up for partial final blocks.
+   Number of dd-sized blocks, rounding up for partial final blocks.
    */
   const blockCount = Math.ceil(region.length
     / DD_BLOCK_SIZE,);
   /**
-   * Byte offset for dd skip/seek.
+   Byte offset for dd skip/seek.
    */
   const byteOffset = region.start;
 
@@ -430,18 +430,18 @@ async function transferRegion(
 //region NBD module loading
 
 /**
- * Loads the `nbd` kernel module if not already loaded.
- *
- * @throws Error when modprobe fails (e.g. module not available, not root)
- *
- * @example
- * ```ts
- * await ensureNbdModule();
- * ```
+ Loads the `nbd` kernel module if not already loaded.
+ 
+ @throws Error when modprobe fails (e.g. module not available, not root)
+ 
+ @example
+ ```ts
+ await ensureNbdModule();
+ ```
  */
 export async function ensureNbdModule(): Promise<void> {
   /**
-   * Function-tagged logger so module-load attempts surface clearly in traces.
+   Function-tagged logger so module-load attempts surface clearly in traces.
    */
   const rl = tagged({
     tag: ensureNbdModule.name,

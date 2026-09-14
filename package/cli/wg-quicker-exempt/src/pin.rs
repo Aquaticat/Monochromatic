@@ -2,6 +2,9 @@
 
 /// Raw BPF attachment function and exact hook pin names.
 use crate::bpf::{attach_marker, HOOK_NAMES};
+/// Debug-only typed pin failure constructor for deterministic fallback tests.
+#[cfg(debug_assertions)]
+use crate::bpf_error::pin_object_invalid;
 /// Standard filesystem and syscall error channel.
 use std::io;
 /// Unix metadata device identity and raw descriptor access.
@@ -31,6 +34,9 @@ static STAGING_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 /// Source bytes per encoded component keep every bpffs name within `NAME_MAX`.
 const PIN_KEY_CHUNK_BYTES: usize = 100;
+/// Debug-only environment flag simulating affected kernel's typed object-pin failure.
+#[cfg(debug_assertions)]
+const FORCE_PIN_INVALID_ENV: &str = "WG_QUICKER_EXEMPT_TEST_FORCE_PIN_INVALID";
 
 /// Keeps the global lifecycle lock file open until attach or detach command ends.
 pub struct LifecycleLock {
@@ -293,6 +299,12 @@ pub fn attach_cgroup(mark: u32, cgroup_dir: &Path) -> io::Result<usize> {
     let staging_text = staging_dir.to_str().ok_or_else(|| {
         return io::Error::new(io::ErrorKind::InvalidInput, "staging path is not UTF-8");
     })?;
+    #[cfg(debug_assertions)]
+    if std::env::var_os(FORCE_PIN_INVALID_ENV).is_some() {
+        let source = io::Error::from_raw_os_error(libc::EINVAL);
+        let error = pin_object_invalid(staging_text.to_string(), source);
+        return Err(rollback_staging_error(&staging_dir, error));
+    }
     let pinned = match attach_marker(cgroup.as_raw_fd(), mark, staging_text) {
         Ok(paths) => paths,
         Err(error) => return Err(rollback_staging_error(&staging_dir, error)),

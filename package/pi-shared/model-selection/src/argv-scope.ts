@@ -1,49 +1,49 @@
 /**
- * CLI argv helpers for reconstructing pi's `--models` scope.
- *
- * @module
+ CLI argv helpers for reconstructing pi's `--models` scope.
+ 
+ @module
  */
 
 /**
- * Sentinel returned by {@link parseArgvModelPatterns} when no `--models` flag
- * is present in argv. A `unique symbol`; callers narrow with
- * `=== NO_ARGV_MODELS`. Exported because `scope-resolver` consumes it across
- * the module seam. An empty `--models` value yields `[]`, not this sentinel.
+ Sentinel returned by {@link parseArgvModelPatterns} when no `--models` flag
+ is present in argv. A `unique symbol`; callers narrow with
+ `=== NO_ARGV_MODELS`. Exported because `scope-resolver` consumes it across
+ the module seam. An empty `--models` value yields `[]`, not this sentinel.
  */
 export const NO_ARGV_MODELS: unique symbol = Symbol('model-selection/no-argv-models',);
 
 //region Public API
 
 /**
- * Options for parsing `--models` from argv.
+ Options for parsing `--models` from argv.
  */
 export type ParseArgvModelsOptions = {
   /**
-   * Process arguments excluding or including executable prefix.
+   Process arguments excluding or including executable prefix.
    */
   readonly argv: readonly string[];
 };
 
 /**
- * Parse pi's `--models` argument from an argv array.
- *
- * Supports `--models value` and `--models=value`, matching pi's documented
- * comma-separated format.
- *
- * @param options - argv to inspect
- *
- * @returns cleaned patterns, or {@link NO_ARGV_MODELS} when `--models` is absent
- *
- * @example
- * ```typescript
- * parseArgvModelPatterns({ argv: ['--models', 'claude-*,gpt-*'] });
- * ```
+ Parse pi's `--models` argument from an argv array.
+ 
+ Supports `--models value` and `--models=value`, matching pi's documented
+ comma-separated format.
+ 
+ @param options - argv to inspect
+ 
+ @returns cleaned patterns, or {@link NO_ARGV_MODELS} when `--models` is absent
+ 
+ @example
+ ```typescript
+ parseArgvModelPatterns({ argv: ['--models', 'claude-*,gpt-*'] });
+ ```
  */
 export function parseArgvModelPatterns(
   options: ParseArgvModelsOptions,
 ): string[] | typeof NO_ARGV_MODELS {
   /**
-   * Inline `--models=value` argument, if present.
+   Inline `--models=value` argument, if present.
    */
   const inline = options.argv
     .find(function isInlineModelsArg(arg,) {
@@ -53,7 +53,7 @@ export function parseArgvModelPatterns(
     return splitPatterns(inline.slice('--models='.length,),);
 
   /**
-   * Index of `--models` when supplied as a separate argument.
+   Index of `--models` when supplied as a separate argument.
    */
   const modelsIndex = options.argv
     .indexOf('--models',);
@@ -61,7 +61,7 @@ export function parseArgvModelPatterns(
     return NO_ARGV_MODELS;
 
   /**
-   * Value following `--models`.
+   Value following `--models`.
    */
   const value = options.argv[modelsIndex + 1];
   if (value === undefined)
@@ -74,11 +74,11 @@ export function parseArgvModelPatterns(
 //region Internal helpers
 
 /**
- * Split a comma-separated model pattern string.
- *
- * @param value - comma-separated model pattern string
- *
- * @returns cleaned model patterns
+ Split a comma-separated model pattern string.
+ 
+ @param value - comma-separated model pattern string
+ 
+ @returns cleaned model patterns
  */
 function splitPatterns(
   value: string,

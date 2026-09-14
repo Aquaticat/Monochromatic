@@ -1,7 +1,7 @@
 /**
- * Exact semantic identity check for foreign ownership marker.
- *
- * @module
+ Exact semantic identity check for foreign ownership marker.
+ 
+ @module
  */
 
 import type {
@@ -10,18 +10,18 @@ import type {
 } from 'typescript/unstable/sync';
 
 /**
- * Detects exact project-owned foreign ownership marker.
- *
- * @param project - TypeScript project resolving alias declarations.
- *
- * @param type - TypeScript semantic type.
- *
- * @returns whether type uses marker declared by this plugin.
- *
- * @example
- * ```ts
- * isForeignBorrowedType({ project, type });
- * ```
+ Detects exact project-owned foreign ownership marker.
+ 
+ @param project - TypeScript project resolving alias declarations.
+ 
+ @param type - TypeScript semantic type.
+ 
+ @returns whether type uses marker declared by this plugin.
+ 
+ @example
+ ```ts
+ isForeignBorrowedType({ project, type });
+ ```
  */
 export function isForeignBorrowedType({
   project,
@@ -31,7 +31,7 @@ export function isForeignBorrowedType({
   readonly type: Type;
 },): boolean {
   /**
-   * Authored alias symbol retained by generic marker instantiation.
+   Authored alias symbol retained by generic marker instantiation.
    */
   const alias = type.getAliasSymbol();
   if ((alias === undefined)
@@ -41,7 +41,7 @@ export function isForeignBorrowedType({
   return alias.declarations
     .some(function markerDeclaration(handle,): boolean {
       /**
-       * Resolved marker declaration for exact source identity.
+       Resolved marker declaration for exact source identity.
        */
       const declaration = handle.resolve(project,);
       return (declaration !== undefined)

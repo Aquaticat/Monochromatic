@@ -1,12 +1,12 @@
 /**
- * Tests for the surgical catalog-range rewriter.
- *
- * Pins the #258 write-back fix: the prior writer matched only double quotes and
- * silently rewrote nothing on the single-quoted file. These cases lock that the
- * rewriter replaces only the value token, preserving the entry's quote style,
- * indentation, trailing comments, and every non-matching line.
- *
- * @module
+ Tests for the surgical catalog-range rewriter.
+ 
+ Pins the #258 write-back fix: the prior writer matched only double quotes and
+ silently rewrote nothing on the single-quoted file. These cases lock that the
+ rewriter replaces only the value token, preserving the entry's quote style,
+ indentation, trailing comments, and every non-matching line.
+ 
+ @module
  */
 
 import {

@@ -1,7 +1,7 @@
 /**
- * Semantic effect cache lifecycle coordination.
- *
- * @module
+ Semantic effect cache lifecycle coordination.
+ 
+ @module
  */
 
 import { clearEffectSummaryCache, } from './effect-summary-cache.ts';
@@ -11,12 +11,12 @@ import { closeExternalImplementationProjects, } from './external-implementation-
 import { clearLockfilePackageEligibilityCache, } from './lockfile-package-eligibility.ts';
 
 /**
- * Closes external projects and clears all process-local effect caches.
- *
- * @example
- * ```ts
- * resetSemanticEffectCaches();
- * ```
+ Closes external projects and clears all process-local effect caches.
+ 
+ @example
+ ```ts
+ resetSemanticEffectCaches();
+ ```
  */
 export function resetSemanticEffectCaches(): void {
   closeExternalImplementationProjects();

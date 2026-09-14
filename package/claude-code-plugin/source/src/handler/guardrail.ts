@@ -9,16 +9,16 @@ import {
 import type { ReadonlyDeep, } from 'type-fest';
 
 /**
- * Output returned by the guardrail handler.
- *
- * Either a typed deny response or the empty pass-through `{}`.
- * Every {@link PreToolUseOutput} field is optional, so `{}` is itself a valid
- * {@link PreToolUseOutput}; no separate empty type is needed.
+ Output returned by the guardrail handler.
+ 
+ Either a typed deny response or the empty pass-through `{}`.
+ Every {@link PreToolUseOutput} field is optional, so `{}` is itself a valid
+ {@link PreToolUseOutput}; no separate empty type is needed.
  */
 type GuardrailOutput = PreToolUseOutput;
 
 /**
- * Deny response for misleading `bun test` invocations.
+ Deny response for misleading `bun test` invocations.
  */
 const BUN_TEST_DENY_OUTPUT: GuardrailOutput = {
   hookSpecificOutput: {
@@ -29,16 +29,16 @@ const BUN_TEST_DENY_OUTPUT: GuardrailOutput = {
 };
 
 /**
- * Build deny response for Agent resume polling.
- *
- * @param resume - Agent resume identifier
- *
- * @returns deny response explaining automatic background notifications
- *
- * @example
- * ```ts
- * agentResumeDenyOutput('agent-id');
- * ```
+ Build deny response for Agent resume polling.
+ 
+ @param resume - Agent resume identifier
+ 
+ @returns deny response explaining automatic background notifications
+ 
+ @example
+ ```ts
+ agentResumeDenyOutput('agent-id');
+ ```
  */
 function agentResumeDenyOutput(resume: string,): GuardrailOutput {
   return {
@@ -57,21 +57,21 @@ function agentResumeDenyOutput(resume: string,): GuardrailOutput {
 }
 
 /**
- * Guard for Agent and Bash tool calls.
- *
- * @param event - parsed {@link PreToolUseInput} event from Claude Code
- *
- * @returns deny response with reason, or `{}` to allow tool call
- *
- * @example
- * ```ts
- * guardrailHandler({ tool_name: 'Bash', tool_input: { command: 'mise run //pkg:test' }, ... });
- * ```
+ Guard for Agent and Bash tool calls.
+ 
+ @param event - parsed {@link PreToolUseInput} event from Claude Code
+ 
+ @returns deny response with reason, or `{}` to allow tool call
+ 
+ @example
+ ```ts
+ guardrailHandler({ tool_name: 'Bash', tool_input: { command: 'mise run //pkg:test' }, ... });
+ ```
  */
 function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutput {
   if (event.tool_name === 'Bash') {
     /**
-     * Bash command string extracted defensively; `undefined` when field is absent.
+     Bash command string extracted defensively; `undefined` when field is absent.
      */
     const command = 'command' in event.tool_input
       ? event.tool_input
@@ -88,7 +88,7 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
     return {};
 
   /**
-   * Agent's `resume` field; presence triggers no-polling deny path.
+   Agent's `resume` field; presence triggers no-polling deny path.
    */
   const resume = 'resume' in event.tool_input
     ? event.tool_input
@@ -102,18 +102,18 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
 }
 
 /**
- * Parses raw stdin as a {@link PreToolUseInput}.
- *
- * Input is trusted; it comes from Claude Code's hook dispatch system.
- *
- * @param raw - JSON payload from Claude Code stdin
- *
- * @returns parsed PreToolUse event
- *
- * @example
- * ```ts
- * const event = guardrailParser(await text(process.stdin));
- * ```
+ Parses raw stdin as a {@link PreToolUseInput}.
+ 
+ Input is trusted; it comes from Claude Code's hook dispatch system.
+ 
+ @param raw - JSON payload from Claude Code stdin
+ 
+ @returns parsed PreToolUse event
+ 
+ @example
+ ```ts
+ const event = guardrailParser(await text(process.stdin));
+ ```
  */
 function guardrailParser(raw: string,): PreToolUseInput {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
@@ -121,20 +121,20 @@ function guardrailParser(raw: string,): PreToolUseInput {
 }
 
 /**
- * Serializes guardrail output for stdout.
- *
- * No trailing newline; matches Claude Code's wire convention.
- *
- * @param output - {@link GuardrailOutput} handler result to serialize
- *
- * @returns JSON string for stdout
- *
- * @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
- *
- * @example
- * ```ts
- * process.stdout.write(guardrailWriter({}));
- * ```
+ Serializes guardrail output for stdout.
+ 
+ No trailing newline; matches Claude Code's wire convention.
+ 
+ @param output - {@link GuardrailOutput} handler result to serialize
+ 
+ @returns JSON string for stdout
+ 
+ @mutates output - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
+ 
+ @example
+ ```ts
+ process.stdout.write(guardrailWriter({}));
+ ```
  */
 function guardrailWriter(output: GuardrailOutput,): string {
   return JSON.stringify(output,);

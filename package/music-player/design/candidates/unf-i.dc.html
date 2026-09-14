@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"><style>html,body{height:100%;margin:0;overflow:hidden;background:#000}</style></helmet>
+<div style="background:#000;width:100vw;height:100vh;display:grid;place-items:center;overflow:hidden;position:relative;box-sizing:border-box;padding-bottom:56px;font-family:Roboto,system-ui,sans-serif">
+<div style="width:{{ boxW }};height:{{ boxH }};flex:0 0 auto;overflow:visible"><div style="width:852px;height:883px;transform:scale({{ scale }});transform-origin:top left;outline:1px solid #26262E;color:#E6E0E9;display:grid;grid-template-columns:1fr 16px 1fr;overflow:hidden;background:#000">
+    <div style="min-width:0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid #26262E">
+        <div style="flex:1 1 auto"></div>
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>Open</div>
+      </div>
+      <div style="flex:1 1 auto;min-height:0;display:flex;overflow:hidden">
+        <div style="flex:0 0 48px;min-height:0;overflow:auto;display:flex;flex-direction:column;border-right:1px solid #121216;scrollbar-width:none">
+          <sc-for list="{{ letterCells }}" as="l" hint-placeholder-count="27">
+            <div onClick="{{ l.pick }}" style="width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;font-size:14px;font-weight:500;cursor:pointer;color:{{ l.fg }}"><span style="width:32px;height:32px;border-radius:16px;display:grid;place-items:center;background:{{ l.bg }}">{{ l.label }}</span></div>
+          </sc-for>
+        </div>
+        <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column">
+          <div style="flex:0 0 auto;display:flex;align-items:baseline;gap:8px;padding:12px 16px 4px"><span style="font-size:22px;line-height:28px;color:#D0BCFF">{{ letter }}</span></div>
+          <div style="flex:1 1 auto;min-height:0;overflow:auto;padding:4px 12px 12px">
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <sc-for list="{{ shown }}" as="r" hint-placeholder-count="20">
+                <div onClick="{{ r.pick }}" style="min-height:48px;box-sizing:border-box;display:flex;align-items:center;padding:0 14px;border-radius:8px;font-size:14px;cursor:pointer;background:{{ r.bg }};color:{{ r.fg }};font-weight:{{ r.weight }};max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:0 0 auto;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #26262E">
+        <div style="min-width:0;text-align:center">
+          <div style="font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Another Xronixle</div>
+          <div style="font-size:12px;color:#CAC4D0;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">1 of 16 · −1.2 dBTP</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums;min-width:26px">0:42</span>
+          <div style="flex:1 1 auto;height:44px;display:flex;align-items:center;gap:4px"><div style="flex:0 0 16%;height:16px;border-radius:8px 2px 2px 8px;background:#D0BCFF"></div><div style="width:4px;height:44px;border-radius:2px;background:#D0BCFF"></div><div style="flex:1 1 auto;height:16px;border-radius:2px 8px 8px 2px;background:#22222A"></div></div>
+          <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums;min-width:26px;text-align:right">4:35</span>
+        </div>
+        <div style="position:relative;display:flex;align-items:center;justify-content:center;gap:24px">
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M7 6h2v12H7zm3 6 8 6V6z"></path></svg></div>
+          <div style="width:64px;height:64px;border-radius:32px;background:#D0BCFF;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:28px;height:28px;fill:#381E72"><path d="M8 5h3.2v14H8zm4.8 0H16v14h-3.2z"></path></svg></div>
+          <div style="width:48px;height:48px;border-radius:24px;background:#1A1A1F;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M15 6h2v12h-2zM6 18l8-6-8-6z"></path></svg></div>
+          <div onClick="{{ toggleVol }}" style="position:absolute;right:0;top:50%;margin-top:-24px;width:48px;height:48px;border-radius:24px;display:grid;place-items:center;cursor:pointer;background:{{ volBtnBg }}"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#CAC4D0"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4"></path></svg></div>
+          <sc-if value="{{ volOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;right:0;bottom:56px;width:56px;padding:12px 4px;box-sizing:border-box;background:#1A1A1F;border-radius:4px;box-shadow:0 2px 6px 2px rgba(0,0,0,.6),0 1px 2px rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:5">
+              <span style="font-size:12px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ vol }}</span>
+              <div onClick="{{ setVolFromClick }}" style="position:relative;width:48px;height:160px;display:grid;place-items:center;cursor:pointer">
+                <div style="position:absolute;top:0;bottom:0;width:16px;border-radius:8px;background:#22222A"></div>
+                <div style="position:absolute;left:16px;right:16px;bottom:0;height:{{ volPct }};border-radius:8px;background:#D0BCFF"></div>
+                <div style="position:absolute;left:2px;right:2px;bottom:{{ volHandle }};height:4px;border-radius:2px;background:#D0BCFF"></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #938F99;border-radius:20px;overflow:hidden">
+          <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 16px;border-right:1px solid #938F99;border-bottom:1px solid #938F99;font-size:14px;font-weight:500;white-space:nowrap">Repeat</div>
+          <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;border-bottom:1px solid #938F99;background:#4A4458;color:#E8DEF8;font-size:14px;font-weight:500;white-space:nowrap"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#E8DEF8"><path d="M9.6 16.6 5 12l1.4-1.4 3.2 3.2 8-8L19 7.2z"></path></svg>In order</div>
+          <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 16px;border-right:1px solid #938F99;font-size:14px;font-weight:500;white-space:nowrap">Shuffle folder</div>
+          <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 16px;font-size:14px;font-weight:500;white-space:nowrap">Shuffle all</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#0A0A0D"></div>
+    <div style="min-width:0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:10px;padding:0 8px 0 16px;border-bottom:1px solid #26262E">
+        <div style="min-height:40px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #938F99;border-radius:20px;font-size:14px;font-weight:500;min-width:0"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ selected }}</span><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#CAC4D0;flex:0 0 auto"><path d="M12 15.5 5.5 9 7 7.6l5 5 5-5L18.5 9z"></path></svg></div>
+        <span style="font-size:14px;color:#CAC4D0;font-variant-numeric:tabular-nums">16 tracks</span>
+        <div style="flex:1 1 auto"></div>
+        <div style="width:48px;height:48px;border-radius:24px;display:grid;place-items:center;flex:0 0 auto"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#CAC4D0"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg></div>
+      </div>
+      <div style="flex:1 1 auto;min-height:0;overflow:auto">
+        <sc-for list="{{ tracks }}" as="t" hint-placeholder-count="8">
+          <div style="display:flex;align-items:center;gap:16px;min-height:72px;padding:12px 16px;box-sizing:border-box;background:{{ t.bg }}"><span style="width:18px;text-align:center;font-size:12px;color:{{ t.numFg }};font-variant-numeric:tabular-nums">{{ t.num }}</span><div style="flex:1 1 auto;min-width:0"><div style="font-size:16px;line-height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div><div style="font-size:12px;line-height:16px;color:#CAC4D0;font-variant-numeric:tabular-nums">{{ t.sub }}</div></div></div>
+        </sc-for>
+      </div>
+    </div>
+</div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;padding:8px 16px;color:#8E8894;font-size:11px;line-height:14px;font-family:ui-monospace,monospace;background:#000">{{ caption }}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:852,&quot;height&quot;:940}}">
+class Component extends DCLogic {
+  state = { data: null, letter: "C", sub: 0, selected: "Camellia", scale: 1, volOpen: true, vol: 70 };
+  componentDidMount() {
+    this.fit = () => this.setState({ scale: Math.min(1, window.innerWidth / 852, (window.innerHeight - 64) / 883) });
+    this.fit(); window.addEventListener("resize", this.fit);
+    import("./artists.js").then((m) => this.setState({ data: m }));
+  }
+  componentWillUnmount() { window.removeEventListener("resize", this.fit); }
+  renderVals() {
+    const s = this.state, d = s.data;
+    const shown = d ? d.ARTISTS.filter((n) => d.bucketOf(n) === s.letter) : [];
+    const letterTotal = shown.length;
+    const tracks = [
+      ["Another Xronixle", "4:35", "−1.2"], ["Burning Aquamarine", "5:12", "−0.8"], ["Dokuhebi", "4:01", "−1.4"],
+      ["ENÛMA∇ELIŠ", "9:47", "−0.3"], ["Ghost", "3:22", "−1.1"], ["Hyperflux", "4:44", "−0.9"],
+      ["Idol Corruption", "5:31", "−0.6"], ["KillerToy", "4:12", "−1.0"], ["Nacreous Snowmelt", "6:03", "−0.7"],
+      ["Newspapers for Magicians", "4:18", "−1.3"], ["Nightmare Ship", "5:47", "−0.4"], ["Speedstar", "4:29", "−1.6"],
+      ["Tera I/O", "5:10", "−0.5"], ["Upload Complete", "3:58", "−1.2"], ["Xiao", "4:40", "−0.9"], ["Zenith", "5:22", "−1.1"]
+    ];
+    return {
+      scale: s.scale, boxW: Math.round(852 * s.scale) + "px", boxH: Math.round(883 * s.scale) + "px",
+      selected: s.selected, letter: s.letter,
+      volOpen: s.volOpen, vol: s.vol,
+      volPct: s.vol + "%", volHandle: "calc(" + s.vol + "% - 2px)",
+      volBtnBg: s.volOpen ? "#1A1A1F" : "transparent",
+      toggleVol: () => this.setState({ volOpen: !s.volOpen }),
+      setVolFromClick: (e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const v = Math.max(0, Math.min(100, Math.round((1 - (e.clientY - r.top) / r.height) * 100)));
+        this.setState({ vol: v });
+      },
+      shown: shown.map((n) => {
+        const sel = n === s.selected;
+        return { name: n, bg: sel ? "#4A4458" : "#0A0A0D", fg: sel ? "#E8DEF8" : "#E6E0E9", weight: sel ? 500 : 400, pick: () => this.setState({ selected: n }) };
+      }),
+      letterCells: (d ? d.LETTERS : []).map((l) => ({
+        label: l, fg: l === s.letter ? "#E8DEF8" : "#CAC4D0", bg: l === s.letter ? "#4A4458" : "transparent",
+        pick: () => this.setState({ letter: l, sub: 0 })
+      })),
+      tracks: tracks.map((t, i) => ({
+        num: i === 0 ? "▶" : String(i + 1), numFg: i === 0 ? "#D0BCFF" : "#5A5561",
+        title: t[0], sub: t[1] + " · " + t[2] + " dBTP", bg: i === 0 ? "#332F3F" : "transparent"
+      })),
+      caption: "UNF-I — unf-h with this round's decisions applied: volume is now an icon button at the right of the transport row opening a vertical popover slider (D20 — click the popover track to set it, the icon to close it); the inline volume row is gone, freeing a row; both folder counts removed (D23); track numbers are tag numbers with filename fallback (D24). Picker presentation is still the open question — compare against pk-a / pk-b / pk-c."
+    };
+  }
+}
+</script>
+</body>
+</html>

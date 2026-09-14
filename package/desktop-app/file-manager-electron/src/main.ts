@@ -1,14 +1,14 @@
 /**
- * Electron main process for the sticky-flow file-manager prototype.
- *
- * Linux startup forces Chromium's Ozone Wayland backend before Electron's
- * `ready` event, matching the electron-counter package, so the nested-Wayland
- * boundary test exercises the same pure-Wayland path a user gets.
- *
- * @example
- * ```ts
- * // Electron loads this file from dist/app/main.mjs.
- * ```
+ Electron main process for the sticky-flow file-manager prototype.
+ 
+ Linux startup forces Chromium's Ozone Wayland backend before Electron's
+ `ready` event, matching the electron-counter package, so the nested-Wayland
+ boundary test exercises the same pure-Wayland path a user gets.
+ 
+ @example
+ ```ts
+ // Electron loads this file from dist/app/main.mjs.
+ ```
  */
 
 import type { Dirent, } from 'node:fs';
@@ -54,22 +54,22 @@ import {
 import { sortBridgeEntries, } from './listing-sort.js';
 
 /**
- * Main-process logger tagged at module boundary.
- *
- * @example
- * ```ts
- * mainLogger.info('starting');
- * ```
+ Main-process logger tagged at module boundary.
+ 
+ @example
+ ```ts
+ mainLogger.info('starting');
+ ```
  */
 const mainLogger = tagged({ tag: 'file-manager-electron-main', },);
 
 /**
- * Absolute path to the renderer HTML file in the staged app directory.
- *
- * @example
- * ```ts
- * console.log(rendererHtmlPath);
- * ```
+ Absolute path to the renderer HTML file in the staged app directory.
+ 
+ @example
+ ```ts
+ console.log(rendererHtmlPath);
+ ```
  */
 const rendererHtmlPath = join(
   import.meta.dirname,
@@ -77,12 +77,12 @@ const rendererHtmlPath = join(
 );
 
 /**
- * Absolute path to the CommonJS preload bundle in the staged app directory.
- *
- * @example
- * ```ts
- * console.log(preloadPath);
- * ```
+ Absolute path to the CommonJS preload bundle in the staged app directory.
+ 
+ @example
+ ```ts
+ console.log(preloadPath);
+ ```
  */
 const preloadPath = join(
   import.meta.dirname,
@@ -90,25 +90,25 @@ const preloadPath = join(
 );
 
 /**
- * Directory the first root pane lists; every listing request must stay under
- * it so the renderer cannot walk arbitrary host paths.
- *
- * @example
- * ```ts
- * console.log(rootDirectory);
- * ```
+ Directory the first root pane lists; every listing request must stay under
+ it so the renderer cannot walk arbitrary host paths.
+ 
+ @example
+ ```ts
+ console.log(rootDirectory);
+ ```
  */
 const rootDirectory = resolve(
   process.env[ROOT_DIRECTORY_ENVIRONMENT_VARIABLE] ?? homedir(),
 );
 
 /**
- * Adds Chromium switches required for pure Wayland operation on Linux.
- *
- * @example
- * ```ts
- * configureLinuxWayland();
- * ```
+ Adds Chromium switches required for pure Wayland operation on Linux.
+ 
+ @example
+ ```ts
+ configureLinuxWayland();
+ ```
  */
 function configureLinuxWayland(): void {
   if (process.platform !== 'linux') {
@@ -132,23 +132,23 @@ function configureLinuxWayland(): void {
 }
 
 /**
- * Error thrown when a listing request escapes the configured root directory.
- *
- * @example
- * ```ts
- * new ListingOutsideRootError({ path: '/etc' });
- * ```
+ Error thrown when a listing request escapes the configured root directory.
+ 
+ @example
+ ```ts
+ new ListingOutsideRootError({ path: '/etc' });
+ ```
  */
 class ListingOutsideRootError extends Error {
   /**
-   * Builds a descriptive confinement error.
-   *
-   * @param path - Rejected request path.
-   *
-   * @example
-   * ```ts
-   * new ListingOutsideRootError({ path: '/etc' });
-   * ```
+   Builds a descriptive confinement error.
+   
+   @param path - Rejected request path.
+   
+   @example
+   ```ts
+   new ListingOutsideRootError({ path: '/etc' });
+   ```
    */
   public constructor({ path, }: { readonly path: string; },) {
     super(`Refusing to list ${path}: outside the configured root ${rootDirectory}`,);
@@ -157,22 +157,22 @@ class ListingOutsideRootError extends Error {
 }
 
 /**
- * Resolves and confines a renderer-supplied path under the root directory.
- *
- * @param path - Renderer-supplied directory path.
- *
- * @returns Resolved absolute path safe to read.
- *
- * @throws ListingOutsideRootError when the path escapes the root.
- *
- * @example
- * ```ts
- * confinePath({ path: '/home' });
- * ```
+ Resolves and confines a renderer-supplied path under the root directory.
+ 
+ @param path - Renderer-supplied directory path.
+ 
+ @returns Resolved absolute path safe to read.
+ 
+ @throws ListingOutsideRootError when the path escapes the root.
+ 
+ @example
+ ```ts
+ confinePath({ path: '/home' });
+ ```
  */
 function confinePath({ path, }: { readonly path: string; },): string {
   /**
-   * Fully resolved request path with `..` segments folded away.
+   Fully resolved request path with `..` segments folded away.
    */
   const resolved = resolve(path,);
 
@@ -183,20 +183,20 @@ function confinePath({ path, }: { readonly path: string; },): string {
 }
 
 /**
- * Classifies one `readdir` dirent probe into a bridge entry kind, checking
- * symlinks first because a symlink also answers the directory probe on some
- * platforms.
- *
- * @param directory - Whether the dirent answered the directory probe.
- *
- * @param symlink - Whether the dirent answered the symlink probe.
- *
- * @returns Bridge entry kind.
- *
- * @example
- * ```ts
- * kindOfDirent({ directory: true, symlink: false });
- * ```
+ Classifies one `readdir` dirent probe into a bridge entry kind, checking
+ symlinks first because a symlink also answers the directory probe on some
+ platforms.
+ 
+ @param directory - Whether the dirent answered the directory probe.
+ 
+ @param symlink - Whether the dirent answered the symlink probe.
+ 
+ @returns Bridge entry kind.
+ 
+ @example
+ ```ts
+ kindOfDirent({ directory: true, symlink: false });
+ ```
  */
 function kindOfDirent(
   {
@@ -217,27 +217,27 @@ function kindOfDirent(
 }
 
 /**
- * Lists one directory into sorted bridge entries.
- *
- * @param path - Renderer-supplied directory path.
- *
- * @returns Sorted entries of the directory.
- *
- * @throws ListingOutsideRootError when the path escapes the root.
- *
- * @example
- * ```ts
- * await listDirectory({ path: '/home' });
- * ```
+ Lists one directory into sorted bridge entries.
+ 
+ @param path - Renderer-supplied directory path.
+ 
+ @returns Sorted entries of the directory.
+ 
+ @throws ListingOutsideRootError when the path escapes the root.
+ 
+ @example
+ ```ts
+ await listDirectory({ path: '/home' });
+ ```
  */
 async function listDirectory({ path, }: { readonly path: string; },): Promise<readonly BridgeFileEntry[]> {
   /**
-   * Confined absolute directory path.
+   Confined absolute directory path.
    */
   const confined = confinePath({ path, },);
 
   /**
-   * Raw directory entries with type information, without following symlinks.
+   Raw directory entries with type information, without following symlinks.
    */
   const dirents = await readdir(
     confined,
@@ -264,17 +264,17 @@ async function listDirectory({ path, }: { readonly path: string; },): Promise<re
 }
 
 /**
- * Checks whether a value is a shallow record of JSON scalars, the only shape
- * the boundary-test state file accepts.
- *
- * @param value - Renderer-supplied state payload.
- *
- * @returns Whether the payload is a shallow scalar record.
- *
- * @example
- * ```ts
- * isShallowScalarRecord({ count: 1 });
- * ```
+ Checks whether a value is a shallow record of JSON scalars, the only shape
+ the boundary-test state file accepts.
+ 
+ @param value - Renderer-supplied state payload.
+ 
+ @returns Whether the payload is a shallow scalar record.
+ 
+ @example
+ ```ts
+ isShallowScalarRecord({ count: 1 });
+ ```
  */
 function isShallowScalarRecord(
   value: unknown,
@@ -292,22 +292,22 @@ function isShallowScalarRecord(
 }
 
 /**
- * Persists renderer state atomically when the boundary-test state path is set.
- *
- * @param state - Shallow scalar state snapshot.
- *
- * @mutates state - `JSON.stringify` may invoke record accessors or proxy traps.
- *
- * @example
- * ```ts
- * await writeObservedState({ state: { ready: true } });
- * ```
+ Persists renderer state atomically when the boundary-test state path is set.
+ 
+ @param state - Shallow scalar state snapshot.
+ 
+ @mutates state - `JSON.stringify` may invoke record accessors or proxy traps.
+ 
+ @example
+ ```ts
+ await writeObservedState({ state: { ready: true } });
+ ```
  */
 async function writeObservedState(
   { state, }: { state: Readonly<Record<string, string | number | boolean>>; },
 ): Promise<void> {
   /**
-   * Optional state path used only by automated boundary tests.
+   Optional state path used only by automated boundary tests.
    */
   const statePath = process.env[STATE_PATH_ENVIRONMENT_VARIABLE];
 
@@ -315,7 +315,7 @@ async function writeObservedState(
     return;
 
   /**
-   * Unique temp path so state readers never observe a truncated JSON file.
+   Unique temp path so state readers never observe a truncated JSON file.
    */
   const tempStatePath = `${statePath}.${process.pid}.${Date.now()}.tmp`;
 
@@ -335,17 +335,17 @@ async function writeObservedState(
 }
 
 /**
- * Handles one renderer state report from an Electron event without awaiting
- * inside the emitter, because Electron does not await async listeners.
- *
- * @param payload - Raw renderer-supplied state payload.
- *
- * @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
- *
- * @example
- * ```ts
- * observeStateFromEvent({ payload: { ready: true } });
- * ```
+ Handles one renderer state report from an Electron event without awaiting
+ inside the emitter, because Electron does not await async listeners.
+ 
+ @param payload - Raw renderer-supplied state payload.
+ 
+ @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
+ 
+ @example
+ ```ts
+ observeStateFromEvent({ payload: { ready: true } });
+ ```
  */
 function observeStateFromEvent({ payload, }: { readonly payload: unknown; },): void {
   void (async function observeStateTask(): Promise<void> {
@@ -362,12 +362,12 @@ function observeStateFromEvent({ payload, }: { readonly payload: unknown; },): v
 }
 
 /**
- * Registers the IPC surface consumed by the preload bridge.
- *
- * @example
- * ```ts
- * registerIpcHandlers();
- * ```
+ Registers the IPC surface consumed by the preload bridge.
+ 
+ @example
+ ```ts
+ registerIpcHandlers();
+ ```
  */
 function registerIpcHandlers(): void {
   ipcMain.handle(
@@ -391,13 +391,13 @@ function registerIpcHandlers(): void {
   ipcMain.on(
     REPORT_STATE_CHANNEL,
     /**
-     * Receives renderer state for asynchronous persistence.
-     *
-     * @param _event - Electron event unused by state persistence.
-     *
-     * @param payload - Renderer payload that may expose serialization hooks.
-     *
-     * @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
+     Receives renderer state for asynchronous persistence.
+     
+     @param _event - Electron event unused by state persistence.
+     
+     @param payload - Renderer payload that may expose serialization hooks.
+     
+     @mutates payload - `JSON.stringify` may invoke record accessors or proxy traps after shape validation.
      */
     function handleReportState(
       _event: unknown,
@@ -409,19 +409,19 @@ function registerIpcHandlers(): void {
 }
 
 /**
- * Creates the main BrowserWindow and loads the renderer HTML entry.
- *
- * @returns Created BrowserWindow.
- *
- * @example
- * ```ts
- * await createMainWindow();
- * ```
+ Creates the main BrowserWindow and loads the renderer HTML entry.
+ 
+ @returns Created BrowserWindow.
+ 
+ @example
+ ```ts
+ await createMainWindow();
+ ```
  */
 async function createMainWindow(): Promise<BrowserWindow> {
   mainLogger.info('Creating main window.',);
   /**
-   * BrowserWindow hosting the sandboxed renderer.
+   BrowserWindow hosting the sandboxed renderer.
    */
   const mainWindow = new BrowserWindow({
     height: DEFAULT_WINDOW_HEIGHT,
@@ -436,7 +436,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
   },);
 
   /**
-   * Renderer query switching on the visible rail debug tint.
+   Renderer query switching on the visible rail debug tint.
    */
   const query = (process.env[DEBUG_TINT_ENVIRONMENT_VARIABLE] === undefined)
     ? {}
@@ -451,26 +451,26 @@ async function createMainWindow(): Promise<BrowserWindow> {
 }
 
 /**
- * Logs a failure from an app activation path that Electron does not await.
- *
- * @param error - Caught activation error.
- *
- * @example
- * ```ts
- * logActivationCreateError({ error: new Error('boom') });
- * ```
+ Logs a failure from an app activation path that Electron does not await.
+ 
+ @param error - Caught activation error.
+ 
+ @example
+ ```ts
+ logActivationCreateError({ error: new Error('boom') });
+ ```
  */
 function logActivationCreateError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(`Failed to create activated main window: ${caughtValueStack(error,)}`,);
 }
 
 /**
- * Creates a replacement main window when the app is activated with none open.
- *
- * @example
- * ```ts
- * createMainWindowForActivation();
- * ```
+ Creates a replacement main window when the app is activated with none open.
+ 
+ @example
+ ```ts
+ createMainWindowForActivation();
+ ```
  */
 function createMainWindowForActivation(): void {
   void (async function createActivatedMainWindow(): Promise<void> {
@@ -484,12 +484,12 @@ function createMainWindowForActivation(): void {
 }
 
 /**
- * Installs lifecycle hooks that are independent of a specific window instance.
- *
- * @example
- * ```ts
- * installAppLifecycleHandlers();
- * ```
+ Installs lifecycle hooks that are independent of a specific window instance.
+ 
+ @example
+ ```ts
+ installAppLifecycleHandlers();
+ ```
  */
 function installAppLifecycleHandlers(): void {
   app.on(
@@ -514,30 +514,30 @@ function installAppLifecycleHandlers(): void {
 }
 
 /**
- * Logs a failure from initial app startup.
- *
- * @param error - Caught startup error.
- *
- * @example
- * ```ts
- * logStartupError({ error: new Error('boom') });
- * ```
+ Logs a failure from initial app startup.
+ 
+ @param error - Caught startup error.
+ 
+ @example
+ ```ts
+ logStartupError({ error: new Error('boom') });
+ ```
  */
 function logStartupError({ error, }: { readonly error: unknown; },): void {
   mainLogger.error(`Failed to start file-manager app: ${caughtValueStack(error,)}`,);
 }
 
 /**
- * Starts Electron asynchronously without blocking ESM module evaluation.
- *
- * Electron emits `ready` after the main module finishes evaluating, so a
- * top-level `await app.whenReady()` deadlocks startup under Electron's ESM
- * loader (see doc/troubleshooting on the Electron ESM ready deadlock).
- *
- * @example
- * ```ts
- * startFileManagerApp();
- * ```
+ Starts Electron asynchronously without blocking ESM module evaluation.
+ 
+ Electron emits `ready` after the main module finishes evaluating, so a
+ top-level `await app.whenReady()` deadlocks startup under Electron's ESM
+ loader (see doc/troubleshooting on the Electron ESM ready deadlock).
+ 
+ @example
+ ```ts
+ startFileManagerApp();
+ ```
  */
 function startFileManagerApp(): void {
   void (async function startFileManagerAppTask(): Promise<void> {

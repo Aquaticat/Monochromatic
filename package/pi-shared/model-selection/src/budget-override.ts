@@ -1,7 +1,7 @@
 /**
- * Budget-model override resolution with injected lookup and auth callbacks.
- *
- * @module
+ Budget-model override resolution with injected lookup and auth callbacks.
+ 
+ @module
  */
 
 import {
@@ -18,52 +18,52 @@ import {
 } from './types.ts';
 
 /**
- * Sentinel returned by a {@link FindBudgetOverrideModel} implementation when no
- * registry model matches the override slug. A `unique symbol`; narrowed with
- * `=== NO_OVERRIDE_MODEL`. Shared across the package boundary so host registry
- * lookups return the same identity this resolver checks.
+ Sentinel returned by a {@link FindBudgetOverrideModel} implementation when no
+ registry model matches the override slug. A `unique symbol`; narrowed with
+ `=== NO_OVERRIDE_MODEL`. Shared across the package boundary so host registry
+ lookups return the same identity this resolver checks.
  */
 export const NO_OVERRIDE_MODEL: unique symbol = Symbol('model-selection/no-override-model',);
 
 //region Types
 
 /**
- * Model lookup callback used by override resolution.
+ Model lookup callback used by override resolution.
  */
 export type FindBudgetOverrideModel<TModel extends ModelIdentity = ModelIdentity,> = (
   options: {
     /**
-     * Provider segment from override slug.
+     Provider segment from override slug.
      */
     readonly provider: string;
     /**
-     * Model id segment from override slug.
+     Model id segment from override slug.
      */
     readonly modelId: string;
   },
 ) => TModel | typeof NO_OVERRIDE_MODEL;
 
 /**
- * Auth lookup callback used by override resolution.
+ Auth lookup callback used by override resolution.
  */
 export type ResolveBudgetOverrideAuth<TModel extends ModelIdentity = ModelIdentity,> = (
   options: { readonly model: TModel; },
 ) => Promise<BudgetModelAuth | typeof NO_AUTH>;
 
 /**
- * Options for resolving budget-model overrides.
+ Options for resolving budget-model overrides.
  */
 export type ResolveBudgetModelOverrideOptions<TModel extends ModelIdentity = ModelIdentity,> = {
   /**
-   * Pinned model override.
+   Pinned model override.
    */
   readonly override: BudgetModelOverride;
   /**
-   * Host registry model lookup.
+   Host registry model lookup.
    */
   readonly findModel: FindBudgetOverrideModel<TModel>;
   /**
-   * Host auth lookup.
+   Host auth lookup.
    */
   readonly resolveAuth: ResolveBudgetOverrideAuth<TModel>;
 };
@@ -73,32 +73,32 @@ export type ResolveBudgetModelOverrideOptions<TModel extends ModelIdentity = Mod
 //region Public API
 
 /**
- * Resolve a budget-model override and skip automatic selection.
- *
- * @param options - override plus injected registry lookup and auth callbacks
- *
- * @returns budget model with auth credentials
- *
- * @throws {@link NoBudgetModelError} when override is malformed, missing, or lacks auth
- *
- * @example
- * ```typescript
- * resolveBudgetModelOverride({ override: 'openai/gpt-4o-mini', findModel, resolveAuth });
- * ```
+ Resolve a budget-model override and skip automatic selection.
+ 
+ @param options - override plus injected registry lookup and auth callbacks
+ 
+ @returns budget model with auth credentials
+ 
+ @throws {@link NoBudgetModelError} when override is malformed, missing, or lacks auth
+ 
+ @example
+ ```typescript
+ resolveBudgetModelOverride({ override: 'openai/gpt-4o-mini', findModel, resolveAuth });
+ ```
  */
 export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
   options: ResolveBudgetModelOverrideOptions<TModel>,
 ): Promise<BudgetModel<TModel>> {
   /**
-   * Override value supplied by caller.
+   Override value supplied by caller.
    */
   const { override, } = options;
   /**
-   * `provider/id` string form of override.
+   `provider/id` string form of override.
    */
   const modelSlug = budgetModelOverrideSlug(override,);
   /**
-   * Parsed provider/model slug.
+   Parsed provider/model slug.
    */
   const parsed = parseProviderModelSlug(modelSlug,);
   if (parsed === MALFORMED_SLUG) {
@@ -108,7 +108,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
   }
 
   /**
-   * Registry-resolved model record.
+   Registry-resolved model record.
    */
   const model = options.findModel({
     provider: parsed.provider,
@@ -122,7 +122,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
 
   if ((typeof override) !== 'string') {
     /**
-     * Inline auth from structured override.
+     Inline auth from structured override.
      */
     const { auth, } = override;
     return {
@@ -132,7 +132,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
   }
 
   /**
-   * Registry-resolved auth for the override.
+   Registry-resolved auth for the override.
    */
   const auth = await options.resolveAuth({ model, },);
   if (auth === NO_AUTH) {
@@ -152,11 +152,11 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
 //region Internal helpers
 
 /**
- * Return provider/model slug from an override value.
- *
- * @param override - budget-model override
- *
- * @returns provider/model slug
+ Return provider/model slug from an override value.
+ 
+ @param override - budget-model override
+ 
+ @returns provider/model slug
  */
 function budgetModelOverrideSlug(
   override: BudgetModelOverride,
@@ -164,7 +164,7 @@ function budgetModelOverrideSlug(
   if ((typeof override) === 'string')
     return override;
   /**
-   * Pinned model slug from structured override.
+   Pinned model slug from structured override.
    */
   const { model, } = override;
   return model;

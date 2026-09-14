@@ -17,7 +17,7 @@ import nanoSpawn, {
   type Result,
   SubprocessError,
 } from 'nano-spawn';
-import { resolveGit, } from '../resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 
 /** Real Git binary for disposable management repository. */
 const REAL_GIT = await resolveGit();
@@ -55,9 +55,9 @@ type ManagementFixture = Readonly<{
 }>;
 
 /**
- * Creates disposable real Git management fixture.
- *
- * @returns disposable fixture
+ Creates disposable real Git management fixture.
+ 
+ @returns disposable fixture
  */
 async function createFixture(): Promise<ManagementFixture> {
   /** Disposable fixture root. */
@@ -85,13 +85,13 @@ async function createFixture(): Promise<ManagementFixture> {
 }
 
 /**
- * Runs internal management process with injected complete registry root.
- *
- * @param fixture - disposable fixture
- *
- * @param args - management arguments
- *
- * @returns captured result
+ Runs internal management process with injected complete registry root.
+ 
+ @param fixture - disposable fixture
+ 
+ @param args - management arguments
+ 
+ @returns captured result
  */
 async function runManagement({
   fixture,
@@ -109,13 +109,13 @@ async function runManagement({
 }
 
 /**
- * Captures expected management subprocess failure.
- *
- * @param fixture - disposable fixture
- *
- * @param args - management arguments
- *
- * @returns subprocess error
+ Captures expected management subprocess failure.
+ 
+ @param fixture - disposable fixture
+ 
+ @param args - management arguments
+ 
+ @returns subprocess error
  */
 async function runManagementFailure({
   fixture,
@@ -136,11 +136,11 @@ async function runManagementFailure({
 }
 
 /**
- * Parses one compact management JSON object captured after nano-spawn strips its terminal LF.
- *
- * @param output - complete captured management stdout
- *
- * @returns parsed object with exact single-line framing proven
+ Parses one compact management JSON object captured after nano-spawn strips its terminal LF.
+ 
+ @param output - complete captured management stdout
+ 
+ @returns parsed object with exact single-line framing proven
  */
 function parseManagementOutput(output: string,): Record<string, unknown> {
   expect(output.includes('\n',),).toBe(false,);
@@ -255,22 +255,49 @@ await describe({
       },
     },),
     it({
-      name: 'noninteractive trust without yes declines with exit two',
-      fn: async function testNoninteractiveDecline() {
+      name: 'noninteractive trust without yes reports unavailable consent and remediation',
+      fn: async function testNoninteractiveConsentUnavailable() {
         await using fixture = await createFixture();
-        /** Declined trust process. */
+        /** Unavailable interactive-consent process. */
         const error = await runManagementFailure({ fixture, args: ['trust',], },);
         expect(error.exitCode,).toBe(2,);
         expect(parseManagementOutput(error.stdout,),).toMatchObject({
           schemaVersion: 1,
           sequence: 0,
           type: 'engine-failure',
-          code: 'trust-failed',
-          message: 'Trust declined; no persistent record was installed.',
+          code: 'trust-consent-unavailable',
+          message: [
+            'Interactive consent is unavailable because stdin or stderr is not a terminal, or input ended before a response.',
+            'After reviewing the disclosure, run `git cli-git trust --yes`.',
+            'No new trust record was installed.',
+          ].join(' ',),
         },);
         expect(error.stderr,).toContain('Exact snapshot state: new',);
         const status = await runManagement({ fixture, args: ['status',], },);
         expect(status.stdout,).toContain('"reason":"untrusted"',);
+      },
+    },),
+    it({
+      name: 'untrusted direct check reports interactive and noninteractive remediation',
+      fn: async function testUntrustedRemediation() {
+        await using fixture = await createFixture();
+        /** Blocked direct-check process before initial trust. */
+        const error = await runManagementFailure({
+          fixture,
+          args: ['check', '--all',],
+        },);
+        expect(error.exitCode,).toBe(2,);
+        expect(parseManagementOutput(error.stdout,),).toMatchObject({
+          schemaVersion: 1,
+          sequence: 0,
+          type: 'engine-failure',
+          code: 'config-untrusted',
+          message: [
+            `cli-git configuration at ${fixture.configPath} is not trusted.`,
+            'Review it, then run `git cli-git trust` in an interactive terminal.',
+            'For explicit noninteractive consent, run `git cli-git trust --yes`.',
+          ].join(' ',),
+        },);
       },
     },),
     it({

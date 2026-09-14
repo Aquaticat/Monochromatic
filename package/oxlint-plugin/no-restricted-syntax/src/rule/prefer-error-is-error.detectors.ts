@@ -20,20 +20,20 @@ import {
 //region instanceof Error detection
 
 /**
- * Extracts Error detector argument text from `value instanceof Error`,
- * confirming the right side via {@link isGlobalErrorConstructor}.
- *
- * @param context - Oxlint rule context.
- *
- * @param binary - Binary expression to inspect.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when binary
- * expression does not match.
- *
- * @example
- * ```ts
- * getInstanceofErrorArgumentText({ context, binary: node });
- * ```
+ Extracts Error detector argument text from `value instanceof Error`,
+ confirming the right side via {@link isGlobalErrorConstructor}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param binary - Binary expression to inspect.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when binary
+ expression does not match.
+ 
+ @example
+ ```ts
+ getInstanceofErrorArgumentText({ context, binary: node });
+ ```
  */
 export function getInstanceofErrorArgumentText(
   {
@@ -60,24 +60,24 @@ export function getInstanceofErrorArgumentText(
 //region constructor-property detection
 
 /**
- * Extracts tested value text from `value.constructor === Error`: unwraps
- * both sides via {@link unwrapParentheses}, matches the
- * {@link CONSTRUCTOR_PROPERTY_NAME} member via {@link isStaticMemberNamed},
- * and confirms the other side via {@link isGlobalErrorConstructor}.
- *
- * @param context - Oxlint rule context.
- *
- * @param left - Left side of equality comparison.
- *
- * @param right - Right side of equality comparison.
- *
- * @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
- * not form constructor check.
- *
- * @example
- * ```ts
- * getConstructorComparisonArgumentText({ context, left: node.left, right: node.right });
- * ```
+ Extracts tested value text from `value.constructor === Error`: unwraps
+ both sides via {@link unwrapParentheses}, matches the
+ {@link CONSTRUCTOR_PROPERTY_NAME} member via {@link isStaticMemberNamed},
+ and confirms the other side via {@link isGlobalErrorConstructor}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param left - Left side of equality comparison.
+ 
+ @param right - Right side of equality comparison.
+ 
+ @returns Tested value text, or {@link NOT_ERROR_DETECTION} when sides do
+ not form constructor check.
+ 
+ @example
+ ```ts
+ getConstructorComparisonArgumentText({ context, left: node.left, right: node.right });
+ ```
  */
 function getConstructorComparisonArgumentText(
   {
@@ -91,11 +91,11 @@ function getConstructorComparisonArgumentText(
   }>,
 ): ErrorDetectionArgumentText {
   /**
-   * Unwrapped left side for member and constructor inspection.
+   Unwrapped left side for member and constructor inspection.
    */
   const unwrappedLeft = unwrapParentheses({ expression: left, },);
   /**
-   * Unwrapped right side for member and constructor inspection.
+   Unwrapped right side for member and constructor inspection.
    */
   const unwrappedRight = unwrapParentheses({ expression: right, },);
   if ((unwrappedLeft.type === 'MemberExpression')
@@ -128,16 +128,16 @@ function getConstructorComparisonArgumentText(
 //region Equality detection
 
 /**
- * Returns whether operator is an equality operator used by legacy detectors.
- *
- * @param operator - Binary operator to inspect.
- *
- * @returns Whether operator compares two values for equality or inequality.
- *
- * @example
- * ```ts
- * isEqualityOperator({ operator: node.operator });
- * ```
+ Returns whether operator is an equality operator used by legacy detectors.
+ 
+ @param operator - Binary operator to inspect.
+ 
+ @returns Whether operator compares two values for equality or inequality.
+ 
+ @example
+ ```ts
+ isEqualityOperator({ operator: node.operator });
+ ```
  */
 function isEqualityOperator(
   { operator, }: { readonly operator: string; },
@@ -149,16 +149,16 @@ function isEqualityOperator(
 }
 
 /**
- * Returns whether equality operator is negated.
- *
- * @param operator - Equality operator to inspect.
- *
- * @returns Whether operator means "is not equal".
- *
- * @example
- * ```ts
- * isNegatedEqualityOperator({ operator: node.operator });
- * ```
+ Returns whether equality operator is negated.
+ 
+ @param operator - Equality operator to inspect.
+ 
+ @returns Whether operator means "is not equal".
+ 
+ @example
+ ```ts
+ isNegatedEqualityOperator({ operator: node.operator });
+ ```
  */
 export function isNegatedEqualityOperator(
   { operator, }: { readonly operator: string; },
@@ -167,22 +167,22 @@ export function isNegatedEqualityOperator(
 }
 
 /**
- * Extracts Error detector replacement metadata from legacy equality checks,
- * confirmed via {@link isEqualityOperator} and tried in order against
- * {@link getObjectTagComparisonArgumentText} and
- * {@link getConstructorComparisonArgumentText}.
- *
- * @param context - Oxlint rule context.
- *
- * @param binary - Binary expression to inspect.
- *
- * @returns Replacement metadata, or {@link NOT_ERROR_DETECTION} when binary
- * expression does not match.
- *
- * @example
- * ```ts
- * getEqualityDetectorReplacement({ context, binary: node });
- * ```
+ Extracts Error detector replacement metadata from legacy equality checks,
+ confirmed via {@link isEqualityOperator} and tried in order against
+ {@link getObjectTagComparisonArgumentText} and
+ {@link getConstructorComparisonArgumentText}.
+ 
+ @param context - Oxlint rule context.
+ 
+ @param binary - Binary expression to inspect.
+ 
+ @returns Replacement metadata, or {@link NOT_ERROR_DETECTION} when binary
+ expression does not match.
+ 
+ @example
+ ```ts
+ getEqualityDetectorReplacement({ context, binary: node });
+ ```
  */
 export function getEqualityDetectorReplacement(
   {
@@ -196,7 +196,7 @@ export function getEqualityDetectorReplacement(
   if (!isEqualityOperator({ operator: binary.operator, }))
     return NOT_ERROR_DETECTION;
   /**
-   * Object.prototype.toString-based detection argument, if matched.
+   Object.prototype.toString-based detection argument, if matched.
    */
   const objectTagArgumentText = getObjectTagComparisonArgumentText({
     context,
@@ -209,7 +209,7 @@ export function getEqualityDetectorReplacement(
       fixKind: 'fix',
     };
   /**
-   * Constructor-comparison detection argument, if matched.
+   Constructor-comparison detection argument, if matched.
    */
   const constructorArgumentText = getConstructorComparisonArgumentText({
     context,

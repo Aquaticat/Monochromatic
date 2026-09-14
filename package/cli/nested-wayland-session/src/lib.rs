@@ -15,6 +15,9 @@
 /// ```
 pub mod app;
 
+/// Exposes private XDG Settings portal used for deterministic nested appearance.
+pub mod appearance_portal;
+
 /// What:     `pub mod backend;`. Declares the winit/EGL/dmabuf backend init module.
 /// Why:      Builds the nested window, GLES renderer, output, and dmabuf state.
 ///
@@ -170,3 +173,6 @@ pub use app::run;
 /// export { parseArgs, Config } from "./cli";
 /// ```
 pub use cli::{parse_args, Config};
+
+/// Exposes supported deterministic nested appearance values.
+pub use appearance_portal::ColorSchemePreference;

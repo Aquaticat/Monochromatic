@@ -1,8 +1,8 @@
 // Generated from `package/git-policy/repository/src/index.ts` by file-enforcer; edit canonical source owner.
 /**
- * Repository-owned cli-git policy plugin.
- *
- * @module
+ Repository-owned cli-git policy plugin.
+ 
+ @module
  */
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
@@ -16,27 +16,27 @@ import {
 } from '../api/index.ts';
 
 /**
- * Candidate fields needed by root-context path decision.
- *
- * @example
- * ```ts
- * const candidate: RootContextCandidate = { path: 'CONTEXT.md', change: 'added' };
- * ```
+ Candidate fields needed by root-context path decision.
+ 
+ @example
+ ```ts
+ const candidate: RootContextCandidate = { path: 'CONTEXT.md', change: 'added' };
+ ```
  */
 export type RootContextCandidate = Readonly<Pick<CandidateFile, 'path' | 'change'>>;
 
 /**
- * Reports whether candidate state contains non-deleted root context file.
- *
- * @param candidates - exact Git candidates
- *
- * @returns whether root context enters candidate state
- *
- * @example
- * ```ts
- * hasForbiddenRootContext([{ path: 'CONTEXT.md', change: 'added' }]);
- * // => true
- * ```
+ Reports whether candidate state contains non-deleted root context file.
+ 
+ @param candidates - exact Git candidates
+ 
+ @returns whether root context enters candidate state
+ 
+ @example
+ ```ts
+ hasForbiddenRootContext([{ path: 'CONTEXT.md', change: 'added' }]);
+ // => true
+ ```
  */
 export function hasForbiddenRootContext(
   candidates: readonly RootContextCandidate[],
@@ -47,13 +47,13 @@ export function hasForbiddenRootContext(
 }
 
 /**
- * Rejects root context-cache files from predicted Git candidate state.
- *
- * @example
- * ```ts
- * forbiddenRootContext.name;
- * // => 'forbidden-root-context'
- * ```
+ Rejects root context-cache files from predicted Git candidate state.
+ 
+ @example
+ ```ts
+ forbiddenRootContext.name;
+ // => 'forbidden-root-context'
+ ```
  */
 export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-context'> = definePolicy({
   name: 'forbidden-root-context',
@@ -64,18 +64,18 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
     'direct-check',
   ],
   /**
-   * Checks candidate paths against root context-file policy.
-   *
-   * @param context - Policy context exposing lazy Git facts.
-   *
-   * @returns findings for forbidden root context file.
-   *
+   Checks candidate paths against root context-file policy.
+   
+   @param context - Policy context exposing lazy Git facts.
+   
+   @returns findings for forbidden root context file.
+   
    */
   async check({ context, }: {
     readonly context: ForeignBorrowed<PolicyContext>;
   },): Promise<readonly PolicyFinding[]> {
     /**
-     * Exact candidates selected by current Git or direct-check operation.
+     Exact candidates selected by current Git or direct-check operation.
      */
     const candidates = await context.git
       .candidates();
@@ -90,13 +90,13 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
 },);
 
 /**
- * Repository policy plugin whose effective namespace remains consumer-owned.
- *
- * @example
- * ```ts
- * repositoryPolicyPlugin.name;
- * // => 'repository'
- * ```
+ Repository policy plugin whose effective namespace remains consumer-owned.
+ 
+ @example
+ ```ts
+ repositoryPolicyPlugin.name;
+ // => 'repository'
+ ```
  */
 export const repositoryPolicyPlugin: PluginDefinition<
   readonly [typeof forbiddenRootContext],

@@ -1,8 +1,8 @@
 /**
- * Tests for the canonical serializer: empty containers, round-trip idempotency,
- * raw scalar preservation, and comment placement.
- *
- * @module
+ Tests for the canonical serializer: empty containers, round-trip idempotency,
+ raw scalar preservation, and comment placement.
+ 
+ @module
  */
 
 import {
@@ -11,13 +11,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { StringJsonc, } from './brand.ts';
 import {
+  type StringJsonc,
   emitJsoncValue,
   jsoncStringify,
   parseJsonc,
   parseJsoncEdit,
-} from './index.ts';
+} from '../dist/final/neutral/index.mjs';
 
 const asJsonc = (source: string,): StringJsonc => source as StringJsonc;
 

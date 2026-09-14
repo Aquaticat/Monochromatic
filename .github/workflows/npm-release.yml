@@ -1,0 +1,225 @@
+name: npm-release
+
+# Changesets release flow, decided in doc/decision/npm-publishing.md.
+#
+# - Pending changesets on main: the version job opens or updates the
+#   "Version Packages" pull request.
+# - No pending changesets and a package version missing from the registry:
+#   the pack job builds and packs exactly those packages, then the publish job
+#   uploads them with npm trusted publishing (OIDC). Only that job holds
+#   id-token: write. No npm token exists or is read anywhere.
+# - A package's first version cannot use trusted publishing (npm requires the
+#   package to exist before a trusted publisher can be configured), so it is
+#   published by hand: doc/runbook/publish-npm-package-first-time.md. The
+#   publish job then finds it already on the registry and only tags it.
+#
+# Scoped to the files that can change what the flow does: a changeset file
+# (opens or updates the Version Packages pull request), a package manifest or
+# changelog (a merged Version Packages pull request, which is what publishes),
+# and this workflow. Every other push to main is irrelevant to releasing, and
+# running here on each one regenerated the Version Packages branch and mailed a
+# push notification per commit (198 commits on 2026-09-06 alone).
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.changeset/**'
+      - '**/package.json'
+      - '**/CHANGELOG.md'
+      - '.github/workflows/npm-release.yml'
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  # The root mise config lists heavy dev tools (slint from a git rev, cmake, and
+  # more) with auto_install on; every mise run or mise exec would try to build
+  # them on the runner. Off, each job uses only the tools it installs below.
+  # Same pattern as toml-edit-fuzz.yml.
+  MISE_AUTO_INSTALL: 'false'
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  select-mode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      mode: ${{ steps.select-mode.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Resolve "latest" through the GitHub releases API, published releases only,
+          # one day old like pnpm's minimumReleaseAge. Without it the action installs
+          # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+          # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+          minimum_release_age: 1d
+          install: false
+          cache: true
+
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
+
+      - name: Select mode
+        id: select-mode
+        uses: changesets/action/select-mode@8488615a623b1b9c987934bb89eae8af6a946ac1
+
+  version:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'version'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Resolve "latest" through the GitHub releases API, published releases only,
+          # one day old like pnpm's minimumReleaseAge. Without it the action installs
+          # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+          # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+          minimum_release_age: 1d
+          install: false
+          cache: true
+
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
+
+      - name: Open or update the version pull request
+        uses: changesets/action/version@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          script: mise run changeset:version
+          commit-message: 'chore(*): version packages'
+          pr-title: 'chore(*): version packages'
+
+  pack:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Resolve "latest" through the GitHub releases API, published releases only,
+          # one day old like pnpm's minimumReleaseAge. Without it the action installs
+          # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+          # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+          minimum_release_age: 1d
+          install: false
+          cache: true
+
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
+
+      # dedupe-direct-deps=false: with the workspace default (true), a direct
+      # workspace dependency also declared at the root is linked only at the root,
+      # and pnpm pack then fails with ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL
+      # (pnpm/pnpm#9566, doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md).
+      # The override changes node_modules layout only, never the lockfile.
+      - name: Install dependencies with every direct dependency linked per package
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile --config.dedupe-direct-deps=false
+
+      - name: Build the packages in the publish plan
+        run: mise run changeset:build
+
+      - name: Pack
+        id: pack
+        uses: changesets/action/pack@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+
+  publish:
+    needs:
+      - select-mode
+      - pack
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Resolve "latest" through the GitHub releases API, published releases only,
+          # one day old like pnpm's minimumReleaseAge. Without it the action installs
+          # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
+          # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
+          minimum_release_age: 1d
+          install: false
+          cache: true
+
+      - name: Install node and pnpm
+        run: mise install node pnpm
+
+      # Tools installed inside a step are not on PATH for later steps
+      # (mise-action exports PATH only at its own setup), and the changesets
+      # sub-actions spawn node and pnpm from PATH.
+      - name: Expose node and pnpm to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
+
+      - name: Publish with trusted publishing
+        uses: changesets/action/publish@8488615a623b1b9c987934bb89eae8af6a946ac1
+        with:
+          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          create-github-releases: true
+          push-git-tags: true

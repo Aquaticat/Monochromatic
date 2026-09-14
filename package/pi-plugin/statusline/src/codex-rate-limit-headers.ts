@@ -1,9 +1,9 @@
 /**
- * OpenAI Codex subscription rate-limit response header parsing.
- *
- * Header names mirror OpenAI Codex CLI `codex-api/src/rate_limits.rs`.
- *
- * @module
+ OpenAI Codex subscription rate-limit response header parsing.
+ 
+ Header names mirror OpenAI Codex CLI `codex-api/src/rate_limits.rs`.
+ 
+ @module
  */
 
 import {
@@ -24,52 +24,52 @@ import {
 } from './rate-limit-parse-helpers.ts';
 
 /**
- * Codex header prefix used for the default ChatGPT subscription limit family.
+ Codex header prefix used for the default ChatGPT subscription limit family.
  */
 const CODEX_DEFAULT_PREFIX = 'x-codex';
 
 /**
- * Codex primary used-percent suffix used to discover dynamic limit families.
+ Codex primary used-percent suffix used to discover dynamic limit families.
  */
 const CODEX_PRIMARY_USED_PERCENT_SUFFIX = '-primary-used-percent';
 
 /**
- * Codex secondary used-percent suffix used to discover dynamic limit families.
+ Codex secondary used-percent suffix used to discover dynamic limit families.
  */
 const CODEX_SECONDARY_USED_PERCENT_SUFFIX = '-secondary-used-percent';
 
 /**
- * Lower duration tolerance matching Codex CLI approximate-window checks.
+ Lower duration tolerance matching Codex CLI approximate-window checks.
  */
 const CODEX_DURATION_LOWER_MULTIPLIER = 0.95;
 
 /**
- * Upper duration tolerance matching Codex CLI approximate-window checks.
+ Upper duration tolerance matching Codex CLI approximate-window checks.
  */
 const CODEX_DURATION_UPPER_MULTIPLIER = 1.05;
 
 /**
- * Codex five-hour window duration in minutes.
+ Codex five-hour window duration in minutes.
  */
 const CODEX_FIVE_HOURS_MINUTES = 300;
 
 /**
- * Codex daily window duration in minutes.
+ Codex daily window duration in minutes.
  */
 const CODEX_DAY_MINUTES = SECONDS_PER_DAY / SECONDS_PER_MINUTE;
 
 /**
- * Codex weekly window duration in minutes.
+ Codex weekly window duration in minutes.
  */
 const CODEX_WEEK_MINUTES = 10_080;
 
 /**
- * Codex monthly window duration in minutes.
+ Codex monthly window duration in minutes.
  */
 const CODEX_MONTH_MINUTES = 43_200;
 
 /**
- * Codex window kinds parsed for each limit prefix.
+ Codex window kinds parsed for each limit prefix.
  */
 const CODEX_WINDOW_KINDS = [
   'primary',
@@ -77,41 +77,41 @@ const CODEX_WINDOW_KINDS = [
 ] as const;
 
 /**
- * Codex window kind reflected in response header names.
+ Codex window kind reflected in response header names.
  */
 type CodexWindowKind = typeof CODEX_WINDOW_KINDS[number];
 
 /**
- * Parsed Codex window data before generic snapshot conversion.
+ Parsed Codex window data before generic snapshot conversion.
  */
 type CodexWindow = {
   /**
-   * Provider-used percentage.
+   Provider-used percentage.
    */
   readonly usedPercent: number;
   /**
-   * Window duration in minutes.
+   Window duration in minutes.
    */
   readonly windowMinutes: number;
   /**
-   * Reset timestamp in epoch milliseconds.
+   Reset timestamp in epoch milliseconds.
    */
   readonly resetAtMs: number;
 };
 
 /**
- * Detects approximate duration match.
- *
- * @param minutes - actual minute count
- *
- * @param expectedMinutes - expected minute count
- *
- * @returns whether actual minutes fall inside five-percent tolerance
- *
- * @example
- * ```ts
- * isApproximateMinutes({ minutes: 301, expectedMinutes: 300 });
- * ```
+ Detects approximate duration match.
+ 
+ @param minutes - actual minute count
+ 
+ @param expectedMinutes - expected minute count
+ 
+ @returns whether actual minutes fall inside five-percent tolerance
+ 
+ @example
+ ```ts
+ isApproximateMinutes({ minutes: 301, expectedMinutes: 300 });
+ ```
  */
 function isApproximateMinutes({
   minutes,
@@ -121,11 +121,11 @@ function isApproximateMinutes({
   expectedMinutes: number;
 }>,): boolean {
   /**
-   * Lower bound matching Codex CLI duration classification.
+   Lower bound matching Codex CLI duration classification.
    */
   const lowerBound = expectedMinutes * CODEX_DURATION_LOWER_MULTIPLIER;
   /**
-   * Upper bound matching Codex CLI duration classification.
+   Upper bound matching Codex CLI duration classification.
    */
   const upperBound = expectedMinutes * CODEX_DURATION_UPPER_MULTIPLIER;
 
@@ -133,20 +133,20 @@ function isApproximateMinutes({
 }
 
 /**
- * Converts Codex header prefix to stable limit id.
- *
- * @param prefix - lowercase header prefix beginning with `x-`
- *
- * @returns stable limit id
- *
- * @example
- * ```ts
- * codexLimitIdFromPrefix('x-codex-secondary');
- * ```
+ Converts Codex header prefix to stable limit id.
+ 
+ @param prefix - lowercase header prefix beginning with `x-`
+ 
+ @returns stable limit id
+ 
+ @example
+ ```ts
+ codexLimitIdFromPrefix('x-codex-secondary');
+ ```
  */
 function codexLimitIdFromPrefix(prefix: string,): string {
   /**
-   * Prefix after the transport-level `x-` namespace.
+   Prefix after the transport-level `x-` namespace.
    */
   const withoutHeaderNamespace = prefix.startsWith('x-',)
     ? prefix.slice(2,)
@@ -159,20 +159,20 @@ function codexLimitIdFromPrefix(prefix: string,): string {
 }
 
 /**
- * Formats Codex duration label from window minutes.
- *
- * @param windowMinutes - provider window duration in minutes
- *
- * @returns compact duration label or fallback text
- *
- * @example
- * ```ts
- * codexDurationLabel(300);
- * ```
+ Formats Codex duration label from window minutes.
+ 
+ @param windowMinutes - provider window duration in minutes
+ 
+ @returns compact duration label or fallback text
+ 
+ @example
+ ```ts
+ codexDurationLabel(300);
+ ```
  */
 function codexDurationLabel(windowMinutes: number,): string {
   /**
-   * Window duration clamped to non-negative minutes.
+   Window duration clamped to non-negative minutes.
    */
   const minutes = Math.max(
     0,
@@ -204,20 +204,20 @@ function codexDurationLabel(windowMinutes: number,): string {
 }
 
 /**
- * Formats Codex snapshot label.
- *
- * @param limitName - server-provided limit name or derived limit id
- *
- * @param kind - primary or secondary Codex window
- *
- * @param windowMinutes - provider window duration in minutes
- *
- * @returns footer label for Codex projected overflow
- *
- * @example
- * ```ts
- * codexSnapshotLabel({ limitName: 'codex', kind: 'primary', windowMinutes: 300 });
- * ```
+ Formats Codex snapshot label.
+ 
+ @param limitName - server-provided limit name or derived limit id
+ 
+ @param kind - primary or secondary Codex window
+ 
+ @param windowMinutes - provider window duration in minutes
+ 
+ @returns footer label for Codex projected overflow
+ 
+ @example
+ ```ts
+ codexSnapshotLabel({ limitName: 'codex', kind: 'primary', windowMinutes: 300 });
+ ```
  */
 function codexSnapshotLabel({
   limitName,
@@ -229,11 +229,11 @@ function codexSnapshotLabel({
   windowMinutes: number;
 }>,): string {
   /**
-   * Duration label derived from provider window metadata.
+   Duration label derived from provider window metadata.
    */
   const durationLabel = codexDurationLabel(windowMinutes,);
   /**
-   * Secondary suffix when Codex reports a secondary window.
+   Secondary suffix when Codex reports a secondary window.
    */
   const secondaryLabel = kind === 'secondary' ? ' secondary' : '';
 
@@ -241,20 +241,20 @@ function codexSnapshotLabel({
 }
 
 /**
- * Discovers Codex header prefixes from known window suffixes.
- *
- * @param headers - lowercase provider response headers
- *
- * @returns sorted header prefixes to parse
- *
- * @example
- * ```ts
- * codexPrefixes({ 'x-codex-primary-used-percent': '50' });
- * ```
+ Discovers Codex header prefixes from known window suffixes.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @returns sorted header prefixes to parse
+ 
+ @example
+ ```ts
+ codexPrefixes({ 'x-codex-primary-used-percent': '50' });
+ ```
  */
 function codexPrefixes(headers: Readonly<Record<string, string>>,): readonly string[] {
   /**
-   * Mutable unique prefix set seeded with the default Codex family.
+   Mutable unique prefix set seeded with the default Codex family.
    */
   const prefixes = new Set<string>([CODEX_DEFAULT_PREFIX,],);
 
@@ -282,18 +282,18 @@ function codexPrefixes(headers: Readonly<Record<string, string>>,): readonly str
 }
 
 /**
- * Reads Codex limit display name for a header prefix.
- *
- * @param headers - lowercase provider response headers
- *
- * @param prefix - Codex header prefix
- *
- * @returns display label for the limit family
- *
- * @example
- * ```ts
- * codexLimitName({ headers: {}, prefix: 'x-codex' });
- * ```
+ Reads Codex limit display name for a header prefix.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param prefix - Codex header prefix
+ 
+ @returns display label for the limit family
+ 
+ @example
+ ```ts
+ codexLimitName({ headers: {}, prefix: 'x-codex' });
+ ```
  */
 function codexLimitName({
   headers,
@@ -303,7 +303,7 @@ function codexLimitName({
   prefix: string;
 }>,): string {
   /**
-   * Optional server-provided display name header.
+   Optional server-provided display name header.
    */
   const parsedLimitName = parseStringHeader({
     headers,
@@ -323,20 +323,20 @@ function codexLimitName({
 }
 
 /**
- * Parses one Codex window from a header prefix.
- *
- * @param headers - lowercase provider response headers
- *
- * @param prefix - Codex header prefix
- *
- * @param kind - primary or secondary Codex window
- *
- * @returns parsed {@link CodexWindow}, or invalid sentinel when incomplete
- *
- * @example
- * ```ts
- * parseCodexWindow({ headers, prefix: 'x-codex', kind: 'primary' });
- * ```
+ Parses one Codex window from a header prefix.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param prefix - Codex header prefix
+ 
+ @param kind - primary or secondary Codex window
+ 
+ @returns parsed {@link CodexWindow}, or invalid sentinel when incomplete
+ 
+ @example
+ ```ts
+ parseCodexWindow({ headers, prefix: 'x-codex', kind: 'primary' });
+ ```
  */
 function parseCodexWindow({
   headers,
@@ -348,21 +348,21 @@ function parseCodexWindow({
   kind: CodexWindowKind;
 }>,): CodexWindow | InvalidValue {
   /**
-   * Used percentage reported by Codex.
+   Used percentage reported by Codex.
    */
   const usedPercent = parseNumberHeader({
     headers,
     headerName: `${prefix}-${kind}-used-percent`,
   },);
   /**
-   * Window duration in minutes reported by Codex.
+   Window duration in minutes reported by Codex.
    */
   const windowMinutes = parseNumberHeader({
     headers,
     headerName: `${prefix}-${kind}-window-minutes`,
   },);
   /**
-   * Reset timestamp reported by Codex as epoch seconds.
+   Reset timestamp reported by Codex as epoch seconds.
    */
   const resetAtMs = parseEpochSecondsHeader({
     headers,
@@ -383,24 +383,24 @@ function parseCodexWindow({
 }
 
 /**
- * Converts one parsed Codex window into generic snapshot shape.
- *
- * @param window - parsed {@link CodexWindow}
- *
- * @param prefix - Codex header prefix
- *
- * @param limitName - Codex display limit name
- *
- * @param kind - primary or secondary Codex window
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns generic {@link RateLimitSnapshot}
- *
- * @example
- * ```ts
- * codexWindowSnapshot({ window, prefix: 'x-codex', limitName: 'codex', kind: 'primary', nowMs: Date.now() });
- * ```
+ Converts one parsed Codex window into generic snapshot shape.
+ 
+ @param window - parsed {@link CodexWindow}
+ 
+ @param prefix - Codex header prefix
+ 
+ @param limitName - Codex display limit name
+ 
+ @param kind - primary or secondary Codex window
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns generic {@link RateLimitSnapshot}
+ 
+ @example
+ ```ts
+ codexWindowSnapshot({ window, prefix: 'x-codex', limitName: 'codex', kind: 'primary', nowMs: Date.now() });
+ ```
  */
 function codexWindowSnapshot({
   window,
@@ -431,18 +431,18 @@ function codexWindowSnapshot({
 }
 
 /**
- * Parses all Codex subscription usage windows from response headers.
- *
- * @param headers - lowercase provider response headers
- *
- * @param nowMs - wall-clock sample time in epoch milliseconds
- *
- * @returns parsed Codex usage snapshots
- *
- * @example
- * ```ts
- * parseCodexRateLimitSnapshots({ headers, nowMs: Date.now() });
- * ```
+ Parses all Codex subscription usage windows from response headers.
+ 
+ @param headers - lowercase provider response headers
+ 
+ @param nowMs - wall-clock sample time in epoch milliseconds
+ 
+ @returns parsed Codex usage snapshots
+ 
+ @example
+ ```ts
+ parseCodexRateLimitSnapshots({ headers, nowMs: Date.now() });
+ ```
  */
 function parseCodexRateLimitSnapshots({
   headers,
@@ -452,13 +452,13 @@ function parseCodexRateLimitSnapshots({
   readonly nowMs: number;
 },): readonly RateLimitSnapshot[] {
   /**
-   * Mutable Codex snapshots collected from all discovered prefixes.
+   Mutable Codex snapshots collected from all discovered prefixes.
    */
   const snapshots: RateLimitSnapshot[] = [];
 
   for (const prefix of codexPrefixes(headers,)) {
     /**
-     * Display limit name for this Codex prefix.
+     Display limit name for this Codex prefix.
      */
     const limitName = codexLimitName({
       headers,
@@ -467,7 +467,7 @@ function parseCodexRateLimitSnapshots({
 
     for (const kind of CODEX_WINDOW_KINDS) {
       /**
-       * Parsed Codex window for this prefix and kind.
+       Parsed Codex window for this prefix and kind.
        */
       const window = parseCodexWindow({
         headers,
@@ -479,7 +479,7 @@ function parseCodexRateLimitSnapshots({
 
       /**
 
-       * Generic snapshot converted from Codex window data.
+       Generic snapshot converted from Codex window data.
 
        */
       const snapshot = codexWindowSnapshot({
