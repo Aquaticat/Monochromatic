@@ -101,9 +101,10 @@ await describe({ name: observeLoggerCallbacks.name, children: [
   } }),
   it({ name: 'looks up each requested level again instead of retaining the first method', fn: async ctx => {
     const f = fixture(ctx);
+    const initial = f.spies.warn;
     const replacement = ctx.sinon.stub();
     const getter = ctx.sinon.stub();
-    getter.onFirstCall().returns(f.spies.warn);
+    getter.onFirstCall().returns(initial);
     getter.onSecondCall().returns(replacement);
     Object.defineProperty(f.logger, 'warn', { get: getter });
     const observed = observeLoggerCallbacks(f.logger);
@@ -111,7 +112,9 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     observed.logger.warn('first');
     observed.logger.warn('second');
     expect(getter.callCount).toBe(2);
-    expect(f.spies.warn.callCount).toBe(1);
+    expect(initial.callCount).toBe(1);
+    expect(getter.firstCall.thisValue).toBe(f.logger);
+    expect(getter.secondCall.thisValue).toBe(f.logger);
     expect(replacement.callCount).toBe(1);
     expect(replacement.firstCall.args).toEqual(['second']);
     expect(replacement.firstCall.thisValue).toBe(f.logger);
@@ -119,9 +122,10 @@ await describe({ name: observeLoggerCallbacks.name, children: [
   } }),
   it({ name: 'looks up explicit flush again and observes the replacement callback', fn: async ctx => {
     const f = fixture(ctx);
-    const replacement = ctx.sinon.stub().rejects(Symbol('replacement flush fault'));
+    const initial = f.spies.flush;
+    const replacement = ctx.sinon.stub().rejects(Symbol('replacement Logger.flush callback rejected'));
     const getter = ctx.sinon.stub();
-    getter.onFirstCall().returns(f.spies.flush);
+    getter.onFirstCall().returns(initial);
     getter.onSecondCall().returns(replacement);
     Object.defineProperty(f.logger, 'flush', { get: getter });
     const observed = observeLoggerCallbacks(f.logger);
@@ -130,7 +134,9 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     expect(observed.snapshot()).toEqual([]);
     await observed.logger.flush();
     expect(getter.callCount).toBe(2);
-    expect(f.spies.flush.callCount).toBe(1);
+    expect(initial.callCount).toBe(1);
+    expect(getter.firstCall.thisValue).toBe(f.logger);
+    expect(getter.secondCall.thisValue).toBe(f.logger);
     expect(replacement.callCount).toBe(1);
     expect(replacement.firstCall.thisValue).toBe(f.logger);
     expect(observed.snapshot()).toEqual(['flush']);
@@ -140,14 +146,19 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     const revoked = Proxy.revocable(new Error('private flush q7z9k2'), {});
     revoked.revoke();
     const fault = kind === 'undefined' ? undefined : revoked.proxy;
-    await expect(Promise.reject(fault)).rejects.toBe(fault);
-    Object.defineProperty(f.logger, 'flush', {
-      value: function rejectFlush(): Promise<void> {
-        return Promise.reject(fault);
-      },
-    });
+    async function rejectFlush(): Promise<void> {
+      await Promise.resolve();
+      const carrier = faultCarrier();
+      carrier.throw(fault);
+    }
+    const [control] = await Promise.allSettled([rejectFlush()]);
+    expect(control?.status).toBe('rejected');
+    if (control?.status !== 'rejected') throw new Error('Expected the native flush rejection control');
+    expect(Object.is(control.reason, fault)).toBe(true);
+    Object.defineProperty(f.logger, 'flush', { value: rejectFlush });
     const observed = observeLoggerCallbacks(f.logger);
-    await observed.logger.flush();
+    const [outcome] = await Promise.allSettled([observed.logger.flush()]);
+    expect(outcome?.status).toBe('fulfilled');
     expect(observed.snapshot()).toEqual(['flush']);
   } })),
   it({ name: 'contains a revoked callable proxy without inspecting it', fn: async ctx => {
@@ -199,6 +210,31 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     if (kind === 'getter') expect(thrower.callCount).toBe(1);
     else expect(f.spies.flush.callCount).toBe(1);
   } })),
+  it({ name: 'contains an ordinary synchronous failure at the request boundary', fn: async ctx => {
+    const f = fixture(ctx);
+    f.spies.warn.throws(new Error('expected callback failure'));
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(() => observed.logger.warn('requested')).not.toThrow();
+    expect(observed.snapshot()).toEqual(['warn']);
+  } }),
+  it({ name: 'ignores a level callback return value without reading its then protocol', fn: async ctx => {
+    const f = fixture(ctx);
+    const getter = ctx.sinon.stub().throws(new Error('unexpected then lookup'));
+    const foreign = new Proxy(Promise.resolve(), {
+      get: function lookup(target, key, receiver): unknown {
+        if (key === 'then') return getter();
+        return Reflect.get(target, key, receiver);
+      },
+    });
+    f.spies.info.returns(foreign);
+    const observed = observeLoggerCallbacks(f.logger);
+    observed.logger.info('synchronous contract');
+    expect(f.spies.info.callCount).toBe(1);
+    expect(getter.callCount).toBe(0);
+    expect(observed.snapshot()).toEqual([]);
+    expect(() => Reflect.get(foreign, 'then')).toThrow();
+    expect(getter.callCount).toBe(1);
+  } }),
   it({ name: 'deduplicates failures in canonical frozen snapshots detached from later activity', fn: async ctx => {
     const f = fixture(ctx);
     for (const level of levels) f.spies[level].throws(new Error('private q7z9k2'));
