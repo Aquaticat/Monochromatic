@@ -35,7 +35,7 @@ export class ProducerInputComparisonError extends Error {
   public readonly messageNamesOnly: true = true;
   /** Fixed failed boundary, not caller-supplied error prose. */
   public readonly kind: ProducerInputComparisonFailure;
-  /** Created private evidence namespace when one exists. */
+  /** Created or attempted evidence namespace, never proof of current ownership. */
   public readonly directory?: string;
 
   /**
@@ -43,7 +43,7 @@ export class ProducerInputComparisonError extends Error {
    *
    * @param kind - fixed failed operation or comparison boundary
    *
-   * @param directory - owned evidence namespace, absent before creation
+   * @param directory - authorized created or attempted namespace locator, absent before path selection
    *
    * @example
    * ```ts
