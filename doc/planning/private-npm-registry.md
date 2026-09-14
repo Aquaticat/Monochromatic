@@ -104,9 +104,11 @@ Scope widened by the owner on 2026-09-14:
    not a Coolify build.
    Consequence:
    the registry must be reachable from GitHub-hosted runners.
-- Publish cadence:
+- Publish cadence (superseded 2026-09-14):
    automatic snapshot per push that touches a package
    (owner chose it over changesets releases and manual local publish).
+   Replaced by the change-detection decision:
+   versions change only by manual bumps.
 - Consumer:
    `Aquaticat/labwc-config`.
 - Read access:
@@ -135,11 +137,16 @@ Scope widened by the owner on 2026-09-14:
    `main` only
    (owner chose it over per-branch dist-tags).
 - Change detection:
-   owner answered "package.json version diff"
-   (instead of tarball content diff,
+   a package republishes only when its `package.json` `version` changes by a manual bump
+   (hand edit or changesets);
+   CI on `main` publishes every version the private registry lacks.
+   Owner chose it over CI-computed snapshot versions and committed automatic bumps,
+    knowingly dropping "every change is reflected";
+   "immediately" now means as soon as a bumped version lands on `main`.
+   Rejected along the way:
+    tarball content diff,
     runtime dependency ripple,
-    or directly touched packages);
-   its interaction with per-push snapshots is under clarification.
+    and directly touched packages as republish triggers.
 - Consumer scope:
    publish side only;
    verification installs from a throwaway consumer,
@@ -153,19 +160,33 @@ Scope widened by the owner on 2026-09-14:
    (the rule in `doc/decision/npm-publishing.md`),
    `oxlint` becomes a peer dependency of `oxlint-plugin-tsdoc`,
    and `config-typescript` drops `"private": true`.
-- A snapshot trigger includes changes to anything bundled into the package,
-   so `oxlint-plugin-shared` and `ownership-marker-foreign-borrowed` edits republish `oxlint-plugin-tsdoc`.
+- Published versions are immutable:
+   a version already in the registry is never overwritten.
+- The first workflow run publishes the current version of every package in the set,
+   since all of them are missing from a new registry.
+- The publish step removes `"private": true` from the packed manifest,
+   because `npm publish` refuses private packages.
+- Publishing runs in dependency order;
+   a package that fails to build blocks itself and its dependents,
+   the rest still publish,
+   and the run reports failure.
+- `latest` moves only when the published version is greater than the current `latest`.
 
 ## Open questions
 
-- Whether "package.json version diff" means committed per-change version bumps,
-   manual bumps only,
-   or CI-computed snapshot versions.
-   `.github/workflows/npm-release.yml` publishes to npmjs any non-private,
-    non-ignored package version missing there,
-   and its `push` filter includes `**/package.json`,
-   so committed per-change bumps would also release the public packages on npmjs.
-- How snapshots coexist with npmjs releases of the same package names.
+- Overlap with `.github/workflows/npm-release.yml`,
+   which publishes to npmjs any non-private,
+    non-ignored package version missing there
+   and runs on pushes that change `**/package.json`:
+   which registry holds bumped versions of the npmjs-released packages.
+   Today those are only `module-logger` (manifest `0.4.0`,
+    npmjs `0.1.0` to `0.4.0`)
+   and `module-fs-path` (manifest `0.2.0`,
+    npmjs `0.1.0` and `0.2.0`);
+   the other 33 non-private packages are in the changesets `ignore` list.
+- Bump mechanism,
+   and whether dependents of a bumped package must bump too
+   (a published `workspace:*` pin freezes at pack time).
 - Registry product and host (registry options research running,
    briefed before the scope widened).
 - How the consumer picks up new snapshots.
