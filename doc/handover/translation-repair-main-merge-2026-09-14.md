@@ -147,11 +147,50 @@ not introduced by it.
 The red verifier checks exact test names and ordinary assertion classification;
 strengthen its exact matcher/location checks before guard-removal proof.
 
+## Merge checkpoint and corrective scan
+
+Merge commit `9c6cc09079397eb45e4f645c718163347a72d8bc` has the expected repair and main parents.
+The Git index has no unmerged source entries after that commit.
+That was insufficient verification:
+a full tracked-text marker scan subsequently finds two unresolved comment hunks
+in `package/cli/markdown-lint/src/rule/semantic-line-breaks.ts`.
+They were missed after a truncated file read.
+The correction keeps the space-consuming fix documentation and main's comment layout.
+It is a follow-up commit,
+not an amendment of the merge commit.
+`main-merge-residual-markers-before-20260914.txt` under private scratch records the exact locations.
+`main-merge-marker-verification-20260914.json` subsequently checks all tracked working-tree text,
+not only the formerly unmerged paths.
+Its positive control finds the committed markers;
+the corrected working-tree scan has no matches.
+
+Proposed `AGENTS.md` addition under completion verification:
+"Before completing a merge,
+scan tracked text for conflict markers.
+An empty unmerged index proves only staging state,
+not hunk resolution."
+This proposal is not applied to `AGENTS.md`.
+
+The local lockfile reapplication conflicts on Wrangler,
+pnpm,
+Rust and uv versions.
+The owner versions win those conflicts.
+The complete three-way result also retains main's GNU Hyperfine asset metadata.
+It differs from the original backup only in those Hyperfine metadata fields,
+so restoring the original bytes alone would lose a main change.
+A private Mise generation refreshes Hyperfine metadata from the original lockfile.
+Its whole output matches the intended three-way result exactly before transfer.
+The restored file SHA-256 is
+`6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
+The Git index is reset to the merge commit's lockfile without staging the local changes.
+`main-merge-lockfile-VyH4kO/restoration-complete.json` records that proof.
+The original backup and stash remain retained.
+
 ## Remaining merge work
 
-Stage and commit the complete merge,
-restore and reconcile the owner's uncommitted `mise.lock`,
+Commit the corrective comment resolution,
 then verify resolved package boundaries against freshly built dependencies.
+Keep the reconciled owner lockfile unstaged.
 Check both merge parents,
 no unmerged entries or accidental duplicate exports,
 generated-file equality and local-change preservation.
