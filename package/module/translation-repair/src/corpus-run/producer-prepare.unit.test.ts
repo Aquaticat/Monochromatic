@@ -78,6 +78,17 @@ await describe({ name: '', concurrency: 1, children: [
     expect(result.stdout).toBe('false');
     expect(result.stderr).not.toContain(PRIVATE_CANARY);
   } }),
+  it({ name: 'renders an unexpected CLI fault as exit five without the private error message', fn: async function unexpectedFault() {
+    await using fixture = await inputCliFixture();
+    const executable = join(fixture.directory, 'fault-fixture.mjs');
+    const code = `console.log = function fixtureFault() { throw new Error(${JSON.stringify(PRIVATE_CANARY)}); }; await import(${JSON.stringify(fixture.executable)});`;
+    await writeFile(executable, code, { mode: 0o400, flag: 'wx' });
+    const result = await inputCli({ fixture: { ...fixture, executable }, arguments_: ['--help'] });
+    const faultExit = 5;
+    expect(result.status).toBe(faultExit);
+    expect(result.stderr).toContain('producer-prepare:');
+    expect(result.stderr).not.toContain(PRIVATE_CANARY);
+  } }),
   it({ name: 'refuses duplicate launch identity options before reading the file', fn: async function duplicate() {
     await using fixture = await inputCliFixture();
     const arguments_ = ['--launch', '/not-read', '--launch-sha256', DIGEST, '--launch-bytes', '2', '--launch-bytes', '2'];
