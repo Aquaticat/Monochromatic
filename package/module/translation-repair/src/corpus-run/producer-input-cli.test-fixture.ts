@@ -1,7 +1,4 @@
-import {
-  execFile,
-  type ExecFileException,
-} from 'node:child_process';
+import { execFile, } from 'node:child_process';
 import { createHash, } from 'node:crypto';
 import {
   mkdtemp,
@@ -142,38 +139,12 @@ export function inputCli({
     resolve,
     reject,
   } = Promise.withResolvers<InputCliResult>();
-  /**
-   * Error-first completion preserves native stdout and stderr even for a deliberate CLI refusal.
-   *
-   * @param error - native execution outcome, never a caller-fabricated result
-   *
-   * @param stdout - captured output from this exact invocation
-   *
-   * @param stderr - captured diagnostics from this exact invocation
-   */
-  function completed(
-    error: Readonly<ExecFileException> | null,
-    stdout: string,
-    stderr: string,
-  ): void {
-    if (error === null) {
-      resolve({ status: 0, stdout, stderr });
-      return;
-    }
-    /**
-     * Own the primitive exit code before rejecting spawn failures or signal termination.
-     */
-    const code = error.code;
-    if ((typeof code !== 'number') || !Number.isSafeInteger(code) || (code <= 0)
-      || (error.signal !== null)) {
-      reject(error);
-      return;
-    }
-    resolve({ status: code, stdout, stderr });
-  }
   execFile(
     process.execPath,
-    [fixture.executable, ...arguments_],
+    [
+      fixture.executable,
+      ...arguments_
+    ],
     {
       cwd: fixture.directory,
       env: {
@@ -184,7 +155,48 @@ export function inputCli({
       encoding: 'utf8',
       timeout: CLI_TEST_TIMEOUT,
     },
-    completed,
+    /**
+     * Error-first completion preserves both streams even for a deliberate CLI refusal.
+     *
+     * @param error - native outcome narrowed from unknown, without copying a nullish API type
+     *
+     * @param stdout - captured output from this exact invocation
+     *
+     * @param stderr - captured diagnostics from this exact invocation
+     */
+    function completed(
+      error: unknown,
+      stdout: string,
+      stderr: string,
+    ): void {
+      if (error === null) {
+        resolve({
+          status: 0,
+          stdout,
+          stderr,
+        });
+        return;
+      }
+      if ((!Error.isError(error)) || (!('code' in error)) || (!('signal' in error))) {
+        reject(error);
+        return;
+      }
+      /**
+       * Own the primitive exit code before rejecting spawn failures or signal termination.
+       */
+      const { code, } = error;
+      if (((typeof code) !== 'number') || (!Number.isSafeInteger(code))
+        || (code <= 0)
+        || (error.signal !== null)) {
+        reject(error);
+        return;
+      }
+      resolve({
+        status: code,
+        stdout,
+        stderr,
+      });
+    },
   );
   return promise;
 }

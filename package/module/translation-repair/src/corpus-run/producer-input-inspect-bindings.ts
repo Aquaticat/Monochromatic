@@ -1,7 +1,10 @@
 import { producerInputBindings, } from './producer-input-bindings.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import type { ProducerInputHost, } from './producer-input-host-init.ts';
-import { fieldMatches, record, } from './producer-input-inspect-fields.ts';
+import {
+  fieldMatches,
+  record,
+} from './producer-input-inspect-fields.ts';
 
 /**
  * Verifies every requested bind and rejects all unregistered mounts in the native creation metadata.
