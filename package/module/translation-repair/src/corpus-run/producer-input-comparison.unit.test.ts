@@ -35,7 +35,7 @@ function textList(value: unknown): readonly string[] {
   return entries.map(text);
 }
 
-type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision' | 'ignore-term-after-output';
+type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision' | 'ignore-term-after-output' | 'stdout-mode' | 'stderr-mode' | 'stdout-replacement' | 'stderr-replacement';
 
 async function fixture(mode: Mode = 'normal') {
   const directory = await mkdtemp(join(tmpdir(), "input-comparison-'quoted'-"));
@@ -50,7 +50,7 @@ async function fixture(mode: Mode = 'normal') {
   // Every fixture path crosses into generated JavaScript through JSON encoding, not shell interpolation.
   const script = `import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
-import {chmod,mkdir,readFile,writeFile} from 'node:fs/promises';
+import {chmod,mkdir,readFile,rename,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {setTimeout as wait} from 'node:timers/promises';
 const args=process.argv.slice(2);
@@ -92,7 +92,16 @@ else {
  if(mode==='wait-after-output'||mode==='ignore-term-after-output'){if(mode==='ignore-term-after-output')process.on('SIGTERM',()=>{});await writeFile(join(directory,'ready.txt'),'ready',{mode:0o600});await wait(5000);}
  if(mode==='exit-after-output'||mode==='failure-collision')process.exitCode=6;
  else if(mode==='malformed-stdout')console.log('not JSON q7z9k2');
- else console.log(JSON.stringify({kind:'producer-preparation-input-host-complete',directory:mode==='wrong-stdout-directory'?launch.outputParent:directory,completion,...mode==='extra-stdout-key'?{approved:true}:{}}));
+ else {
+  const frame={kind:'producer-preparation-input-host-complete',directory:mode==='wrong-stdout-directory'?launch.outputParent:directory,completion,...mode==='extra-stdout-key'?{approved:true}:{}};
+  const stdout=join(process.cwd(),'bootstrap.stdout');
+  const stderr=join(process.cwd(),'bootstrap.stderr');
+  if(mode==='stdout-mode')await chmod(stdout,0o644);
+  if(mode==='stderr-mode')await chmod(stderr,0o644);
+  if(mode==='stdout-replacement'){await rename(stdout,stdout+'.opened');await writeFile(stdout,JSON.stringify(frame)+'\\n',{mode:0o600,flag:'wx'});}
+  if(mode==='stderr-replacement'){await rename(stderr,stderr+'.opened');await writeFile(stderr,'',{mode:0o600,flag:'wx'});}
+  console.log(JSON.stringify(frame));
+ }
 }
 `;
   await writeFile(bootstrapPath, script, { mode: 0o600 });
@@ -151,6 +160,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const error = await rejected({ ...request, reference });
     expect(error.kind).toBe('mismatch');
     if (error.directory === undefined) throw new Error('Expected retained comparison directory');
+    expect(await readdir(error.directory)).toContain('comparison.json');
     const comparison = await readRecord(join(error.directory, 'comparison.json'));
     expect(comparison.matches).toBe(false);
     expect(comparison.observed).toEqual(artifactIdentity);
@@ -179,7 +189,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     }
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
   } })),
-  ...(['malformed-stdout', 'wrong-stdout-directory', 'extra-stdout-key', 'extra-child', 'no-child', 'child-file', 'bad-run-id', 'extra-output', 'home-content', 'artifact-mode', 'artifact-hash', 'wrong-completion-run', 'wrong-completion-launch', 'extra-completion-key', 'wrong-created-launch', 'wrong-created-owner', 'wrong-verified-completion', 'cleanup-interrupted', 'stderr-on-success'] as const).map(mode => it({ name: `refuses retained output boundary ${mode}`, fn: async () => {
+  ...(['malformed-stdout', 'wrong-stdout-directory', 'extra-stdout-key', 'extra-child', 'no-child', 'child-file', 'bad-run-id', 'extra-output', 'home-content', 'artifact-mode', 'artifact-hash', 'wrong-completion-run', 'wrong-completion-launch', 'extra-completion-key', 'wrong-created-launch', 'wrong-created-owner', 'wrong-verified-completion', 'cleanup-interrupted', 'stderr-on-success', 'stdout-mode', 'stderr-mode', 'stdout-replacement', 'stderr-replacement'] as const).map(mode => it({ name: `refuses retained output boundary ${mode}`, fn: async () => {
     await using f = await fixture(mode);
     const error = await rejected(f.request());
     expect(error.kind).toBe('output');
