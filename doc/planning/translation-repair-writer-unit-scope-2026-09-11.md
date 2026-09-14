@@ -2186,9 +2186,28 @@ Native spawn-failure and signal-termination rejection controls are added beside 
 Fresh normal/bootstrap builds,
 types and focused `devtest-WY17PT` pass,
 including actual `ENOENT` and `SIGTERM` rejection controls.
-Current full-package read-only lint is running as managed process `proc_4776`;
-its log is `input-callback-controls-full-lint-20260913.out`.
-Read its actual diagnostic result before declaring lint or formatter convergence.
+The full-package read-only `devlint224-7spwFf` run finishes without a memory failure,
+but `promise/prefer-await-to-callbacks` still rejects the adapter.
+The fixture now uses the existing `nano-spawn` asynchronous utility instead of custom callbacks.
+It clears inherited environment names before adding the fixture environment,
+checks ordinary exits separately from native failures,
+and documents the utility's final-newline normalization.
+An environment-canary control joins the spawn/signal tests.
+Fresh builds,
+types and focused `devtest-RNODLX` pass,
+including environment isolation and actual native failures distinguished from deadline cancellation.
+The subsequent full `devlint224-rTGEaU` run is memcg-killed,
+so the Node-heap setting is not treated as a reliable general remedy.
+The `GOMAXPROCS=1` control completes full-package lint with zero warnings and errors.
+A disposable source-only overlay detects the designated TSDoc and unawaited-promise findings under the same settings.
+The unchanged-source run then returns zero findings again.
+`input-current-lint-proof-20260913.json` reconciles source/configuration hashes and the single changed control file.
+Task49's lint blocker is verified without suppressions or repository-wide memory defaults.
+Task47 resumes current artifact/full-suite verification,
+remaining native boundary controls,
+proof retention and owned diagnostic cleanup.
+The independently prepared full-unit harness is `run-current-input-full-unit-20260913.mts`;
+it requires fresh normal/bootstrap builds and supplies the default-HOME corpus mount plus a test-entry runtime ledger.
 The original memory/CPU/PID bounds remain unchanged.
 The passing native lifecycle artifacts predate these source changes and do not verify their exact bytes.
 

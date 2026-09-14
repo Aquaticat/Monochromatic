@@ -345,7 +345,40 @@ Fresh builds,
 types and `devtest-WY17PT` pass,
 including actual native `ENOENT` and `SIGTERM` controls.
 The current full-package read-only lint result is still pending.
-Task49 stays open until the complete current result is read and remaining findings are resolved.
+A further `devlint224-rTGEaU` run is memcg-killed after the fixture switches to the existing async utility.
+The previously successful Node-only setting is therefore not a reliable general remedy.
+A separate control adds only `GOMAXPROCS=1`.
+Go `1.26.5` documents its scope at `src/runtime/extern.go:237-240`:
+
+> The GOMAXPROCS variable limits the number of operating system threads that
+> can execute user-level Go code simultaneously.
+
+It is not a memory limit and does not count threads blocked in system calls.
+No claim about exact tsgolint worker implementation is inferred from that environment setting.
+
+`devlint224go1-k5IXiV` completes 1544 files and 484 rules with zero warnings or errors,
+peak `2137600000` bytes and no OOM/PID events.
+The source-only disposable overlay `devlint224go1control-218u2V`
+changes only `producer-input-command-close.ts`:
+it removes one parameter comment and adds an unawaited promise.
+Under the same controls,
+it reports exactly `tsdoc/require-param` and `typescript/no-floating-promises`.
+The underlying lint exits `1` as expected;
+the verification process separately accepts those designated findings.
+No development source file is changed by the control.
+
+The unchanged-source `devlint224go1-DHaAmJ` run then reports zero warnings and errors,
+peak `2131177472` bytes and no OOM/PID events.
+`input-current-lint-proof-20260913.json` verifies baseline/restored source and configuration inventories match,
+and that the disposable control differs only at its designated file.
+The read-only zero-finding result is the formatter's convergence oracle;
+another mutating formatter pass is not required to establish that result.
+These are measured successful runs,
+not a global stability,
+allocation-owner or optimal-budget claim.
+No repository-wide memory default or check suppression is introduced.
+The lint blocker is verified;
+current full-suite/artifact verification and owned diagnostic cleanup remain part of task47.
 Neither increasing the container memory bound nor disabling a check is an accepted workaround.
 
 ## Root cause

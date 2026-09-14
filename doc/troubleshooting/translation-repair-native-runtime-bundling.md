@@ -707,6 +707,58 @@ Successful removal followed by refused absence evidence still withholds `cleanup
 All remaining fixture containers are independently inspected and removed by the verification owner.
 No production CID-file workaround or upstream change is needed.
 
+### CLI fixture uses the existing asynchronous process utility
+
+The CLI fixture's native callback adapter passes behavior tests,
+but the full linter reports `promise/prefer-await-to-callbacks`.
+The replacement uses the package's already declared `nano-spawn` dependency,
+not a new process framework or a suppression.
+Builds,
+types and `devtest-RNODLX` pass with actual exit-zero,
+exit-six,
+`ENOENT`,
+`SIGTERM` and parent-environment-canary controls.
+The native signal and spawn failures also assert `isCanceled: false`,
+so deadline cancellation cannot impersonate those cases.
+
+Nano-spawn `v2.1.0`,
+commit `cc231e2c7b1e434a96f25f907ca2cb2f7c596e90`,
+merges environment values in `source/options.js:16`:
+
+```js
+// source/options.js
+const env = envOption ? {...process.env, ...envOption} : undefined;
+```
+
+The fixture therefore enumerates parent environment names,
+assigns Node's omitted-entry value to them,
+then adds only its explicit fixture variables.
+It never copies parent values into the child environment.
+Node `v26.8.2`,
+`lib/child_process.js:748-754`,
+omits those entries when serializing native environment pairs:
+
+```js
+// lib/child_process.js
+for (const key of envKeys) {
+  const value = env[key];
+  if (value !== undefined) {
+    validateArgumentNullCheck(key, `options.env['${key}']`);
+    validateArgumentNullCheck(value, `options.env['${key}']`);
+    ArrayPrototypePush(envPairs, `${key}=${value}`);
+  }
+}
+```
+
+The library's `source/result.js:76-78` also removes one final newline from captured streams.
+Fixture result documentation now states that normalization;
+these strings are not byte-preserving artifact evidence.
+Application file identities remain verified separately by the production runner.
+The installed `options.js` and `result.js` were compared with the release source.
+No dependency installation,
+lockfile edit,
+upstream patch or filing is part of this change.
+
 ## What does not work
 
 - JavaScript bundling alone does not carry this native resource.
