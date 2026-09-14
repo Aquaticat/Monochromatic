@@ -20,6 +20,50 @@ Only `mise.lock` is stashed.
 Restoration is performed after the merge commit,
 so the local changes do not enter that commit.
 
+## Current merge blocker
+
+Task56 is pending on task60,
+which reconciles main's shared Git resolver migration.
+The final real subpath lookup fails because main commit `2aef2d409`
+removed `package/git-policy/cli/src/resolve-git.ts`,
+while automatic merging retained its barrel export and repair imports.
+The declared-export-name inventory did not prove that target existed.
+The selected package matrices remain valid within their recorded scope,
+but they did not compile the Git CLI or translation-repair.
+
+[Issue 517](https://github.com/Aquaticat/Monochromatic/issues/517) records this separate merge defect
+and explicitly states that the handling has not been reviewed.
+Commit `52f3e1a00` migrates the repair imports to `@monochromatic-dev/git-executable/ts`,
+removes the obsolete CLI export and wildcard subpath,
+and changes the repair package dependency to the shared owner.
+The root builder also captures working directory and Windows installation-root inputs
+before caller getters or logging can change lookup context.
+One missing declared workspace link is added without replacing existing links.
+That is not a full dependency installation.
+
+Native lock regeneration changes only the repair importer's dependency name and relative link.
+`devtypes-U8tPOX` passes translation-repair's type check
+with no source changes or OOM events.
+`devbuild-nRe1Ob` passes the normal repair build,
+and the preparation bootstrap also rebuilds successfully.
+The first affected-consumer run,
+`devtest-s4K1Wy`,
+fails two legacy observers that expect whole-file `readFile` calls;
+the shared resolver inspects through file handles instead.
+The sampler and root-input tests now observe `open`,
+prove their counters with a positive control,
+and change PATH after first inspection so successful resolver caching cannot hide lost pin ownership.
+Their updated assertions and the remaining resolver checks are not yet verified.
+The final repository audit,
+Markdown check and diagnostic retention/cleanup are not complete.
+No diagnostic container is removed by this continuation.
+
+Proposed instruction for merge verification:
+check export targets and compile their affected consumers,
+not only the union of declared names.
+The target-resolution check is implemented in the private audit;
+no additional `AGENTS.md` rule is applied yet.
+
 ## Conflict resolutions
 
 The merge produces 14 conflicting paths.
@@ -244,7 +288,10 @@ and two test descriptors are renamed.
 have unchanged ASTs after removing locations and comments.
 The scanner's source and generated mirror retain main's indexed ASCII validation
 plus the repair branch's diagnostic text.
-The Git CLI retains both main's authoring entry and the repair `resolveGit` export/subpath.
+The initial Git CLI merge retains main's authoring entry
+and the repair `resolveGit` export/subpath.
+The subsequent target lookup proves the latter is invalid after main's resolver move;
+`Current merge blocker` records its reconciliation.
 The remaining jointly changed documents,
 configuration and moved TOML fuzz helper are classified separately,
 not inferred from the AST-name result.

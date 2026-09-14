@@ -3163,9 +3163,9 @@ importers:
       '@monochromatic-dev/cli-markdown-lint':
         specifier: workspace:*
         version: link:../../cli/markdown-lint
-      '@monochromatic-dev/git-policy-cli':
+      '@monochromatic-dev/git-executable':
         specifier: workspace:*
-        version: link:../../git-policy/cli
+        version: link:../../git/executable
       '@monochromatic-dev/module-async-time':
         specifier: workspace:*
         version: link:../async-time

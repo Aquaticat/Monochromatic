@@ -254,7 +254,7 @@ await describe({
   name: sampleBenchSlices.name,
   children: [
     it({
-      name: 'resolves native Git once for a complete sample and honors an already resolved pin',
+      name: 'pins Git after one header inspection despite later PATH drift and honors an explicit path',
       fn: async () => {
         const pin = await clonedCorpusHolding({ files: {
           [`people/${ENTRY_ID}/page.md`]: SOURCE_PAGE,
@@ -265,7 +265,7 @@ await describe({
         } };
         const gitPath = await resolveGit();
         const apiPath = fileURLToPath(new URL('../../dist/final/node/index.mjs', import.meta.url));
-        // The separate process observes actual executable reads without replacing Git or the sampler.
+        // The child observes header opens and changes PATH after inspection, so resolver caching cannot hide lost pin ownership.
         const program = `
 import assert from 'node:assert/strict';
 import files from 'node:fs/promises';
@@ -273,22 +273,37 @@ import { syncBuiltinESMExports } from 'node:module';
 import { pathToFileURL } from 'node:url';
 const gitPath = ${JSON.stringify(gitPath)};
 const pin = ${JSON.stringify(pin)};
-const counts = { reads: 0 };
-const original = files.readFile;
-files.readFile = async function counted(path, options) {
+const counts = { opens: 0, reads: 0, armed: false };
+const originalRead = files.readFile;
+const originalOpen = files.open;
+files.readFile = async function countedRead(path, options) {
   if (path === gitPath) counts.reads += 1;
-  return await original(path, options);
+  return await originalRead(path, options);
+};
+files.open = async function countedOpen(path, flags, mode) {
+  if (path === gitPath) {
+    counts.opens += 1;
+    if (counts.armed) process.env.PATH = pin.cloneDir;
+  }
+  return await originalOpen(path, flags, mode);
 };
 syncBuiltinESMExports();
 const api = await import(pathToFileURL(${JSON.stringify(apiPath)}).href);
+const control = await files.open(gitPath, 'r');
+await control.close();
+assert.equal(counts.opens, 1);
+counts.opens = 0;
 counts.reads = 0;
+counts.armed = true;
 const implicit = await api.sampleBenchSlices({ count: 1, pin });
-const implicitReads = counts.reads;
-counts.reads = 0;
+const implicitOpens = counts.opens;
+counts.opens = 0;
 const explicit = await api.sampleBenchSlices({ count: 1, pin: { ...pin, gitPath } });
 assert.deepEqual(explicit, implicit);
 assert.equal(pin.gitPath, undefined);
-console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitReads, explicitReads: counts.reads, count: implicit.length }));
+assert.equal(process.env.PATH, pin.cloneDir);
+await assert.rejects(api.sampleBenchSlices({ count: 1, pin }), { name: 'RealGitNotFoundError' });
+console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitOpens, explicitOpens: counts.opens, readFileCalls: counts.reads, count: implicit.length }));
 `;
         const done = spawnSync(process.execPath, ['--input-type=module', '--eval', program], {
           cwd: pin.cloneDir, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: pin.cloneDir },
@@ -299,7 +314,7 @@ console.log('BENCH_RESOLVER_PROOF ' + JSON.stringify({ implicitReads, explicitRe
         if (line === undefined) throw new Error(`Missing resolver observation: ${done.stderr}`);
         expect(
           JSON.parse(line.slice(marker.length)),
-        ).toEqual({ implicitReads: 1, explicitReads: 0, count: 1 });
+        ).toEqual({ implicitOpens: 1, explicitOpens: 0, readFileCalls: 0, count: 1 });
       },
     }),
     it({

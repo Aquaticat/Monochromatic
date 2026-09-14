@@ -676,7 +676,7 @@ const children = [
     expect(observed).toBe(true);
     expect(inputs.parents.map(parent => parent.id)).toEqual(f.selection.orderedParentIds);
   } })),
-  it({ name: 'reads the selected Git executable once per omitted-path population and never for an explicit path', fn: async () => {
+  it({ name: 'pins inspected Git across PATH drift and skips inspection for an explicit path', fn: async () => {
     await using f = await fixture();
     const request = f.request();
     const script = await readFile(request.pin.gitPath, 'utf8');
@@ -695,21 +695,36 @@ import { pathToFileURL } from 'node:url';
 const input = JSON.parse(await files.readFile(${JSON.stringify(dataPath)}, 'utf8'));
 const api = await import(pathToFileURL(${JSON.stringify(apiPath)}).href);
 const candidate = ${JSON.stringify(candidate)};
-const counts = { reads: 0 };
-const original = files.readFile;
-files.readFile = async function counted(path, options) {
+const counts = { opens: 0, reads: 0, armed: false };
+const originalRead = files.readFile;
+const originalOpen = files.open;
+files.readFile = async function countedRead(path, options) {
   if (path === candidate) counts.reads += 1;
-  return await original(path, options);
+  return await originalRead(path, options);
+};
+files.open = async function countedOpen(path, flags, mode) {
+  if (path === candidate) {
+    counts.opens += 1;
+    if (counts.armed) process.env.PATH = ${JSON.stringify(join(f.dir, 'unavailable'))};
+  }
+  return await originalOpen(path, flags, mode);
 };
 syncBuiltinESMExports();
+const control = await files.open(candidate, 'r');
+await control.close();
+assert.equal(counts.opens, 1);
+counts.opens = 0;
+counts.armed = true;
 const l = { debug() {}, info() {}, warn() {}, error() {}, fatal() {}, trace() {}, async flush() {} };
 const artifacts = input.artifacts.map(item => ({ path: item.path, content: new Uint8Array(item.bytes) }));
 const implicit = await api.buildPreparationRootInputs({ ...input, artifacts, l });
-const implicitReads = counts.reads;
-counts.reads = 0;
+const implicitOpens = counts.opens;
+counts.opens = 0;
 const explicit = await api.buildPreparationRootInputs({ ...input, artifacts, pin: { ...input.pin, gitPath: candidate }, l });
 assert.deepEqual(implicit, explicit);
-console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: counts.reads }));
+assert.equal(process.env.PATH, ${JSON.stringify(join(f.dir, 'unavailable'))});
+await assert.rejects(api.buildPreparationRootInputs({ ...input, artifacts, l }), { name: 'RealGitNotFoundError' });
+console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitOpens, explicitOpens: counts.opens, readFileCalls: counts.reads }));
 `;
     const done = spawnSync(process.execPath, ['--input-type=module', '--eval', program], { cwd: f.dir, encoding: 'utf8', env: { ...process.env, PATH: f.dir } });
     if (done.status !== 0) console.error(done.stderr);
@@ -719,7 +734,7 @@ console.log('ROOT_GIT_READS ' + JSON.stringify({ implicitReads, explicitReads: c
     if (line === undefined) throw new Error('expected native executable read observations');
     expect(
       JSON.parse(line.slice(marker.length)),
-    ).toEqual({ implicitReads: 1, explicitReads: 0 });
+    ).toEqual({ implicitOpens: 1, explicitOpens: 0, readFileCalls: 0 });
   } }),
   ...['revision', 'blank-clone', 'relative-executable', 'throwing-getter', 'throwing-outer-getter'].map(kind => it({ name: `refuses unsupported independent corpus pin ${kind}`, fn: async () => {
     await using f = await fixture();
