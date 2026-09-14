@@ -577,6 +577,51 @@ task51's other comparison branches remain separate.
 The implementation has not been reviewed as a whole.
 No new root/phase or paid acquisition authority is established.
 
+## Non-logger comparison verification checkpoint
+
+Task51 adds artifact tests in `6a4841d19` for group and directory privacy,
+symlink leaves,
+late child-parent inventory drift,
+canonical input grammar,
+base byte drift and pre-callback launch ownership.
+The first build/bootstrap/types/focused-test sequence passes;
+full lint identifies only mixed-operator grouping in the new late-inventory test.
+`3707322f2` groups those predicates.
+The R2 normal/bootstrap builds,
+types,
+focused tests and full-scope lint pass.
+No production implementation changes are made in this continuation.
+
+`comparison-native-failure-boundaries-x0C4Tk` verifies eight targeted cases
+using the unchanged `U8mJbo` parent and `WWrgVV` bootstrap where invocation is reached:
+base identity refusal without namespace creation,
+bootstrap byte/symlink refusal before streams,
+cancellation before spawn,
+cancellation after native input-namespace creation,
+cancellation after successful native close,
+a retained comparison-record collision,
+and artifact content drift after successful child completion.
+The frozen driver `.frozen-comparison-native-failures-8Q4N41/run.mjs`
+is 10264 bytes with SHA-256
+`b33b65efdc2be4fc59840402f8a20d2f88810b7f7da1ff2412af27813d7bcf19`.
+The startup-cancellation case records exit code 143,
+authored interruption stderr and an independently absent container name;
+it does not claim cancellation of a running application container.
+The corruption case separately preserves and rehashes the original output copy.
+`retained-state-recheck.json` also rehashes the corrupted target after refusal,
+checks unspawned streams are empty,
+and checks the startup diagnostic is not a bare shutdown error.
+These are failure/persistence fixtures,
+not new launch approval or complete native lifecycle coverage.
+
+The first non-logger mutation run `comparison-boundary-guards-zQu7zJ`
+stops because its assertion reader expects `error.kind`,
+while the exclusivity mutation correctly fails the designated test's rejected-status assertion.
+The revised finite matrix is running;
+it retains every case result and runs restored artifact tests even when an individual proof fails.
+Task51 remains open until those results,
+current full-suite coverage and scoped evidence cleanup are checked.
+
 ## Earlier verified checkpoint: task50
 
 The retained corpus-pin extraction passes types,
