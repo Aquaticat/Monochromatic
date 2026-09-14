@@ -131,10 +131,23 @@ These were already validated or are determined by `AGENTS.md`:
 
 ## Open questions
 
-- Where the TypeScript installer lives.
-- Where the signed pacman repository is hosted and who holds the signing key.
+None at the design level.
+The grilling frontier closed on 2026-09-14 with:
+
+- **Installer home**:
+  labwc-config.
+- **Repository hosting**:
+  GitHub Releases on labwc-config.
+- **Signing key**:
+  an offline primary GPG key trusted by pacman,
+  with a revocable signing-only subkey in GitHub Actions secrets.
 
 ## Next action
 
-Continue the grilling on the open questions,
-then adapt labwc-config.
+Wait for the user to confirm this summary is the shared understanding,
+then adapt labwc-config:
+archive the Bazzite harness,
+rewrite docs to the standards,
+port helpers and the installer to TypeScript once the `@monochromatic-dev` tooling is on npm,
+add the PKGBUILDs and signed-repository CI,
+and rehearse in a fresh Hyper-V VM.
