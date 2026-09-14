@@ -132,6 +132,7 @@ async function accepted(request: Parameters<typeof runProducerInputComparison>[0
   const [result] = await Promise.allSettled([runProducerInputComparison(request)]);
   expect(result?.status).toBe('fulfilled');
   if (result?.status !== 'fulfilled') throw new Error('Expected completed comparison');
+  expect(Object.isFrozen(result.value.loggerCallbackFailures)).toBe(true);
   return result.value;
 }
 
@@ -141,6 +142,7 @@ async function rejected(request: Parameters<typeof runProducerInputComparison>[0
   if (result?.status !== 'rejected') throw new Error('Expected comparison refusal');
   expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
   if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only comparison error');
+  expect(Object.isFrozen(result.reason.loggerCallbackFailures)).toBe(true);
   return result.reason;
 }
 
@@ -149,6 +151,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     await using f = await fixture();
     const result = await accepted(f.request());
     expect(result.scope).toBe('matched-unqualified-input-files');
+    expect(result.loggerCallbackFailures).toEqual([]);
     expect(
       identity(await readFile(result.artifact.path)),
     ).toEqual(artifactIdentity);
@@ -318,6 +321,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(ready.callCount).toBeGreaterThan(0);
     expect(escaped.callCount).toBe(0);
     expect(error.kind).toBe('interruption');
+    expect(error.loggerCallbackFailures).toEqual(throwAfterClose ? ['warn'] : []);
     expect(error.message).not.toContain('q7z9k2');
     if (error.directory === undefined) throw new Error('Expected retained cancelled namespace');
     const [child] = await readdir(join(error.directory, 'producer-runs'));
@@ -575,6 +579,11 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
     if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only primary failure');
     expect(result.reason.kind).toBe(expectedKind);
+    expect(result.reason.directory).toBe(directory);
+    expect(result.reason.message).toBe(new ProducerInputComparisonError({ kind: expectedKind, directory }).message);
+    expect(Object.hasOwn(result.reason, 'cause')).toBe(false);
+    expect(result.reason.loggerCallbackFailures).toEqual(['warn']);
+    expect(Object.isFrozen(result.reason.loggerCallbackFailures)).toBe(true);
     expect(result.reason.message).not.toContain('q7z9k2');
     if (mode === 'normal') expect((await readRecord(join(directory, 'comparison.json'))).matches).toBe(false);
   } }))),
@@ -585,40 +594,102 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     });
     const error = await rejected({ ...f.request(), baseLaunchIdentity: { ...identity(f.baseBytes), sha256: '0'.repeat(64) }, l: { ...l, warn: warning } });
     expect(error.kind).toBe('contract');
+    expect(error.loggerCallbackFailures).toEqual(['warn']);
     expect(error.message).not.toContain('q7z9k2');
     expect(await readdir(f.output)).toEqual([]);
     expect(warning.callCount).toBeGreaterThan(0);
   } }),
-  it({ name: 'owns the created namespace before success logging can fail', fn: async ctx => {
+  it({ name: 'keeps created namespace ownership and matched success when creation logging throws', fn: async ctx => {
     await using f = await fixture();
     const failed = ctx.sinon.spy(function failedCreationLog() {});
-    const [result] = await Promise.allSettled([runProducerInputComparison({ ...f.request(), l: { ...l, info(message) {
+    const result = await accepted({ ...f.request(), l: { ...l, info(message) {
       if (message.includes('created retained input comparison')) {
         failed();
         throw new Error('private creation logger q7z9k2');
       }
       l.info(message);
-    } } })]);
-    expect(result?.status).toBe('rejected');
+    } } });
     expect(failed.callCount).toBe(1);
-    const [comparisonName] = await readdir(f.output);
-    if (comparisonName === undefined) throw new Error('Expected acquired namespace');
-    const directory = join(f.output, comparisonName);
-    expect(
-      existsSync(join(directory, 'created.json')),
-    ).toBe(true);
-    expect(
-      existsSync(join(directory, 'failure.json')),
-    ).toBe(true);
-    expect(
-      existsSync(join(directory, 'invoked.json')),
-    ).toBe(false);
-    if (result?.status !== 'rejected') throw new Error('Expected logging refusal');
-    expect(result.reason).toBeInstanceOf(ProducerInputComparisonError);
-    if (!(result.reason instanceof ProducerInputComparisonError)) throw new Error('Expected names-only logging refusal');
-    expect(result.reason.directory).toBe(directory);
-    expect(result.reason.message).not.toContain('q7z9k2');
+    expect(result.loggerCallbackFailures).toEqual(['info']);
+    expect(existsSync(join(result.directory, 'created.json'))).toBe(true);
+    expect(existsSync(join(result.directory, 'failure.json'))).toBe(false);
+    expect(existsSync(join(result.directory, 'invoked.json'))).toBe(true);
+    expect((await readRecord(join(result.directory, 'comparison.json'))).matches).toBe(true);
+    expect(identity(await readFile(result.artifact.path))).toEqual(artifactIdentity);
   } }),
+  it({ name: 'takes the successful terminal snapshot after the final info callback throws', fn: async ctx => {
+    await using f = await fixture();
+    const failed = ctx.sinon.spy(function failedFinalLog() {});
+    const result = await accepted({ ...f.request(), l: { ...l, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) {
+        failed();
+        throw new Error('private final logger q7z9k2');
+      }
+      l.info(message);
+    } } });
+    expect(failed.callCount).toBe(1);
+    expect(result.loggerCallbackFailures).toEqual(['info']);
+    expect((await readRecord(join(result.directory, 'comparison.json'))).matches).toBe(true);
+    expect(existsSync(join(result.directory, 'failure.json'))).toBe(false);
+  } }),
+  it({ name: 'contains a debug getter from ownership completion onward without losing the matched result', fn: async ctx => {
+    await using f = await fixture();
+    const getter = ctx.sinon.stub().throws(new Error('private debug getter q7z9k2'));
+    const logger = { ...l };
+    Object.defineProperty(logger, 'debug', { get: getter });
+    const result = await accepted({ ...f.request(), l: logger });
+    expect(getter.callCount).toBeGreaterThan(0);
+    expect(result.loggerCallbackFailures).toEqual(['debug']);
+    expect(identity(await readFile(result.artifact.path))).toEqual(artifactIdentity);
+  } }),
+  it({ name: 'contains a warning getter while retaining the primary mismatch', fn: async ctx => {
+    await using f = await fixture();
+    const getter = ctx.sinon.stub().throws(new Error('private warning getter q7z9k2'));
+    const logger = { ...l };
+    Object.defineProperty(logger, 'warn', { get: getter });
+    const error = await rejected({ ...f.request(), reference: { ...artifactIdentity, sha256: '0'.repeat(64) }, l: logger });
+    expect(getter.callCount).toBeGreaterThan(0);
+    expect(error.kind).toBe('mismatch');
+    expect(error.loggerCallbackFailures).toEqual(['warn']);
+    if (error.directory === undefined) throw new Error('Expected retained mismatch directory');
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('mismatch');
+  } }),
+  it({ name: 'does not borrow the logger before an invalid data contract is refused', fn: async ctx => {
+    await using f = await fixture();
+    const getter = ctx.sinon.stub().throws(new Error('logger borrowed before data authority'));
+    const request = { ...f.request(), reference: { ...artifactIdentity, sha256: 'invalid' } };
+    Object.defineProperty(request, 'l', { get: getter });
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(error.loggerCallbackFailures).toEqual([]);
+    expect(getter.callCount).toBe(0);
+    expect(await readdir(f.output)).toEqual([]);
+  } }),
+  ...(['comparison.json', 'failure.json'] as const).map(file => it({ name: `retains synchronized ${file} when its descriptor-verification debug callback throws`, fn: async ctx => {
+    await using f = await fixture();
+    const armed = new Set<string>();
+    const failed = ctx.sinon.spy(function failedPostSyncLog() {});
+    const request = { ...f.request(), reference: file === 'failure.json' ? { ...artifactIdentity, sha256: '0'.repeat(64) } : artifactIdentity, l: { ...l, debug(message: string) {
+      if (message.includes(`writing exclusive comparison record "${file}"`)) armed.add(file);
+      if (armed.has(file) && message.includes('verified created comparison descriptor against final private pathname')) {
+        failed();
+        throw new Error('private post-sync logger q7z9k2');
+      }
+      l.debug(message);
+    } } };
+    const result = file === 'comparison.json' ? await accepted(request) : await rejected(request);
+    expect(failed.callCount).toBeGreaterThan(0);
+    expect(result.loggerCallbackFailures).toEqual(['debug']);
+    if (result.directory === undefined) throw new Error('Expected synchronized comparison namespace');
+    const record = await readRecord(join(result.directory, file));
+    if (file === 'comparison.json') expect(record.matches).toBe(true);
+    else {
+      expect(result).toBeInstanceOf(ProducerInputComparisonError);
+      if (!(result instanceof ProducerInputComparisonError)) throw new Error('Expected mismatch after retained failure record');
+      expect(result.kind).toBe('mismatch');
+      expect(record.failure).toBe('mismatch');
+    }
+  } })),
   it({ name: 'preserves a failure-record collision despite persistent warning failure', fn: async ctx => {
     await using f = await fixture('failure-collision');
     const warning = ctx.sinon.spy(function collisionWarning(_message: string): void {
@@ -626,6 +697,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     });
     const error = await rejected({ ...f.request(), l: { ...l, warn: warning } });
     expect(error.kind).toBe('storage');
+    expect(error.loggerCallbackFailures).toEqual(['warn']);
     if (error.directory === undefined) throw new Error('Expected retained collision directory');
     expect(await readFile(join(error.directory, 'failure.json'), 'utf8')).toBe('existing failure q7z9k2');
     expect(error.message).not.toContain('q7z9k2');
