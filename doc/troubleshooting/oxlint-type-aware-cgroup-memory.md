@@ -281,14 +281,42 @@ There is no JavaScript allocation stack in this report,
 so it does not identify a retaining rule or allocation site.
 `fatal-reading.json` records the identity and privacy checks.
 
-The next read-only control selects Node old-space `224MiB`,
-leaving the Go settings,
-worker count,
-source,
-rules and container bounds unchanged.
-It also records available swap-current/peak counters.
-No Go-concurrency change is combined with this control.
-Task49 remains open.
+The read-only `224MiB` control,
+`devlint224-EYOgRv`,
+completes analysis and reports 48 warnings and 8 errors across 1538 files and 484 rules.
+It exits `1` for those findings,
+not a signal or memory failure.
+Memory peak is `2147483648` bytes;
+OOM/PID events and observed swap-current/peak are zero.
+Source hashes are unchanged.
+This is evidence that this invocation delivered analysis,
+not a proved stable memory margin or a universal configuration.
+Go settings,
+worker count and container bounds remain unchanged.
+
+The findings drive structural changes rather than suppressions:
+inspection fields/mappings,
+launch shape checks,
+stop observation and command interruption move to separate owning modules.
+Native token views become explicitly readonly;
+abort reasons remain unknown until validated;
+the CLI test fixture uses asynchronous native execution.
+The package-root bootstrap configuration is formatted without changing its closure contract.
+Commits `6e2ad798a`,
+`3ce4ece58` and `96d58ac9e` record those changes.
+Exact development normal/bootstrap builds,
+`devtypes-8AUfDO` and focused `devtest-mLP7LS` pass afterward.
+These are not final full-package verification.
+
+The pending `devformat224` invocation uses the same measured memory controls
+and a finite 3000-second verification deadline.
+The formatter's own eight-pass cap remains unchanged.
+The larger deadline addresses the observed multi-invocation cutoff,
+not memory pressure.
+Only owned source,
+the task's bootstrap configuration and designated outputs are writable;
+configuration bytes now join the before/after inventory.
+Task49 remains open until the full result is read and remaining findings are resolved.
 Neither increasing the container memory bound nor disabling a check is an accepted workaround.
 
 ## Root cause

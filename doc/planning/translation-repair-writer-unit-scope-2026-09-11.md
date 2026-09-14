@@ -2155,9 +2155,21 @@ The Node `192MiB` control aborts;
 its instrumented repeat identifies an Oxlint JavaScript heap OOM,
 not a cgroup OOM.
 Report PID `36` is matched to the actual Oxlint entry and heap/process ledgers.
-A Node `224MiB` read-only control is now running with unchanged Go settings,
-rules and the 2 GiB container bound.
-The passing lifecycle artifacts predate this formatter checkpoint and do not verify its exact source.
+The Node `224MiB` read-only control completes analysis:
+48 warnings and 8 errors,
+1538 files and 484 rules,
+with no OOM/PID events or source changes.
+Its findings are addressed through module extraction,
+readonly callback ownership,
+unknown abort-reason validation,
+asynchronous CLI fixtures and bootstrap-configuration formatting.
+Changes are recorded in `6e2ad798a`,
+`3ce4ece58` and `96d58ac9e`.
+Fresh normal/bootstrap builds,
+types and the focused CLI/names-only suite pass.
+The full `devformat224` convergence run is pending with a finite 3000-second verification deadline;
+all checks and the original memory/CPU/PID bounds remain.
+The passing native lifecycle artifacts predate these source changes and do not verify their exact bytes.
 
 Remaining task47 work includes repeated interruption,
 filesystem races/collisions,
