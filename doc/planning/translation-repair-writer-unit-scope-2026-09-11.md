@@ -2167,8 +2167,18 @@ Changes are recorded in `6e2ad798a`,
 `3ce4ece58` and `96d58ac9e`.
 Fresh normal/bootstrap builds,
 types and the focused CLI/names-only suite pass.
-The full `devformat224` convergence run is pending with a finite 3000-second verification deadline;
-all checks and the original memory/CPU/PID bounds remain.
+`devformat224-2vLWZD` finishes analysis without OOM/PID events,
+but still reports the inspection-module line limit,
+a mapping callback layout and the CLI fixture's `promisify(execFile)` void-return mismatch.
+Commit `f57cf9c6e` extracts bind validation,
+formats the callback and gives native CLI completion explicit ownership of exit/stdio results.
+Fresh normal/bootstrap builds,
+types and `devtest-40QnXP` pass.
+The next full formatter run is pending:
+`input-format-node224-r2-20260913.out`,
+managed process `proc_758f`.
+It retains the finite 3000-second verification deadline and original memory/CPU/PID bounds.
+Do not edit its source/configuration while it is active.
 The passing native lifecycle artifacts predate these source changes and do not verify their exact bytes.
 
 Remaining task47 work includes repeated interruption,

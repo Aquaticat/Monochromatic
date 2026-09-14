@@ -316,7 +316,23 @@ not memory pressure.
 Only owned source,
 the task's bootstrap configuration and designated outputs are writable;
 configuration bytes now join the before/after inventory.
-Task49 remains open until the full result is read and remaining findings are resolved.
+`devformat224-2vLWZD` finishes with ordinary lint findings,
+not a deadline or memory failure:
+2 warnings and 1 error across 1543 files and 484 rules.
+Its container records no OOM/PID events.
+The remaining findings are inspection-module `max-lines`,
+a one-line mapping callback and `strict-void-return` on `promisify(execFile)`.
+
+Commit `f57cf9c6e` extracts native bind validation into its own module,
+formats the mapping callback and replaces the promisifier with a native completion owner.
+That owner resolves ordinary exits together with both captured streams,
+but rejects spawn errors and signal termination.
+It does not suppress the void-return rule or discard stderr.
+Fresh normal/bootstrap builds,
+types and focused `devtest-40QnXP` pass after these changes.
+Final formatter verification continues in `input-format-node224-r2-20260913.out`.
+These passes still do not establish complete package verification.
+Task49 stays open until the complete current result is read and remaining findings are resolved.
 Neither increasing the container memory bound nor disabling a check is an accepted workaround.
 
 ## Root cause
