@@ -1276,7 +1276,6 @@ _.path = [
   "package/module/translation-repair/node_modules/.bin",
   "package/pi-plugin/advisor/node_modules/.bin",
   "package/pi-plugin/agent-settled-notification/node_modules/.bin",
-  "package/pi-plugin/ask-user-question/node_modules/.bin",
   "package/pi-plugin/auto-mode/node_modules/.bin",
   "package/pi-plugin/current-time-context/node_modules/.bin",
   "package/pi-plugin/goal/node_modules/.bin",
