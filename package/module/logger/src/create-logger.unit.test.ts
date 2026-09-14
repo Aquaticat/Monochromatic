@@ -980,21 +980,28 @@ await describe({
           name: 'sinks verify concurrently rather than one after another',
           timeout: DEADLINE_TEST_TIMEOUT_MS,
           fn: async () => {
-            const first = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
-            const second = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
-            const started = performance.now();
+            const gate = Promise.withResolvers<boolean>();
+            const entered: string[] = [];
+            const first = recordingSink({ verify: async function firstVerify(): Promise<boolean> {
+              entered.push('first');
+              return await gate.promise;
+            }, },);
+            const second = recordingSink({ verify: async function secondVerify(): Promise<boolean> {
+              entered.push('second');
+              return await gate.promise;
+            }, },);
             const { initPromise, } = createLogger({
               sinks: [
                 first.sink,
                 second.sink,
               ],
             },);
+            const beforeRelease = [...entered,];
+            gate.resolve(true);
             await initPromise;
-            const elapsed = performance.now() - started;
 
-            // Sequential verification would take at least twice the delay.
-            expect(elapsed,)
-              .toBeLessThan(SLOW_WRITE_MS * 2,);
+            // Both callbacks must enter while neither can finish; scheduler latency is not the assertion.
+            expect(beforeRelease,).toEqual(['first', 'second',],);
           },
         },),
 
