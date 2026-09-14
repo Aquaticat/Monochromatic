@@ -1892,32 +1892,52 @@ const PNPR_EXCLUDED_PACKAGES: Readonly<Record<string, string>> = {};
 function pnprManifestHasEntryPoint(
   { manifest, }: { readonly manifest: Readonly<Record<string, unknown>>; },
 ): boolean {
-  const { exports: exportsField, main, module, bin, } = manifest;
+  /**
+   Manifest fields that can expose something to consumers of the published tarball.
+   */
+  const {
+    exports: exportsField,
+    main,
+    module,
+    bin,
+  } = manifest;
 
-  if (typeof exportsField === 'string' && exportsField !== '')
+  if (((typeof exportsField) === 'string') && (exportsField !== ''))
     return true;
 
-  if (typeof exportsField === 'object' && exportsField !== null) {
+  if (((typeof exportsField) === 'object') && (exportsField !== null)) {
+    /**
+     Subpath or condition keys of the exports map.
+     */
     const exportKeys = Object.keys(exportsField,);
+    /**
+     Whether keys are subpaths (`.`-prefixed) rather than root export conditions.
+     */
     const isSubpathMap = exportKeys.some(function isSubpath(key,) {
       return key.startsWith('.',);
     },);
+    /**
+     Export keys that survive `./ts` stripping at publish time.
+     */
     const publishedKeys = isSubpathMap
       ? exportKeys.filter(function isNotTsSubpath(key,) {
-        return key !== './ts' && !key.startsWith('./ts/',);
+        return (key !== './ts') && (!key.startsWith('./ts/',));
       },)
       : exportKeys;
     if (publishedKeys.length > 0)
       return true;
   }
 
-  if ((typeof main === 'string' && main !== '') || (typeof module === 'string' && module !== ''))
+  if ((((typeof main) === 'string') && (main !== '')) || (((typeof module) === 'string') && (module !== '')))
     return true;
 
-  if (typeof bin === 'string')
+  if ((typeof bin) === 'string')
     return bin !== '';
 
-  return typeof bin === 'object' && bin !== null && Object.keys(bin,).length > 0;
+  return ((typeof bin) === 'object') && (bin !== null)
+    && (Object.keys(bin,)
+      .length
+      > 0);
 }
 
 /**
@@ -1925,7 +1945,7 @@ function pnprManifestHasEntryPoint(
 
  @param name - Package name about to be interpolated into single-quoted YAML.
 
- @throws {Error} When the name is outside the scope or contains other characters.
+ @throws Error when the name is outside the scope or contains other characters.
 
  @example
  ```ts
@@ -1933,19 +1953,60 @@ function pnprManifestHasEntryPoint(
  ```
  */
 function assertPnprPackageName({ name, }: { readonly name: string; },): void {
+  /**
+   Name after the scope prefix, checked character by character.
+   */
   const unscopedName = name.slice(PNPR_PACKAGE_SCOPE.length,);
-  const hasOnlyNameCharacters = [...unscopedName,].every(function isNameCharacter(character,) {
-    return PNPR_PACKAGE_NAME_CHARACTERS.has(character,);
-  },);
-  if (!name.startsWith(PNPR_PACKAGE_SCOPE,) || unscopedName === '' || !hasOnlyNameCharacters)
+  if ((!name.startsWith(PNPR_PACKAGE_SCOPE,)) || (unscopedName === ''))
     throw new Error(`pnpr config: package name ${JSON.stringify(name,)} is not a ${PNPR_PACKAGE_SCOPE} name`,);
+  // Index scan over UTF-16 units: any non-ASCII unit fails the allow-list, so surrogate pairs cannot slip through.
+  for (let index = 0; index < unscopedName.length; index += 1) {
+    if (!PNPR_PACKAGE_NAME_CHARACTERS.has(unscopedName.charAt(index,),))
+      throw new Error(`pnpr config: package name ${JSON.stringify(name,)} is not a ${PNPR_PACKAGE_SCOPE} name`,);
+  }
 }
+
+/**
+ Narrows parsed JSON to a manifest-shaped object.
+
+ @param value - Parsed package.json content.
+
+ @returns Whether the value is a non-array object.
+
+ @example
+ ```ts
+ isPnprManifestRecord(JSON.parse('{"name":"x"}'));
+ // => true
+ ```
+ */
+function isPnprManifestRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
+}
+
+/**
+ Workspace package facts the pnpr selection reads.
+ */
+type PnprWorkspacePackage = {
+  /**
+   Package name from the manifest.
+   */
+  readonly name: string;
+  /**
+   Repository-relative package directory.
+   */
+  readonly directory: string;
+  /**
+   Parsed package.json.
+   */
+  readonly manifest: Readonly<Record<string, unknown>>;
+};
 
 /**
  Selects publishable workspace packages and writes the pnpr config listing them for OIDC trust.
  Excludes test fixtures, entry-less manifests, and reviewed exclusions.
 
- @throws {Error} When a manifest lacks a name, a name is invalid, or an exclusion names no workspace package.
+ @throws Error when a manifest lacks a name, a name is invalid, or an exclusion names no workspace package.
 
  @example
  ```ts
@@ -1953,37 +2014,84 @@ function assertPnprPackageName({ name, }: { readonly name: string; },): void {
  ```
  */
 async function generatePnprConfig(): Promise<void> {
-  const logger = tagged({ tag: generatePnprConfig.name, l, },);
+  /**
+   Function-scoped logger for the selection summary.
+   */
+  const logger = tagged({
+    tag: generatePnprConfig.name,
+    l,
+  },);
+  /**
+   Every workspace manifest, sorted for stable output.
+   */
   const manifestPaths = (await Array.fromAsync(glob('package/*/*/package.json',),)).toSorted();
-  const workspacePackages = await Promise.all(manifestPaths.map(async function readWorkspacePackage(manifestPath,) {
-    const manifest = JSON.parse(await cat([manifestPath,],),) as Readonly<Record<string, unknown>>;
-    if (typeof manifest.name !== 'string')
+  /**
+   Parsed workspace packages in manifest-path order.
+   */
+  const workspacePackages = await Promise.all(manifestPaths.map(async function readWorkspacePackage(
+    manifestPath,
+  ): Promise<PnprWorkspacePackage> {
+    /**
+     Parsed manifest of one workspace package, untrusted until narrowed.
+     */
+    const manifest: unknown = JSON.parse(await cat([manifestPath,],),);
+    if ((!isPnprManifestRecord(manifest,)) || ((typeof manifest.name) !== 'string'))
       throw new Error(`pnpr config: ${manifestPath} has no string name`,);
-    return { name: manifest.name, directory: packageDirFromManifest({ manifestPath, },), manifest, };
+    return {
+      name: manifest.name,
+      directory: packageDirFromManifest({ manifestPath, },),
+      manifest,
+    };
   },),);
 
-  const workspaceNames = new Set(workspacePackages.map(function toName(workspacePackage,) {
+  /**
+   Names present in the workspace, for validating exclusions.
+   */
+  const workspaceNames: ReadonlySet<string> = new Set(workspacePackages.map(function toName(
+    workspacePackage: PnprWorkspacePackage,
+  ) {
     return workspacePackage.name;
   },),);
-  const staleExclusions = Object.keys(PNPR_EXCLUDED_PACKAGES,).filter(function isStale(name,) {
+  /**
+   Exclusions that no longer match a workspace package.
+   */
+  const staleExclusions = Object.keys(PNPR_EXCLUDED_PACKAGES,)
+    .filter(function isStale(name,) {
     return !workspaceNames.has(name,);
   },);
   if (staleExclusions.length > 0)
     throw new Error(`pnpr config: exclusions name no workspace package: ${staleExclusions.join(', ',)}`,);
 
+  /**
+   Sorted names that publish to pnpr and populate the OIDC trust list.
+   */
   const publishedNames = workspacePackages
-    .filter(function isPublishable(workspacePackage,) {
-      return !workspacePackage.directory.startsWith(PNPR_TEST_FIXTURE_DIRECTORY_PREFIX,)
+    .filter(function isPublishable(workspacePackage: PnprWorkspacePackage,) {
+      return (!workspacePackage.directory
+        .startsWith(PNPR_TEST_FIXTURE_DIRECTORY_PREFIX,))
         && pnprManifestHasEntryPoint({ manifest: workspacePackage.manifest, },)
-        && !Object.hasOwn(PNPR_EXCLUDED_PACKAGES, workspacePackage.name,);
+        && (!Object.hasOwn(
+          PNPR_EXCLUDED_PACKAGES,
+          workspacePackage.name,
+        ));
     },)
-    .map(function toName(workspacePackage,) {
+    .map(function toName(workspacePackage: PnprWorkspacePackage,) {
       return workspacePackage.name;
     },)
     .toSorted();
-  for (const name of [...publishedNames, ...Object.keys(PNPR_EXCLUDED_PACKAGES,),])
+  for (const name of [
+    ...publishedNames,
+    ...Object.keys(PNPR_EXCLUDED_PACKAGES,),
+  ])
     assertPnprPackageName({ name, },);
-  const exclusionComments = Object.entries(PNPR_EXCLUDED_PACKAGES,).map(function toComment([name, reason,],) {
+  /**
+   YAML comment lines listing reviewed exclusions with their reasons.
+   */
+  const exclusionComments = Object.entries(PNPR_EXCLUDED_PACKAGES,)
+    .map(function toComment([
+    name,
+    reason,
+  ],) {
     if (reason.includes('\n',) || reason.includes('\r',))
       throw new Error(`pnpr config: exclusion reason for ${name} must be one line`,);
     return `#   ${name}: ${reason}`;
@@ -2020,7 +2128,8 @@ auth:
           packages:
 ${publishedNames.map(function toYamlItem(name,) {
       return `            - '${name}'`;
-    },).join('\n',)}
+    },)
+  .join('\n',)}
 
 web:
   enable: false
