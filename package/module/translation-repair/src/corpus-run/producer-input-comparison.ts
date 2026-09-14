@@ -114,7 +114,10 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
   /**
    Helpers receive only the observed facade, never the original caller logger.
    */
-  const request: ProducerInputComparisonRequest = { ...owned, l: observedLogger.logger };
+  const request: ProducerInputComparisonRequest = {
+    ...owned,
+    l: observedLogger.logger,
+  };
   /**
    Every helper receives the full invoking operation's tag chain.
    */
@@ -126,7 +129,10 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     /**
      Preserve the ownership-completion message and tag after primitive capture, now inside callback containment.
      */
-    const ownershipLogger = tagged({ tag: ownProducerInputComparisonRequest.name, l: request.l });
+    const ownershipLogger = tagged({
+      tag: ownProducerInputComparisonRequest.name,
+      l: request.l,
+    });
     ownershipLogger.debug('owned fixed input-bootstrap launch and independent artifact reference');
   if (request.signal
     .aborted)

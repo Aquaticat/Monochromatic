@@ -321,7 +321,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(ready.callCount).toBeGreaterThan(0);
     expect(escaped.callCount).toBe(0);
     expect(error.kind).toBe('interruption');
-    expect(error.loggerCallbackFailures).toEqual(throwAfterClose ? ['warn'] : []);
+    expect(error.loggerCallbackFailures).toEqual(throwAfterClose !== false ? ['warn'] : []);
     expect(error.message).not.toContain('q7z9k2');
     if (error.directory === undefined) throw new Error('Expected retained cancelled namespace');
     const [child] = await readdir(join(error.directory, 'producer-runs'));
@@ -611,11 +611,19 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     } } });
     expect(failed.callCount).toBe(1);
     expect(result.loggerCallbackFailures).toEqual(['info']);
-    expect(existsSync(join(result.directory, 'created.json'))).toBe(true);
-    expect(existsSync(join(result.directory, 'failure.json'))).toBe(false);
-    expect(existsSync(join(result.directory, 'invoked.json'))).toBe(true);
+    expect(
+      existsSync(join(result.directory, 'created.json')),
+    ).toBe(true);
+    expect(
+      existsSync(join(result.directory, 'failure.json')),
+    ).toBe(false);
+    expect(
+      existsSync(join(result.directory, 'invoked.json')),
+    ).toBe(true);
     expect((await readRecord(join(result.directory, 'comparison.json'))).matches).toBe(true);
-    expect(identity(await readFile(result.artifact.path))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(result.artifact.path)),
+    ).toEqual(artifactIdentity);
   } }),
   it({ name: 'takes the successful terminal snapshot after the final info callback throws', fn: async ctx => {
     await using f = await fixture();
@@ -630,7 +638,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(failed.callCount).toBe(1);
     expect(result.loggerCallbackFailures).toEqual(['info']);
     expect((await readRecord(join(result.directory, 'comparison.json'))).matches).toBe(true);
-    expect(existsSync(join(result.directory, 'failure.json'))).toBe(false);
+    expect(
+      existsSync(join(result.directory, 'failure.json')),
+    ).toBe(false);
   } }),
   it({ name: 'contains a debug getter from ownership completion onward without losing the matched result', fn: async ctx => {
     await using f = await fixture();
@@ -640,7 +650,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     const result = await accepted({ ...f.request(), l: logger });
     expect(getter.callCount).toBeGreaterThan(0);
     expect(result.loggerCallbackFailures).toEqual(['debug']);
-    expect(identity(await readFile(result.artifact.path))).toEqual(artifactIdentity);
+    expect(
+      identity(await readFile(result.artifact.path)),
+    ).toEqual(artifactIdentity);
   } }),
   it({ name: 'contains a warning getter while retaining the primary mismatch', fn: async ctx => {
     await using f = await fixture();
@@ -653,6 +665,19 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.loggerCallbackFailures).toEqual(['warn']);
     if (error.directory === undefined) throw new Error('Expected retained mismatch directory');
     expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('mismatch');
+  } }),
+  it({ name: 'does not inherit operation metadata from a caller getter throwing a comparison-shaped error', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    Object.defineProperty(request, 'reference', { get() {
+      throw new ProducerInputComparisonError({ kind: 'storage', directory: '/private-q7z9k2', loggerCallbackFailures: ['warn'] });
+    } });
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(error.directory).toBeUndefined();
+    expect(error.loggerCallbackFailures).toEqual([]);
+    expect(error.message).not.toContain('q7z9k2');
+    expect(await readdir(f.output)).toEqual([]);
   } }),
   it({ name: 'does not borrow the logger before an invalid data contract is refused', fn: async ctx => {
     await using f = await fixture();

@@ -1,5 +1,8 @@
 import type { BigIntStats, } from 'node:fs';
-import type { Logger, LoggerCallbackName, } from '@monochromatic-dev/module-logger/ts';
+import type {
+  Logger,
+  LoggerCallbackName,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 import type { ProducerInputLaunch, } from './producer-input-model.ts';
 
