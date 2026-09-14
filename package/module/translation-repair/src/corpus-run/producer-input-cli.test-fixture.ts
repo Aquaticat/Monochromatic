@@ -162,7 +162,7 @@ export async function inputCli({
           PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
         },
         stdin: 'ignore',
-        timeout: CLI_TEST_TIMEOUT,
+        signal: AbortSignal.timeout(CLI_TEST_TIMEOUT),
       },
     );
     return { status: 0, stdout: result.stdout, stderr: result.stderr };

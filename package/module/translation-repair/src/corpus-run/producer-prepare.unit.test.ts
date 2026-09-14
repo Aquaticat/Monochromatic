@@ -57,6 +57,7 @@ await describe({ name: '', concurrency: 1, children: [
     const outcomes = await Promise.allSettled([inputCli({ fixture, arguments_: ['--help'] })]);
     expect(outcomes[0]).toHaveProperty('status', 'rejected');
     expect(outcomes[0]).toHaveProperty('reason.cause.code', 'ENOENT');
+    expect(outcomes[0]).toHaveProperty('reason.isCanceled', false);
   } }),
   it({ name: 'rejects native signal termination rather than returning an ordinary CLI exit', fn: async function signaled() {
     await using fixture = await inputCliFixture();
@@ -65,6 +66,7 @@ await describe({ name: '', concurrency: 1, children: [
     const outcomes = await Promise.allSettled([inputCli({ fixture: { ...fixture, executable }, arguments_: [] })]);
     expect(outcomes[0]).toHaveProperty('status', 'rejected');
     expect(outcomes[0]).toHaveProperty('reason.signalName', 'SIGTERM');
+    expect(outcomes[0]).toHaveProperty('reason.isCanceled', false);
   } }),
   it({ name: 'does not inherit a parent-only environment value through the async process utility', fn: async function isolatedEnvironment(context) {
     await using fixture = await inputCliFixture();
