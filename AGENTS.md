@@ -1767,6 +1767,11 @@ Never restore/stash/revert unrelated changes;
 Unrelated change blocks needed edit:
  acknowledge + ask.
 
+XIR:
+ Adjacent repo issues:
+ open GitHub issues even when fixing locally.
+Record each workaround/fix and explicitly state it has not been reviewed.
+
 ### Git commit guidelines
 
 GCE:
