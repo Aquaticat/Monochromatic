@@ -533,6 +533,69 @@ Cleanup and final documentation/status evidence postdate the main snapshot
 and remain separately indexed supplemental records.
 No allocation-site diagnosis or upstream filing is established.
 
+### Task51 formatter failures and read-only convergence remain separate outcomes
+
+Task51's comparison implementation uses the same hard limits:
+2 GiB RAM,
+2 GiB swap,
+two CPUs,
+512 PIDs and no network.
+The per-run lint controls remain Node old-space `256MiB`,
+semi-space `1MiB`,
+`GOMEMLIMIT=128MiB`,
+`GOGC=20`,
+`GOMAXPROCS=1` and `OXLINT_THREADS=1`.
+These controls do not promise that all children fit together.
+
+The private formatter overlay `devformatcomparison-IyzRg1` retains partial edits to ten comparison files.
+Its kernel record binds a `tsgolint` memcg kill of host PID `3489961` to container
+`61d8baea1537c048c043f6af3b6d138816dbe8b3baddfdef6afd3a39d42f2c06`.
+The second overlay `devformatcomparison-hw4tpo` also retains partial edits to ten files.
+Its `kernel.json` records host PIDs `3499979` and `3500341`
+as `tsgolint` victims in container
+`b5298fd752501207dd34b34d9fb8f46429a8bce1e58b92f331f75cfc8e09a255`:
+
+```text
+# devformatcomparison-hw4tpo/kernel.json, MESSAGE excerpts
+Memory cgroup out of memory: Killed process 3499979 (tsgolint)
+Memory cgroup out of memory: Killed process 3500341 (tsgolint)
+```
+
+The excerpts omit the following VM/RSS fields;
+the retained records preserve the complete messages and exact `CONSTRAINT_MEMCG` attribution.
+Neither failed formatter is a successful zero-findings oracle.
+The process-lifetime records are sampled observations,
+not exhaustive exit traces or allocation-site attribution.
+
+`comparison-format-ast-5B4o0i/report.json` and `comparison-format-ast-9CuORg/report.json`
+review the respective transfers with positive controls.
+The first normalizes locations,
+comments and parentheses but still identifies separate `signal`/`l` destructuring
+and nonnegative directory-length expression changes.
+The second finds no normalized AST differences.
+All development-before hashes match before each transfer.
+This permits scoped review of partial edits;
+it does not establish runtime equivalence or formatter success.
+
+Subsequent read-only package lint produces ordinary findings rather than OOM failures:
+`devlint256go1-YmE28G` reports 151 warnings and zero errors on 1560 files;
+`devlint256go1-gqlzJu` reports 46 warnings and zero errors on 1561 files;
+`devlint256go1-F1Qo0J` reports two warnings and one error on 1561 files.
+Each runs 484 rules and records no OOM event.
+The code and test findings are corrected without suppressions or reduced lint scope.
+
+After commit `5ed18da3d`,
+`devlint256go1-PGjjx1/task.out` reports zero warnings and zero errors on 1561 files with 484 rules.
+`comparison-r5-verification-20260914.out` also records passing types,
+normal/bootstrap builds and focused built-artifact tests.
+The successful lint reaches cgroup peak `2147483648` bytes without a recorded OOM event.
+That proves this invocation completed,
+not that the profile has spare capacity or repairs the earlier allocation behavior.
+Source and build-configuration inventories remain unchanged throughout the verifier.
+These new records are not part of task50's historical retention/cleanup snapshot;
+their exact-ID cleanup remains outstanding.
+No dependency patch or upstream filing is introduced.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint

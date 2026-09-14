@@ -6,6 +6,11 @@ Task47 is complete within its recorded artifact-qualification scope.
 The sealed runner reconstructs unqualified inputs only;
 do not duplicate it or add arbitrary execution modes.
 Task41 now owns finite correspondence plans and the acquisition journal.
+Its implementation is split into task51 for persisted-input comparison verification,
+task52 for finite root/phase materializers and task53 for current-attempt acquisition journals.
+Task52 waits for task51;
+task53 waits for task52.
+Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
 No paid acquisition or writer calibration is authorized by this work record.
 
 The canonical standing constraints and completed input-runner evidence are in
@@ -179,7 +184,158 @@ exhaustive file-race defense or independent parser correctness.
 The synthetic continuation is not a root plan or acquisition attempt.
 No model invocation is made by this probe.
 
-## Current verification record
+## Task41 implementation checkpoint
+
+The comparison owner is implemented but verification remains incomplete.
+Its dedicated inert build entry is `producer-input-comparison.mjs`;
+it is not an alternate Task47 CLI or a generic command runner.
+Internal building blocks include:
+
+- `producer-input-completion-record.ts`:
+  shared closed completion parser taking owned run and launch primitives,
+  not a fabricated full host DTO.
+- `producer-input-comparison-model.ts`,
+  `producer-input-comparison-error.ts` and `producer-input-comparison-contract.ts`:
+  base-launch authority,
+  distinct derived-launch identity,
+  names-only refusals and primitive ownership before callbacks.
+- `producer-input-comparison-storage.ts`:
+  exclusive comparison records plus an initially empty private `producer-runs` descendant.
+- `producer-input-comparison-launch.ts`:
+  exact base bytes,
+  explicit closed derived launch changing only `outputParent`,
+  and separately persisted base/derived lineage.
+- `producer-input-comparison-process.ts`:
+  one fixed bootstrap invocation,
+  internally selected Node and minimal environment,
+  runtime/bootstrap byte checks,
+  retained streams,
+  actual-close observation and bounded interruption.
+- `producer-input-comparison-child.ts`:
+  post-close direct-child observation capped at two returned entries,
+  with explicit ambiguity rather than selection among candidates.
+- `producer-input-comparison-output.ts` and `producer-input-comparison-output-shape.ts`:
+  closed dedicated-input-parent,
+  application-output and empty-home inventories;
+  creation/completion/cleanup consistency,
+  executed launch binding and streamed artifact verification.
+  The comparison root and native control root are not closed inventories.
+- `producer-input-comparison-file.ts`:
+  original created descriptor snapshots checked against final pathnames,
+  private permissions and mutation timestamps.
+  Metadata records and launch bytes also receive persisted-byte verification;
+  stream descriptor snapshots survive native close for the output reader.
+- `producer-input-comparison-interrupt.ts`:
+  scoped interruption timers without caller logging in event callbacks.
+  Interruption logging stays at the awaiting owner.
+- `producer-input-comparison.ts`:
+  one owning composition,
+  serial settled execution and child-observation evidence,
+  post-persistence comparison,
+  retained failure records and no automatic retry.
+
+The dedicated native output parent addresses failed or timed-out bootstraps that never print a success directory.
+This invocation's trusted Task41 owner authorizes a private descendant derivation;
+base-launch hashes and filesystem writability do not independently grant that authority.
+Task47 itself receives an ordinary exact derived launch through its unchanged fixed CLI.
+Completion must bind the derived SHA;
+comparison records must retain both base and derived identities.
+
+The shared parser and initial contract/storage checkpoint pass type checks.
+The derived-launch/process/observation checkpoint also passes `lint:types` in `devtypes-EUszfp`,
+with no source changes or OOM/PID event.
+`preparation-comparison-derivation-types-20260914.out` retains that result.
+The complete owner passes types,
+normal/bootstrap builds and the separate runtime seal.
+The earlier frozen parent runtime `node_modules/.frozen-input-comparison-runtime-TnArUr`
+has 164 manifest files and manifest SHA-256
+`4a89d5c9c466e4b80a051324a604196f3e82b7bdc2b5bcf3eb8c34f82c030cf5`.
+`current-input-comparison-native-N6oMvI/verification.json` under private agent scratch
+records matching and wrong-reference calls through this built API and the actual Task47 bootstrap.
+Both retain their native artifact and completion.
+The consumer verifies exact base bytes,
+only the derived output-parent change,
+base/derived identity separation and derived-SHA completion binding.
+
+Committed consumer regressions use an explicitly authenticated fixture bootstrap,
+not a fake claim that those fixture outputs came from Task47's application.
+They cover matched/mismatched references,
+bootstrap failures,
+missing/ambiguous child observations and output/lineage refusals.
+`current-comparison-package-verification-20260914.out` records passing types,
+normal/bootstrap builds and initial comparison plus names-only tests.
+Its full lint completes 1557 files and 484 rules with 471 warnings and 7 errors,
+not an OOM failure.
+Missing TSDoc,
+ASCII identity iteration,
+nullable UUID checks and unsafe fixture JSON reads are then corrected.
+
+The private formatter overlay `devformatcomparison-IyzRg1` changes only comparison source files,
+but its oracle suffers a kernel-confirmed `tsgolint` memcg kill.
+Its edits are not called converged or verified lint output.
+`comparison-format-ast-5B4o0i/report.json` checks the ten changed files with a positive comparator.
+The non-location/comment/parenthesis differences are separate `signal`/`l` destructuring
+and nonnegative directory-array lengths using `> 0` rather than `!== 0`.
+That reviewed partial formatting is transferred only after all development-before hashes match.
+It does not establish independent runtime equivalence.
+
+Subsequent descriptor binding and module splits change the implementation again.
+The `TnArUr` native evidence is therefore stale for those new branches.
+New committed controls cover independent Node authentication,
+exact minimal environment,
+metadata collisions,
+equal-byte pathname replacement,
+concurrent failed invocations,
+late cancellation,
+actual-close ordering and deadline escalation.
+The logger-failure control now throws once on the actual awaiting-owner interruption message.
+The R2 sequence `comparison-r2-verification-20260914.out` passes types,
+normal/bootstrap builds,
+the incumbent Task47 bootstrap tests,
+the new comparison tests and names-only inventory.
+Its full-scope lint `devlint256go1-YmE28G` reports 151 warnings and zero errors without recorded OOM events.
+
+The second formatter overlay `devformatcomparison-hw4tpo` also fails,
+with kernel-confirmed `tsgolint` memcg kills of host PIDs `3499979` and `3500341`.
+The retained container is `b5298fd752501207dd34b34d9fb8f46429a8bce1e58b92f331f75cfc8e09a255`.
+`comparison-format-ast-9CuORg/report.json` checks ten changed files with a positive comparator
+and finds no normalized AST differences.
+The transfer matches every development-before hash.
+This remains partial formatting evidence,
+not a successful formatter oracle or a runtime-equivalence certificate.
+
+R3 `comparison-r3-verification-20260914.out` passes types,
+normal/bootstrap builds and the focused test entries.
+Its full-scope `devlint256go1-gqlzJu` reports 46 warnings and zero errors on 1561 files with 484 rules.
+R4 `comparison-r4-verification-20260914.out` likewise passes the builds and focused tests;
+`devlint256go1-F1Qo0J` reports two warnings and one readonly-parameter error on the same file/rule counts.
+Neither lint run records an OOM event.
+The R4 result is not zero-findings verification.
+
+Commit `8ba9b900d` extracts documented metadata access to function scope,
+uses concurrent independent directory observations,
+names UUID field widths and gives positive API cases explicit fulfilled-outcome assertions.
+It adds separate Node binary,
+version and component-version refusal cases.
+Commit `5ed18da3d` makes directory observations deeply readonly
+and fixes the remaining literal/chain layout findings.
+R5 `comparison-r5-verification-20260914.out` passes types,
+normal/bootstrap builds and focused tests.
+Its read-only lint oracle `devlint256go1-PGjjx1` reports zero warnings and zero errors
+on 1561 files with 484 rules.
+Peak cgroup memory is `2147483648` bytes with no recorded OOM event;
+this is not evidence of spare capacity or universal memory stability.
+Source and configuration remain read-only to the verifier;
+only designated build outputs and private diagnostic sinks are writable.
+No rule or resource limit is relaxed.
+
+Current-artifact resealing,
+native requalification,
+complete unit/branch coverage,
+listed guard proofs and evidence cleanup remain outstanding.
+No matching/mismatch run grants root or phase approval.
+
+## Earlier verified checkpoint: task50
 
 The retained corpus-pin extraction passes types,
 normal/bootstrap builds and both the native-root and names-only test entries.
@@ -205,8 +361,15 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
-then design the native root/phase materializer against the actual request and receipt shapes.
+Finish task51's current comparison verification:
+zero full-scope lint,
+complete default unit-entry evidence,
+branch accounting and designated guard-removal assertions,
+then current-artifact native qualification and retained exact-ID cleanup.
+The implemented comparison owner must not be replaced with a second Task47 implementation.
+After task51 completes,
+implement task52's native root/phase materializers against the actual request and receipt shapes,
+then task53's current-attempt acquisition journal.
 Preserve the frozen parent selection,
 current provider order,
 independent identities,
