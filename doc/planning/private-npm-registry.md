@@ -152,43 +152,154 @@ Scope widened by the owner on 2026-09-14:
    verification installs from a throwaway consumer,
    and `labwc-config` stays untouched
    (owner chose it over full and minimal consumer wiring).
+- npmjs overlap:
+   the private registry publishes all 143 packages,
+   including `module-logger` and `module-fs-path`,
+   which `npm-release.yml` also releases to npmjs
+   (owner chose it over skipping them and over one pack uploaded to both registries).
+   Consequence presented with the choice:
+   the same version packed by two workflows can differ byte for byte,
+   so lockfile integrity depends on which registry served it.
+- Dependents:
+   when a version is bumped by hand,
+   a commit-time hook finds workspace dependents that must bump too and bumps them in the same commit
+   (owner's own answer,
+    chosen over a CI stale-pin check,
+    changesets for every package,
+    and hand bumps with no check).
 
 ## Adopted without asking (veto welcome)
 
 - Packaging fixes land regardless of registry:
    bundled workspace packages move to `devDependencies`
    (the rule in `doc/decision/npm-publishing.md`),
-   `oxlint` becomes a peer dependency of `oxlint-plugin-tsdoc`,
-   and `config-typescript` drops `"private": true`.
+   and `oxlint` becomes a peer dependency of `oxlint-plugin-tsdoc`.
+- `config-typescript` keeps `"private": true`;
+   the publish step removes `"private": true` from every packed manifest,
+   because `npm publish` refuses private packages.
+   This supersedes the earlier adopted item that dropped the flag in git.
 - Published versions are immutable:
    a version already in the registry is never overwritten.
 - The first workflow run publishes the current version of every package in the set,
    since all of them are missing from a new registry.
-- The publish step removes `"private": true` from the packed manifest,
-   because `npm publish` refuses private packages.
 - Publishing runs in dependency order;
    a package that fails to build blocks itself and its dependents,
    the rest still publish,
    and the run reports failure.
 - `latest` moves only when the published version is greater than the current `latest`.
+- The dependent-bump hook is a cli-git commit policy,
+   not a raw Git hook or hk step:
+   hk and Pkl were retired (issue `#357`),
+   and cli-git's commit transaction already applies policy patches to a private index
+   (`doc/planning/final-newline-normalization.md`,
+    `package/git-policy/cli/src/policy-engine/final-newline-policy.ts`).
+- Dependents bump by patch and the ripple is transitive,
+   matching `updateInternalDependencies: patch` in `.changeset/config.json`.
+- The changesets `version` job in `npm-release.yml` runs the same ripple before committing the Version Packages pull request,
+   because that commit is authored in CI where no local hook runs,
+   and changesets does not version the ignored dependents of `module-logger` or `module-fs-path`.
+- Consumer note for later wiring:
+   pnpm 11 and later default `minimumReleaseAge` to 1440 minutes,
+   so consumers exclude `@monochromatic-dev/*` or new versions stay uninstallable for a day
+   (https://pnpm.io/settings/dependency-resolution).
+
+## Registry candidates (research 2026-09-14)
+
+Settled gates:
+ anonymous read,
+ npmjs proxy for the scope,
+ no new spend,
+ reachable from GitHub-hosted runners.
+
+### Pass the gates
+
+- Verdaccio 6 (6.10.3,
+   2026-09-05,
+   MIT):
+   per-pattern `access: $all`,
+    `publish: $authenticated`,
+    `proxy: npmjs`;
+   metadata carries `time`;
+   standard tarball URLs.
+   No OIDC,
+    so CI publishes with a stored token.
+   No Coolify template;
+    deploy `verdaccio/verdaccio:6` as custom compose.
+   Sources:
+    https://github.com/verdaccio/verdaccio,
+    https://verdaccio.org/docs/packages.
+- pnpr (0.1.0-alpha.11,
+   2026-09-10,
+   PolyForm Shield 1.0.0,
+   from the pnpm team):
+   anonymous read,
+    npmjs upstream,
+    GitHub OIDC publish without a stored token.
+   `check_workload_request` rejects non-PUT requests carrying the OIDC token
+    (`pnpr/crates/pnpr/src/server/oidc.rs` lines 147 to 167, read not tested).
+   Sources:
+    https://pnpm.io/pnpr/configuration,
+    https://pnpm.io/pnpr/oidc.
+- GitLab.com project package registry:
+   free,
+    excluded from the storage quota,
+    anonymous read for a public project,
+    missing packages redirect to npmjs.
+   CI publishes with a stored deploy token;
+    pnpm needs `serverType: artifactory`.
+   Source:
+    https://docs.gitlab.com/user/packages/npm_registry/.
+- Sonatype Nexus Community Edition (3.96.1):
+   npm proxy and group repositories,
+    Coolify template with a 2703m JVM heap.
+   Caps:
+    40,000 components and 100,000 requests a day,
+    cached npmjs packages count.
+   Hetzner server capacity not measured
+    (no SSH alias for it in `~/.ssh/config`).
+   Source:
+    https://help.sonatype.com/en/ce-onboarding.html.
+
+### Fail a gate
+
+- GitHub Packages:
+   install needs a token even for public packages,
+   and the scope must match the owner.
+- Forgejo 16 and Gitea 1.27:
+   no npmjs proxy.
+- npmjs restricted packages:
+   paid.
+- AWS CodeArtifact and Azure Artifacts:
+   always authenticated.
+- npflared:
+   reads need a token.
+- vsr:
+   anonymous read unresolved (docs and code disagree),
+   release candidate only.
+- Cloudsmith,
+   Gemfury,
+   Buildkite:
+   anonymous npm install or arbitrary scope support unverified.
+
+### Cross-cutting caveats
+
+- Coolify pins `traefik:v3.6` (`bootstrap/helpers/proxy.php` line 282).
+   Traefik 3.6.4 to 3.6.6 rejected `%2F` by default,
+   which broke scoped `npm publish` behind Coolify
+   (https://github.com/coollabsio/coolify/issues/7631);
+   the running proxy version on the Hetzner server is unmeasured.
+- `@changesets/cli` 3.0.3 runs `pnpm info <name> --json` without `--registry`
+   (https://github.com/changesets/changesets/blob/main/packages/cli/src/lib/pnpm.ts).
+- The npmjs org `monochromatic-dev` also holds `mcp-nvim`,
+   which is not a workspace package,
+   so the scope proxy still matters after all workspace packages publish privately.
 
 ## Open questions
 
-- Overlap with `.github/workflows/npm-release.yml`,
-   which publishes to npmjs any non-private,
-    non-ignored package version missing there
-   and runs on pushes that change `**/package.json`:
-   which registry holds bumped versions of the npmjs-released packages.
-   Today those are only `module-logger` (manifest `0.4.0`,
-    npmjs `0.1.0` to `0.4.0`)
-   and `module-fs-path` (manifest `0.2.0`,
-    npmjs `0.1.0` and `0.2.0`);
-   the other 33 non-private packages are in the changesets `ignore` list.
-- Bump mechanism,
-   and whether dependents of a bumped package must bump too
-   (a published `workspace:*` pin freezes at pack time).
-- Registry product and host (registry options research running,
-   briefed before the scope widened).
-- How the consumer picks up new snapshots.
-- Snapshot version format and retention.
-- CI publish authentication.
+- Registry product and host.
+- Which dependency kinds make a dependent bump.
+- Backstop for commits that bypass the cli-git hook
+   (GitHub web edits,
+    machines without cli-git,
+    bypass flags).
+- CI publish authentication (follows from the registry product).
