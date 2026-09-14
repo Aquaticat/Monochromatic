@@ -1,0 +1,143 @@
+import { describe, expect, it, type TestContext, } from '@monochromatic-dev/module-test/ts';
+import { observeLoggerCallbacks, type Logger, } from '../dist/final/node/index.mjs';
+
+const levels = ['debug', 'error', 'fatal', 'info', 'trace', 'warn'] as const;
+
+function fixture(ctx: TestContext) {
+  const spies = {
+    debug: ctx.sinon.stub(),
+    error: ctx.sinon.stub(),
+    fatal: ctx.sinon.stub(),
+    flush: ctx.sinon.stub().resolves(),
+    info: ctx.sinon.stub(),
+    trace: ctx.sinon.stub(),
+    warn: ctx.sinon.stub(),
+  };
+  const logger: Logger = spies;
+  return { logger, spies };
+}
+
+await describe({ name: observeLoggerCallbacks.name, children: [
+  it({ name: 'forwards every level and explicit flush once in caller order with the original receiver', fn: async ctx => {
+    const f = fixture(ctx);
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(observed.snapshot()).toEqual([]);
+    for (const level of levels) {
+      observed.logger[level](`[existing] ${level}`);
+      expect(f.spies[level].callCount).toBe(1);
+      expect(f.spies[level].firstCall.args).toEqual([`[existing] ${level}`]);
+      expect(f.spies[level].firstCall.thisValue).toBe(f.logger);
+    }
+    expect(f.spies.flush.callCount).toBe(0);
+    await observed.logger.flush();
+    expect(f.spies.flush.callCount).toBe(1);
+    expect(f.spies.flush.firstCall.args).toEqual([]);
+    expect(f.spies.flush.firstCall.thisValue).toBe(f.logger);
+    ctx.sinon.assert.callOrder(f.spies.debug, f.spies.error, f.spies.fatal, f.spies.info, f.spies.trace, f.spies.warn, f.spies.flush);
+    expect(observed.snapshot()).toEqual([]);
+  } }),
+  ...levels.map(level => it({ name: `contains ${level} throws without inspecting the thrown value or dropping later messages`, fn: async ctx => {
+    const f = fixture(ctx);
+    const trapped = ctx.sinon.stub().throws(new Error('inspected private q7z9k2'));
+    const fault = new Error('private q7z9k2');
+    Object.defineProperties(fault, {
+      name: { get: trapped },
+      message: { get: trapped },
+      cause: { get: trapped },
+    });
+    f.spies[level].onFirstCall().throws(function foreignFailure() { return fault; });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(() => observed.logger[level]('first')).not.toThrow();
+    observed.logger[level]('distinct later message');
+    expect(f.spies[level].callCount).toBe(2);
+    expect(f.spies[level].secondCall.args).toEqual(['distinct later message']);
+    expect(trapped.callCount).toBe(0);
+    expect(observed.snapshot()).toEqual([level]);
+    expect(JSON.stringify(observed.snapshot())).not.toContain('q7z9k2');
+  } })),
+  ...(['string', 'symbol', 'undefined', 'null', 'false', 'revoked-error'] as const).map(kind => it({ name: `contains a foreign ${kind} throw without requiring an Error brand`, fn: async ctx => {
+    const f = fixture(ctx);
+    const revoked = Proxy.revocable(new Error('private q7z9k2'), {});
+    revoked.revoke();
+    const fault: unknown = kind === 'string' ? 'private q7z9k2' : kind === 'symbol' ? Symbol('private q7z9k2')
+      : kind === 'undefined' ? undefined : kind === 'null' ? null : kind === 'false' ? false : revoked.proxy;
+    // Sinon invokes this factory and throws its returned value without coercing a string into an Error name.
+    f.spies.warn.throws(function foreignFailure() { return fault; });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(() => observed.logger.warn('first')).not.toThrow();
+    expect(observed.snapshot()).toEqual(['warn']);
+    expect(f.spies.warn.callCount).toBe(1);
+  } })),
+  it({ name: 'does not read unused callback getters and contains a getter when its callback is requested', fn: async ctx => {
+    const f = fixture(ctx);
+    const getter = ctx.sinon.stub().throws(new Error('private getter q7z9k2'));
+    Object.defineProperty(f.logger, 'fatal', { get: getter });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(getter.callCount).toBe(0);
+    observed.logger.info('normal');
+    expect(observed.snapshot()).toEqual([]);
+    expect(getter.callCount).toBe(0);
+    expect(() => observed.logger.fatal('requested')).not.toThrow();
+    expect(getter.callCount).toBe(1);
+    expect(observed.snapshot()).toEqual(['fatal']);
+  } }),
+  it({ name: 'contains a revoked callable proxy without inspecting it', fn: async ctx => {
+    const f = fixture(ctx);
+    const callable = Proxy.revocable(f.spies.warn, {});
+    callable.revoke();
+    Object.defineProperty(f.logger, 'warn', { value: callable.proxy });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(() => observed.logger.warn('requested')).not.toThrow();
+    expect(observed.snapshot()).toEqual(['warn']);
+  } }),
+  it({ name: 'does not inspect a revoked logger until a callback is requested', fn: async ctx => {
+    const f = fixture(ctx);
+    const revoked = Proxy.revocable(f.logger, {});
+    revoked.revoke();
+    const observed = observeLoggerCallbacks(revoked.proxy);
+    expect(observed.snapshot()).toEqual([]);
+    expect(() => observed.logger.error('requested')).not.toThrow();
+    await observed.logger.flush();
+    expect(observed.snapshot()).toEqual(['error', 'flush']);
+  } }),
+  ...(['getter', 'invocation', 'rejection', 'then-getter', 'then-rejection'] as const).map(kind => it({ name: `contains explicit flush ${kind} failure and resolves normally`, fn: async ctx => {
+    const f = fixture(ctx);
+    const fault = Symbol('private flush q7z9k2');
+    const thrower = ctx.sinon.stub().throws(function foreignFailure() { return fault; });
+    if (kind === 'getter') Object.defineProperty(f.logger, 'flush', { get: thrower });
+    else if (kind === 'invocation') f.spies.flush.callsFake(thrower);
+    else if (kind === 'rejection') f.spies.flush.rejects(fault);
+    else if (kind === 'then-getter') f.spies.flush.returns(Object.defineProperty({}, 'then', { get: thrower }));
+    else f.spies.flush.returns({ then: ctx.sinon.stub().callsArgWith(1, fault) });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(observed.snapshot()).toEqual([]);
+    await observed.logger.flush();
+    expect(observed.snapshot()).toEqual(['flush']);
+    expect(JSON.stringify(observed.snapshot())).not.toContain('q7z9k2');
+    if (kind === 'getter') expect(thrower.callCount).toBe(1);
+    else expect(f.spies.flush.callCount).toBe(1);
+  } })),
+  it({ name: 'deduplicates failures in canonical frozen snapshots detached from later activity', fn: async ctx => {
+    const f = fixture(ctx);
+    for (const level of levels) f.spies[level].throws(new Error('private q7z9k2'));
+    f.spies.flush.rejects(new Error('private q7z9k2'));
+    const observed = observeLoggerCallbacks(f.logger);
+    const empty = observed.snapshot();
+    observed.logger.warn('first');
+    observed.logger.warn('second distinct request');
+    const one = observed.snapshot();
+    for (const level of [...levels].reverse()) observed.logger[level]('distinct level');
+    await observed.logger.flush();
+    const all = observed.snapshot();
+    expect(empty).toEqual([]);
+    expect(one).toEqual(['warn']);
+    expect(all).toEqual(['debug', 'error', 'fatal', 'flush', 'info', 'trace', 'warn']);
+    expect(Object.isFrozen(empty)).toBe(true);
+    expect(Object.isFrozen(one)).toBe(true);
+    expect(Object.isFrozen(all)).toBe(true);
+    expect(Reflect.set(all, '0', 'private')).toBe(false);
+    expect(observed.snapshot()).not.toBe(all);
+    expect(Object.isFrozen(observed.logger)).toBe(true);
+    expect(Object.isFrozen(observed)).toBe(true);
+  } }),
+] });
