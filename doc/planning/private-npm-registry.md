@@ -202,6 +202,17 @@ Scope widened by the owner on 2026-09-14:
    Consequence:
     the deployment installs `@pnpm/pnpr@next` itself,
     and each rebuild picks up whatever `next` points to.
+- Upstream (supersedes the scope-routing proxy requirement):
+   pnpr has no npmjs upstream;
+   its hosted registry claims `@monochromatic-dev/*` outright.
+   Through the scope route,
+    `mcp-nvim` and npmjs-only historical versions become uninstallable,
+    which the owner accepted
+   (owner chose it over keeping an npmjs upstream for unclaimed names).
+- Publish authentication:
+   pnpr OIDC workload credential from the GitHub Actions publish workflow,
+   no stored token
+   (owner chose it over a stored CI user token).
 
 ## Adopted without asking (veto welcome)
 
@@ -361,9 +372,57 @@ Settled gates:
     not a workspace package)
    and npmjs-only historical versions of `module-logger` and `module-fs-path`.
 
+- Source check at pnpm `main` `f38f11e` (sparse clone in `~/temp/agent/pnpm-pnpr-20260914`):
+   `pnpr/crates/pnpr/src/server/oidc.rs` lines 133 to 142 reject any OIDC workload package that is not an exact name:
+
+   ```rust
+   // pnpr/crates/pnpr/src/server/oidc.rs
+   if !matches!(
+       pnpr_registry::PackagePattern::parse(package, pnpr_registry::Ecosystem::Npm),
+       Ok(pnpr_registry::PackagePattern::Exact(_)),
+   ) {
+   ```
+
+   and `check_workload_request` (lines 147 to 167) allows only `PUT` to `{base}/~{registry}/{package}` after percent-decoding the path.
+   So the OIDC trust config must list all publishable package names,
+   and publishes target the named-registry path `/~<registry>/`.
+
+### Package shapes (measured 2026-09-14)
+
+Script `build-shape.ts` in the session scratchpad,
+ over the 143 packages in the set:
+
+- 93 export or bin into `dist/` (92 have a `build` task).
+- 31 have other entry points (JSON configs,
+   shims,
+   plugins,
+   Electron apps).
+- 4 export only TypeScript source
+   (2 `claude-code-plugin`,
+    1 `config`,
+    `ownership-marker-foreign-borrowed`).
+- 15 have no `exports`,
+   `main`,
+   `module`,
+   or `bin` at all:
+   `config-cosign`,
+   `config-dotfiles`,
+   `intellij-plugin-islands-black`,
+   `module-css-edit.bench`,
+   `module-css-edit.conformance`,
+   `module-css-edit.fuzz`,
+   `module-jsonc-edit.bench`,
+   `module-jsonc-edit.conformance`,
+   `module-jsonc-edit.fuzz`,
+   `module-logger.fuzz`,
+   `module-toml-edit.fuzz`,
+   `runtime-error-bun`,
+   `ssg-aquati.cat`,
+   `webapp-productivity-done`,
+   `webapp-productivity-done-postcss`.
+
 ## Open questions
 
-- Whether pnpr still needs the npmjs upstream now that every workspace package publishes privately and history loss is acceptable.
-- CI publish authentication:
-   OIDC workload credential or stored token.
-- How pnpr config reaches the server when package names change.
+- How pnpr config (exact package-name list) reaches the server when packages are added.
+- Whether private tarballs keep the `./ts` export subpaths.
+- Whether entry-less packages still publish.
