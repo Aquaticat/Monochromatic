@@ -2,6 +2,19 @@
 
 ## Decision status
 
+Superseded on 2026-09-14,
+before physical installation started.
+The user replaced the ZFS-first order with:
+
+> Try btrfs first,
+> only zfs when btrfs is proven to be the problem.
+
+The Bazzite desktop was also left idle because it now triggers out-of-memory kills without an apparent cause.
+That incident has not been diagnosed and stays separate from the Btrfs stall investigation until evidence links them.
+The distribution choice between CachyOS and openSUSE Tumbleweed on Btrfs is being reopened.
+This record and its runbook remain the ZFS fallback if Btrfs is proven to cause the stalls.
+The rest of this section describes the state before supersession.
+
 Adoption is authorized and the disposable-VM checks have passed.
 The physical gate opens when the commit containing this recovery record exists.
 Physical installation has not started and still requires the runbook's backup,
