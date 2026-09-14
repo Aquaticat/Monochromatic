@@ -115,6 +115,12 @@ The session configuration lives in <https://github.com/Aquaticat/labwc-config>.
   system drop-ins,
   default configuration,
   and dependencies.
+- **Runtimes**:
+  QuickJS-ng for hot paths,
+  Deno for every other helper and for the installer.
+  A hot path runs from user input to the required surface becoming interactive and must stay under 20 ms.
+  The live ISO installs Deno with pacman instead of running a compiled installer.
+  Measurements and the user's choice are in labwc-config `doc/decision/typescript-runtime.md`.
 - **Runtime packaging for session helpers**:
   from a pacman package so it rolls back with the root snapshot.
   The user's original answer named `nodejs`,
