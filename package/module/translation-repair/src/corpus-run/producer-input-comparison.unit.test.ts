@@ -1,6 +1,7 @@
 import { createHash, } from 'node:crypto';
-import { watch, } from 'node:fs';
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile, } from 'node:fs/promises';
+import { promises as fsPromises, watch, } from 'node:fs';
+import { syncBuiltinESMExports, } from 'node:module';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -13,17 +14,25 @@ const nodeIdentity = identity(await readFile(process.execPath));
 const artifactText = JSON.stringify({ scope: 'unqualified-preparation-root-inputs', fixture: '猫🐾' });
 const artifactIdentity = identity(Buffer.from(artifactText));
 
-async function readRecord(path: string): Promise<Readonly<Record<string, unknown>>> {
-  const value: unknown = JSON.parse(await readFile(path, 'utf8'));
+function recordValue(value: unknown): Readonly<Record<string, unknown>> {
   if (((typeof value) !== 'object') || (value === null) || Array.isArray(value)) throw new Error('Expected fixture record');
   return Object.fromEntries(Object.entries(value));
+}
+async function readRecord(path: string): Promise<Readonly<Record<string, unknown>>> {
+  const value: unknown = JSON.parse(await readFile(path, 'utf8'));
+  return recordValue(value);
 }
 function text(value: unknown): string {
   if ((typeof value) !== 'string') throw new Error('Expected fixture text');
   return value;
 }
+function textList(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) throw new Error('Expected fixture string list');
+  const entries: readonly unknown[] = value;
+  return entries.map(text);
+}
 
-type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output';
+type Mode = 'normal' | 'exit-before-output' | 'exit-after-output' | 'malformed-stdout' | 'wrong-stdout-directory' | 'extra-stdout-key' | 'extra-child' | 'no-child' | 'child-file' | 'bad-run-id' | 'extra-output' | 'home-content' | 'artifact-mode' | 'artifact-hash' | 'wrong-completion-run' | 'wrong-completion-launch' | 'extra-completion-key' | 'wrong-created-launch' | 'wrong-created-owner' | 'wrong-verified-completion' | 'cleanup-interrupted' | 'stderr-on-success' | 'wait-after-output' | 'comparison-collision' | 'failure-collision';
 
 async function fixture(mode: Mode = 'normal') {
   const directory = await mkdtemp(join(tmpdir(), "input-comparison-'quoted'-"));
@@ -49,7 +58,9 @@ assert.equal(sha(raw),at('--launch-sha256'));
 assert.equal(raw.length,Number(at('--launch-bytes')));
 const launch=JSON.parse(raw);
 const {mode,artifactText}=JSON.parse(await readFile(${JSON.stringify(behaviorPath)},'utf8'));
-await writeFile(join(process.cwd(),'invoked.json'),JSON.stringify({argv:args,environmentKeys:Object.keys(process.env)}));
+await writeFile(join(process.cwd(),'invoked.json'),JSON.stringify({argv:args,environmentKeys:Object.keys(process.env)}),{mode:0o600,flag:'wx'});
+if(mode==='comparison-collision')await writeFile(join(process.cwd(),'comparison.json'),'existing comparison q7z9k2',{mode:0o600,flag:'wx'});
+if(mode==='failure-collision')await writeFile(join(process.cwd(),'failure.json'),'existing failure q7z9k2',{mode:0o600,flag:'wx'});
 if(mode==='exit-before-output')process.exitCode=6;
 else if(mode==='no-child')console.log('{}');
 else if(mode==='child-file'){await writeFile(join(launch.outputParent,'unexpected-file'),'fixture');console.log('{}');}
@@ -76,7 +87,7 @@ else {
  if(mode==='home-content')await writeFile(join(output,'home','unexpected'),'fixture',{mode:0o600});
  if(mode==='stderr-on-success')console.error('fixture diagnostic');
  if(mode==='wait-after-output'){await writeFile(join(directory,'ready.txt'),'ready',{mode:0o600});await wait(5000);}
- if(mode==='exit-after-output')process.exitCode=6;
+ if(mode==='exit-after-output'||mode==='failure-collision')process.exitCode=6;
  else if(mode==='malformed-stdout')console.log('not JSON q7z9k2');
  else console.log(JSON.stringify({kind:'producer-preparation-input-host-complete',directory:mode==='wrong-stdout-directory'?launch.outputParent:directory,completion,...mode==='extra-stdout-key'?{approved:true}:{}}));
 }
@@ -218,18 +229,25 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.kind).toBe('contract');
     expect(await readdir(f.output)).toEqual([]);
   } }),
-  it({ name: 'retains completed output on cancellation without invoking a throwing logger from an abort callback', timeout: 30_000, fn: async ctx => {
+  ...[false, true].map(throwAfterClose => it({ name: `retains cancelled complete output with awaiting-owner logger failure=${throwAfterClose}`, timeout: 30_000, fn: async ctx => {
     await using f = await fixture('wait-after-output');
     const controller = new AbortController();
     const ready = ctx.sinon.spy(function readyForCancellation() { controller.abort(new Error('private abort q7z9k2')); });
     const escaped = ctx.sinon.spy(function escapedCallback() {});
+    const logged = new Set<string>();
     process.on('uncaughtException', escaped);
     const watcher = watch(f.output, { recursive: true }, function observed(_event, filename) { if (((typeof filename) === 'string') && filename.endsWith('ready.txt')) ready(); });
     watcher.on('error', function watchFailed(error) { controller.abort(error); });
     using cleanup = { [Symbol.dispose]() { watcher.close();
     process.off('uncaughtException', escaped); } };
-    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) { if (message.includes('requested bootstrap termination') || message.includes('forced bootstrap termination')) throw new Error('callback logging q7z9k2');
-    l.warn(message); } } });
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, warn(message) {
+      if (throwAfterClose && message.includes('bootstrap interruption observed after native close') && logged.size === 0) {
+        logged.add(message);
+        throw new Error('awaiting logging q7z9k2');
+      }
+      l.warn(message);
+    } } });
+    expect(logged.size).toBe(throwAfterClose ? 1 : 0);
     expect(ready.callCount).toBeGreaterThan(0);
     expect(escaped.callCount).toBe(0);
     expect(error.kind).toBe('interruption');
@@ -242,6 +260,81 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     ).toEqual(artifactIdentity);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('single');
     expect((await readdir(error.directory)).includes('comparison.json')).toBe(false);
+    const exit = await readRecord(join(error.directory, 'bootstrap.exit.json'));
+    expect(exit.callerAborted).toBe(true);
+    expect(exit.signal).toBe('SIGTERM');
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
+  } })),
+  ...(['comparison-collision', 'failure-collision'] as const).map(mode => it({ name: `preserves existing metadata on ${mode}`, fn: async () => {
+    await using f = await fixture(mode);
+    const error = await rejected(f.request());
+    expect(error.kind).toBe('storage');
+    if (error.directory === undefined) throw new Error('Expected retained collision namespace');
+    const file = mode === 'comparison-collision' ? 'comparison.json' : 'failure.json';
+    const original = mode === 'comparison-collision' ? 'existing comparison q7z9k2' : 'existing failure q7z9k2';
+    expect(await readFile(join(error.directory, file), 'utf8')).toBe(original);
+    const [child] = await readdir(join(error.directory, 'producer-runs'));
+    if (child === undefined) throw new Error('Expected retained complete output');
+    expect(identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json')))).toEqual(artifactIdentity);
+  } })),
+  it({ name: 'refuses equal-byte metadata pathname replacement after the created descriptor syncs', fn: async ctx => {
+    await using f = await fixture();
+    const nativeOpen = fsPromises.open;
+    const replaced = ctx.sinon.spy(function replacedPath() {});
+    ctx.sinon.stub(fsPromises, 'open').callsFake(async function observedOpen(path, flags, mode) {
+      const handle = await nativeOpen(path, flags, mode);
+      if ((typeof path === 'string') && path.endsWith('/comparison.json')) {
+        const targetPath: string = path;
+        const nativeSync = handle.sync.bind(handle);
+        ctx.sinon.stub(handle, 'sync').callsFake(async function replaceAfterSync() {
+          await nativeSync();
+          const bytes = await readFile(targetPath);
+          await rename(targetPath, `${targetPath}.opened`);
+          await writeFile(targetPath, bytes, { mode: 0o600, flag: 'wx' });
+          replaced();
+        });
+      }
+      return handle;
+    });
+    syncBuiltinESMExports();
+    using restore = { [Symbol.dispose]() { ctx.sinon.restore(); syncBuiltinESMExports(); } };
+    const error = await rejected(f.request());
+    expect(replaced.callCount).toBe(1);
+    expect(error.kind).toBe('storage');
+    if (error.directory === undefined) throw new Error('Expected retained replaced metadata');
+    expect(await readFile(join(error.directory, 'comparison.json'))).toEqual(await readFile(join(error.directory, 'comparison.json.opened')));
+  } }),
+  it({ name: 'refuses a self-consistent launch with wrong Node identity before executing the correct bootstrap', fn: async () => {
+    await using f = await fixture();
+    const manifestPath = join(f.runtime, 'sealed-runtime.json');
+    const manifest = await readRecord(manifestPath);
+    const node = recordValue(manifest.node);
+    const wrong = { ...manifest, node: { ...node, executable: { bytes: nodeIdentity.bytes, sha256: '0'.repeat(64) } } };
+    const manifestBytes = Buffer.from(JSON.stringify(wrong));
+    await writeFile(manifestPath, manifestBytes);
+    const base = { ...f.base, runtime: { dir: f.runtime, manifest: identity(manifestBytes) } };
+    const baseBytes = Buffer.from(JSON.stringify(base));
+    await writeFile(f.baseLaunchPath, baseBytes);
+    const error = await rejected({ ...f.request(), baseLaunchIdentity: identity(baseBytes) });
+    expect(error.kind).toBe('bootstrap');
+    if (error.directory === undefined) throw new Error('Expected retained authentication refusal');
+    expect((await readdir(error.directory)).includes('bootstrap.command.json')).toBe(true);
+    expect((await readdir(error.directory)).includes('invoked.json')).toBe(false);
+    expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
+  } }),
+  it({ name: 'passes only the exact minimal environment and omits an ambient canary', fn: async () => {
+    await using f = await fixture();
+    const prior = process.env.PREPARATION_COMPARISON_CANARY;
+    process.env.PREPARATION_COMPARISON_CANARY = 'q7z9k2';
+    using restore = { [Symbol.dispose]() {
+      if (prior === undefined) Reflect.deleteProperty(process.env, 'PREPARATION_COMPARISON_CANARY');
+      else process.env.PREPARATION_COMPARISON_CANARY = prior;
+    } };
+    const result = await runProducerInputComparison(f.request());
+    const invoked = await readRecord(join(result.directory, 'invoked.json'));
+    const expectedKeys = ['HOME', 'PATH', ...['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS'].filter(key => process.env[key] !== undefined)];
+    expect(textList(invoked.environmentKeys).toSorted()).toEqual(expectedKeys.toSorted());
+    expect(invoked.environmentKeys).not.toContain('PREPARATION_COMPARISON_CANARY');
   } }),
   it({ name: 'refuses bootstrap byte drift before executing it and records the absent child', fn: async () => {
     await using f = await fixture();
