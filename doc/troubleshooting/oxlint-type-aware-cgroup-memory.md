@@ -657,8 +657,15 @@ all 1472 changed files retain matching normalized executable ASTs,
 with prefix-only comment changes except two exact malformed `@param l` repairs.
 The declaration and documentation-parser checks are retained in `main-merge-format-review-570dgD`.
 Post-transfer types,
-builds,
-units and positive/restored read-only lint verification remain pending.
+normal/bootstrap builds and affected units pass.
+`devlint256go1control-xuqvsT` detects exactly the introduced missing-parameter warning
+and unhandled-promise error.
+Restored `devlint256go1-1a4Xnt` reports zero warnings and zero errors
+across 1561 files and 485 rules.
+Its peak is `2171211776` bytes with zero OOM events;
+source hashes remain unchanged across both lint invocations.
+These controls close task61's lint verification at this source/host envelope,
+not a whole-pipeline or publication gate.
 The local style remediation has not been reviewed;
 issue #514 records its scope.
 

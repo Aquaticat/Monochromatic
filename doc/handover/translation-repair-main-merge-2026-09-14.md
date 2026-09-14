@@ -99,15 +99,20 @@ with regular-file,
 mode,
 path-set and pre/post-hash checks.
 These changes remain explicitly unreviewed in issue #514.
-Fresh post-transfer types,
-normal/bootstrap builds,
-affected units and positive/restored lint checks are running.
+The post-transfer sequence passes fresh types,
+normal/bootstrap builds and affected units (`devtest-r2T4vU`).
+Positive control `devlint256go1control-xuqvsT` reports exactly the missing-parameter warning
+and unhandled-promise error introduced in its private source copy.
+Restored `devlint256go1-1a4Xnt` reports zero warnings and zero errors
+across 1561 files and 485 rules,
+with `2171211776` peak bytes and no OOM events.
+No real source is changed by either lint control.
 BOX now requires host-sized bounds,
 and `CLAUDE.md` is regenerated through the canonical owner.
 Historical 2 GiB evidence is not relabeled as a 6 GiB run.
 
-Final repair lint,
-Markdown verification and diagnostic retention/cleanup remain open.
+Task61's bounded lint and style verification is complete.
+Final merge Markdown verification and diagnostic retention/cleanup remain open.
 No diagnostic container is removed by this continuation.
 
 Proposed instruction for merge verification:
