@@ -1,3 +1,5 @@
+import type { LoggerCallbackName, } from '@monochromatic-dev/module-logger/ts';
+
 //region Refusals do not erase fresh input or comparison evidence
 
 /**
@@ -43,6 +45,10 @@ export class ProducerInputComparisonError extends Error {
    Created or attempted evidence namespace, never proof of current ownership.
    */
   public readonly directory?: string;
+  /**
+   Fixed callback names report telemetry degradation without replacing the primary failure or retaining thrown values.
+   */
+  public readonly loggerCallbackFailures: readonly LoggerCallbackName[];
 
   /**
    Keeps actionable evidence location without retaining native error messages or causes.
@@ -50,6 +56,8 @@ export class ProducerInputComparisonError extends Error {
    @param kind - fixed failed operation or comparison boundary
    
    @param directory - authorized created or attempted namespace locator, absent before path selection
+
+   @param loggerCallbackFailures - owned fixed-name snapshot from the invoking logger observer
    
    @example
    ```ts
@@ -59,14 +67,17 @@ export class ProducerInputComparisonError extends Error {
   public constructor({
     kind,
     directory,
+    loggerCallbackFailures = [],
   }: {
     readonly kind: ProducerInputComparisonFailure;
     readonly directory?: string;
+    readonly loggerCallbackFailures?: readonly LoggerCallbackName[];
   },) {
     super(directory === undefined ? COMPARISON_MESSAGES[kind]
       : `${COMPARISON_MESSAGES[kind]} Directory: ${JSON.stringify(directory)}.`);
     this.name = 'ProducerInputComparisonError';
     this.kind = kind;
+    this.loggerCallbackFailures = Object.freeze([...loggerCallbackFailures]);
     if (directory !== undefined)
       this.directory = directory;
   }

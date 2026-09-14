@@ -1,5 +1,5 @@
 import type { BigIntStats, } from 'node:fs';
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { Logger, LoggerCallbackName, } from '@monochromatic-dev/module-logger/ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 import type { ProducerInputLaunch, } from './producer-input-model.ts';
 
@@ -121,6 +121,10 @@ export type ProducerInputComparisonResult = {
    Byte parity is not semantic review or model-call permission.
    */
   readonly scope: 'matched-unqualified-input-files';
+  /**
+   Detached callback-failure names are telemetry only, never message-delivery or operation authority.
+   */
+  readonly loggerCallbackFailures: readonly LoggerCallbackName[];
   /**
    Private comparison namespace, separate from the completed input-run namespace.
    */

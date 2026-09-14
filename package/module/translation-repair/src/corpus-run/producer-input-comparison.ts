@@ -1,5 +1,6 @@
 import {
   type Logger,
+  observeLoggerCallbacks,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import { observeProducerInputComparisonChildren, } from './producer-input-comparison-child.ts';
@@ -105,7 +106,15 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
   /**
    Data authority is owned before logger callbacks or asynchronous work.
    */
-  const request = ownProducerInputComparisonRequest(input);
+  const owned = ownProducerInputComparisonRequest(input);
+  /**
+   Callback exceptions become fixed-name telemetry before any borrowed logger callback is requested.
+   */
+  const observedLogger = observeLoggerCallbacks(owned.l);
+  /**
+   Helpers receive only the observed facade, never the original caller logger.
+   */
+  const request: ProducerInputComparisonRequest = { ...owned, l: observedLogger.logger };
   /**
    Every helper receives the full invoking operation's tag chain.
    */
@@ -113,6 +122,12 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
     tag: runProducerInputComparison.name,
     l: request.l
   });
+  try {
+    /**
+     Preserve the ownership-completion message and tag after primitive capture, now inside callback containment.
+     */
+    const ownershipLogger = tagged({ tag: ownProducerInputComparisonRequest.name, l: request.l });
+    ownershipLogger.debug('owned fixed input-bootstrap launch and independent artifact reference');
   if (request.signal
     .aborted)
     throw new ProducerInputComparisonError({ kind: 'interruption' });
@@ -265,6 +280,7 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
       });
     return {
       scope: 'matched-unqualified-input-files',
+      loggerCallbackFailures: observedLogger.snapshot(),
       directory: run.directory,
       inputRunDirectory: files.inputRunDirectory,
       inputRunId: files.inputRunId,
@@ -307,6 +323,19 @@ export async function runProducerInputComparison(input: ProducerInputComparisonR
         directory: run.directory
       });
     throw failure;
+  }
+  }
+  catch (error) {
+    /**
+     Terminal decoration runs after all success, warning and failure-record callbacks without changing failure precedence.
+     */
+    const failure = Error.isError(error) && (error instanceof ProducerInputComparisonError)
+      ? error : new ProducerInputComparisonError({ kind: 'output' });
+    throw new ProducerInputComparisonError({
+      kind: failure.kind,
+      ...(failure.directory === undefined ? {} : { directory: failure.directory }),
+      loggerCallbackFailures: observedLogger.snapshot(),
+    });
   }
 }
 

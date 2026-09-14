@@ -3,9 +3,6 @@ import {
   isAbsolute,
   resolve,
 } from 'node:path';
-import {
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
 import { ProducerInputComparisonError, } from './producer-input-comparison-error.ts';
 import type { ProducerInputComparisonRequest, } from './producer-input-comparison-model.ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
@@ -78,6 +75,7 @@ function comparisonPath(value: string): string {
 
 /**
  Owns data authority while retaining the caller's live cancellation signal and logger.
+ No logger callback runs here; the invoking owner adds observable forwarding after this capture.
  No typed scope, self-digest or prior completion record grants root-plan review authority here.
  
  @param input - independent launch, bootstrap and reference configuration
@@ -121,14 +119,6 @@ export function ownProducerInputComparisonRequest(input: ProducerInputComparison
     const {l} = input;
     if (!(signal instanceof AbortSignal))
       throw new ProducerInputComparisonError({ kind: 'contract', });
-    /**
-     Names-only contract telemetry cannot alter the already captured file identities.
-     */
-    const pl = tagged({
-      tag: ownProducerInputComparisonRequest.name,
-      l,
-    });
-    pl.debug('owned fixed input-bootstrap launch and independent artifact reference');
     return {
       baseLaunchPath,
       baseLaunchIdentity,
@@ -141,7 +131,7 @@ export function ownProducerInputComparisonRequest(input: ProducerInputComparison
   catch (error) {
     if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
       throw error;
-    // Accessor and logger failures do not expose native messages or caller-supplied cause chains.
+    // Accessor failures do not expose native messages or caller-supplied cause chains.
     throw new ProducerInputComparisonError({ kind: 'contract', });
   }
 }
