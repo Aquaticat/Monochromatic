@@ -266,7 +266,7 @@ const NAMED_PARTS: Record<string, string> = {
   'ROOT_MESSAGES[kind]': 'authored root-planning diagnostic selected by a closed failure kind',
   'INPUT_RUN_MESSAGES[operation]': 'authored preparation input-runner diagnostic selected by a closed operation kind',
   'JSON.stringify(locator)': 'preparation runner input path, supporting root/reference locator or fixed output path; current throw sites never pass file contents',
-  'locator === undefined ? \'\' : ` Input: ${JSON.stringify(locator)}.`': 'optional encoded input locator from the audited preparation runner throw sites, never input contents',
+  [`locator === undefined ? '' : \` Input: \${JSON.stringify(locator)}.\``]: 'optional encoded input locator from the audited preparation runner throw sites, never input contents',
   'JSON.stringify(affectedInput,)': 'root artifact locator, corpus-relative path, entry/parent identifier or fixed registry label; audited throw sites never pass compared content',
   'claimId': 'computed claim identifier, not its quoted text or diagnostic summary',
   'label': 'model id the transport was calling',

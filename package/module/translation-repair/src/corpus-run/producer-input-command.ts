@@ -2,14 +2,11 @@ import { spawn, } from 'node:child_process';
 import { open, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
-  setTimeout,
-  clearTimeout,
-} from 'node:timers';
-import {
   PRODUCER_INPUT_COMMAND_TIMES,
   PRODUCER_INPUT_METADATA_BYTES,
 } from './producer-input-bounds.ts';
 import { producerInputCommandClose, } from './producer-input-command-close.ts';
+import { interruptProducerInputCommand, } from './producer-input-command-interrupt.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import { readProducerInputMetadata, } from './producer-input-file.ts';
 import type { ProducerInputHost, } from './producer-input-host-init.ts';
@@ -46,6 +43,7 @@ async function commandRecord({
   readonly path: string;
   readonly text: string
 },): Promise<void> {
+  /** Exclusive descriptor keeps one command record independent from any existing file. */
   await using file = await open(
     path,
     'wx',
@@ -151,11 +149,13 @@ export async function runProducerInputCommand({
         timeoutMilliseconds
       })
     });
+    /** Native stdout remains private and owned until actual process close. */
     await using stdout = await open(
       `${prefix}.stdout`,
       'wx',
       PRIVATE_MODE
     );
+    /** Native diagnostics are retained independently from their public names-only rendering. */
     await using stderr = await open(
       `${prefix}.stderr`,
       'wx',
@@ -200,47 +200,8 @@ export async function runProducerInputCommand({
      * An earlier native error cannot detach the actual close observation.
      */
     const closed = producerInputCommandClose(child);
-    /**
-     * At most one escalation timer belongs to this stage's abort event.
-     */
-    const timers = new Set<ReturnType<typeof setTimeout>>();
-    /**
-     * A native client ignoring the first termination request does not keep cleanup waiting indefinitely.
-     */
-    function forceTermination(): void {
-      if ((child.exitCode === null) && (child.signalCode === null))
-        child.kill('SIGKILL');
-    }
-    /**
-     * Cancellation first permits native signal forwarding, then uses bounded escalation.
-     */
-    function interrupt(): void {
-      child.kill('SIGTERM');
-      timers.add(setTimeout(
-        forceTermination,
-        PRODUCER_INPUT_COMMAND_TIMES.terminationGraceMilliseconds
-      ));
-    }
-    effective.addEventListener(
-      'abort',
-      interrupt,
-      { once: true }
-    );
-    /**
-     * Native listeners and escalation timers never outlive their single stage.
-     */
-    using _listener = {
-      [Symbol.dispose](): void {
-        effective.removeEventListener(
-          'abort',
-          interrupt
-        );
-        for (const timer of timers)
-          clearTimeout(timer);
-      },
-    };
-    if (effective.aborted)
-      interrupt();
+    /** Native interruption resources never outlive this stage's close observation. */
+    using _listener = interruptProducerInputCommand({ child, signal: effective });
     /**
      * Native output descriptors and error evidence remain owned until actual close.
      */

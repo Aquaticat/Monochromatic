@@ -213,7 +213,7 @@ function parseProducerInputCompletion({
  */
 async function completionDirectories(host: ProducerInputHost): Promise<void> {
   try {
-    for (const path of [
+    await Promise.all([
       host.run
         .outputDir,
       join(
@@ -221,7 +221,7 @@ async function completionDirectories(host: ProducerInputHost): Promise<void> {
           .outputDir,
         'home'
       )
-    ]) {
+    ].map(async function verifyDirectory(path): Promise<void> {
       /**
        * Directory checks do not follow a symlink leaf or accept a different group.
        */
@@ -237,7 +237,7 @@ async function completionDirectories(host: ProducerInputHost): Promise<void> {
           operation: 'read-output',
           locator: path,
         });
-    }
+    }));
     if ((!isDeepStrictEqual(
       (await readdir(host.run
         .outputDir)).toSorted(),

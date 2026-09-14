@@ -70,7 +70,7 @@ export function readProducerInputArguments(arguments_: readonly string[]): Produ
     /**
      * Repeated flags cannot hide a second launch identity behind native last-value behavior.
      */
-    const names = tokens.map(function option(token): string {
+    const names = tokens.map(function option(token: Readonly<(typeof tokens)[number]>): string {
       if (token.kind !== 'option')
         throw new ProducerInputRunError({
           operation: 'read-launch',

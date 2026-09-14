@@ -34,6 +34,8 @@ export function producerInputCommandClose(child: Readonly<Pick<ChildProcess, 'on
   } = Promise.withResolvers<readonly NativeInputError[]>();
   /**
    * Native errors remain failure evidence while close observation stays installed.
+   *
+   * @param error - native event value classified without retaining messages or paths
    */
   function failed(error: unknown): void {
     errors.add(Error.isError(error,) ? 'error-object' : 'other-error-event');

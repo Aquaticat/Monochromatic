@@ -20,9 +20,7 @@ const DIGEST = '0'.repeat(SHA256_WIDTH);
 await describe({ name: '', concurrency: 1, children: [
   it({ name: 'runs the built standalone help without a launch or application import', fn: async function help() {
     await using fixture = await inputCliFixture();
-    const result = inputCli({ fixture, arguments_: ['--help'] });
-    expect(result.error).toBeUndefined();
-    expect(result.signal).toBeNull();
+    const result = await inputCli({ fixture, arguments_: ['--help'] });
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('without provider calls');
     expect(result.stdout).toContain('not root, phase or writer approval');
@@ -46,9 +44,7 @@ await describe({ name: '', concurrency: 1, children: [
   ].map(function invalid(arguments_, index) {
     return it({ name: `refuses unsupported CLI grammar ${String(index)}`, fn: async function grammar() {
       await using fixture = await inputCliFixture();
-      const result = inputCli({ fixture, arguments_ });
-      expect(result.error).toBeUndefined();
-      expect(result.signal).toBeNull();
+      const result = await inputCli({ fixture, arguments_ });
       expect(result.status).toBe(REFUSED);
       expect(result.stderr).toContain('producer-prepare:');
       expect(result.stderr).not.toContain(PRIVATE_CANARY);
@@ -58,13 +54,13 @@ await describe({ name: '', concurrency: 1, children: [
   it({ name: 'refuses duplicate launch identity options before reading the file', fn: async function duplicate() {
     await using fixture = await inputCliFixture();
     const arguments_ = ['--launch', '/not-read', '--launch-sha256', DIGEST, '--launch-bytes', '2', '--launch-bytes', '2'];
-    const result = inputCli({ fixture, arguments_ });
+    const result = await inputCli({ fixture, arguments_ });
     expect(result.status).toBe(REFUSED);
     expect(result.stderr).toContain('duplicate CLI option');
   } }),
   it({ name: 'refuses the private child sentinel outside its exact inherited context', fn: async function child() {
     await using fixture = await inputCliFixture();
-    const result = inputCli({ fixture, arguments_: ['--sealed-preparation-child'] });
+    const result = await inputCli({ fixture, arguments_: ['--sealed-preparation-child'] });
     expect(result.status).toBe(REFUSED);
     expect(result.stderr).toContain('child launch identity');
     expect(await readdir(fixture.directory)).toEqual(['producer-prepare.mjs']);
@@ -73,7 +69,7 @@ await describe({ name: '', concurrency: 1, children: [
     return it({ name: `rejects malformed or unregistered launch shape ${String(index)} without excerpts`, fn: async function shape() {
       await using fixture = await inputCliFixture();
       const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode(text) });
-      const result = inputCli({ fixture, arguments_ });
+      const result = await inputCli({ fixture, arguments_ });
       expect(result.status).toBe(REFUSED);
       expect(result.stderr).not.toContain(PRIVATE_CANARY);
       expect(result.stderr).not.toContain('SyntaxError');
@@ -84,7 +80,7 @@ await describe({ name: '', concurrency: 1, children: [
     await using fixture = await inputCliFixture();
     const bytes = Buffer.concat([Buffer.from(PRIVATE_CANARY), Buffer.from([INVALID_UTF8])]);
     const arguments_ = await inputLaunchArguments({ fixture, bytes });
-    const result = inputCli({ fixture, arguments_ });
+    const result = await inputCli({ fixture, arguments_ });
     expect(result.status).toBe(REFUSED);
     expect(result.stderr).not.toContain(PRIVATE_CANARY);
     expect(result.stderr).not.toContain('TypeError');
@@ -94,7 +90,7 @@ await describe({ name: '', concurrency: 1, children: [
     const original = new TextEncoder().encode(`{"note":"${PRIVATE_CANARY}"}`);
     const arguments_ = await inputLaunchArguments({ fixture, bytes: original });
     await writeFile(join(fixture.directory, 'launch.json'), Buffer.alloc(original.length, 'x'));
-    const result = inputCli({ fixture, arguments_ });
+    const result = await inputCli({ fixture, arguments_ });
     expect(result.status).toBe(REFUSED);
     expect(result.stderr).toContain('launch.json');
     expect(result.stderr).not.toContain(PRIVATE_CANARY);
@@ -105,7 +101,7 @@ await describe({ name: '', concurrency: 1, children: [
     await inputLaunchArguments({ fixture, bytes });
     const alias = join(fixture.directory, 'alias.json');
     await symlink(join(fixture.directory, 'launch.json'), alias);
-    const result = inputCli({ fixture, arguments_: ['--launch', alias, '--launch-sha256', createHash('sha256').update(bytes).digest('hex'), '--launch-bytes', String(bytes.length)] });
+    const result = await inputCli({ fixture, arguments_: ['--launch', alias, '--launch-sha256', createHash('sha256').update(bytes).digest('hex'), '--launch-bytes', String(bytes.length)] });
     expect(result.status).toBe(REFUSED);
     expect(result.stderr).toContain('alias.json');
   } }),

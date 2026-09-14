@@ -58,12 +58,14 @@ export class ProducerInputInterruptedError extends Error {
 export function assertProducerInputNotInterrupted(signal: AbortSignal): void {
   if (!signal.aborted)
     return;
-  if ((signal.reason !== 'SIGINT') && (signal.reason !== 'SIGTERM'))
+  /** Native AbortSignal reasons remain unknown until matched to the closed signal vocabulary. */
+  const reason: unknown = signal.reason;
+  if ((reason !== 'SIGINT') && (reason !== 'SIGTERM'))
     throw new ProducerInputRunError({
       operation: 'launch-container',
       locator: 'host interruption reason',
     });
-  throw new ProducerInputInterruptedError(signal.reason);
+  throw new ProducerInputInterruptedError(reason);
 }
 
 /**
@@ -88,6 +90,8 @@ export function producerInputSignals(): ProducerInputSignals {
   const listeners = new Map<InputSignal, () => void>();
   /**
    * Repeated interruption is not silently swallowed while native cleanup is pending.
+   *
+   * @param signal - exact installed native signal, never an arbitrary abort reason
    */
   function receive(signal: InputSignal): void {
     if (controller.signal
