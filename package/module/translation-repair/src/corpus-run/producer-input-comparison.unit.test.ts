@@ -406,7 +406,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       identity(await readFile(join(error.directory, 'producer-runs', child, 'output/unqualified-inputs.json'))),
     ).toEqual(artifactIdentity);
   } })),
-  it({ name: 'refuses equal-byte metadata pathname replacement after the created descriptor syncs', fn: async ctx => {
+  ...(['pathname', 'content'] as const).map(change => it({ name: `refuses metadata ${change} replacement after the created descriptor syncs`, fn: async ctx => {
     await using f = await fixture();
     const nativeOpen = fsPromises.open;
     const replaced = ctx.sinon.spy(function replacedPath() {});
@@ -418,8 +418,14 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
         ctx.sinon.stub(handle, 'sync').callsFake(async function replaceAfterSync() {
           await nativeSync();
           const bytes = await readFile(targetPath);
-          await rename(targetPath, `${targetPath}.opened`);
-          await writeFile(targetPath, bytes, { mode: 0o600, flag: 'wx' });
+          if (change === 'pathname') {
+            await rename(targetPath, `${targetPath}.opened`);
+            await writeFile(targetPath, bytes, { mode: 0o600, flag: 'wx' });
+          } else {
+            const changed = Buffer.from(bytes);
+            changed[0] = '['.charCodeAt(0);
+            await writeFile(targetPath, changed);
+          }
           replaced();
         });
       }
@@ -432,12 +438,10 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(replaced.callCount).toBe(1);
     expect(error.kind).toBe('storage');
     if (error.directory === undefined) throw new Error('Expected retained replaced metadata');
-    expect(
-      await readFile(join(error.directory, 'comparison.json')),
-    ).toEqual(
-      await readFile(join(error.directory, 'comparison.json.opened')),
-    );
-  } }),
+    if (change === 'pathname') {
+      expect(await readFile(join(error.directory, 'comparison.json'))).toEqual(await readFile(join(error.directory, 'comparison.json.opened')));
+    } else expect((await readFile(join(error.directory, 'comparison.json')))[0]).toBe('['.charCodeAt(0));
+  } })),
   it({ name: 'refuses a self-consistent launch with wrong Node identity before executing the correct bootstrap', fn: async () => {
     await using f = await fixture();
     const manifestPath = join(f.runtime, 'sealed-runtime.json');
@@ -472,11 +476,13 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
   } }),
   it({ name: 'refuses bootstrap byte drift before executing it and records the absent child', fn: async () => {
     await using f = await fixture();
-    await writeFile(f.bootstrapPath, 'throw new Error("q7z9k2");');
+    const marker = join(f.directory, 'unauthorized-executed');
+    await writeFile(f.bootstrapPath, `import {writeFile} from 'node:fs/promises'; await writeFile(${JSON.stringify(marker)},'executed',{mode:0o600}); throw new Error('q7z9k2');`);
     const error = await rejected(f.request());
     expect(error.kind).toBe('bootstrap');
     if (error.directory === undefined) throw new Error('Expected retained comparison directory');
     expect((await readdir(error.directory)).includes('invoked.json')).toBe(false);
+    expect(existsSync(marker)).toBe(false);
     expect((await readRecord(join(error.directory, 'child-observation.json'))).state).toBe('absent');
   } }),
 ] });
