@@ -1,4 +1,3 @@
-import { execFile, } from 'node:child_process';
 import { createHash, } from 'node:crypto';
 import {
   mkdtemp,
@@ -12,24 +11,26 @@ import {
   join,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
+import spawn, { SubprocessError, } from 'nano-spawn';
 
 /**
  * Tests consume the separately built bootstrap, never sibling implementation source.
  */
 const CANDIDATE = fileURLToPath(new URL(
   '../../node_modules/.producer-bootstrap-candidate/producer-prepare.mjs',
-  import.meta.url
+  import.meta.url,
 ));
 /**
  * A guard test cannot wait indefinitely for unintended native work.
  */
 const CLI_TEST_TIMEOUT = 30_000;
+
 /**
- * Unexpected native callback values cannot become untyped promise rejections.
+ * Unexpected execution failures cannot become untyped promise rejections.
  */
 class InputCliCompletionError extends Error {
   /**
-   * The class owns its fixed diagnostic and interpolates no callback value.
+   * The class owns its fixed diagnostic and interpolates no rejected value.
    */
   readonly messageNamesOnly: true = true;
   /**
@@ -67,11 +68,11 @@ type InputCliResult = {
    */
   readonly status: number;
   /**
-   * Complete captured CLI output.
+   * Captured stdout with nano-spawn's final newline normalization.
    */
   readonly stdout: string;
   /**
-   * Complete captured names-only refusal output.
+   * Captured stderr with nano-spawn's final newline normalization.
    */
   readonly stderr: string;
 };
@@ -96,34 +97,21 @@ export async function inputCliFixture(): Promise<InputCliFixture> {
    */
   const directory = await mkdtemp(join(
     tmpdir(),
-    'preparation-cli-test-'
+    'preparation-cli-test-',
   ));
   /**
    * The only executed package file is the compiled standalone artifact.
    */
   const executable = join(
     directory,
-    'producer-prepare.mjs'
+    'producer-prepare.mjs',
   );
-  await writeFile(
-    executable,
-    bytes,
-    {
-      mode: 0o400,
-      flag: 'wx'
-    }
-  );
+  await writeFile(executable, bytes, { mode: 0o400, flag: 'wx' });
   return {
     directory,
     executable,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        directory,
-        {
-          recursive: true,
-          force: true
-        }
-      );
+      await rm(directory, { recursive: true, force: true });
     },
   };
 }
@@ -135,16 +123,16 @@ export async function inputCliFixture(): Promise<InputCliFixture> {
  *
  * @param arguments_ - exact test tokens, never shell text
  *
- * @returns Ordinary process exit and captured output for assertions
+ * @returns Ordinary exit and newline-normalized output for assertions
  *
- * @throws Error on spawn failure, timeout, signal or an unexpected native error shape
+ * @throws Error on spawn failure, timeout, signal or an unexpected execution failure
  *
  * @example
  * ```ts
  * const result = await inputCli({ fixture, arguments_: ['--help'] });
  * ```
  */
-export function inputCli({
+export async function inputCli({
   fixture,
   arguments_,
 }: {
@@ -152,82 +140,47 @@ export function inputCli({
   readonly arguments_: readonly string[];
 }): Promise<InputCliResult> {
   /**
-   * Native completion owns both output streams and the ordinary-exit versus execution-failure distinction.
+   * Nano-spawn merges environments; Node omits explicitly undefined entries.
+   * Enumerate parent names without copying their values before adding the exact fixture environment.
    */
-  const {
-    promise,
-    resolve,
-    reject,
-  } = Promise.withResolvers<InputCliResult>();
-  execFile(
-    process.execPath,
-    [
-      fixture.executable,
-      ...arguments_
-    ],
-    {
-      cwd: fixture.directory,
-      env: {
-        HOME: fixture.directory,
-        TMPDIR: fixture.directory,
-        PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
-      },
-      encoding: 'utf8',
-      timeout: CLI_TEST_TIMEOUT,
-    },
+  const cleared = Object.fromEntries(Object.keys(process.env).map(function unset(name) {
+    return [name, undefined] as const;
+  }));
+  try {
     /**
-     * Error-first completion preserves both streams even for a deliberate CLI refusal.
-     *
-     * @param error - native outcome narrowed from unknown, without copying a nullish API type
-     *
-     * @param stdout - captured output from this exact invocation
-     *
-     * @param stderr - captured diagnostics from this exact invocation
-     *
-     * @example
-     * ```ts
-     * completed(null, 'help output', '');
-     * ```
+     * The existing asynchronous process utility owns native completion and captured streams.
      */
-    function completed(
-      error: unknown,
-      stdout: string,
-      stderr: string,
-    ): void {
-      if (error === null) {
-        resolve({
-          status: 0,
-          stdout,
-          stderr,
-        });
-        return;
-      }
-      if (!Error.isError(error)) {
-        reject(new InputCliCompletionError());
-        return;
-      }
-      if ((!('code' in error)) || (!('signal' in error))) {
-        reject(error);
-        return;
-      }
-      /**
-       * Own the primitive exit code before rejecting spawn failures or signal termination.
-       */
-      const { code, } = error;
-      if (((typeof code) !== 'number') || (!Number.isSafeInteger(code))
-        || (code <= 0)
-        || (error.signal !== null)) {
-        reject(error);
-        return;
-      }
-      resolve({
-        status: code,
-        stdout,
-        stderr,
-      });
-    },
-  );
-  return promise;
+    const result = await spawn(
+      process.execPath,
+      [fixture.executable, ...arguments_],
+      {
+        cwd: fixture.directory,
+        env: {
+          ...cleared,
+          HOME: fixture.directory,
+          TMPDIR: fixture.directory,
+          PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
+        },
+        stdin: 'ignore',
+        timeout: CLI_TEST_TIMEOUT,
+      },
+    );
+    return { status: 0, stdout: result.stdout, stderr: result.stderr };
+  }
+  catch (error) {
+    if (!Error.isError(error))
+      throw new InputCliCompletionError();
+    if (!(error instanceof SubprocessError))
+      throw error;
+    /**
+     * Only an ordinary exit may become assertion data; cancellation and native failures remain errors.
+     */
+    const { exitCode, signalName, isCanceled, } = error;
+    if ((exitCode === undefined) || !Number.isSafeInteger(exitCode) || (exitCode <= 0)
+      || (signalName !== undefined) || isCanceled)
+      throw error;
+    return { status: exitCode, stdout: error.stdout, stderr: error.stderr };
+  }
 }
 
 /**
@@ -244,36 +197,14 @@ export function inputCli({
  * const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode('{}') });
  * ```
  */
-export async function inputLaunchArguments({
-  fixture,
-  bytes,
-}: {
+export async function inputLaunchArguments({ fixture, bytes, }: {
   readonly fixture: InputCliFixture;
   readonly bytes: Uint8Array;
 }): Promise<readonly string[]> {
   /**
    * This file has no corpus or user configuration authority.
    */
-  const path = join(
-    fixture.directory,
-    'launch.json'
-  );
-  await writeFile(
-    path,
-    bytes,
-    {
-      mode: 0o600,
-      flag: 'wx'
-    }
-  );
-  return [
-    '--launch',
-    path,
-    '--launch-sha256',
-    createHash('sha256')
-      .update(bytes)
-      .digest('hex'),
-    '--launch-bytes',
-    String(bytes.length)
-  ];
+  const path = join(fixture.directory, 'launch.json');
+  await writeFile(path, bytes, { mode: 0o600, flag: 'wx' });
+  return ['--launch', path, '--launch-sha256', createHash('sha256').update(bytes).digest('hex'), '--launch-bytes', String(bytes.length)];
 }

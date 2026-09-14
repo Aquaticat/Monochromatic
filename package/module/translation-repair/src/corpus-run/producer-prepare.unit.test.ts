@@ -56,7 +56,7 @@ await describe({ name: '', concurrency: 1, children: [
     context.sinon.stub(process, 'execPath').value(join(fixture.directory, 'missing-node'));
     const outcomes = await Promise.allSettled([inputCli({ fixture, arguments_: ['--help'] })]);
     expect(outcomes[0]).toHaveProperty('status', 'rejected');
-    expect(outcomes[0]).toHaveProperty('reason.code', 'ENOENT');
+    expect(outcomes[0]).toHaveProperty('reason.cause.code', 'ENOENT');
   } }),
   it({ name: 'rejects native signal termination rather than returning an ordinary CLI exit', fn: async function signaled() {
     await using fixture = await inputCliFixture();
@@ -64,7 +64,17 @@ await describe({ name: '', concurrency: 1, children: [
     await writeFile(executable, 'process.kill(process.pid, "SIGTERM");', { mode: 0o400, flag: 'wx' });
     const outcomes = await Promise.allSettled([inputCli({ fixture: { ...fixture, executable }, arguments_: [] })]);
     expect(outcomes[0]).toHaveProperty('status', 'rejected');
-    expect(outcomes[0]).toHaveProperty('reason.signal', 'SIGTERM');
+    expect(outcomes[0]).toHaveProperty('reason.signalName', 'SIGTERM');
+  } }),
+  it({ name: 'does not inherit a parent-only environment value through the async process utility', fn: async function isolatedEnvironment(context) {
+    await using fixture = await inputCliFixture();
+    context.sinon.stub(process, 'env').value({ ...process.env, INPUT_CLI_PARENT_ONLY: PRIVATE_CANARY });
+    const executable = join(fixture.directory, 'environment-fixture.mjs');
+    await writeFile(executable, 'process.stdout.write(String(Object.hasOwn(process.env, "INPUT_CLI_PARENT_ONLY")));', { mode: 0o400, flag: 'wx' });
+    const result = await inputCli({ fixture: { ...fixture, executable }, arguments_: [] });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe('false');
+    expect(result.stderr).not.toContain(PRIVATE_CANARY);
   } }),
   it({ name: 'refuses duplicate launch identity options before reading the file', fn: async function duplicate() {
     await using fixture = await inputCliFixture();
