@@ -45,8 +45,18 @@ export function emitContentNode(
     return emitValueLeaf({ node, },);
   if (node.type
     === 'TOMLArray') {
-    return emitArray({
-      node,
+    /**
+     Convert foreign parser elements into owned text at the existing ownership boundary.
+     */
+    const parts = node.elements.map(function each(el: AST.TOMLNode,): string {
+      return emitContentNode({
+        node: el,
+        options,
+        depth: depth + 1,
+      },);
+    },);
+    return assembleArrayParts({
+      parts,
       options,
       depth,
     },);
@@ -78,45 +88,11 @@ function emitValueLeaf({ node, }: { readonly node: AST.TOMLValue; },): string {
 }
 
 /**
- Emit a `TOMLArray`, inline or multiline per `arrayInline*` options.
- 
- @returns Computed string.
- */
-function emitArray(
-  {
-    node,
-    options,
-    depth,
-  }: {
-    readonly node: AST.TOMLArray;
-    readonly options: CanonicalOptions;
-    readonly depth: number;
-  },
-): string {
-  /**
-   Per-element text so the assembler can join into inline or multi-line form.
-   */
-  const parts = node.elements
-    .map(function each(el: AST.TOMLNode,) {
-    return emitContentNode({
-      node: el,
-      options,
-      depth: depth + 1,
-    },);
-  },);
-  return assembleArrayParts({
-    parts,
-    options,
-    depth,
-  },);
-}
-
-/**
  Emit a `TOMLArray` with the element at `skipIndex` omitted.
  
  Used by {@link tomlDelete} on an array element: re-emits the parent array
  via canonical formatting, applying the same inline-vs-multiline
- thresholds as {@link emitArray}.
+ thresholds as {@link emitContentNode}.
  
  @returns Computed string.
  
@@ -199,7 +175,10 @@ export function emitArrayWithSkipPath(
     options,
     depth,
   }: {
-    readonly array: AST.TOMLArray;
+    /**
+     Foreign parser-array ownership enters this exported emitter; descendants inherit its provenance.
+     */
+    readonly array: ForeignBorrowed<AST.TOMLArray>;
     readonly skipPath: readonly number[];
     readonly options: CanonicalOptions;
     readonly depth: number;
@@ -268,7 +247,7 @@ export function emitArrayWithSkipPath(
 }
 
 /**
- Shared array-text assembly used by {@link emitArray} and {@link emitArrayWithoutIndex}.
+ Shared array-text assembly used by {@link emitContentNode} and {@link emitArrayWithoutIndex}.
  
  @returns Computed string.
  

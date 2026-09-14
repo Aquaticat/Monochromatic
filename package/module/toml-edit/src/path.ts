@@ -9,6 +9,34 @@ import type { AST, } from 'toml-eslint-parser';
 import type { TomlPath, } from './types.ts';
 
 /**
+ Read-only key spelling, excluding parser locations and parent links that path comparison never consumes.
+
+ @example
+ ```ts
+ const segment: KeySegmentView = { type: 'TOMLBare', name: 'server' };
+ ```
+ */
+type KeySegmentView = {
+  readonly type: AST.TOMLBare['type'];
+  readonly name: AST.TOMLBare['name'];
+} | {
+  readonly type: AST.TOMLQuoted['type'];
+  readonly value: AST.TOMLQuoted['value'];
+};
+
+/**
+ Ordered key segments are sufficient for path lookup without exposing writable parser structure.
+
+ @example
+ ```ts
+ const key: KeyView = { keys: [{ type: 'TOMLBare', name: 'server' }] };
+ ```
+ */
+type KeyView = {
+  readonly keys: readonly KeySegmentView[];
+};
+
+/**
  Surface the string form of a key fragment.
  
  `TOMLBare` carries the identifier as `name`; `TOMLQuoted` carries the
@@ -19,10 +47,10 @@ import type { TomlPath, } from './types.ts';
  
  @example
  ```ts
- keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
+ keyNameOf({ key: { type: 'TOMLBare', name: 'foo' }, },); // 'foo'
  ```
  */
-export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuoted; },): string {
+export function keyNameOf({ key, }: { readonly key: KeySegmentView; },): string {
   return key.type
     === 'TOMLBare' ? key.name : key.value;
 }
@@ -39,9 +67,9 @@ export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuote
  keysOf({ key: tomlKeyForABC, },); // ['a', 'b', 'c']
  ```
  */
-export function keysOf({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
+export function keysOf({ key, }: { readonly key: KeyView; },): readonly string[] {
   return key.keys
-    .map(function nameOf(k: AST.TOMLBare | AST.TOMLQuoted,) {
+    .map(function nameOf(k: KeySegmentView,) {
     return keyNameOf({ key: k, },);
   },);
 }

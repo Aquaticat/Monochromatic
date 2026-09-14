@@ -13,6 +13,7 @@
 
 import type { AST, } from 'toml-eslint-parser';
 
+import { keysOf, } from '../path.ts';
 import { leafToTagged, } from './decode-leaf.ts';
 import type {
   TaggedTree,
@@ -62,31 +63,6 @@ function isLeaf(node: TaggedTree,): node is TaggedValue {
 type AbsolutePath = readonly (string | number)[];
 
 //endregion Builder model
-
-//region Key resolution
-
-/**
- Resolve a key node to its bare string segments.
- 
- @param key - Parsed key node (dotted keys carry several segments).
- 
- @returns Segment names, with quoted-key values decoded.
- 
- @example
- ```ts
- keyPath({ key, }); // ['servers', 'alpha']
- ```
- */
-function keyPath({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
-  return key.keys
-    .map(function keySegment(
-      segment: AST.TOMLBare | AST.TOMLQuoted,
-    ) {
-      return (segment.type === 'TOMLBare') ? segment.name : segment.value;
-    },);
-}
-
-//endregion Key resolution
 
 //region Document builder
 
@@ -261,7 +237,7 @@ function addTable(
         root,
         path: [
           ...resolvedKey,
-          ...keyPath({ key: entry.key, },),
+          ...keysOf({ key: entry.key, },),
         ],
         content: entry.value,
       },);
@@ -303,7 +279,7 @@ function contentToTagged({ node, }: { readonly node: AST.TOMLNode; },): BuildNod
     for (const entry of node.body)
       addKeyValue({
         root: inline,
-        path: keyPath({ key: entry.key, },),
+        path: keysOf({ key: entry.key, },),
         content: entry.value,
       },);
     return inline;
@@ -337,7 +313,7 @@ export function documentToTagged({
     if (item.type === 'TOMLKeyValue') {
       addKeyValue({
         root: builder,
-        path: keyPath({ key: item.key, },),
+        path: keysOf({ key: item.key, },),
         content: item.value,
       },);
       continue;
