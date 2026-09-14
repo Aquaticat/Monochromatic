@@ -30,7 +30,7 @@
 
 import { spawnSync, } from 'node:child_process';
 import { fileURLToPath, } from 'node:url';
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   mkdir,
   mkdtemp,

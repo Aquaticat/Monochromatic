@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/cli-markdown-lint": "workspace:*",
-    "@monochromatic-dev/git-policy-cli": "workspace:*",
+    "@monochromatic-dev/git-executable": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-llm-type": "workspace:*",

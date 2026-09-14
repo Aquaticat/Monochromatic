@@ -23,7 +23,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import spawn from 'nano-spawn';
 
 import {

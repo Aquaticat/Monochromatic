@@ -2,7 +2,7 @@ import {
   delimiter,
   resolve,
 } from 'node:path';
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   type Logger,
   tagged,
@@ -122,6 +122,13 @@ export async function buildPreparationRootInputs(input: {
    * Native executable lookup context cannot be changed by later logger or descriptor callbacks.
    */
   const lookup = {
+    cwd: origin,
+    environment: {
+      ProgramFiles: process.env.ProgramFiles,
+      ProgramW6432: process.env.ProgramW6432,
+      'ProgramFiles(x86)': process.env['ProgramFiles(x86)'],
+      LOCALAPPDATA: process.env.LOCALAPPDATA,
+    },
     pathEnv: (process.env
       .PATH
       ?? '').split(delimiter,)

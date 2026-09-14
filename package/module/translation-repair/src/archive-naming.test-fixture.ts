@@ -12,7 +12,7 @@ import {
   dirname,
   join,
 } from 'node:path';
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import spawn from 'nano-spawn';

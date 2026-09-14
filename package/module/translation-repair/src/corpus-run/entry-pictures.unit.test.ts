@@ -31,7 +31,7 @@ import {
 } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,

@@ -1,4 +1,4 @@
-import { resolveGit, } from '@monochromatic-dev/git-policy-cli/ts/resolve-git.ts';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   type CorpusPin,
