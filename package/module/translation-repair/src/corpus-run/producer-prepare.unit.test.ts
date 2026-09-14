@@ -51,6 +51,21 @@ await describe({ name: '', concurrency: 1, children: [
       expect(await readdir(fixture.directory)).toEqual(['producer-prepare.mjs']);
     } });
   }),
+  it({ name: 'rejects native spawn failure rather than returning an ordinary CLI exit', fn: async function failedSpawn(context) {
+    await using fixture = await inputCliFixture();
+    context.sinon.stub(process, 'execPath').value(join(fixture.directory, 'missing-node'));
+    const outcomes = await Promise.allSettled([inputCli({ fixture, arguments_: ['--help'] })]);
+    expect(outcomes[0]).toHaveProperty('status', 'rejected');
+    expect(outcomes[0]).toHaveProperty('reason.code', 'ENOENT');
+  } }),
+  it({ name: 'rejects native signal termination rather than returning an ordinary CLI exit', fn: async function signaled() {
+    await using fixture = await inputCliFixture();
+    const executable = join(fixture.directory, 'signal-fixture.mjs');
+    await writeFile(executable, 'process.kill(process.pid, "SIGTERM");', { mode: 0o400, flag: 'wx' });
+    const outcomes = await Promise.allSettled([inputCli({ fixture: { ...fixture, executable }, arguments_: [] })]);
+    expect(outcomes[0]).toHaveProperty('status', 'rejected');
+    expect(outcomes[0]).toHaveProperty('reason.signal', 'SIGTERM');
+  } }),
   it({ name: 'refuses duplicate launch identity options before reading the file', fn: async function duplicate() {
     await using fixture = await inputCliFixture();
     const arguments_ = ['--launch', '/not-read', '--launch-sha256', DIGEST, '--launch-bytes', '2', '--launch-bytes', '2'];

@@ -25,6 +25,26 @@ const CANDIDATE = fileURLToPath(new URL(
  */
 const CLI_TEST_TIMEOUT = 30_000;
 /**
+ * Unexpected native callback values cannot become untyped promise rejections.
+ */
+class InputCliCompletionError extends Error {
+  /**
+   * The class owns its fixed diagnostic and interpolates no callback value.
+   */
+  readonly messageNamesOnly: true = true;
+  /**
+   * @example
+   * ```ts
+   * throw new InputCliCompletionError();
+   * ```
+   */
+  constructor() {
+    super('Native CLI completion did not provide an Error object.');
+    this.name = 'InputCliCompletionError';
+  }
+}
+
+/**
  * Disposable compiled CLI fixture shared only by tests.
  */
 export type InputCliFixture = AsyncDisposable & {
@@ -163,6 +183,11 @@ export function inputCli({
      * @param stdout - captured output from this exact invocation
      *
      * @param stderr - captured diagnostics from this exact invocation
+     *
+     * @example
+     * ```ts
+     * completed(null, 'help output', '');
+     * ```
      */
     function completed(
       error: unknown,
@@ -177,7 +202,11 @@ export function inputCli({
         });
         return;
       }
-      if ((!Error.isError(error)) || (!('code' in error)) || (!('signal' in error))) {
+      if (!Error.isError(error)) {
+        reject(new InputCliCompletionError());
+        return;
+      }
+      if ((!('code' in error)) || (!('signal' in error))) {
         reject(error);
         return;
       }

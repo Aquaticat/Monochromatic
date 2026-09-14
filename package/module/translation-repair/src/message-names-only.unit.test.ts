@@ -97,6 +97,7 @@ const MARKED_CLASSES: readonly string[] = [
   'GradedSheetExistsError',
   'HardCapOverrideError',
   'InStreamProviderError',
+  'InputCliCompletionError',
   'IssueEvidenceConflictError',
   'LaneComparisonError',
   'LaneSliceCoverageError',
