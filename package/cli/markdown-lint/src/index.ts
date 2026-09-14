@@ -3,6 +3,9 @@ export {
   fixSource,
 } from './fix.ts';
 export { runRules, } from './lint.ts';
+/**
+ Whole-invocation and stdin entry points used by the CLI and built-artifact consumers.
+ */
 export {
   run,
   type RunParams,
@@ -42,14 +45,6 @@ export {
   semanticLineBreaks,
   singleH1,
 } from './rule/index.ts';
-
-/**
- * Whole-invocation entry the CLI runs, exported so its test drives the shipped
- * bundle rather than the module beside it.
- *
- * @internal
- */
-export { run, } from './run.ts';
 
 /**
  * Table rendering the pipe-table rule offers as its fix, exported so that
