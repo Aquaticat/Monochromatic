@@ -381,6 +381,60 @@ The lint blocker is verified;
 current full-suite/artifact verification and owned diagnostic cleanup remain part of task47.
 Neither increasing the container memory bound nor disabling a check is an accepted workaround.
 
+### Task50 records a later failure with the single-Go-thread profile
+
+Task41's corpus-pin extraction is a later source state,
+not a retroactive change to task49's successful evidence.
+The first complete lint,
+`devlint224go1-M5LDRz`,
+analyzes 1545 files with 484 rules and reports two `stylistic(import-per-line)` warnings.
+It records peak `2141798400` bytes and no OOM/PID events.
+The import layout is corrected without changing the helper's behavior.
+Fresh types,
+normal/bootstrap builds and the native-root plus names-only test entries pass.
+
+The subsequent `devlint224go1-cLBlnb` run fails before delivering lint findings.
+Its controls remain one Oxlint worker,
+Node old space `224MiB`,
+`GOMEMLIMIT=128MiB`,
+`GOGC=20` and `GOMAXPROCS=1`.
+RAM remains `2147483648` bytes,
+swap allowance `2147483648` bytes,
+CPU allowance two and PID limit 512,
+with network disabled.
+
+The wrapper reports:
+
+```text
+# devlint224go1-cLBlnb/task.out
+Error running tsgolint: "exit status: exit status: 1"
+signal: 'SIGKILL'
+pid: 84
+```
+
+Kernel capture binds container
+`0160a446d8d7f3ffd5d4e0bea635a33d895fea29254688f7fac24167d67429e3`
+to `CONSTRAINT_MEMCG` and killed `tsgolint` host PID `3455345`.
+The final report records peak `2147483648` bytes and `oom_kill 1`.
+Before/after source hashes are unchanged within this run.
+The source extraction and import-format change are not established as causes.
+
+Go's `src/runtime/extern.go:237-240` and `src/runtime/debug/garbage.go:181-195`
+remain the relevant source boundaries:
+`GOMAXPROCS` limits simultaneous Go execution,
+while the Go memory target is soft and excludes other memory owners.
+Neither establishes an aggregate process budget.
+The previous successful profile was explicitly run-specific;
+this failure does not turn those past successes into failed measurements.
+
+Task50 runs an unchanged-source repetition series before changing controls.
+Its private driver is `repeat-current-plan-lint-20260914.mts`,
+with the same native full-package task and independently created containers.
+Read `preparation-lint-unchanged-series-20260914.json` and each native `report.json`
+before drawing a repeatability conclusion.
+No new workaround,
+allocation-site diagnosis or upstream filing is established at this checkpoint.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint

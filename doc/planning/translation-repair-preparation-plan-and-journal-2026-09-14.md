@@ -143,9 +143,23 @@ The next consumer still needs strict artifact reading,
 fixed persistence,
 retention tests and complete native integration verification.
 
+## Current verification blocker
+
+The retained corpus-pin extraction passes types,
+normal/bootstrap builds and both the native-root and names-only test entries.
+Full lint first reports only import-layout warnings,
+which are corrected.
+The next full run is memcg-killed in `tsgolint` under the previously successful single-Go-thread profile.
+Task50 owns unchanged-source repetition and bounded lint verification;
+Task41 is pending that blocker.
+See [`oxlint-type-aware-cgroup-memory.md`](../troubleshooting/oxlint-type-aware-cgroup-memory.md)
+for exact run identities and the limitation of prior per-run successes.
+No plan or journal implementation is complete.
+
 ## Next action
 
-Implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
+Finish task50's unchanged-source lint verification and retain its evidence.
+Then implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
 then design the native root/phase materializer against the actual request and receipt shapes.
 Preserve the frozen parent selection,
 current provider order,
