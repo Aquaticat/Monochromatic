@@ -47,33 +47,28 @@ const STREAM_MODE = 0o600;
  *
  * @param signal - caller cancellation combined with the independent bootstrap deadline
  *
- * @param l - invoking subprocess owner's logger
+ * Logging remains at the awaiting owner so a throwing logger cannot escape an abort-event callback.
  *
  * @returns Scoped interruption ownership
  *
  * @example
  * ```ts
- * using interruption = comparisonBootstrapInterruption({ child, signal, l });
+ * using interruption = comparisonBootstrapInterruption({ child, signal });
  * ```
  */
 function comparisonBootstrapInterruption({
   child,
   signal,
-  l,
 }: {
   readonly child: Readonly<Pick<ChildProcess, 'exitCode' | 'signalCode' | 'kill'>>;
   readonly signal: AbortSignal;
-  readonly l: Logger;
 },): Disposable {
   /** All escalation timers belong to this subprocess scope. */
   const timers = new Set<ReturnType<typeof setTimeout>>();
-  /** Cancellation telemetry never reads or forwards the caller's abort reason. */
-  const pl = tagged({ tag: comparisonBootstrapInterruption.name, l });
   /** Enforces the outer process bound without claiming that inner container cleanup finished. */
   function forceTermination(): void {
     if ((child.exitCode === null) && (child.signalCode === null)) {
       child.kill('SIGKILL');
-      pl.warn('forced bootstrap termination after its cooperative cleanup allowance');
     }
   }
   /** A closed child is never signalled again, but the caller still observes late cancellation. */
@@ -82,7 +77,6 @@ function comparisonBootstrapInterruption({
       return;
     child.kill('SIGTERM');
     timers.add(setTimeout(forceTermination, BOOTSTRAP_TERMINATION_GRACE_MS));
-    pl.warn('requested bootstrap termination; any completed output remains retained');
   }
   signal.addEventListener('abort', interrupt, { once: true });
   if (signal.aborted)
@@ -169,7 +163,13 @@ export async function invokeProducerInputBootstrap({
     await verifyProducerInputFile({ path: nodePath, expected: manifest.node.executable, operation: 'verify-runtime' });
     await verifyProducerInputFile({ path: invocation.bootstrapPath, expected: invocation.bootstrapIdentity, operation: 'verify-runtime' });
     await verifyProducerInputComparisonRun({ run, l: pl });
+    /**
+     * Output descriptor stays open through actual child close and content synchronization.
+     */
     await using stdout = await open(stdoutPath, 'wx', STREAM_MODE);
+    /**
+     * Native diagnostics remain separate from the machine-readable success frame.
+     */
     await using stderr = await open(stderrPath, 'wx', STREAM_MODE);
     /** No deadline state is copied into a stale process-result object. */
     const deadline = AbortSignal.timeout(BOOTSTRAP_DEADLINE_MS);
@@ -188,7 +188,10 @@ export async function invokeProducerInputBootstrap({
     });
     /** Actual close observation is installed before cancellation forwarding. */
     const closed = producerInputCommandClose(child);
-    using interruption = comparisonBootstrapInterruption({ child, signal, l: pl });
+    /**
+     * Timer and listener disposal cannot detach the independent native-close observation.
+     */
+    using interruption = comparisonBootstrapInterruption({ child, signal });
     /** Error categories do not end observation before native descriptors close. */
     const errors = await closed;
     await stdout.sync();
@@ -199,8 +202,10 @@ export async function invokeProducerInputBootstrap({
       value: { version: 1, code: child.exitCode, signal: child.signalCode, errors, callerAborted: invocation.signal.aborted, deadlineReached: deadline.aborted },
       l: pl,
     });
-    if (signal.aborted)
+    if (signal.aborted) {
+      pl.warn(`bootstrap interruption observed after native close; exit signal ${child.signalCode ?? 'none'}; created output retained`);
       throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
+    }
     if ((child.exitCode !== 0) || (child.signalCode !== null) || (errors.length > 0))
       throw new ProducerInputComparisonError({ kind: 'bootstrap', directory: run.directory });
     pl.info('input bootstrap closed successfully; persisted output still requires independent verification');

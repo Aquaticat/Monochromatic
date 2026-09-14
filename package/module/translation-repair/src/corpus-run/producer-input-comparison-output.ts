@@ -104,6 +104,33 @@ function comparisonMetadata({
 }
 
 /**
+ * Checks bounded ASCII identity syntax without code-point or grapheme iteration.
+ *
+ * @param value - decoded identity or UUID group
+ *
+ * @param length - fixed width required by its role
+ *
+ * @returns Whether exact width and lowercase hexadecimal spelling both match
+ *
+ * @example
+ * ```ts
+ * const valid = comparisonHex({ value, length: CONTAINER_ID_WIDTH });
+ * ```
+ */
+function comparisonHex({ value, length }: {
+  readonly value: unknown;
+  readonly length: number;
+},): boolean {
+  if ((typeof value !== 'string') || (value.length !== length))
+    return false;
+  for (let index = 0; index < value.length; index += 1) {
+    if (!'0123456789abcdef'.includes(value.charAt(index)))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Requires one directory with the native canonical UUIDv4 spelling before constructing a retained path.
  *
  * @param observation - bounded direct-child metadata from the dedicated native output parent
@@ -136,14 +163,16 @@ function comparisonInputRunId({
   const runId = child.name.slice(RUN_PREFIX.length);
   /** Exact group widths prevent traversal and alternate UUID spellings. */
   const groups = runId.split('-');
+  /**
+   * Presence, version and variant remain explicit independently of the group-width check.
+   */
+  const [version, variant] = groups.slice(2);
   if ((groups.length !== UUID_GROUP_WIDTHS.length)
     || !UUID_GROUP_WIDTHS.every(function validGroup(width, index): boolean {
-      /** A missing group is not an empty accepted identifier component. */
-      const group = groups[index];
-      return (group !== undefined) && (group.length === width)
-        && [...group].every(function hex(character): boolean { return '0123456789abcdef'.includes(character); });
+      return comparisonHex({ value: groups[index], length: width });
     })
-    || !groups[2]?.startsWith('4') || !'89ab'.includes(groups[3]?.charAt(0) ?? ''))
+    || (version === undefined) || !version.startsWith('4')
+    || (variant === undefined) || !'89ab'.includes(variant.charAt(0)))
     throw new ProducerInputComparisonError({ kind: 'output', directory });
   return runId;
 }
@@ -286,9 +315,8 @@ export async function readProducerInputComparisonOutput({
     const cleanup = comparisonMetadata({ text: await metadata(join(inputRunDirectory, 'cleanup-complete.json')), keys: ['version', 'kind', 'runId', 'containerId', 'removed', 'absenceChecked', 'interrupted'], directory: run.directory });
     if ((cleanup.version !== 1) || (cleanup.kind !== 'producer-preparation-input-cleanup-complete')
       || (cleanup.runId !== inputRunId) || (cleanup.removed !== true) || (cleanup.absenceChecked !== true)
-      || (cleanup.interrupted !== false) || (typeof cleanup.containerId !== 'string')
-      || (cleanup.containerId.length !== CONTAINER_ID_WIDTH)
-      || ![...cleanup.containerId].every(function hex(character): boolean { return '0123456789abcdef'.includes(character); }))
+      || (cleanup.interrupted !== false)
+      || !comparisonHex({ value: cleanup.containerId, length: CONTAINER_ID_WIDTH }))
       throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
     /** Artifact location is fixed, not selected by the completion body. */
     const artifactPath = join(output, 'unqualified-inputs.json');

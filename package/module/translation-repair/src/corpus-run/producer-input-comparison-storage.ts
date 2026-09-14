@@ -141,6 +141,9 @@ export async function writeProducerInputComparisonRecord({
     if (Buffer.byteLength(text, 'utf8') > MAX_RECORD_BYTES)
       throw new ProducerInputComparisonError({ kind: 'storage', directory: run.directory });
     pl.debug(`writing exclusive comparison record ${JSON.stringify(file)}`);
+    /**
+     * Exclusive record descriptor preserves existing and partial metadata on every failure path.
+     */
     await using handle = await open(join(run.directory, file), 'wx', FILE_MODE);
     await handle.writeFile(text, 'utf8');
     await handle.sync();

@@ -78,6 +78,9 @@ async function writeComparisonLaunch({
     /** Path construction uses a fixed role inside the created private namespace. */
     const path = join(run.directory, file);
     await verifyProducerInputComparisonRun({ run, l: pl });
+    /**
+     * Exclusive descriptor is synchronized before any derived launch may be invoked.
+     */
     await using handle = await open(path, 'wx', LAUNCH_FILE_MODE);
     await handle.writeFile(owned);
     await handle.sync();
