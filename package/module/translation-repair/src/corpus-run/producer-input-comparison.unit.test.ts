@@ -16,7 +16,7 @@ const identity = (bytes: Uint8Array) => ({ bytes: bytes.byteLength, sha256: crea
 const nodeIdentity = identity(await readFile(process.execPath));
 const artifactText = JSON.stringify({ scope: 'unqualified-preparation-root-inputs', fixture: '猫🐾' });
 const artifactIdentity = identity(Buffer.from(artifactText));
-const CORRUPT_OPENING_BYTE = 0x5b;
+const CORRUPT_OPENING_BYTE = 0x5B;
 
 function recordValue(value: unknown): Readonly<Record<string, unknown>> {
   if (((typeof value) !== 'object') || (value === null) || Array.isArray(value)) throw new Error('Expected fixture record');

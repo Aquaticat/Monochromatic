@@ -77,7 +77,8 @@ export async function verifyProducerInputComparisonFile({
       after: actual,
     });
     if ((!expected.isFile()) || (!sameDescriptor)
-      || (actual.uid !== BigInt(run.uid)) || (actual.gid !== BigInt(run.gid))
+      || (actual.uid !== BigInt(run.uid))
+      || (actual.gid !== BigInt(run.gid))
       || ((actual.mode & MODE_MASK) !== FILE_MODE))
       throw new ProducerInputComparisonError({
         kind: failure,

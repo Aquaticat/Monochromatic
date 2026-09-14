@@ -137,7 +137,7 @@ export async function verifyProducerInputComparisonRun({
         path: run.inputParent,
         inode: run.inputParentInode
       },
-    ];
+    ] as const;
     await Promise.all(directories.map(async function verifyDirectory(directory): Promise<void> {
       /**
        * Metadata checks neither follow a leaf symlink nor read a corpus-derived body.
