@@ -17,8 +17,8 @@ Private backup `main-merge-lockfile-VyH4kO` under agent scratch contains exact b
 Stash `7a55f12e9d76bfd9998f07cda9512180fb79e9aa` contains the same bytes
 and has the repair starting commit as its first parent.
 Only `mise.lock` is stashed.
-Restoration remains required after the merge commit;
-the local changes must not enter that commit.
+Restoration is performed after the merge commit,
+so the local changes do not enter that commit.
 
 ## Conflict resolutions
 
@@ -30,7 +30,8 @@ Their original stages and working preimages are retained in private scratch
   QDF/QPW/QNX,
   the visual-review and option rules,
   IMX/HLT and 1CB.
-  The resolved file has 288 unique rule tags.
+  The initial resolved file has 288 unique rule tags;
+  the later standing issue-reporting instruction adds XIR.
 - `CLAUDE.md` is generated through the actual file-enforcer CLI/library,
   using the canonical overwrite expression in `file-enforcer.config.ts`.
   Only its destination and staleness-manifest paths are redirected to a private candidate.
@@ -74,8 +75,11 @@ No frozen runtime is replaced and no dependency package is patched.
 
 The canonical file-enforcer candidate and transfer proof are in private scratch
 `main-merge-claude-u8H9Ci`.
-The generated `CLAUDE.md` SHA-256 is
+The initial generated `CLAUDE.md` SHA-256 is
 `86e85df40188ed189c723dc8149fc040d0d1f0f047613cfe2603db7bb34d6140`.
+After the user adds the standing issue-reporting requirement,
+`main-merge-claude-LUEW9u/standing-rule-verification.json` verifies the fresh generated file:
+`eeaae1583f726f91c911e677215db962356acd31f69e4ab9d279ec1550956f9d`.
 The standalone generator is frozen under
 `node_modules/.frozen-merge-claude-generator-kWWHmw`.
 This is a scoped generator invocation,
@@ -104,6 +108,98 @@ TypeScript `7.0.2` and other updated dependency versions.
 Historical preparation qualification remains bound to its older immutable artifacts;
 this merge does not qualify new dependency builds.
 
+## Standing issue reporting and unreviewed changes
+
+The user requires GitHub issues for adjacent repository defects,
+including local workarounds or fixes,
+and requires those records to state that the changes have not been reviewed.
+Rule XIR and regenerated `CLAUDE.md` are committed in `7c5810004`;
+Markdown verification passes.
+
+The following issues remain open with `needs-triage`.
+Every issue's title,
+body and explicit unreviewed status are read back after creation.
+The creation queue is serial,
+pauses between mutations and performs no automatic retry.
+
+- [#509](https://github.com/Aquaticat/Monochromatic/issues/509):
+  logger callback-observation workaround and native fault fixtures.
+- [#510](https://github.com/Aquaticat/Monochromatic/issues/510):
+  logger concurrency assertion changed from elapsed time to an explicit completion barrier.
+- [#511](https://github.com/Aquaticat/Monochromatic/issues/511):
+  TOML unit tests moved to built artifacts and existing unstable test seams.
+- [#512](https://github.com/Aquaticat/Monochromatic/issues/512):
+  TOML readonly observation views and parser ownership boundaries.
+- [#513](https://github.com/Aquaticat/Monochromatic/issues/513):
+  Markdown merge export and comment reconciliation.
+- [#514](https://github.com/Aquaticat/Monochromatic/issues/514):
+  inherited TSDoc prefix and catch-binding conventions.
+- [#515](https://github.com/Aquaticat/Monochromatic/issues/515):
+  missing dependency reported through the trust bundle's self-contained check.
+- [#516](https://github.com/Aquaticat/Monochromatic/issues/516):
+  Markdown policy dependency failure truncated into a report-parse diagnostic.
+
+The local fixes and workarounds have not been reviewed.
+Passing tests or formatter output is not review.
+
+## Final selected-package verification
+
+`main-merge-package-checks-63k9ap` passes fresh builds for fs-path,
+async-time,
+logger,
+module-test,
+Markdown-lint and TOML-edit.
+Those packages plus TOML-edit's fuzz sidecar pass type checks,
+complete unit tasks and read-only Oxlint tasks.
+Each lint run reports zero warnings and zero errors with 485 rules.
+The sidecar runs its bounded unit mode,
+not a time-budgeted fuzz campaign.
+
+The container retains the 2 GiB RAM,
+2 GiB swap,
+two-CPU,
+512-PID and no-network limits.
+Peak memory is `746094592` bytes with zero OOM/PID events.
+The measured package source/configuration inventories remain unchanged.
+The actual runtime ledger records Node `26.8.2`.
+
+Dependency directories are read-only overlays from main's installed tree.
+This is source compatibility evidence against that overlay,
+not proof of a fresh installation from the merged lockfile
+and not a new translation-repair full-suite or native preparation qualification.
+The worktree bootstrap also restores 189 missing declared workspace links,
+replacing no existing links;
+that operation is not a native package-manager install.
+
+`main-merge-lock-generation-JLN4yl` passes native PNPM `12.3.4`
+frozen-lock and supply-chain verification for all 773 package entries.
+The lockfile bytes are unchanged.
+This remains a metadata-only check,
+not package installation.
+
+Cold checks first refuse absent abbreviated metadata,
+then absent full metadata.
+A separate private package acquires abbreviated registry metadata with scripts disabled,
+without mounting the repository or real home.
+The no-network verifier mounts that cache read-only
+and exposes the existing filtered-full mirror at its full-metadata lookup path.
+The release source explicitly accepts filtered-full metadata for the trust projection;
+the wrapper preserves the original bytes rather than manufacturing cache records.
+No trust or age policy is disabled,
+and the final check does not inherit a cached lockfile-verification verdict.
+
+`main-merge-package-checks-A7pdf5` also exercises the actual built Markdown CLI:
+help,
+semantic wrapping,
+tag-like paragraph preservation,
+older quote wrapping and usage refusal all pass.
+The stdin consumers use a disposable directory,
+and the CLI bytes are unchanged after invocation.
+
+A native Mise dry-run against the reconciled private lockfile also succeeds.
+Its bytes and the unstaged owner file both retain SHA-256
+`6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
+
 ## Paused repair work
 
 Tasks55,
@@ -112,9 +208,12 @@ Tasks55,
 Task55 adds `observeLoggerCallbacks` to the existing logger package boundary.
 Commits `fb0743f44` and `ea3087d9c` contain its implementation,
 exports and built-artifact tests.
-They have not yet passed their package build,
+Subsequent selected-package verification passes their build,
 type check,
-lint or tests.
+complete unit task and read-only lint.
+README completion,
+consumer integration and their remaining task-specific acceptance still belong to tasks55 and54.
+The implementation remains unreviewed in #509.
 No test-only public comparison export is introduced.
 
 The selected task54 remedy treats callback exceptions as observable telemetry,
@@ -184,12 +283,13 @@ The restored file SHA-256 is
 `6a3dcb5cbacd22f38feb141320f707ca41aa504b01df9197567ea4bf65ba4b12`.
 The Git index is reset to the merge commit's lockfile without staging the local changes.
 `main-merge-lockfile-VyH4kO/restoration-complete.json` records that proof.
-The original backup and stash remain retained.
+The exact original backup remains retained.
+The owned temporary stash is removed after restoration verification;
+`stash-cleanup.json` verifies that both unrelated stash identities remain unchanged.
 
 ## Remaining merge work
 
-Commit the corrective comment resolution,
-then verify resolved package boundaries against freshly built dependencies.
+Finish the final repository/document checks and exact-ID diagnostic cleanup.
 Keep the reconciled owner lockfile unstaged.
 Check both merge parents,
 no unmerged entries or accidental duplicate exports,

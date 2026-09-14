@@ -21,6 +21,7 @@ Problems with test execution and test suite organization:
 
 - Duplicate describe blocks causing missing or misattributed test output
 - Test suite organization best practices
+- [Sinon drops an injected undefined exception](sinon-undefined-exception-sentinel.md)
 
 ### [Editor Setup](editors.md)
 
