@@ -2207,7 +2207,15 @@ Task47 resumes current artifact/full-suite verification,
 remaining native boundary controls,
 proof retention and owned diagnostic cleanup.
 The independently prepared full-unit harness is `run-current-input-full-unit-20260913.mts`;
-it requires fresh normal/bootstrap builds and supplies the default-HOME corpus mount plus a test-entry runtime ledger.
+it supplies the default-HOME corpus mount plus a test-entry runtime ledger.
+Managed process `proc_4603` now runs the exact current types,
+normal build,
+bootstrap build,
+runtime seal and complete default unit suite in sequence.
+Its owning log is `input-final-verification-20260913.out`;
+per-stage logs are `input-final-<stage>-20260913.out`.
+Read the actual `unitExit` and expected/observed test-entry ledger result,
+not only the outer process status.
 The original memory/CPU/PID bounds remain unchanged.
 The passing native lifecycle artifacts predate these source changes and do not verify their exact bytes.
 
