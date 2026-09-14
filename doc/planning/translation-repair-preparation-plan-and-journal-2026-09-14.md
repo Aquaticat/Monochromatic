@@ -335,6 +335,62 @@ complete unit/branch coverage,
 listed guard proofs and evidence cleanup remain outstanding.
 No matching/mismatch run grants root or phase approval.
 
+## Full-suite checkpoint and task54 logging blocker
+
+`comparison-full-unit-20260914.out` records the default package suite at the `5ed18da3d` implementation.
+The private run `devfull-4za6Le` has 632 expected and 632 observed test-entry processes,
+all observed on Node `26.8.2`.
+The verifier compares the complete expected/observed entry sets,
+checks source/configuration identity and records zero OOM/PID events.
+Peak cgroup memory is `556630016` bytes.
+This is an entry-process count,
+not a test-case count or proof of untested branches.
+It predates the new logging regressions.
+
+The first independent Advisor invocation expires without a review.
+The second identifies an uncovered callback boundary in `producer-input-comparison.ts`:
+its terminal catch calls the caller's `warn` before attempting `failure.json`.
+A persistently throwing logger can therefore replace the chosen names-only error
+and prevent the failure-record attempt.
+Preflight and creation catch blocks have related exposure.
+Creation also logs success before returning the created run to its outer owner.
+Logging inside the storage transaction can report failure after content has already synchronized.
+These are source-reviewed defects,
+not consequences of the formatter OOM incidents.
+Existing physical artifacts need not be deleted for failure-record retention to be broken.
+
+Task54 owns this blocker;
+task51 returns to pending until the remediation is verified.
+The required precedence is the original fixed operation failure,
+with only actual failure-record persistence refusal allowed to supersede it as `storage`.
+Caller logging must not leak arbitrary thrown values or prevent retained failure evidence.
+Move telemetry to ownership-known boundaries or isolate its exceptions;
+do not remove logging infrastructure,
+add generic execution modes or retry the operation.
+Storage and created-run handoff must not depend on a successful caller callback.
+The earlier once-throwing interruption control does not establish persistent-logger behavior.
+
+Commit `13870bd70` adds persistent warning regressions for mismatch,
+bootstrap and output failures using ordinary and revoked Error objects,
+preflight refusal,
+post-creation success logging,
+failure-record collision and interruption after native close.
+The tests check retained useful output before the designated missing-record assertion where applicable.
+Managed process `proc_dd50` completes the red verifier.
+Types and normal/bootstrap builds pass;
+`devtest-iU1fZl` then reports exactly ten designated ordinary `AssertionError` leaf failures.
+Its `logging-red-reading.json` retains each test name and assertion location.
+The post-output cases fail because `failure.json` is absent after useful artifact bytes are verified;
+preflight,
+interruption and collision cases expose the caller's Error instead of `ProducerInputComparisonError`.
+The post-creation case likewise lacks `failure.json` while `created.json` exists.
+The verifier checks no source/configuration change,
+OOM/PID event or signal.
+`comparison-logger-red-verification-20260914.out` retains the build and native test outcomes.
+The red verifier's zero exit means the defect was reproduced,
+not that the package tests pass or the defect is fixed.
+No remediation or guard-removal proof is established at this checkpoint.
+
 ## Earlier verified checkpoint: task50
 
 The retained corpus-pin extraction passes types,
@@ -361,7 +417,8 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Finish task51's current comparison verification:
+Finish task54's persistent-logger retention remediation and its measured regressions first.
+Then resume task51's current comparison verification:
 zero full-scope lint,
 complete default unit-entry evidence,
 branch accounting and designated guard-removal assertions,
