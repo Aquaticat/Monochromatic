@@ -41,7 +41,9 @@ export function callerMapping({
    * The rootless owner maps only this caller coordinate, not a whole user range, to namespace zero.
    */
   const wanted = `${caller}:0:1`;
-  if (rows.filter(function owner(row): boolean { return row === wanted; })
+  if (rows.filter(function owner(row): boolean {
+    return row === wanted;
+  })
     .length
     !== 1)
     throw new ProducerInputRunError({
@@ -80,7 +82,9 @@ export function callerMapping({
       || (String(extent) !== extentText)
       || (!Number.isSafeInteger(container + extent))
       || ((row !== wanted)
-      && ((namespace === 0) || (container <= caller) && (caller < container + extent))))
+      && ((namespace === 0) || ((container <= caller)
+        && (caller < (container
+          + extent))))))
       throw new ProducerInputRunError({
         operation: 'launch-container',
         locator: `container mapping ${name}`,

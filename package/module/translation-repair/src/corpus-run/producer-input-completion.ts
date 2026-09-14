@@ -247,7 +247,8 @@ async function completionDirectories(host: ProducerInputHost): Promise<void> {
         'unqualified-inputs.json'
       ]
     )) || ((await readdir(join(
-      host.run.outputDir,
+      host.run
+        .outputDir,
       'home'
     ))).length > 0))
       throw new ProducerInputRunError({

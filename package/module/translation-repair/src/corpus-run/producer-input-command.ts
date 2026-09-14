@@ -43,7 +43,9 @@ async function commandRecord({
   readonly path: string;
   readonly text: string
 },): Promise<void> {
-  /** Exclusive descriptor keeps one command record independent from any existing file. */
+  /**
+   * Exclusive descriptor keeps one command record independent from any existing file.
+   */
   await using file = await open(
     path,
     'wx',
@@ -149,13 +151,17 @@ export async function runProducerInputCommand({
         timeoutMilliseconds
       })
     });
-    /** Native stdout remains private and owned until actual process close. */
+    /**
+     * Native stdout remains private and owned until actual process close.
+     */
     await using stdout = await open(
       `${prefix}.stdout`,
       'wx',
       PRIVATE_MODE
     );
-    /** Native diagnostics are retained independently from their public names-only rendering. */
+    /**
+     * Native diagnostics are retained independently from their public names-only rendering.
+     */
     await using stderr = await open(
       `${prefix}.stderr`,
       'wx',
@@ -200,8 +206,13 @@ export async function runProducerInputCommand({
      * An earlier native error cannot detach the actual close observation.
      */
     const closed = producerInputCommandClose(child);
-    /** Native interruption resources never outlive this stage's close observation. */
-    using _listener = interruptProducerInputCommand({ child, signal: effective });
+    /**
+     * Native interruption resources never outlive this stage's close observation.
+     */
+    using _listener = interruptProducerInputCommand({
+      child,
+      signal: effective
+    });
     /**
      * Native output descriptors and error evidence remain owned until actual close.
      */

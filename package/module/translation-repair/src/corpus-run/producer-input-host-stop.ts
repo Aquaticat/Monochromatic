@@ -1,8 +1,14 @@
 import { refusalText, } from '../refusal-text.ts';
-import { readProducerInputCommand, runProducerInputCommand, } from './producer-input-command.ts';
+import {
+  readProducerInputCommand,
+  runProducerInputCommand,
+} from './producer-input-command.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import type { ProducerInputHost, } from './producer-input-host-init.ts';
-import { readProducerInputContainerTerminal, type ProducerInputContainerState, } from './producer-input-inspect.ts';
+import {
+  readProducerInputContainerTerminal,
+  type ProducerInputContainerState,
+} from './producer-input-inspect.ts';
 import { writeProducerInputControl, } from './producer-input-run.ts';
 
 /**

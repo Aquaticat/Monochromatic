@@ -58,7 +58,9 @@ export class ProducerInputInterruptedError extends Error {
 export function assertProducerInputNotInterrupted(signal: AbortSignal): void {
   if (!signal.aborted)
     return;
-  /** Native AbortSignal reasons remain unknown until matched to the closed signal vocabulary. */
+  /**
+   * Native AbortSignal reasons remain unknown until matched to the closed signal vocabulary.
+   */
   const reason: unknown = signal.reason;
   if ((reason !== 'SIGINT') && (reason !== 'SIGTERM'))
     throw new ProducerInputRunError({

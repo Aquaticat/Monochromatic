@@ -1,33 +1,61 @@
-import { execFile, } from 'node:child_process';
+import {
+  execFile,
+  type ExecFileException,
+} from 'node:child_process';
 import { createHash, } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile, } from 'node:fs/promises';
+import {
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { dirname, join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import { promisify, } from 'node:util';
 
-/** Tests consume the separately built bootstrap, never sibling implementation source. */
-const CANDIDATE = fileURLToPath(new URL('../../node_modules/.producer-bootstrap-candidate/producer-prepare.mjs', import.meta.url));
-/** A guard test cannot wait indefinitely for unintended native work. */
+/**
+ * Tests consume the separately built bootstrap, never sibling implementation source.
+ */
+const CANDIDATE = fileURLToPath(new URL(
+  '../../node_modules/.producer-bootstrap-candidate/producer-prepare.mjs',
+  import.meta.url
+));
+/**
+ * A guard test cannot wait indefinitely for unintended native work.
+ */
 const CLI_TEST_TIMEOUT = 30_000;
-/** Native callback completion is adapted without blocking the test process. */
-const execute = promisify(execFile);
-
-/** Disposable compiled CLI fixture shared only by tests. */
+/**
+ * Disposable compiled CLI fixture shared only by tests.
+ */
 export type InputCliFixture = AsyncDisposable & {
-  /** Private fixture home and working directory. */
+  /**
+   * Private fixture home and working directory.
+   */
   readonly directory: string;
-  /** Copied compiled entry retains its required standalone filename. */
+  /**
+   * Copied compiled entry retains its required standalone filename.
+   */
   readonly executable: string;
 };
 
-/** Only ordinary native exits become assertion data; spawn errors and signals still throw. */
+/**
+ * Only ordinary native exits become assertion data; spawn errors and signals still throw.
+ */
 type InputCliResult = {
-  /** Zero or an actual nonzero process exit, never a timeout sentinel. */
+  /**
+   * Zero or an actual nonzero process exit, never a timeout sentinel.
+   */
   readonly status: number;
-  /** Complete captured CLI output. */
+  /**
+   * Complete captured CLI output.
+   */
   readonly stdout: string;
-  /** Complete captured names-only refusal output. */
+  /**
+   * Complete captured names-only refusal output.
+   */
   readonly stderr: string;
 };
 
@@ -42,18 +70,43 @@ type InputCliResult = {
  * ```
  */
 export async function inputCliFixture(): Promise<InputCliFixture> {
-  /** Missing build output fails rather than skipping the test. */
+  /**
+   * Missing build output fails rather than skipping the test.
+   */
   const bytes = await readFile(CANDIDATE);
-  /** Each test owns writable state without ambient application configuration. */
-  const directory = await mkdtemp(join(tmpdir(), 'preparation-cli-test-'));
-  /** The only executed package file is the compiled standalone artifact. */
-  const executable = join(directory, 'producer-prepare.mjs');
-  await writeFile(executable, bytes, { mode: 0o400, flag: 'wx' });
+  /**
+   * Each test owns writable state without ambient application configuration.
+   */
+  const directory = await mkdtemp(join(
+    tmpdir(),
+    'preparation-cli-test-'
+  ));
+  /**
+   * The only executed package file is the compiled standalone artifact.
+   */
+  const executable = join(
+    directory,
+    'producer-prepare.mjs'
+  );
+  await writeFile(
+    executable,
+    bytes,
+    {
+      mode: 0o400,
+      flag: 'wx'
+    }
+  );
   return {
     directory,
     executable,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(directory, { recursive: true, force: true });
+      await rm(
+        directory,
+        {
+          recursive: true,
+          force: true
+        }
+      );
     },
   };
 }
@@ -74,28 +127,66 @@ export async function inputCliFixture(): Promise<InputCliFixture> {
  * const result = await inputCli({ fixture, arguments_: ['--help'] });
  * ```
  */
-export async function inputCli({ fixture, arguments_, }: {
+export function inputCli({
+  fixture,
+  arguments_,
+}: {
   readonly fixture: InputCliFixture;
   readonly arguments_: readonly string[];
 }): Promise<InputCliResult> {
-  try {
-    /** Asynchronous native execution keeps timeout handling independent from the test event loop. */
-    const result = await execute(process.execPath, [fixture.executable, ...arguments_], {
+  /**
+   * Native completion owns both output streams and the ordinary-exit versus execution-failure distinction.
+   */
+  const {
+    promise,
+    resolve,
+    reject,
+  } = Promise.withResolvers<InputCliResult>();
+  /**
+   * Error-first completion preserves native stdout and stderr even for a deliberate CLI refusal.
+   *
+   * @param error - native execution outcome, never a caller-fabricated result
+   *
+   * @param stdout - captured output from this exact invocation
+   *
+   * @param stderr - captured diagnostics from this exact invocation
+   */
+  function completed(
+    error: Readonly<ExecFileException> | null,
+    stdout: string,
+    stderr: string,
+  ): void {
+    if (error === null) {
+      resolve({ status: 0, stdout, stderr });
+      return;
+    }
+    /**
+     * Own the primitive exit code before rejecting spawn failures or signal termination.
+     */
+    const code = error.code;
+    if ((typeof code !== 'number') || !Number.isSafeInteger(code) || (code <= 0)
+      || (error.signal !== null)) {
+      reject(error);
+      return;
+    }
+    resolve({ status: code, stdout, stderr });
+  }
+  execFile(
+    process.execPath,
+    [fixture.executable, ...arguments_],
+    {
       cwd: fixture.directory,
-      env: { HOME: fixture.directory, TMPDIR: fixture.directory, PATH: `${dirname(process.execPath)}:/usr/bin:/bin` },
+      env: {
+        HOME: fixture.directory,
+        TMPDIR: fixture.directory,
+        PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
+      },
       encoding: 'utf8',
       timeout: CLI_TEST_TIMEOUT,
-    });
-    return { status: 0, stdout: result.stdout, stderr: result.stderr };
-  }
-  catch (error) {
-    if (!Error.isError(error) || !('code' in error) || typeof error.code !== 'number'
-      || !Number.isSafeInteger(error.code) || !('signal' in error) || error.signal !== null
-      || !('stdout' in error) || typeof error.stdout !== 'string'
-      || !('stderr' in error) || typeof error.stderr !== 'string')
-      throw error;
-    return { status: error.code, stdout: error.stdout, stderr: error.stderr };
-  }
+    },
+    completed,
+  );
+  return promise;
 }
 
 /**
@@ -112,12 +203,36 @@ export async function inputCli({ fixture, arguments_, }: {
  * const arguments_ = await inputLaunchArguments({ fixture, bytes: new TextEncoder().encode('{}') });
  * ```
  */
-export async function inputLaunchArguments({ fixture, bytes, }: {
+export async function inputLaunchArguments({
+  fixture,
+  bytes,
+}: {
   readonly fixture: InputCliFixture;
   readonly bytes: Uint8Array;
 }): Promise<readonly string[]> {
-  /** This file has no corpus or user configuration authority. */
-  const path = join(fixture.directory, 'launch.json');
-  await writeFile(path, bytes, { mode: 0o600, flag: 'wx' });
-  return ['--launch', path, '--launch-sha256', createHash('sha256').update(bytes).digest('hex'), '--launch-bytes', String(bytes.length)];
+  /**
+   * This file has no corpus or user configuration authority.
+   */
+  const path = join(
+    fixture.directory,
+    'launch.json'
+  );
+  await writeFile(
+    path,
+    bytes,
+    {
+      mode: 0o600,
+      flag: 'wx'
+    }
+  );
+  return [
+    '--launch',
+    path,
+    '--launch-sha256',
+    createHash('sha256')
+      .update(bytes)
+      .digest('hex'),
+    '--launch-bytes',
+    String(bytes.length)
+  ];
 }

@@ -1,4 +1,9 @@
-import { launchRecord, launchHex, launchBytes, launchPath, } from './producer-input-launch-shape.ts';
+import {
+  launchRecord,
+  launchHex,
+  launchBytes,
+  launchPath,
+} from './producer-input-launch-shape.ts';
 import { PRODUCER_INPUT_METADATA_BYTES, } from './producer-input-bounds.ts';
 import { ProducerInputRunError, } from './producer-input-error.ts';
 import {

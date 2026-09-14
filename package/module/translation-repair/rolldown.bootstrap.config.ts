@@ -70,7 +70,7 @@ const bootstrapManifest: Plugin = {
         .filter(function executable(value): boolean {
           return (value.type === 'chunk')
             && value.fileName
-              .endsWith('.mjs');
+            .endsWith('.mjs');
         });
       /**
        * The host and child execute the same one-file bootstrap.
@@ -86,7 +86,8 @@ const bootstrapManifest: Plugin = {
           return !isBuiltin(name);
         })
         || (entry.dynamicImports
-          .length > 0))
+          .length
+          > 0))
         throw new PreparationBootstrapBuildError('Preparation bootstrap contains an external or statically resolved application dependency.');
       /**
        * The guarded application import remains an opaque fixed URL expression, audited separately at the consumer boundary.
