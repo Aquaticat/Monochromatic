@@ -339,6 +339,9 @@ For common issues:
 - **Escape fails across Firefox and Ghostty after agent input automation?
   ** →
   [Reset interrupted ydotool virtual-key state](ydotool-interrupted-key-release.md)
+- **Caller `AbortSignal` getters leak error metadata into an operation?
+  ** →
+  [Own live signal observations](node-abort-signal-owned-observation.md)
 - **Android `uiautomator dump` cannot get idle state while an app loads?
   ** →
   [Wait for stable rendered content](android-uiautomator-dump-idle-state.md)

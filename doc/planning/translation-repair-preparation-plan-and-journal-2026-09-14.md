@@ -10,6 +10,7 @@ Its implementation is split into task51 for persisted-input comparison verificat
 task52 for finite root/phase materializers and task53 for current-attempt acquisition journals.
 Task54's callback-retention remediation and task55's shared logger utility are verified in their listed scopes.
 Task51 still owns the comparison's remaining non-logger branch qualification.
+It is blocked on task62's newly reproduced live-signal error-ownership defect.
 Task52 waits for task51;
 task53 waits for task52.
 Task41 remains incomplete until those owners satisfy their own acceptance boundaries.
@@ -617,10 +618,31 @@ not new launch approval or complete native lifecycle coverage.
 The first non-logger mutation run `comparison-boundary-guards-zQu7zJ`
 stops because its assertion reader expects `error.kind`,
 while the exclusivity mutation correctly fails the designated test's rejected-status assertion.
-The revised finite matrix is running;
-it retains every case result and runs restored artifact tests even when an individual proof fails.
-Task51 remains open until those results,
-current full-suite coverage and scoped evidence cleanup are checked.
+The revised finite matrix `comparison-boundary-guards-ej7LYW` finishes every case and restored artifact tests.
+Its only unsuccessful proof classification is the bootstrap-byte case:
+the designated test fails because the mutated bootstrap writes its marker,
+but the proof reader expects the earlier rejected-status assertion.
+No completed matrix verdict is claimed.
+The exact recorded marker assertion must replace that source needle on requalification.
+
+A separate built-entry probe `comparison-signal-origin-j3YwJS` finds a caller-state defect:
+an own `aborted` getter on a genuine signal can throw a comparison-shaped Error
+whose `storage` kind and directory reach the outer catch before preflight.
+Task62 now owns the repair;
+task51 remains blocked.
+The source trace and candidate limits are in
+[`node-abort-signal-owned-observation.md`](../troubleshooting/node-abort-signal-owned-observation.md).
+`AbortSignal.any` is not an ownership boundary:
+Node re-reads source accessors during composition and later refresh.
+The naive once-only bridge loses a later actual abort after a synthetic event.
+The R2 throwaway bridge passes native probes for persistent propagation-resistant observation,
+synthetic/replayed events,
+late own-property overrides,
+composites and proxy refusal.
+It is not a production fix or qualification.
+No production signal change has been made yet.
+Current full-suite coverage,
+revised guard qualification and scoped evidence cleanup remain required.
 
 ## Earlier verified checkpoint: task50
 
@@ -648,7 +670,8 @@ No plan or journal implementation is complete.
 
 ## Next action
 
-Resume task51's remaining non-logger comparison verification.
+Finish task62's owned live-signal boundary and its operation-level regression proof first.
+Then resume task51's remaining non-logger comparison verification.
 Reuse task54's current callback,
 full-suite and native evidence without widening their scope.
 Do not replace the shared facade with another logging executor.
