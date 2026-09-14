@@ -1,4 +1,7 @@
-import { randomUUID, } from 'node:crypto';
+import {
+  createHash,
+  randomUUID,
+} from 'node:crypto';
 import {
   lstat,
   mkdir,
@@ -12,7 +15,11 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import { ProducerInputComparisonError, } from './producer-input-comparison-error.ts';
-import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
+import { verifyProducerInputComparisonFile, } from './producer-input-comparison-file.ts';
+import {
+  type ProducerInputFileIdentity,
+  verifyProducerInputOutputFile,
+} from './producer-input-file.ts';
 
 //region Fixed comparison records remain outside completed producer namespaces
 
@@ -218,12 +225,23 @@ export async function writeProducerInputComparisonRecord({
         kind: 'storage',
         directory: run.directory
       });
+    /**
+     * Persisted byte identity is computed from the exact UTF-8 serialization before creation.
+     */
+    const expected = {
+      bytes: Buffer.byteLength(text, 'utf8'),
+      sha256: createHash('sha256').update(text, 'utf8').digest('hex'),
+    };
+    /**
+     * Fixed record role cannot select a different output location.
+     */
+    const path = join(run.directory, file);
     pl.debug(`writing exclusive comparison record ${JSON.stringify(file)}`);
     /**
      * Exclusive record descriptor preserves existing and partial metadata on every failure path.
      */
     await using handle = await open(
-      join(run.directory, file),
+      path,
       'wx',
       FILE_MODE
     );
@@ -232,6 +250,12 @@ export async function writeProducerInputComparisonRecord({
       'utf8'
     );
     await handle.sync();
+    /**
+     * Descriptor identity remains independent of any replacement at its pathname.
+     */
+    const descriptor = await handle.stat({ bigint: true });
+    await verifyProducerInputOutputFile({ path, expected, ownerUid: run.uid, ownerGid: run.gid });
+    await verifyProducerInputComparisonFile({ path, expected: descriptor, run, failure: 'storage', l: pl });
     await verifyProducerInputComparisonRun({
       run,
       l: pl

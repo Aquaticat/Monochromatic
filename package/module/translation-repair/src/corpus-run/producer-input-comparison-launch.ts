@@ -10,6 +10,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import { ProducerInputComparisonError, } from './producer-input-comparison-error.ts';
+import { verifyProducerInputComparisonFile, } from './producer-input-comparison-file.ts';
 import type {
   ProducerInputComparisonInvocation,
   ProducerInputComparisonRequest,
@@ -117,6 +118,10 @@ async function writeComparisonLaunch({
     await handle.writeFile(owned);
     await handle.sync();
     /**
+     * Original descriptor identity cannot be replaced by an equal-content pathname.
+     */
+    const descriptor = await handle.stat({ bigint: true });
+    /**
      * The existing observer checks private ownership and hashes the persisted file itself.
      */
     const observed = await verifyProducerInputOutputFile({
@@ -125,6 +130,7 @@ async function writeComparisonLaunch({
       ownerUid: run.uid,
       ownerGid: run.gid
     });
+    await verifyProducerInputComparisonFile({ path, expected: descriptor, run, failure: 'storage', l: pl });
     await verifyProducerInputComparisonRun({
       run,
       l: pl

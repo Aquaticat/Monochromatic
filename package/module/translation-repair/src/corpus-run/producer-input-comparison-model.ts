@@ -1,3 +1,4 @@
+import type { BigIntStats, } from 'node:fs';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ProducerInputFileIdentity, } from './producer-input-file.ts';
 import type { ProducerInputLaunch, } from './producer-input-model.ts';
@@ -75,6 +76,26 @@ export type ProducerInputComparisonInvocation = {
    * Caller cancellation remains live until the comparison owner finishes.
    */
   readonly signal: AbortSignal;
+};
+
+/**
+ * Real created stream-descriptor observations survive close for subsequent pathname verification.
+ * These fields are internal observations, not caller-supplied creation certificates.
+ *
+ * @example
+ * ```ts
+ * const path = streams.stdoutPath;
+ * ```
+ */
+export type ProducerInputBootstrapStreams = {
+  /** Fixed metadata output pathname. */
+  readonly stdoutPath: string;
+  /** Fixed private diagnostic pathname. */
+  readonly stderrPath: string;
+  /** Actual stdout descriptor state after native close and synchronization. */
+  readonly stdoutState: BigIntStats;
+  /** Actual stderr descriptor state after native close and synchronization. */
+  readonly stderrState: BigIntStats;
 };
 
 /**

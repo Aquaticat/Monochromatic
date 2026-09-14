@@ -18,7 +18,11 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import { producerInputCommandClose, } from './producer-input-command-close.ts';
 import { ProducerInputComparisonError, } from './producer-input-comparison-error.ts';
-import type { ProducerInputComparisonInvocation, } from './producer-input-comparison-model.ts';
+import type {
+  ProducerInputBootstrapStreams,
+  ProducerInputComparisonInvocation,
+} from './producer-input-comparison-model.ts';
+import { verifyProducerInputComparisonFile, } from './producer-input-comparison-file.ts';
 import { verifyProducerInputFile, } from './producer-input-file.ts';
 import {
   readProducerRuntimeManifest,
@@ -140,10 +144,7 @@ export async function invokeProducerInputBootstrap({
   readonly run: ProducerInputComparisonRun;
   readonly invocation: ProducerInputComparisonInvocation;
   readonly l: Logger;
-},): Promise<{
-  readonly stdoutPath: string;
-  readonly stderrPath: string
-}> {
+},): Promise<ProducerInputBootstrapStreams> {
   /**
    * This operation cannot accept a caller-selected executable or arbitrary environment.
    */
@@ -227,6 +228,14 @@ export async function invokeProducerInputBootstrap({
     },
     l: pl,
   });
+  /**
+   * Immutable deadline state also remains available when an awaiting-owner logger throws.
+   */
+  const deadline = AbortSignal.timeout(BOOTSTRAP_DEADLINE_MS);
+  /**
+   * The caller and this bootstrap stage retain independent interruption evidence.
+   */
+  const signal = AbortSignal.any([invocation.signal, deadline]);
   try {
     /**
      * The base-to-derived owner cannot change executable bindings through an output-parent derivation.
@@ -271,17 +280,6 @@ export async function invokeProducerInputBootstrap({
       'wx',
       STREAM_MODE
     );
-    /**
-     * No deadline state is copied into a stale process-result object.
-     */
-    const deadline = AbortSignal.timeout(BOOTSTRAP_DEADLINE_MS);
-    /**
-     * The outer deadline and caller cancellation are independent refusal evidence.
-     */
-    const signal = AbortSignal.any([
-      invocation.signal,
-      deadline
-    ]);
     if (signal.aborted)
       throw new ProducerInputComparisonError({
         kind: 'interruption',
@@ -322,6 +320,14 @@ export async function invokeProducerInputBootstrap({
     const errors = await closed;
     await stdout.sync();
     await stderr.sync();
+    /**
+     * Actual created stream descriptors remain the reference after native close.
+     */
+    const stdoutState = await stdout.stat({ bigint: true });
+    /**
+     * Diagnostic path replacement is checked independently of stdout framing.
+     */
+    const stderrState = await stderr.stat({ bigint: true });
     await writeProducerInputComparisonRecord({
       run,
       file: 'bootstrap.exit.json',
@@ -348,13 +354,19 @@ export async function invokeProducerInputBootstrap({
         kind: 'bootstrap',
         directory: run.directory
       });
+    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
     pl.info('input bootstrap closed successfully; persisted output still requires independent verification');
     return {
       stdoutPath,
-      stderrPath
+      stderrPath,
+      stdoutState,
+      stderrState,
     };
   }
   catch (error) {
+    if (signal.aborted)
+      throw new ProducerInputComparisonError({ kind: 'interruption', directory: run.directory });
     if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
       throw error;
     pl.warn(`bootstrap invocation failed with ${Error.isError(error) ? 'an Error object' : 'a non-Error value'}; native details remain in private records`);

@@ -12,7 +12,11 @@ import {
 import { parseProducerInputCompletion, } from './producer-input-completion-record.ts';
 import type { ProducerInputComparisonChildObservation, } from './producer-input-comparison-child.ts';
 import { ProducerInputComparisonError, } from './producer-input-comparison-error.ts';
-import type { ProducerInputComparisonInvocation, } from './producer-input-comparison-model.ts';
+import type {
+  ProducerInputBootstrapStreams,
+  ProducerInputComparisonInvocation,
+} from './producer-input-comparison-model.ts';
+import { verifyProducerInputComparisonFile, } from './producer-input-comparison-file.ts';
 import {
   type ProducerInputComparisonRun,
   verifyProducerInputComparisonRun,
@@ -345,6 +349,10 @@ async function comparisonOutputLayout({
  *
  * @param stderrPath - fixed retained bootstrap stderr location
  *
+ * @param stdoutState - actual synchronized stdout descriptor snapshot from the owning subprocess
+ *
+ * @param stderrState - actual synchronized stderr descriptor snapshot from the owning subprocess
+ *
  * @param l - invoking comparison owner's logger
  *
  * @returns Independently observed retained artifact files, still unqualified
@@ -353,7 +361,7 @@ async function comparisonOutputLayout({
  *
  * @example
  * ```ts
- * const files = await readProducerInputComparisonOutput({ run, invocation, observation, stdoutPath, stderrPath, l });
+ * const files = await readProducerInputComparisonOutput({ run, invocation, observation, stdoutPath, stderrPath, stdoutState, stderrState, l });
  * ```
  */
 export async function readProducerInputComparisonOutput({
@@ -362,6 +370,8 @@ export async function readProducerInputComparisonOutput({
   observation,
   stdoutPath,
   stderrPath,
+  stdoutState,
+  stderrState,
   l,
 }: {
   readonly run: ProducerInputComparisonRun;
@@ -369,6 +379,8 @@ export async function readProducerInputComparisonOutput({
   readonly observation: ProducerInputComparisonChildObservation;
   readonly stdoutPath: string;
   readonly stderrPath: string;
+  readonly stdoutState: ProducerInputBootstrapStreams['stdoutState'];
+  readonly stderrState: ProducerInputBootstrapStreams['stderrState'];
   readonly l: Logger;
 },): Promise<ProducerInputReconstructionFiles> {
   /**
@@ -427,12 +439,15 @@ export async function readProducerInputComparisonOutput({
     )) || (stderrPath !== join(
       run.directory,
       'bootstrap.stderr'
-    ))
-      || (await metadata(stderrPath) !== ''))
+    )))
       throw new ProducerInputComparisonError({
         kind: 'output',
         directory: run.directory
       });
+    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
+    if (await metadata(stderrPath) !== '')
+      throw new ProducerInputComparisonError({ kind: 'output', directory: run.directory });
     /**
      * Strict stdout framing does not allow selection of another retained directory.
      */
@@ -541,6 +556,8 @@ export async function readProducerInputComparisonOutput({
       run,
       l: pl
     });
+    await verifyProducerInputComparisonFile({ path: stdoutPath, expected: stdoutState, run, failure: 'output', l: pl });
+    await verifyProducerInputComparisonFile({ path: stderrPath, expected: stderrState, run, failure: 'output', l: pl });
     pl.info('independently verified retained unqualified input files and derived-launch binding');
     return {
       inputRunDirectory,

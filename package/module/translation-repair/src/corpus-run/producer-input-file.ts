@@ -91,7 +91,7 @@ const PRIVATE_OUTPUT_PERMISSIONS = 0o600n;
  * const stable = sameProducerInputFile({ before, after });
  * ```
  */
-function sameProducerInputFile({
+export function sameProducerInputFile({
   before,
   after,
 }: {
