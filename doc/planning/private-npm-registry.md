@@ -233,6 +233,30 @@ Scope widened by the owner on 2026-09-14:
     or `bin`,
    which removes 15 packages and leaves 128
    (owner chose it over a name-suffix exclusion and over publishing them).
+- Server-side steps:
+   the owner performs the Njalla A record,
+    Coolify resource,
+    and Caddy site block
+   from a runbook at `doc/runbook/deploy-pnpr-registry.md`;
+   no host,
+    Coolify,
+    or DNS credentials are shared with agents
+   (owner chose it over a mixed split and over full agent access).
+- Build failures on GitHub-hosted runners:
+   the run fails and names the package,
+   until it is fixed or added to a reviewed exclusion list in the generated config
+   (owner chose it over failing once per version and over warnings on a green run).
+- Verification:
+   from a throwaway consumer,
+    anonymous install and use of `oxlint-plugin-tsdoc` (loaded by oxlint),
+    `config-typescript` (extended by `tsc`),
+    and `module-or-throw` (called);
+    install of `module-logger` from pnpr;
+    a publish without the OIDC credential is rejected;
+    the workflow's OIDC publish succeeds.
+   A GitHub issue tracks checking installability of the remaining published packages
+   (owner's answer,
+    chosen over installing all 128 now and over a registry-level check).
 
 ## Adopted without asking (veto welcome)
 
@@ -265,6 +289,10 @@ Scope widened by the owner on 2026-09-14:
    with a `README.md` documenting consumer setup;
    it has no entry points,
    so it never publishes itself.
+- Tarballs are packed in a clean CI checkout holding no secrets,
+   so their content is the public repo plus build output;
+   ignored local files such as `package/config/tofu/terraform.tfstate` and `hetzner.auto.tfvars.json`
+   are untracked (`.gitignore` lines 15 and 16) and never reach CI.
 - Packaging fixes land regardless of registry:
    bundled workspace packages move to `devDependencies`
    (the rule in `doc/decision/npm-publishing.md`),
@@ -472,10 +500,7 @@ Script `build-shape.ts` in the session scratchpad,
 
 ## Open questions
 
-- Who performs the server-side steps
-   (Njalla A record,
-    Coolify resource,
-    Caddy site block)
-   and with what access.
-- What happens when a package cannot build on GitHub-hosted runners.
-- Verification scope for the throwaway consumer.
+None;
+ awaiting owner confirmation of shared understanding before implementation.
+After confirmation,
+ the accepted design moves to `doc/decision/private-npm-registry.md`.
