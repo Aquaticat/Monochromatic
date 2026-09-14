@@ -38,6 +38,36 @@ Callback failures belong to frozen terminal result/error snapshots,
 not previously synchronized comparison or failure records.
 A fixture bootstrap is not qualification through the actual input CLI.
 
+## Remaining comparison qualification
+
+Task54 closes callback observation and failure-retention integration.
+Task51 still checks the non-logger boundaries through the dedicated built entry:
+
+- Input ownership and authentication:
+  canonical paths,
+  independent launch/bootstrap/Node identities and the exact child environment.
+- Persistence:
+  exclusive writes,
+  original descriptor/path/content checks and retained evidence when recording fails.
+- Association and output:
+  absent/single/ambiguous child observations,
+  dedicated-parent and output/home inventories,
+  directory/file privacy,
+  completion/created/cleanup bindings and independent artifact hashing.
+- Lifecycle:
+  cancellation before spawn and during execution,
+  error events before actual close,
+  deadline escalation and complete-output retention.
+
+Existing artifact tests already cover these categories,
+but category presence is not every branch's verification.
+The remaining audit adds missing group/directory and late-inventory controls,
+records built mutation sensitivity,
+and distinguishes native failure cases from fixture-bootstrap coverage.
+Defensive checks against a modified JavaScript runtime or arbitrary hostile-host behavior
+are not reclassified as ordinary native qualification.
+No extra public storage executor or test-only comparison API is introduced.
+
 ## Native qualification owner
 
 The reviewer of a frozen launch contract owns native qualification for that exact artifact and host profile.
