@@ -8,14 +8,12 @@
  * const kind: PreparationRootFailure = 'selection-digest';
  * ```
  */
-export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations' | 'reference-inventory' | 'reference-content' | 'reference-role' | 'reading-provenance' | 'corpus-identity' | 'corpus-read' | 'population' | 'output-identity' | 'output-reconstruction';
+export type PreparationRootFailure = 'selection-digest' | 'selection-syntax' | 'selection-shape' | 'selection-parents' | 'selection-references' | 'selection-obligations' | 'reference-inventory' | 'reference-content' | 'reference-role' | 'reading-provenance' | 'corpus-identity' | 'corpus-read' | 'population';
 
 /**
  * Fixed diagnostics keep private selection and corpus text out of error rendering.
  */
 const ROOT_MESSAGES: Readonly<Record<PreparationRootFailure, string>> = {
-  'output-identity': 'The expected unqualified-input artifact identity lacks a positive safe byte extent and canonical SHA-256 data fields. Supply its independently retained identity, not a parsed graph or approval claim.',
-  'output-reconstruction': 'Fresh native input reconstruction differs from the independently identified unqualified-input artifact. Check the frozen selection, supporting bytes, pinned corpus and executed implementation; retain both results for separate review rather than replacing the expected identity automatically.',
   'selection-digest': 'Frozen parent-selection bytes do not match the independently recorded selection digest. Load the task40 artifact and its original expected identity; do not derive approval from the supplied bytes.',
   'selection-syntax': 'Frozen parent selection is not readable JSON. Restore its exact independently bound bytes rather than repairing or replacing the frozen sample.',
   'selection-shape': 'Frozen parent selection lacks supported fields for the baseline identity and reading-completion projection. Verify the intended artifact and its provenance; complete population and nested-metadata validation remain separate root-planning work.',

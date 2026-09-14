@@ -16,11 +16,6 @@ import { preparationRootEntryReadings, } from './preparation-root-entry-readings
 import { PreparationRootError, } from './preparation-root-error.ts';
 import { matchPreparationRootPopulation, } from './preparation-root-match-population.ts';
 import { preparationRootParentReadings, } from './preparation-root-parent-readings.ts';
-import {
-  assertPreparationRootOutputIdentity,
-  ownPreparationRootOutputIdentity,
-  type PreparationRootOutputIdentity,
-} from './preparation-root-output-identity.ts';
 import { preparationRootPin, } from './preparation-root-pin.ts';
 import {
   readPreparationRootPopulation,
@@ -99,14 +94,13 @@ async function currentRootPopulation({
  * Selection text and complete caller-loaded supporting bytes are bound to an independently recorded task40 digest.
  * The independent pin supplies corpus location; selection paths are never executed.
  * Process context and pin ownership are fixed before reading other argument properties or calling the logger.
- * Optional expectedOutput requires compact UTF-8 output parity with an independently identified input artifact.
- * The expectation is snapshotted before other evidence getters; successful parity remains unqualified.
+ * Reconstruction parity against an earlier artifact belongs after the I/O owner persists this result.
  *
- * @param input - original bounded evidence and pin, logger, and optional independent reconstruction identity
+ * @param input - original selection, independent digest and pin, bounded supporting bytes and caller logger
  *
  * @returns Current raw/effective identities, complete reading provenance and finite initial parent scope
  *
- * @throws PreparationRootError when frozen evidence, current population, obligations or expected output differ
+ * @throws PreparationRootError when frozen evidence, current policy population or source obligations differ
  *
  * @example
  * ```ts
@@ -119,7 +113,6 @@ export async function buildPreparationRootInputs(input: {
   readonly artifacts: readonly PreparationArtifactInput[];
   readonly pin: CorpusPin;
   readonly l: Logger;
-  readonly expectedOutput?: PreparationRootOutputIdentity;
 },): Promise<PreparationRootInputs> {
   /**
    * Pin location cannot drift when subsequent callbacks or awaits change process context.
@@ -149,10 +142,6 @@ export async function buildPreparationRootInputs(input: {
     input,
     origin,
   },);
-  /**
-   * Independent output authority cannot be changed by later evidence getters or logger callbacks.
-   */
-  const expectedOutput = ownPreparationRootOutputIdentity(input);
   /**
    * Evidence or logger accessors cannot retroactively alter the independently owned corpus configuration.
    */
@@ -250,8 +239,6 @@ export async function buildPreparationRootInputs(input: {
     questionAliases: preparationRootQuestionAliases(current.registry,),
     sectionPairing: 'not-registered',
   };
-  pl.debug(`checking independent reconstruction identity: ${expectedOutput === undefined ? 'not requested' : 'required'}`);
-  assertPreparationRootOutputIdentity({ inputs, expected: expectedOutput });
   pl.info(`built unqualified root inputs for ${String(current.parents
     .length,)} frozen parents and ${String(current.registry
       .length,)} initial scope records; no acquisition or writer authority`,);

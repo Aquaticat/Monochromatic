@@ -120,9 +120,32 @@ not to the union of roles sharing a receipt.
 Conditional questions are materialized only after qualified initial evidence determines the deterministic relabel;
 unknown future bytes must not be fabricated in the root plan.
 
+## Retention-boundary correction
+
+Commit `33df5ddd2` added an optional expected output identity inside `buildPreparationRootInputs`.
+Independent review rejected that placement before tests or qualification:
+a mismatch would throw before the I/O owner could persist the fresh differing reconstruction.
+The diagnostic's instruction to retain both results could not be satisfied through that API.
+Its identity type,
+optional argument and comparison are removed in a corrective commit;
+the unchanged corpus-pin helper extraction remains.
+
+Task41 must instead invoke the existing fixed Task47 operation from original bounded evidence,
+allow the fresh run to persist and verify its artifact and completion,
+then compare independently reverified artifact identities.
+A mismatch retains that complete run and a Task41-owned expected/observed comparison record,
+creates no root plan or acquisition attempt,
+and does not retry or overwrite.
+No DTO reserialization or second reconstruction implementation supplies that comparison.
+
+This correction is not a completed Task41 implementation.
+The next consumer still needs strict artifact reading,
+fixed persistence,
+retention tests and complete native integration verification.
+
 ## Next action
 
-Use the measured census while tracing original bounded input replay,
+Implement the fixed Task41 persisted-input comparison owner using the existing Task47 operation,
 then design the native root/phase materializer against the actual request and receipt shapes.
 Preserve the frozen parent selection,
 current provider order,
