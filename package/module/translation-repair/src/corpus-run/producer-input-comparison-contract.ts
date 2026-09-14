@@ -129,9 +129,9 @@ export function ownProducerInputComparisonRequest(input: ProducerInputComparison
     };
   }
   catch (error) {
-    if (Error.isError(error) && (error instanceof ProducerInputComparisonError))
-      throw error;
-    // Accessor failures do not expose native messages or caller-supplied cause chains.
+    // A caller getter may throw this same class; its fields are not owned operation metadata.
+    // Discard the value without inspection and reconstruct the only failure this boundary authorizes.
+    void error;
     throw new ProducerInputComparisonError({ kind: 'contract', });
   }
 }
