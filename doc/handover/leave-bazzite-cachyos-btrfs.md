@@ -43,9 +43,53 @@ The session configuration lives in <https://github.com/Aquaticat/labwc-config>.
   on for the physical desktop,
   with LUKS unlocked by TPM2 plus PIN.
 - **Rollback scope**:
-  everything must be rollback-able.
-  The earlier "root snapshots only" framing was rejected by the user.
-  Scope details are still open.
+  everything on the main NVMe must be rollback-able.
+  Data that does not need that guarantee lives on the 4 TB data SSD,
+  which gets no Snapper configuration.
+- **Coupled boot**:
+  the Limine menu must boot any coupled root plus home pair.
+  If CachyOS cannot,
+  openSUSE Tumbleweed is considered first.
+  The user proposed snapshotting only `/`:
+  `@home`,
+  `@root`,
+  and `@srv` fold into `@`,
+  so every Snapper snapshot of `/` is a coupled pair and every limine-snapper-sync entry boots one.
+  `@cache`,
+  `@log`,
+  and `@tmp` stay separate and unsnapshotted,
+  so rollback keeps the logs that explain it and snapshots exclude regenerable data;
+  the user delegated this split.
+  In the existing VM,
+  a snapshot boot mounts the read-only snapshot under a throwaway overlayfs,
+  and `limine-snapper-restore` makes it permanent
+  (`C:\Users\user\Documents\hyperv-cachyos\README.md`, section "Booting a snapshot").
+- **Timeline snapshots**:
+  hourly,
+  bounded retention,
+  cleanup at night with boot catch-up,
+  qgroups off,
+  and every retained snapshot kept bootable in Limine.
+- **Secure Boot chain**:
+  sbctl custom keys enrolled with Microsoft certificates,
+  keeping the RX 7600 option ROM valid.
+  The CachyOS Secure Boot guide says to skip `--firmware-builtin` on ASUS and Gigabyte boards.
+  This chain cannot be rehearsed in Hyper-V,
+  which has no setup mode.
+- **Installer**:
+  a TypeScript port of the VM's `install.sh`,
+  run from the CachyOS live ISO.
+- **Rehearsal**:
+  a fresh Hyper-V VM built by that installer;
+  the current CachyOS VM stays until the new one passes.
+- **Package delivery**:
+  a signed personal pacman repository built by CI.
+- **Memory policy**:
+  start from CachyOS defaults as researched on 2026-09-14
+  (no systemd-oomd,
+  zram sized to RAM,
+  `vm.swappiness` raised to 150 once zram is active)
+  and measure before changing them.
 - **Helper language**:
   TypeScript CLI packages,
   per `SCR`.
@@ -87,13 +131,8 @@ These were already validated or are determined by `AGENTS.md`:
 
 ## Open questions
 
-- Rollback scope:
-  which subvolumes and disks are snapshotted,
-  and whether root and home roll back together.
-- Secure Boot mechanism on the physical desktop:
-  sbctl custom keys versus shim plus MOK as rehearsed in the Hyper-V VM.
-- Where the PKGBUILD is built and whether its packages are signed and served from a repository.
-- What happens to the retained CachyOS Hyper-V VM on the ThinkPad as the rehearsal platform.
+- Where the TypeScript installer lives.
+- Where the signed pacman repository is hosted and who holds the signing key.
 
 ## Next action
 
