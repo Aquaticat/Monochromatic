@@ -596,6 +596,62 @@ These new records are not part of task50's historical retention/cleanup snapshot
 their exact-ID cleanup remains outstanding.
 No dependency patch or upstream filing is introduced.
 
+## Post-merge task61 uses host-sized memory bounds
+
+At source checkpoint `d701536cb`,
+full repair lint fails in the old 2 GiB envelope on unchanged source:
+
+- `devlint256go1-xVeD42` records one OOM kill.
+  The kernel names `tsgolint`,
+  host PID `3670268`,
+  in container `c3787de0b795ee5660e17e60139fc05430c292a6a8befb38f09814896007ac51`.
+  Oxlint reports `Error running tsgolint: "exit status: exit status: 1"`;
+  the child wrapper records `SIGKILL`.
+- `devlint256go1-tE05xN` also records one OOM kill,
+  but the kernel names `node-MainThread`,
+  host PID `3672246`,
+  in container `c5f925b5cd3453d78c07e1b5216dc4ec03af005d145864be2a0b6ba0337c0cbf`.
+  `task-oxlint` reports that its `oxlint --threads 1 '--format=default'` command received `SIGKILL`.
+  The distinct victim is retained rather than attributed to the first run's process.
+
+Both retain Node old-space 256 MiB,
+semi-space 1 MiB,
+`GOMEMLIMIT=128MiB`,
+`GOGC=20` and `GOMAXPROCS=1`.
+Neither produces a completed lint diagnostic catalog.
+
+The user then explicitly states that this host has 64 GB RAM
+and containers need not stay at 2 GiB.
+The live probe reports `67002466304` total memory bytes
+and `10246348800` available bytes;
+swap has `421888` bytes free.
+The next lint container uses 6 GiB RAM plus a 2 GiB swap allowance,
+retaining two CPUs,
+512 PIDs and no network.
+No unrelated application is stopped.
+Rule BOX is clarified to size each run from current host headroom.
+The former 2 GiB profile remains historical evidence,
+not a standing ceiling.
+
+`devlint256go1-88qhDp` completes the lint engine without OOM:
+peak memory is `2244157440` bytes,
+with zero OOM and memory-limit events.
+The invocation still exits one because the configured warning policy rejects its findings:
+90375 `stylistic(require-asterisk-prefix)` warnings,
+four `stylistic(invocation-depth-per-line)` warnings
+and three `stylistic(chain-per-line)` warnings.
+Oxlint reports 90382 warnings,
+zero errors,
+1561 files and 485 rules.
+
+The historical `devlint256go1` mode name describes runtime controls,
+not the new container RAM allowance.
+`run-merge-repair-lint-6g-20260914.mts`
+and `merge-repair-lint-6g-worker-20260914.mts` retain its actual bounds and cgroup assertions.
+This result establishes a completed diagnostic run for this workload,
+not a universal 6 GiB requirement or a memory-leak diagnosis.
+A private formatter overlay and subsequent read-only verification remain pending.
+
 ## Root cause
 
 ### The kernel confirms a job-local memory constraint

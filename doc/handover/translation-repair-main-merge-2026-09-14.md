@@ -22,8 +22,9 @@ so the local changes do not enter that commit.
 
 ## Current merge blocker
 
-Task56 is pending on task60,
-which reconciles main's shared Git resolver migration.
+Task56 is pending on task60's final verification;
+task61 is reconciling the post-merge repair lint findings.
+The shared Git resolver migration is implemented and its scoped controls pass.
 The final real subpath lookup fails because main commit `2aef2d409`
 removed `package/git-policy/cli/src/resolve-git.ts`,
 while automatic merging retained its barrel export and repair imports.
@@ -53,9 +54,44 @@ the shared resolver inspects through file handles instead.
 The sampler and root-input tests now observe `open`,
 prove their counters with a positive control,
 and change PATH after first inspection so successful resolver caching cannot hide lost pin ownership.
-Their updated assertions and the remaining resolver checks are not yet verified.
-The final repository audit,
-Markdown check and diagnostic retention/cleanup are not complete.
+The R2 sequence passes fresh types,
+normal build,
+bootstrap and all selected affected-consumer unit files.
+Its final unit root is `devtest-j4I93h`.
+`merge-resolver-guards-9R6KaU` then proves both updated controls:
+each pin-removal mutant builds and triggers its designated ordinary assertion,
+followed by a fresh restored build and both passing tests.
+Real source and dist remain unchanged.
+The first proof attempt uses the wrong assertion wording and is not counted.
+
+The shared Git owner passes build,
+types,
+complete units and read-only lint in `main-merge-package-checks-ckDzPg`.
+The Git CLI builds and type-checks,
+and its selected source-level resolver tests pass.
+Its full lint remains red with 83 artifact-import findings across 37 tests,
+all byte-identical to selected main.
+[Issue 518](https://github.com/Aquaticat/Monochromatic/issues/518) tracks that inherited package-completeness defect;
+no suppression or broad Git CLI test/API migration is applied as part of the resolver reconciliation.
+The initial owner lint attempt stops before diagnostics because the harness omitted the generated config output mount.
+
+`main-merge-final-audit-DobZLC` verifies generated-output parity,
+merge/stash/index invariants and all tracked marker forms,
+including diff3 markers,
+with a disposable positive control.
+The regenerated lock passes the owned-cache frozen check in `main-merge-lock-generation-bAjmaG`.
+The user explicitly relaxes the former 2 GiB container ceiling for this 64 GB host.
+After checking current available memory,
+`devlint256go1-88qhDp` uses 6 GiB RAM and completes without an OOM kill.
+It reports 90375 inherited TSDoc-prefix warnings and seven layout warnings.
+A private formatter overlay is running;
+its changes have not been applied to the repair source.
+BOX now requires host-sized bounds,
+and `CLAUDE.md` is regenerated through the canonical owner.
+Historical 2 GiB evidence is not relabeled as a 6 GiB run.
+
+Final repair lint,
+Markdown verification and diagnostic retention/cleanup remain open.
 No diagnostic container is removed by this continuation.
 
 Proposed instruction for merge verification:

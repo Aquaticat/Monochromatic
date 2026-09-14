@@ -941,10 +941,12 @@ Includes:
  stress/bench/load runs.
 
 BOX:
- Isolate via `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` or `mvm` CLI;
- state bounds explicitly.
-Authorization doesn't transfer;
- isolate each heavy run.
+ Isolate each heavy run in a bounded container/VM.
+Choose RAM,
+ CPU,
+ and PID limits from current host headroom.
+State each run's bounds;
+ authorization doesn't transfer.
 
 DCB:
  Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
