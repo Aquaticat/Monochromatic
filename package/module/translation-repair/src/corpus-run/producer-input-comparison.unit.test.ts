@@ -321,7 +321,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       if (message.includes('retained native child observation single')) {
         const entries = readdirSync(f.output);
         const [name] = entries;
-        if (entries.length !== 1 || name === undefined) throw new Error('Expected one owned comparison directory');
+        if ((entries.length !== 1) || (name === undefined)) throw new Error('Expected one owned comparison directory');
         mkdirSync(join(f.output, name, 'producer-runs', 'unexpected-late-child'), { mode: 0o700 });
         changed();
       }
