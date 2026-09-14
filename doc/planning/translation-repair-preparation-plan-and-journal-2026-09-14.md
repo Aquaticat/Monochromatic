@@ -453,6 +453,63 @@ These results complete task55's utility acceptance,
 not comparison integration.
 The utility remains explicitly unreviewed in issue #509.
 
+## Comparison callback integration checkpoint
+
+Task54 starts with `b5c2ded7e` and the regression update `f513737a0`.
+The request reader captures data and the borrowed logger without invoking callbacks.
+The public comparison owner wraps that logger once,
+retains the existing ownership-completion message/tag,
+and passes only the observed facade to helpers.
+Success results and final `ProducerInputComparisonError` objects expose
+`loggerCallbackFailures` as detached frozen callback-name arrays.
+The terminal snapshot follows final success logging or failure-record callbacks.
+Primary kind,
+authorized directory,
+message and absent-cause policy remain unchanged;
+only actual failure-record I/O refusal may become `storage`.
+
+The creation-info regression now requires matched success with an `info` observation,
+not a logging-induced storage refusal.
+Additional cases cover final info failure,
+callback getters,
+post-sync descriptor logging for comparison/failure records,
+empty observations before logger borrowing,
+and retained primary-error metadata.
+The fresh R2 normal/bootstrap builds,
+types and comparison/input-CLI/names-only test selection pass.
+Full lint reports ten layout/boolean-expression warnings,
+which are corrected without rule suppression.
+
+The first combined verification tries types against stale built declarations
+and omits a writable private TypeScript cache.
+Its missing-property and `TS5033` diagnostics are harness findings,
+not evidence that the new source fields are absent.
+The corrected sequence builds first and mounts a private package cache.
+
+The built-entry probe `comparison-caller-metadata-red-KGKwOo` also exposes a caller boundary:
+a reference getter can throw a comparison-shaped Error
+and have its forged `storage` kind,
+directory and callback observations accepted before any operation starts.
+`f064ee5ad` records the regression;
+`0bad08b40` reconstructs a fresh `contract` refusal instead of trusting caught class identity.
+The R3 normal/bootstrap builds,
+types,
+focused tests and full-scope lint pass after that correction.
+The green built-entry probe `comparison-caller-metadata-green-3HXgJV`
+returns only a contract refusal and empty callback observations.
+`devfull-sK7FTs` then passes the default suite with 632 expected and observed test-entry processes,
+all observed on Node `26.8.2`,
+with no source change or OOM event.
+Its peak cgroup memory is `639741952` bytes.
+Follow-up coverage adds forged logger errors,
+valid-request logger-getter refusal,
+combined multi-phase observations,
+post-log cancellation plus a callback throw,
+and unchanged persisted record schemas.
+Those additions are not yet verified.
+Current native qualification and integration guard controls remain required;
+no new root/phase or paid acquisition authority is established.
+
 ## Earlier verified checkpoint: task50
 
 The retained corpus-pin extraction passes types,

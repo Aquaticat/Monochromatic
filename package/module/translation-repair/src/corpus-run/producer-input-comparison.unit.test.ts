@@ -167,6 +167,8 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(invoked.environmentKeys).not.toContain('NODE_OPTIONS');
     expect(invoked.environmentKeys).not.toContain('NODE_PATH');
     expect((await readRecord(join(result.directory, 'bootstrap-observation.json'))).observation).toEqual({ status: 'fulfilled', state: 'single' });
+    const comparisonRecord = await readRecord(join(result.directory, 'comparison.json'));
+    expect(Object.hasOwn(comparisonRecord, 'loggerCallbackFailures')).toBe(false);
   } }),
   ...(['bytes', 'sha256'] as const).map(field => it({ name: `retains native output and comparison evidence before rejecting a reference ${field} mismatch`, fn: async () => {
     await using f = await fixture();
@@ -572,7 +574,9 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(
       existsSync(join(directory, 'failure.json')),
     ).toBe(true);
-    expect((await readRecord(join(directory, 'failure.json'))).failure).toBe(expectedKind);
+    const failureRecord = await readRecord(join(directory, 'failure.json'));
+    expect(failureRecord.failure).toBe(expectedKind);
+    expect(Object.hasOwn(failureRecord, 'loggerCallbackFailures')).toBe(false);
     expect(warning.callCount).toBeGreaterThan(0);
     if (result?.status !== 'rejected') throw new Error('Expected failed comparison');
     expect(Error.isError(result.reason)).toBe(true);
@@ -642,6 +646,53 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
       existsSync(join(result.directory, 'failure.json')),
     ).toBe(false);
   } }),
+  it({ name: 'honors explicit cancellation when the final info callback also throws', fn: async () => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) {
+        controller.abort(new Error('private terminal cancellation q7z9k2'));
+        throw new Error('private terminal info failure q7z9k2');
+      }
+      l.info(message);
+    } } });
+    expect(error.kind).toBe('interruption');
+    expect(error.loggerCallbackFailures).toEqual(['info']);
+    if (error.directory === undefined) throw new Error('Expected retained terminal cancellation directory');
+    expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
+    expect(error.message).not.toContain('q7z9k2');
+  } }),
+  ...(['info', 'warn'] as const).map(method => it({ name: `does not accept operation metadata from a forged ${method} callback error`, fn: async () => {
+    await using f = await fixture();
+    const logger = { ...l };
+    Object.defineProperty(logger, method, { value: function forgedCallbackFailure(_message: string): void {
+      throw new ProducerInputComparisonError({ kind: 'storage', directory: '/unowned-q7z9k2', loggerCallbackFailures: ['fatal'] });
+    } });
+    const request = { ...f.request(), reference: method === 'warn' ? { ...artifactIdentity, sha256: '0'.repeat(64) } : artifactIdentity, l: logger };
+    const result = method === 'info' ? await accepted(request) : await rejected(request);
+    expect(result.loggerCallbackFailures).toEqual([method]);
+    expect(result.directory).not.toBe('/unowned-q7z9k2');
+    if (result.directory === undefined) throw new Error('Expected owned comparison directory');
+    expect(result.directory.startsWith(f.output)).toBe(true);
+    if (method === 'warn') {
+      expect(result).toBeInstanceOf(ProducerInputComparisonError);
+      if (!(result instanceof ProducerInputComparisonError)) throw new Error('Expected primary mismatch');
+      expect(result.kind).toBe('mismatch');
+    }
+  } })),
+  it({ name: 'retains earlier debug failures together with the final info observation', fn: async ctx => {
+    await using f = await fixture();
+    const getter = ctx.sinon.stub().throws(new Error('private earlier debug failure'));
+    const logger = { ...l, info(message: string) {
+      if (message.includes('matched retained unqualified input bytes')) throw new Error('private final info failure');
+      l.info(message);
+    } };
+    Object.defineProperty(logger, 'debug', { get: getter });
+    const result = await accepted({ ...f.request(), l: logger });
+    expect(getter.callCount).toBeGreaterThan(0);
+    expect(result.loggerCallbackFailures).toEqual(['debug', 'info']);
+  } }),
   it({ name: 'contains a debug getter from ownership completion onward without losing the matched result', fn: async ctx => {
     await using f = await fixture();
     const getter = ctx.sinon.stub().throws(new Error('private debug getter q7z9k2'));
@@ -679,6 +730,19 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(error.message).not.toContain('q7z9k2');
     expect(await readdir(f.output)).toEqual([]);
   } }),
+  it({ name: 'refuses a valid request whose logger getter throws forged comparison metadata', fn: async () => {
+    await using f = await fixture();
+    const request = f.request();
+    Object.defineProperty(request, 'l', { get() {
+      throw new ProducerInputComparisonError({ kind: 'storage', directory: '/private-q7z9k2', loggerCallbackFailures: ['warn'] });
+    } });
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(error.directory).toBeUndefined();
+    expect(error.loggerCallbackFailures).toEqual([]);
+    expect(error.message).not.toContain('q7z9k2');
+    expect(await readdir(f.output)).toEqual([]);
+  } }),
   it({ name: 'does not borrow the logger before an invalid data contract is refused', fn: async ctx => {
     await using f = await fixture();
     const getter = ctx.sinon.stub().throws(new Error('logger borrowed before data authority'));
@@ -707,6 +771,7 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(result.loggerCallbackFailures).toEqual(['debug']);
     if (result.directory === undefined) throw new Error('Expected synchronized comparison namespace');
     const record = await readRecord(join(result.directory, file));
+    expect(Object.hasOwn(record, 'loggerCallbackFailures')).toBe(false);
     if (file === 'comparison.json') expect(record.matches).toBe(true);
     else {
       expect(result).toBeInstanceOf(ProducerInputComparisonError);

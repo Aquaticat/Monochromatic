@@ -75,7 +75,7 @@ function comparisonPath(value: string): string {
 
 /**
  Owns data authority while retaining the caller's live cancellation signal and logger.
- No logger callback runs here; the invoking owner adds observable forwarding after this capture.
+ No logger callback is requested here; the invoking owner adds observable forwarding after this capture.
  No typed scope, self-digest or prior completion record grants root-plan review authority here.
  
  @param input - independent launch, bootstrap and reference configuration
