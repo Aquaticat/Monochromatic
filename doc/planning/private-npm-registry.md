@@ -42,6 +42,28 @@ The Hetzner server managed by Coolify is available but not a constraint.
 - No `package.json` within depth 4 of the home directory,
    outside Monochromatic worktrees and scratch clones,
    references any of the three packages.
+- The consumer is `Aquaticat/labwc-config` (public).
+   At `ca229f1` it holds shell scripts,
+    Python helpers,
+    libvirt XML,
+    and labwc configs;
+   it has no `package.json`,
+    no TypeScript,
+    and no `.github/workflows`.
+   The local checkout is `~/labwc-vm-test`.
+- pnpm `12.3.4` (the version `mise.toml` resolves from `pnpm = "latest"`)
+   routes a single dependency to another registry:
+   `pnpm-workspace.yaml` declares `registries: { <url>: { prefix: <name> } }`
+   and the manifest specifier is `<name>:@scope/pkg@<range>`.
+   Probe:
+    `mirror:@monochromatic-dev/module-logger@^0.4.0` installed through `https://registry.npmmirror.com/`;
+    pointing the same prefix at `https://registry.invalid/` failed metadata fetch for that package only.
+   Lockfile keys become registry-qualified (`@monochromatic-dev/module-logger@mirror:0.4.0`).
+   Docs: https://pnpm.io/settings/dependency-resolution (`registries`, `prefix` since 11.23.0).
+- `pnpm add 'mirror:@monochromatic-dev/module-logger@^0.4.0'` fails on `12.3.4` with `ERR_PNPM_INVALID_DEPENDENCY_NAME`
+   (`dependency with an invalid name: "mirror:"`),
+   although the docs show `pnpm add work:@corp/lib@^2.0.0`;
+   writing the specifier into `package.json` and running `pnpm install` works.
 
 ## Settled decisions
 
@@ -58,6 +80,15 @@ The Hetzner server managed by Coolify is available but not a constraint.
 - Publish cadence:
    automatic snapshot per push that touches a package
    (owner chose it over changesets releases and manual local publish).
+- Consumer:
+   `Aquaticat/labwc-config`.
+- Read access:
+   anonymous install;
+   publishing still authenticates
+   (owner chose it over token-gated install).
+- Budget:
+   no new spend;
+   the already-paid Hetzner server and free tiers qualify.
 
 ## Adopted without asking (veto welcome)
 
@@ -71,10 +102,10 @@ The Hetzner server managed by Coolify is available but not a constraint.
 
 ## Open questions
 
-- Which project consumes the packages.
-- Anonymous read or token-gated install.
-- Whether consumers also need npmjs-published scope members through the same route.
-- Spending tolerance.
+- Scope routing:
+   owner asked for more detail;
+   the pnpm `prefix` probe offers per-dependency routing that needs no npmjs proxy.
+- Whether bootstrapping Node tooling in `labwc-config` is part of this effort.
 - Registry product and host (registry options research running).
 - How the consumer picks up new snapshots.
 - Snapshot version format and retention.
