@@ -529,7 +529,26 @@ The callback snapshots are respectively `[]`,
 The post-completion cancellation retains matching comparison bytes but returns `interruption`.
 The unchanged Task47 bootstrap/runtime remains `WWrgVV`/`fOagX0`;
 these runs do not requalify a different child profile or the complete lifecycle matrix.
-Integration guard controls and the final verification/retention record remain pending.
+A fresh exact-ID check independently finds all five native child containers absent
+and rehashes their retained input outputs.
+`comparison-observation-guards-6f4aWC` passes fresh normal/bootstrap builds,
+a baseline,
+eight designated ordinary-AssertionError controls and restored artifact tests.
+The controls cover facade forwarding,
+success/failure snapshot timing,
+caller metadata isolation,
+post-log cancellation,
+primary failure precedence,
+owned reference primitives and frozen error snapshots.
+The real source and normal `dist` inventories remain unchanged.
+The earlier `comparison-observation-guards-UauosZ` run stops at the proof reader:
+its designated test correctly reports `result.reason.kind`,
+but the reader expects the source fragment `error.kind`.
+It is retained separately and is not the completed proof.
+The final full-suite,
+positive/restored lint,
+import/relocated-consumer and Markdown sequence is running.
+The implementation has not been reviewed as a whole.
 No new root/phase or paid acquisition authority is established.
 
 ## Earlier verified checkpoint: task50
