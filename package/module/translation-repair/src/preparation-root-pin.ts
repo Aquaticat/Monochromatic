@@ -1,5 +1,11 @@
-import { isAbsolute, resolve, } from 'node:path';
-import { CORPUS_COMMIT_SHA, type CorpusPin, } from './corpus-source.ts';
+import {
+  isAbsolute,
+  resolve,
+} from 'node:path';
+import {
+  CORPUS_COMMIT_SHA,
+  type CorpusPin,
+} from './corpus-source.ts';
 import { PreparationRootError, } from './preparation-root-error.ts';
 
 //region Independent corpus authority before other argument getters
