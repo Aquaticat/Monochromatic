@@ -90,6 +90,7 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     const f = fixture(ctx);
     const getter = ctx.sinon.stub().throws(new Error('private getter q7z9k2'));
     Object.defineProperty(f.logger, 'fatal', { get: getter });
+    expect(() => observeLoggerCallbacks(f.logger)).not.toThrow();
     const observed = observeLoggerCallbacks(f.logger);
     expect(getter.callCount).toBe(0);
     observed.logger.info('normal');
