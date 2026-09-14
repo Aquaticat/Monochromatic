@@ -48,7 +48,8 @@ export function emitContentNode(
     /**
      Convert foreign parser elements into owned text at the existing ownership boundary.
      */
-    const parts = node.elements.map(function each(el: AST.TOMLNode,): string {
+    const parts = node.elements
+      .map(function each(el: AST.TOMLNode,): string {
       return emitContentNode({
         node: el,
         options,
