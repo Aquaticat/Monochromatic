@@ -1,6 +1,7 @@
 import { createHash, } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, promises as fsPromises, watch, } from 'node:fs';
 import childProcess from 'node:child_process';
+import { getEventListeners, } from 'node:events';
 import { syncBuiltinESMExports, } from 'node:module';
 import timers from 'node:timers';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile, } from 'node:fs/promises';
@@ -608,6 +609,119 @@ await describe({ name: runProducerInputComparison.name, concurrency: 1, children
     expect(textList(invoked.environmentKeys).toSorted()).toEqual(expectedKeys.toSorted());
     expect(invoked.environmentKeys).not.toContain('PREPARATION_COMPARISON_CANARY');
   } }),
+  //region Native cancellation state is owned without borrowing caller accessors or reasons
+  it({ name: 'does not borrow an own aborted getter to decide comparison state or error metadata', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const getter = ctx.sinon.stub().throws(new ProducerInputComparisonError({ kind: 'storage', directory: '/foreign-signal-q7z9k2', loggerCallbackFailures: ['fatal'] }));
+    Object.defineProperty(controller.signal, 'aborted', { get: getter });
+    const result = await accepted({ ...f.request(), signal: controller.signal });
+    expect(getter.callCount).toBe(0);
+    expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
+    expect(result.loggerCallbackFailures).toEqual([]);
+  } }),
+  it({ name: 'keeps native cancellation live after late own signal accessors are replaced', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const getter = ctx.sinon.stub().throws(new ProducerInputComparisonError({ kind: 'storage', directory: '/late-signal-q7z9k2' }));
+    const installed = new Set<string>();
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, debug(message) {
+      if (installed.size === 0) {
+        for (const key of ['aborted', 'reason', 'addEventListener', 'removeEventListener']) {
+          Object.defineProperty(controller.signal, key, { get: getter, configurable: true });
+          installed.add(key);
+        }
+      }
+      l.debug(message);
+    }, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) controller.abort(new Error('private cancellation reason q7z9k2'));
+      l.info(message);
+    } } });
+    expect(installed.size).toBe(4);
+    expect(getter.callCount).toBe(0);
+    expect(error.kind).toBe('interruption');
+    expect(error.message).not.toContain('q7z9k2');
+    if (error.directory === undefined) throw new Error('Expected owned cancellation directory');
+    expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+    expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('interruption');
+  } }),
+  it({ name: 'does not let a synthetic abort consume subsequent native cancellation', fn: async () => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const sent = new Set<string>();
+    const error = await rejected({ ...f.request(), signal: controller.signal, l: { ...l, debug(message) {
+      if (sent.size === 0) {
+        controller.signal.dispatchEvent(new Event('abort'));
+        sent.add('synthetic');
+      }
+      l.debug(message);
+    }, info(message) {
+      if (message.includes('matched retained unqualified input bytes')) controller.abort();
+      l.info(message);
+    } } });
+    expect(sent.size).toBe(1);
+    expect(error.kind).toBe('interruption');
+    if (error.directory === undefined) throw new Error('Expected retained final cancellation');
+    expect((await readRecord(join(error.directory, 'comparison.json'))).matches).toBe(true);
+  } }),
+  it({ name: 'removes its native signal subscription without invoking a caller removal getter', fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const before = getEventListeners(controller.signal, 'abort');
+    const getter = ctx.sinon.stub().throws(new Error('private removal getter q7z9k2'));
+    const descriptor = { get: getter, configurable: true };
+    Object.defineProperty(controller.signal, 'removeEventListener', descriptor);
+    const result = await accepted({ ...f.request(), signal: controller.signal });
+    expect(getter.callCount).toBe(0);
+    expect(getEventListeners(controller.signal, 'abort')).toEqual(before);
+    expect(Object.getOwnPropertyDescriptor(controller.signal, 'removeEventListener')?.get).toBe(getter);
+    expect(Object.isExtensible(controller.signal)).toBe(true);
+    expect(result.artifact.sha256).toBe(artifactIdentity.sha256);
+  } }),
+  ...(['proxy', 'revoked', 'forged'] as const).map(shape => it({ name: `refuses ${shape} signal state before creating a namespace`, fn: async () => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const proxy = Proxy.revocable(controller.signal, {});
+    if (shape === 'revoked') proxy.revoke();
+    const request = f.request();
+    Reflect.set(request, 'signal', shape === 'forged' ? Object.create(AbortSignal.prototype) : proxy.proxy);
+    const error = await rejected(request);
+    expect(error.kind).toBe('contract');
+    expect(error.directory).toBeUndefined();
+    expect(await readdir(f.output)).toEqual([]);
+  } })),
+  ...(['setup', 'after-close'] as const).map(phase => it({ name: `refuses unreadable composite source state at ${phase} without borrowing error metadata`, fn: async ctx => {
+    await using f = await fixture();
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal]);
+    const poisoned = ctx.sinon.spy(function poisonSource() {
+      Object.defineProperty(controller.signal, 'aborted', { get() {
+        throw new ProducerInputComparisonError({ kind: 'storage', directory: '/composite-source-q7z9k2' });
+      } });
+    });
+    if (phase === 'setup') poisoned();
+    const error = await rejected({ ...f.request(), signal, l: { ...l, info(message) {
+      if ((phase === 'after-close') && message.includes('input bootstrap closed successfully')) {
+        poisoned();
+        signal.dispatchEvent(new Event('abort'));
+      }
+      l.info(message);
+    } } });
+    expect(poisoned.callCount).toBe(1);
+    expect(error.kind).toBe('contract');
+    expect(error.message).not.toContain('q7z9k2');
+    if (phase === 'setup') {
+      expect(error.directory).toBeUndefined();
+      expect(await readdir(f.output)).toEqual([]);
+    } else {
+      if (error.directory === undefined) throw new Error('Expected owned composite refusal directory');
+      expect((await readRecord(join(error.directory, 'failure.json'))).failure).toBe('contract');
+      const exit = await readRecord(join(error.directory, 'bootstrap.exit.json'));
+      expect(exit.callerAborted).toBe(false);
+      expect(exit.code).toBe(0);
+    }
+  } })),
+  //endregion Native cancellation state is owned without borrowing caller accessors or reasons
   //region Persistent caller logging failures cannot replace storage or operation evidence
   ...(['normal', 'exit-after-output', 'extra-output'] as const).flatMap(mode => [false, true].map(revoked => it({ name: `retains primary ${mode} failure and its record when every warning throws revoked=${revoked}`, fn: async ctx => {
     await using f = await fixture(mode);
