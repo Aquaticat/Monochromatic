@@ -122,6 +122,24 @@ Scope widened by the owner on 2026-09-14:
    (owner chose it over pnpm `prefix` specifiers and over a proxy-less scope route).
    Consequence:
    the registry product must support an npmjs uplink for the scope.
+- Package set:
+   every workspace package except the 11 under `package/test-fixture/`,
+   private ones included
+   (owner chose it over all 154 and over only the 35 non-private).
+   npm packages only;
+   Rust crates and Kotlin artifacts keep their own pipelines.
+- Trigger:
+   a GitHub Actions workflow on each push to `main`
+   (owner chose it over a local post-commit hook plus CI and over a working-tree watcher).
+- Refs:
+   `main` only
+   (owner chose it over per-branch dist-tags).
+- Change detection:
+   owner answered "package.json version diff"
+   (instead of tarball content diff,
+    runtime dependency ripple,
+    or directly touched packages);
+   its interaction with per-push snapshots is under clarification.
 - Consumer scope:
    publish side only;
    verification installs from a throwaway consumer,
@@ -140,10 +158,13 @@ Scope widened by the owner on 2026-09-14:
 
 ## Open questions
 
-- Which packages count as "every package".
-- Publish trigger and latency ("immediately").
-- Which git refs publish.
-- What counts as a change that republishes a package.
+- Whether "package.json version diff" means committed per-change version bumps,
+   manual bumps only,
+   or CI-computed snapshot versions.
+   `.github/workflows/npm-release.yml` publishes to npmjs any non-private,
+    non-ignored package version missing there,
+   and its `push` filter includes `**/package.json`,
+   so committed per-change bumps would also release the public packages on npmjs.
 - How snapshots coexist with npmjs releases of the same package names.
 - Registry product and host (registry options research running,
    briefed before the scope widened).
