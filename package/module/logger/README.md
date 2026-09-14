@@ -113,8 +113,9 @@ already provides its own log-level filtering.
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified at module load,
- every sink concurrently,
+Availability is verified when the logger instance is created,
+ with default-instance creation deferred until its first log or flush call.
+Every sink is verified concurrently,
  each under its own time limit (`verifyTimeoutMs`,
  default `DEFAULT_VERIFY_TIMEOUT_MS`,
  5000 ms);
@@ -303,6 +304,52 @@ File,
    on overflow the oldest is dropped and the count is reported as one `warn` record after initialization,
    never silently
 
+## Callback failure observation
+
+Use `observeLoggerCallbacks(l)` when a caller-supplied logger must not replace an operation's outcome
+with a telemetry exception.
+Wrap it before adding operation tags:
+
+```ts
+// consumer.ts: caller supplies l: Logger.
+import { observeLoggerCallbacks, tagged, } from '@monochromatic-dev/module-logger';
+
+const observed = observeLoggerCallbacks(l);
+const step = tagged({ tag: 'persist-result', l: observed.logger, });
+step.info('output retained');
+const abnormalCallbacks = observed.snapshot();
+```
+
+The facade performs each requested callback lookup and invocation lazily,
+using the original receiver and message.
+A failed callback does not prevent later requested messages.
+It catches synchronous method/getter exceptions and rejection from an explicitly awaited `flush()`.
+It never inspects or retains a thrown value,
+adds a sink,
+retries a message,
+starts a timer or requests a flush on its own.
+
+`snapshot()` returns a new frozen array of observed callback names,
+deduplicated in this fixed order:
+`debug`,
+`error`,
+`fatal`,
+`flush`,
+`info`,
+`trace`,
+`warn`.
+Previously returned snapshots do not change.
+The facade and observation object are also frozen.
+Take the terminal snapshot after the operation's last requested log or flush callback.
+
+These names report callback failures,
+not whether a sink delivered or stored a message.
+The operation still owns cancellation and its primary result or error.
+The facade cannot contain blocking callbacks,
+process exit or filesystem mutation.
+Void level callbacks must remain synchronous;
+unobserved rejected promises returned by those methods are outside the contract.
+
 ## Custom loggers
 
 The default `logger` is `createLogger` applied to the default sink set,
@@ -411,6 +458,13 @@ See [DECISIONS.md](DECISIONS.md) for rationale on:
    guard that reads every chunk of both builds and rejects dynamic imports and cross-platform leaks
 - `src/tagged.ts`:
    `tagged()` wrapper for composable prefixes
+- `src/observe-callbacks.ts`:
+   callback exception containment with detached,
+   names-only observation snapshots
+- `src/observe-callbacks.unit.test.ts`:
+   built-artifact forwarding,
+   lazy lookup,
+   foreign throw and flush rejection controls
 - `src/sink/console.ts`:
    `createConsoleSink()`,
    verbose-mode gating and microtask batching

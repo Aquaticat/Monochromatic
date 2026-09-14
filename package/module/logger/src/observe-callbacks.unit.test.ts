@@ -99,6 +99,57 @@ await describe({ name: observeLoggerCallbacks.name, children: [
     expect(getter.callCount).toBe(1);
     expect(observed.snapshot()).toEqual(['fatal']);
   } }),
+  it({ name: 'looks up each requested level again instead of retaining the first method', fn: async ctx => {
+    const f = fixture(ctx);
+    const replacement = ctx.sinon.stub();
+    const getter = ctx.sinon.stub();
+    getter.onFirstCall().returns(f.spies.warn);
+    getter.onSecondCall().returns(replacement);
+    Object.defineProperty(f.logger, 'warn', { get: getter });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(getter.callCount).toBe(0);
+    observed.logger.warn('first');
+    observed.logger.warn('second');
+    expect(getter.callCount).toBe(2);
+    expect(f.spies.warn.callCount).toBe(1);
+    expect(replacement.callCount).toBe(1);
+    expect(replacement.firstCall.args).toEqual(['second']);
+    expect(replacement.firstCall.thisValue).toBe(f.logger);
+    expect(observed.snapshot()).toEqual([]);
+  } }),
+  it({ name: 'looks up explicit flush again and observes the replacement callback', fn: async ctx => {
+    const f = fixture(ctx);
+    const replacement = ctx.sinon.stub().rejects(Symbol('replacement flush fault'));
+    const getter = ctx.sinon.stub();
+    getter.onFirstCall().returns(f.spies.flush);
+    getter.onSecondCall().returns(replacement);
+    Object.defineProperty(f.logger, 'flush', { get: getter });
+    const observed = observeLoggerCallbacks(f.logger);
+    expect(getter.callCount).toBe(0);
+    await observed.logger.flush();
+    expect(observed.snapshot()).toEqual([]);
+    await observed.logger.flush();
+    expect(getter.callCount).toBe(2);
+    expect(f.spies.flush.callCount).toBe(1);
+    expect(replacement.callCount).toBe(1);
+    expect(replacement.firstCall.thisValue).toBe(f.logger);
+    expect(observed.snapshot()).toEqual(['flush']);
+  } }),
+  ...(['undefined', 'revoked-error'] as const).map(kind => it({ name: `contains native flush rejection with ${kind} without inspecting the value`, fn: async ctx => {
+    const f = fixture(ctx);
+    const revoked = Proxy.revocable(new Error('private flush q7z9k2'), {});
+    revoked.revoke();
+    const fault = kind === 'undefined' ? undefined : revoked.proxy;
+    await expect(Promise.reject(fault)).rejects.toBe(fault);
+    Object.defineProperty(f.logger, 'flush', {
+      value: function rejectFlush(): Promise<void> {
+        return Promise.reject(fault);
+      },
+    });
+    const observed = observeLoggerCallbacks(f.logger);
+    await observed.logger.flush();
+    expect(observed.snapshot()).toEqual(['flush']);
+  } })),
   it({ name: 'contains a revoked callable proxy without inspecting it', fn: async ctx => {
     const f = fixture(ctx);
     const callable = Proxy.revocable(f.spies.warn, {});
